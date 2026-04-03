@@ -1,6 +1,10 @@
 # 🦞 PURPCLAW v6.0 — ULTIMATE
 
-> **The AI Voice Agent MCP Bridge** — Gives your Xiaozhi AI hardware full autonomous PC control via 55+ MCP tools. Built by [WEEMADSCOTSMAN](https://github.com/weemadscotsman) at Pixel Dynasty.
+> **The AI Voice Agent MCP Bridge** — Gives your Xiaozhi AI hardware full autonomous PC control via 57 MCP tools. Built by [WEEMADSCOTSMAN](https://github.com/weemadscotsman) at Pixel Dynasty.
+
+### 🚀 New Here? **[Read the Full Setup Guide →](SETUP_GUIDE.md)**
+
+The setup guide covers everything from buying the hardware to your first voice command. Anyone with a Xiaozhi ball can use this.
 
 ## What Is This?
 
@@ -34,7 +38,7 @@ PURPCLAW is an MCP (Model Context Protocol) bridge that connects a **Xiaozhi AI 
                         └───────────┘   └─────────────┘   └───────────┘
 ```
 
-## 55 MCP Tools
+## 57 MCP Tools
 
 ### Vision (5)
 | Tool | Description |
