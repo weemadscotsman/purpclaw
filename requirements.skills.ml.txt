@@ -1,0 +1,7 @@
+# PurpClaw Skills — Machine Learning (optional)
+# Install: pip install -r requirements.skills.ml.txt
+torch>=2.0
+transformers>=4.30
+datasets>=2.14
+peft>=0.7
+trl>=0.7

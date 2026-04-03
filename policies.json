@@ -1,0 +1,84 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-05-23T13:10:00Z",
+  "riskLevels": {
+    "low": [
+      "lint fix",
+      "comment cleanup",
+      "readme update",
+      "docstring addition"
+    ],
+    "medium": [
+      "dependency update (non-breaking)",
+      "config change (non-port)",
+      "test addition"
+    ],
+    "high": [
+      "port change",
+      "service restart",
+      "new npm package",
+      "file deletion (>10kb)",
+      "schema change",
+      "env var add"
+    ],
+    "critical": [
+      "git force push",
+      "rm -rf",
+      "sudo",
+      "curl | bash",
+      "exec without sandbox",
+      "network call to new host",
+      "env var secret read"
+    ]
+  },
+  "rules": [
+    {
+      "id": "POL-001",
+      "rule": "never auto-deploy to prod without approval",
+      "risk": "high"
+    },
+    {
+      "id": "POL-002",
+      "rule": "never touch .env or keys.env without explicit approval",
+      "risk": "critical"
+    },
+    {
+      "id": "POL-003",
+      "rule": "always sandbox self-modifications before deploying",
+      "risk": "high"
+    },
+    {
+      "id": "POL-004",
+      "rule": "never modify ecosystem.config.js without approval",
+      "risk": "critical"
+    },
+    {
+      "id": "POL-005",
+      "rule": "rollback trigger: any self-change that causes service health drop >30s",
+      "risk": "high"
+    },
+    {
+      "id": "POL-006",
+      "rule": "low-risk fixes may auto-stage and notify, not auto-deploy",
+      "risk": "medium"
+    },
+    {
+      "id": "POL-007",
+      "rule": "all agent spawns via Agent Tower must include workspace context",
+      "risk": "low"
+    },
+    {
+      "id": "POL-008",
+      "rule": "never use eval() or exec() on user-provided input",
+      "risk": "critical"
+    }
+  ],
+  "approvalRequired": [
+    "high",
+    "critical"
+  ],
+  "autoStage": [
+    "low"
+  ],
+  "autoApprove": []
+}

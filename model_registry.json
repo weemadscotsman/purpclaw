@@ -1,0 +1,22 @@
+{
+  "_comment": "PURPCLAW Model Registry — job-to-provider routing rules",
+  "version": 1,
+  "defaults": {
+    "provider": "{{LLM_PROVIDER}}",
+    "model": "{{LLM_MODEL}}"
+  },
+  "fallback": {
+    "provider": "ollama",
+    "model": "qwen2.5:3b"
+  },
+  "routing": {
+    "chat":        { "provider": "{{LLM_PROVIDER}}", "model": "{{LLM_MODEL}}", "note": "fast chat — MiniMax or OpenRouter free preferred" },
+    "code":        { "provider": "openrouter", "model": "anthropic/claude-sonnet-4", "note": "code reasoning — OpenRouter coder model" },
+    "local":       { "provider": "ollama",      "model": "qwen2.5:3b",              "note": "local/offline fallback" },
+    "swarm":       { "provider": "{{SWARM_PROVIDER}}", "model": "{{SWARM_MODEL}}", "note": "swarm agent reasoning" },
+    "creative":    { "provider": "openrouter",  "model": "anthropic/claude-3.5-haiku", "note": "shaman / creative" },
+    "vision":      { "provider": "gemini",      "model": "gemini-2.5-flash",        "note": "vision and image analysis" },
+    "tts":         { "provider": "kokoro",      "model": "af_heart",                "note": "local voice synthesis" },
+    "video":       { "provider": "moneyprinter", "model": "default",                "note": "MoneyPrinterTurbo on :8080" }
+  }
+}

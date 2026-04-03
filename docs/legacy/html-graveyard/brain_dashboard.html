@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURPCLAW Brain Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #060810;
+    --bg2: #0a0f1a;
+    --bg3: #0e1424;
+    --bg4: #131b2e;
+    --border: #1a2540;
+    --border2: #243458;
+    --text: #d8e2f0;
+    --text2: #8a9ab8;
+    --text3: #4a5a78;
+    --cyan: #00d4ff;
+    --green: #00ff94;
+    --purple: #9d5fff;
+    --yellow: #ffc400;
+    --orange: #ff8c00;
+    --red: #ff3355;
+    --pink: #ff50c8;
+    --teal: #00ffcc;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 52px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--purple);
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px rgba(157,95,255,0.4);
+  }
+
+  .logo-sub {
+    font-size: 9px;
+    color: var(--text3);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .header-center {
+    display: flex;
+    gap: 8px;
+  }
+
+  .tab-btn {
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text2);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .tab-btn:hover { background: var(--bg3); color: var(--text); }
+  .tab-btn.active {
+    background: var(--bg3);
+    border-color: var(--purple);
+    color: var(--purple);
+    text-shadow: 0 0 10px rgba(157,95,255,0.5);
+  }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .status-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--green);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--green);
+    background: rgba(0,255,148,0.05);
+  }
+
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .btn {
+    padding: 5px 12px;
+    border-radius: 5px;
+    border: 1px solid var(--border2);
+    background: transparent;
+    color: var(--text2);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn:hover { background: var(--bg4); border-color: var(--cyan); color: var(--cyan); }
+  .btn.cyan { border-color: var(--cyan); color: var(--cyan); }
+  .btn.green { border-color: var(--green); color: var(--green); }
+  .btn.purple { border-color: var(--purple); color: var(--purple); }
+
+  /* LAYOUT */
+  .main { display: grid; grid-template-columns: 380px 1fr 360px; gap: 10px; padding: 10px; min-height: calc(100vh - 52px); }
+
+  /* PANELS */
+  .panel {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    flex-shrink: 0;
+  }
+
+  .panel-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text2);
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .panel-body { padding: 10px; flex: 1; overflow-y: auto; }
+  .panel-body::-webkit-scrollbar { width: 4px; }
+  .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* LEFT COLUMN */
+  .left-col { display: flex; flex-direction: column; gap: 10px; }
+
+  /* FORM CONTROLS */
+  .form-group { margin-bottom: 10px; }
+
+  .form-label {
+    display: block;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    margin-bottom: 4px;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 8px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--purple);
+    box-shadow: 0 0 0 2px rgba(157,95,255,0.1);
+  }
+
+  .form-textarea { resize: vertical; min-height: 60px; font-family: 'JetBrains Mono', monospace; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .btn-row { display: flex; gap: 6px; margin-top: 8px; }
+
+  /* RESULT BOX */
+  .result-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin-top: 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+  }
+
+  .result-box::-webkit-scrollbar { width: 3px; }
+  .result-box::-webkit-scrollbar-thumb { background: var(--border2); }
+
+  .result-success { border-color: rgba(0,255,148,0.3); background: rgba(0,255,148,0.05); }
+  .result-error { border-color: rgba(255,51,85,0.3); background: rgba(255,51,85,0.05); }
+
+  .result-line { margin-bottom: 4px; line-height: 1.5; }
+  .result-key { color: var(--text3); margin-right: 4px; }
+  .result-val { color: var(--text); }
+  .result-val.cyan { color: var(--cyan); }
+  .result-val.green { color: var(--green); }
+  .result-val.purple { color: var(--purple); }
+  .result-val.yellow { color: var(--yellow); }
+  .result-val.red { color: var(--red); }
+
+  /* KNOWLEDGE GRAPH (CENTER) */
+  .kg-panel { grid-column: 2; }
+  .kg-container { position: relative; height: calc(100% - 36px); overflow: hidden; }
+
+  .kg-canvas { width: 100%; height: 100%; }
+
+  .kg-controls {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 4px;
+  }
+
+  .kg-ctrl-btn {
+    width: 28px; height: 28px;
+    border-radius: 4px;
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text2);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .kg-ctrl-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+
+  .kg-tooltip {
+    position: absolute;
+    background: var(--bg4);
+    border: 1px solid var(--purple);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 11px;
+    pointer-events: none;
+    display: none;
+    z-index: 10;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    max-width: 250px;
+  }
+
+  .kg-tooltip-title { font-weight: 600; color: var(--purple); margin-bottom: 4px; font-family: 'JetBrains Mono', monospace; }
+  .kg-tooltip-body { color: var(--text2); line-height: 1.5; }
+
+  .kg-legend {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(10,15,26,0.9);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 10px; color: var(--text2); }
+  .legend-item:last-child { margin-bottom: 0; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* ENTITY LIST */
+  .entity-list { display: flex; flex-direction: column; gap: 4px; }
+
+  .entity-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .entity-item:hover { border-color: var(--purple); background: var(--bg4); }
+
+  .entity-type-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+
+  .badge-entity { background: rgba(0,212,255,0.15); color: var(--cyan); }
+  .badge-pattern { background: rgba(255,196,0,0.15); color: var(--yellow); }
+  .badge-anomaly { background: rgba(255,51,85,0.15); color: var(--red); }
+  .badge-memory { background: rgba(0,255,148,0.15); color: var(--green); }
+  .badge-causal { background: rgba(255,140,0,0.15); color: var(--orange); }
+
+  .entity-name { font-size: 11px; color: var(--text); flex: 1; font-family: 'JetBrains Mono', monospace; }
+  .entity-count { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+
+  /* RIGHT COLUMN */
+  .right-col { display: flex; flex-direction: column; gap: 10px; }
+
+  /* FACT STREAM */
+  .fact-stream { flex: 1; min-height: 0; }
+
+  .fact-item {
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; } }
+
+  .fact-item:last-child { border-bottom: none; }
+
+  .fact-type {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    margin-bottom: 3px;
+  }
+
+  .fact-body { font-family: 'JetBrains Mono', monospace; font-size: 10px; line-height: 1.5; }
+  .fact-predicate { color: var(--cyan); }
+  .fact-subject { color: var(--green); }
+  .fact-object { color: var(--yellow); }
+  .fact-meta { font-size: 9px; color: var(--text3); margin-top: 2px; }
+
+  /* MODAL LOGIC CONSOLE */
+  .console-output {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    min-height: 120px;
+    max-height: 200px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    margin-bottom: 8px;
+  }
+
+  .console-output::-webkit-scrollbar { width: 3px; }
+  .console-output::-webkit-scrollbar-thumb { background: var(--border2); }
+
+  .console-line { line-height: 1.8; }
+  .console-prompt { color: var(--purple); }
+  .console-ok { color: var(--green); }
+  .console-err { color: var(--red); }
+  .console-info { color: var(--cyan); }
+
+  .console-input-row { display: flex; gap: 6px; }
+
+  .console-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 8px;
+    outline: none;
+  }
+
+  .console-input:focus { border-color: var(--purple); }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    padding: 10px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-box {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px;
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text3);
+    margin-top: 3px;
+  }
+
+  .stat-num.cyan { color: var(--cyan); text-shadow: 0 0 15px rgba(0,212,255,0.4); }
+  .stat-num.green { color: var(--green); text-shadow: 0 0 15px rgba(0,255,148,0.4); }
+  .stat-num.purple { color: var(--purple); text-shadow: 0 0 15px rgba(157,95,255,0.4); }
+  .stat-num.yellow { color: var(--yellow); text-shadow: 0 0 15px rgba(255,196,0,0.4); }
+  .stat-num.red { color: var(--red); text-shadow: 0 0 15px rgba(255,51,85,0.4); }
+
+  /* LIFT FORM */
+  .lift-form { border-bottom: 1px solid var(--border); padding: 10px; }
+
+  /* TABS */
+  .sub-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    padding: 0 10px;
+  }
+
+  .sub-tab {
+    padding: 6px 10px;
+    font-size: 10px;
+    color: var(--text3);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .sub-tab.active { color: var(--purple); border-bottom-color: var(--purple); }
+  .sub-tab:hover:not(.active) { color: var(--text2); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* OPERATOR BADGES */
+  .op-badge {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    padding: 1px 4px;
+    border-radius: 2px;
+    margin: 1px;
+  }
+
+  .op-epistemic { background: rgba(0,212,255,0.15); color: var(--cyan); }
+  .op-temporal { background: rgba(0,255,148,0.15); color: var(--green); }
+  .op-deontic { background: rgba(255,196,0,0.15); color: var(--yellow); }
+  .op-doxastic { background: rgba(157,95,255,0.15); color: var(--purple); }
+
+  /* WORLD BROWSER */
+  .world-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .world-item:hover { border-color: var(--cyan); }
+  .world-item.active { border-color: var(--cyan); background: rgba(0,212,255,0.05); }
+
+  .world-id { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--cyan); font-weight: 600; }
+  .world-info { font-size: 10px; color: var(--text2); flex: 1; }
+  .world-count { font-size: 9px; color: var(--text3); }
+
+  /* RULE DISPLAY */
+  .rule-item {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    line-height: 1.6;
+  }
+
+  .rule-head { color: var(--green); }
+  .rule-arrow { color: var(--text3); margin: 0 4px; }
+  .rule-body-pred { color: var(--cyan); }
+  .rule-var { color: var(--yellow); }
+  .rule-ineq { color: var(--orange); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">PURPCLAW</div>
+    <div class="logo-sub">Neuro-Symbolic Brain</div>
+  </div>
+  <div class="header-center">
+    <button class="tab-btn active" onclick="switchTab('ops')" id="tab-ops">Lift / Ground</button>
+    <button class="tab-btn" onclick="switchTab('kg')" id="tab-kg">Knowledge Graph</button>
+    <button class="tab-btn" onclick="switchTab('console')" id="tab-console">Modal Console</button>
+    <button class="tab-btn" onclick="switchTab('facts')" id="tab-facts">Fact Stream</button>
+  </div>
+  <div class="header-right">
+    <div class="status-pill" id="bridgeStatus">
+      <div class="status-dot" id="bridgeDot"></div>
+      <span id="bridgeLabel">CHECKING</span>
+    </div>
+    <button class="btn cyan" onclick="refreshBrain()">↻ Refresh</button>
+    <button class="btn" onclick="openDashboard('mission_control')">⬡ MISSION</button>
+  </div>
+</header>
+
+<!-- STATS ROW -->
+<div class="stats-row">
+  <div class="stat-box">
+    <div class="stat-num cyan" id="statLifted">0</div>
+    <div class="stat-label">Lifted Facts</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num green" id="statGrounded">0</div>
+    <div class="stat-label">Grounded Queries</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num purple" id="statEntities">0</div>
+    <div class="stat-label">Entities</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num yellow" id="statPatterns">0</div>
+    <div class="stat-label">Patterns</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num red" id="statAnomalies">0</div>
+    <div class="stat-label">Anomalies</div>
+  </div>
+  <div class="stat-box">
+    <div class="stat-num green" id="statWorlds">0</div>
+    <div class="stat-label">Kripke Worlds</div>
+  </div>
+</div>
+
+<!-- MAIN 3-COLUMN LAYOUT -->
+<div class="main">
+
+  <!-- LEFT COLUMN -->
+  <div class="left-col">
+
+    <!-- LIFT PANEL -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Lift Neural → Symbolic</span>
+        <div class="live-dot"></div>
+      </div>
+      <div class="lift-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Fact Type</label>
+            <select class="form-select" id="liftType">
+              <option value="entity">Entity</option>
+              <option value="pattern">Pattern</option>
+              <option value="anomaly">Anomaly</option>
+              <option value="memory">Memory Recall</option>
+              <option value="causal">Causal Link</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confidence</label>
+            <input class="form-input" id="liftConf" type="number" min="0" max="1" step="0.05" value="0.85">
+          </div>
+        </div>
+
+        <div class="form-group" id="liftEntityFields">
+          <label class="form-label">Entity Type</label>
+          <input class="form-input" id="liftEntityType" placeholder="PERSON, OBJECT, LOCATION...">
+          <label class="form-label" style="margin-top:6px;">Entity Text</label>
+          <input class="form-input" id="liftEntityText" placeholder="Alice, Bob, Washington...">
+        </div>
+
+        <div class="form-group" id="liftPatternFields" style="display:none;">
+          <label class="form-label">Pattern Name</label>
+          <input class="form-input" id="liftPatternName" placeholder="paraphasia, deflection...">
+          <label class="form-label" style="margin-top:6px;">Context</label>
+          <input class="form-input" id="liftPatternCtx" placeholder="description of context...">
+        </div>
+
+        <div class="form-group" id="liftAnomalyFields" style="display:none;">
+          <label class="form-label">Anomaly Type</label>
+          <input class="form-input" id="liftAnomalyType" placeholder="speech_anomaly, pattern_break...">
+          <label class="form-label" style="margin-top:6px;">Details</label>
+          <input class="form-input" id="liftAnomalyDetail" placeholder="anomaly details...">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Source</label>
+          <input class="form-input" id="liftSource" placeholder="shadow_protocol, memory_matrix...">
+        </div>
+
+        <div class="btn-row">
+          <button class="btn green" onclick="doLift()" style="flex:1;">▲ LIFT</button>
+          <button class="btn" onclick="clearLiftForm()">CLEAR</button>
+        </div>
+        <div id="liftResult"></div>
+      </div>
+    </div>
+
+    <!-- GROUND PANEL -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Ground Symbolic → Neural</span>
+        <div class="live-dot"></div>
+      </div>
+      <div style="padding:10px;">
+        <div class="form-group">
+          <label class="form-label">Query Type</label>
+          <select class="form-select" id="groundType" onchange="toggleGroundFields()">
+            <option value="entity">Entity Lookup</option>
+            <option value="pattern">Pattern Search</option>
+            <option value="subject">Facts by Subject</option>
+            <option value="predicate">Facts by Predicate</option>
+            <option value="all">All Facts</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="groundEntityField">
+          <label class="form-label">Entity Text</label>
+          <input class="form-input" id="groundEntity" placeholder="Alice, Microsoft...">
+        </div>
+
+        <div class="form-group" id="groundSubjField" style="display:none;">
+          <label class="form-label">Subject Filter</label>
+          <input class="form-input" id="groundSubj" placeholder="speaker name...">
+        </div>
+
+        <div class="form-group" id="groundPredField" style="display:none;">
+          <label class="form-label">Predicate Filter</label>
+          <input class="form-input" id="groundPred" placeholder="exhibits, said, saw...">
+        </div>
+
+        <div class="btn-row">
+          <button class="btn purple" onclick="doGround()" style="flex:1;">▼ GROUND</button>
+          <button class="btn" onclick="clearGroundForm()">CLEAR</button>
+        </div>
+        <div id="groundResult"></div>
+      </div>
+    </div>
+
+    <!-- WORLD BROWSER -->
+    <div class="panel" style="flex:1; min-height:0;">
+      <div class="panel-head">
+        <span class="panel-title">Kripke Worlds</span>
+        <button class="btn" onclick="loadWorlds()" style="padding:2px 8px;font-size:9px;">↻</button>
+      </div>
+      <div class="panel-body" id="worldList">
+        <div class="text-xs text-dim" style="padding:10px;text-align:center;">Loading worlds...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CENTER: KNOWLEDGE GRAPH or OPS -->
+  <div class="panel kg-panel" id="kgPanel">
+    <div class="panel-head">
+      <span class="panel-title">Knowledge Graph</span>
+      <div class="flex items-center gap-8">
+        <input type="text" class="form-input" id="kgSearch" placeholder="Search facts..." style="width:160px;font-size:10px;padding:3px 8px;" onkeydown="if(event.key==='Enter')searchKG()">
+        <button class="btn" onclick="searchKG()" style="padding:2px 8px;font-size:9px;">SEARCH</button>
+        <div class="live-dot"></div>
+      </div>
+    </div>
+    <div class="kg-container" id="kgContainer">
+      <svg class="kg-canvas" id="kgCanvas"></svg>
+
+      <div class="kg-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div>Entity</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>Pattern</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Anomaly</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Memory</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Causal</div>
+      </div>
+
+      <div class="kg-controls">
+        <button class="kg-ctrl-btn" onclick="kgZoom(1.2)" title="Zoom in">+</button>
+        <button class="kg-ctrl-btn" onclick="kgZoom(0.8)" title="Zoom out">−</button>
+        <button class="kg-ctrl-btn" onclick="kgReset()" title="Reset">⌂</button>
+        <button class="kg-ctrl-btn" onclick="kgRandomLayout()" title="Shuffle">↻</button>
+      </div>
+
+      <div class="kg-tooltip" id="kgTooltip">
+        <div class="kg-tooltip-title" id="kgTooltipTitle"></div>
+        <div class="kg-tooltip-body" id="kgTooltipBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+
+    <!-- MODAL CONSOLE -->
+    <div class="panel" id="consolePanel" style="display:none;">
+      <div class="panel-head">
+        <span class="panel-title">Modal Logic Console</span>
+        <div class="live-dot"></div>
+      </div>
+      <div style="padding:10px;">
+        <div class="form-group">
+          <label class="form-label">Formula</label>
+          <input class="form-input" id="modalFormula" placeholder="Kt(alice, knows(p,q))">
+          <div style="margin-top:6px;font-size:9px;color:var(--text3);">
+            <span class="op-badge op-epistemic">Kt</span>
+            <span class="op-badge op-epistemic">BEL</span>
+            <span class="op-badge op-temporal">EVER</span>
+            <span class="op-badge op-temporal">POREVER</span>
+            <span class="op-badge op-deontic">MUST</span>
+            <span class="op-badge op-deontic">MAY</span>
+            <span class="op-badge op-doxastic">BELIEF_LEVEL</span>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">World ID</label>
+            <input class="form-input" id="modalWorld" value="0" placeholder="0">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Agent</label>
+            <input class="form-input" id="modalAgent" placeholder="alice">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn purple" onclick="doModalEval()" style="flex:1;">▶ EVALUATE</button>
+        </div>
+        <div class="console-output" id="consoleOutput"><span class="console-info">PURPCLAW Modal Logic Console v1.0\nType a formula above and press EVALUATE\n</span></div>
+        <div class="console-input-row">
+          <input class="console-input" id="consoleInput" placeholder="Type command... (help for operators)" onkeydown="handleConsoleInput(event)">
+          <button class="btn cyan" onclick="sendConsoleCmd()">SEND</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FACT STREAM -->
+    <div class="panel fact-stream" id="factPanel">
+      <div class="panel-head">
+        <span class="panel-title">Symbolic Fact Stream</span>
+        <div class="flex items-center gap-8">
+          <select id="factFilter" onchange="filterFacts()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:9px;padding:2px 6px;border-radius:3px;">
+            <option value="ALL">ALL</option>
+            <option value="entity_extraction">Entity</option>
+            <option value="pattern_detected">Pattern</option>
+            <option value="anomaly_event">Anomaly</option>
+            <option value="memory_recall">Memory</option>
+            <option value="causal_link">Causal</option>
+          </select>
+          <button class="btn" onclick="clearFacts()" style="padding:2px 8px;font-size:9px;">CLEAR</button>
+        </div>
+      </div>
+      <div class="panel-body" id="factList">
+        <div class="text-xs text-dim" style="padding:10px;text-align:center;">Awaiting fact stream...</div>
+      </div>
+    </div>
+
+    <!-- ENTITY INDEX -->
+    <div class="panel" id="entityPanel">
+      <div class="panel-head">
+        <span class="panel-title">Entity Index</span>
+        <span class="text-xs text-dim" id="entityCount">0 entries</span>
+      </div>
+      <div class="panel-body">
+        <div class="entity-list" id="entityList">
+          <div class="text-xs text-dim" style="padding:10px;text-align:center;">No entities indexed</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RULES INSPECTOR -->
+    <div class="panel" id="rulesPanel">
+      <div class="panel-head">
+        <span class="panel-title">Symbolic Rules</span>
+        <button class="btn" onclick="loadRules()" style="padding:2px 8px;font-size:9px;">↻</button>
+      </div>
+      <div class="panel-body" id="rulesList" style="max-height:200px;overflow-y:auto;">
+        <div class="text-xs text-dim" style="padding:10px;text-align:center;">Loading rules...</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let facts = [];
+let kgNodes = [];
+let kgEdges = [];
+let kgScale = 1;
+let kgOffset = { x: 0, y: 0 };
+let dragging = null;
+let selectedWorld = null;
+let bridgeConnected = false;
+
+// ===== TABS =====
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tab-${tab}`)?.classList.add('active');
+
+  const kgPanel = document.getElementById('kgPanel');
+  const consolePanel = document.getElementById('consolePanel');
+  const factPanel = document.getElementById('factPanel');
+
+  kgPanel.style.display = 'none';
+  consolePanel.style.display = 'none';
+  factPanel.parentElement.style.display = 'none';
+
+  if (tab === 'kg') {
+    kgPanel.style.display = 'block';
+    renderKG();
+  } else if (tab === 'console') {
+    consolePanel.style.display = 'block';
+  } else if (tab === 'facts') {
+    factPanel.parentElement.style.display = 'flex';
+    document.getElementById('factPanel').style.display = 'block';
+  }
+}
+
+// Default: show KG
+switchTab('kg');
+
+// ===== LIFT =====
+function setupLiftFields() {
+  const type = document.getElementById('liftType').value;
+  document.getElementById('liftEntityFields').style.display = type === 'entity' ? 'block' : 'none';
+  document.getElementById('liftPatternFields').style.display = type === 'pattern' ? 'block' : 'none';
+  document.getElementById('liftAnomalyFields').style.display = type === 'anomaly' ? 'block' : 'none';
+}
+document.getElementById('liftType').addEventListener('change', setupLiftFields);
+
+async function doLift() {
+  const type = document.getElementById('liftType').value;
+  const conf = parseFloat(document.getElementById('liftConf').value) || 0.85;
+  const source = document.getElementById('liftSource').value || 'manual';
+  const resultEl = document.getElementById('liftResult');
+  resultEl.innerHTML = '';
+
+  let endpoint = '';
+  let payload = {};
+
+  if (type === 'entity') {
+    endpoint = '/lift/entity';
+    payload = {
+      entity_type: document.getElementById('liftEntityType').value,
+      entity_text: document.getElementById('liftEntityText').value,
+      confidence: conf,
+      source: source
+    };
+  } else if (type === 'pattern') {
+    endpoint = '/lift/pattern';
+    payload = {
+      pattern_name: document.getElementById('liftPatternName').value,
+      confidence: conf,
+      source: source,
+      subject: source,
+      context: document.getElementById('liftPatternCtx').value
+    };
+  } else if (type === 'anomaly') {
+    endpoint = '/lift/anomaly';
+    payload = {
+      anomaly_type: document.getElementById('liftAnomalyType').value,
+      confidence: conf,
+      source: source,
+      details: document.getElementById('liftAnomalyDetail').value
+    };
+  } else if (type === 'memory') {
+    endpoint = '/lift/memory';
+    payload = { query: document.getElementById('liftPatternCtx').value || 'manual recall', results: [], source: source };
+  }
+
+  try {
+    const res = await fetchWithTimeout(`http://127.0.0.1:7784${endpoint}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }, 3000);
+
+    if (res.ok) {
+      const data = await res.json();
+      resultEl.innerHTML = `<div class="result-box result-success">
+        <div class="result-line"><span class="result-key">fact_id:</span><span class="result-val yellow">${(data.fact || {}).fact_id || 'n/a'}</span></div>
+        <div class="result-line"><span class="result-key">type:</span><span class="result-val purple">${(data.fact || {}).fact_type || type}</span></div>
+        <div class="result-line"><span class="result-key">subject:</span><span class="result-val green">${(data.fact || {}).subject || '-'}</span></div>
+        <div class="result-line"><span class="result-key">predicate:</span><span class="result-val cyan">${(data.fact || {}).predicate || '-'}</span></div>
+        <div class="result-line"><span class="result-key">object:</span><span class="result-val yellow">${(data.fact || {}).object || '-'}</span></div>
+      </div>`;
+      addFact(data.fact || { fact_type: type, subject: payload.entity_text || payload.pattern_name || source, predicate: 'lifted', object: payload.entity_type || payload.pattern_name });
+      refreshStats();
+    } else {
+      resultEl.innerHTML = `<div class="result-box result-error"><span class="result-val red">HTTP ${res.status}: ${await res.text()}</span></div>`;
+    }
+  } catch (e) {
+    resultEl.innerHTML = `<div class="result-box result-error"><span class="result-val red">Error: ${e.message}</span></div>`;
+  }
+}
+
+function clearLiftForm() {
+  ['liftEntityType','liftEntityText','liftPatternName','liftPatternCtx','liftAnomalyType','liftAnomalyDetail','liftSource','liftConf'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('liftResult').innerHTML = '';
+}
+
+// ===== GROUND =====
+function toggleGroundFields() {
+  const type = document.getElementById('groundType').value;
+  document.getElementById('groundEntityField').style.display = type === 'entity' ? 'block' : 'none';
+  document.getElementById('groundSubjField').style.display = type === 'subject' ? 'block' : 'none';
+  document.getElementById('groundPredField').style.display = type === 'predicate' ? 'block' : 'none';
+}
+
+async function doGround() {
+  const type = document.getElementById('groundType').value;
+  const resultEl = document.getElementById('groundResult');
+  resultEl.innerHTML = '';
+
+  let url = 'http://127.0.0.1:7784/query?type=' + type;
+  if (type === 'entity') url += '&entity=' + encodeURIComponent(document.getElementById('groundEntity').value);
+  else if (type === 'subject') url += '&subject=' + encodeURIComponent(document.getElementById('groundSubj').value);
+  else if (type === 'predicate') url += '&predicate=' + encodeURIComponent(document.getElementById('groundPred').value);
+
+  try {
+    const res = await fetchWithTimeout(url, {}, 3000);
+    if (res.ok) {
+      const data = await res.json();
+      const results = data.results || [];
+      resultEl.innerHTML = `<div class="result-box" style="max-height:250px;">
+        <div class="result-line mb-4"><span class="result-key">results:</span><span class="result-val">${results.length} found</span></div>
+        ${results.slice(0, 30).map(r => `
+          <div class="result-line">
+            <span class="result-val purple">${r.fact_type || '?'}</span>
+            <span class="result-val green">${r.subject || '-'}</span>
+            <span class="result-val cyan">${r.predicate || '-'}</span>
+            <span class="result-val yellow">${r.object || '-'}</span>
+          </div>
+        `).join('')}
+      </div>`;
+    } else {
+      resultEl.innerHTML = `<div class="result-box result-error"><span class="result-val red">HTTP ${res.status}</span></div>`;
+    }
+  } catch (e) {
+    resultEl.innerHTML = `<div class="result-box result-error"><span class="result-val red">Error: ${e.message}</span></div>`;
+  }
+}
+
+function clearGroundForm() {
+  ['groundEntity','groundSubj','groundPred'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('groundResult').innerHTML = '';
+}
+
+// ===== FACT STREAM =====
+function addFact(fact) {
+  if (!fact || !fact.fact_type) return;
+  facts.unshift({ ...fact, ts: Date.now() });
+  if (facts.length > 200) facts.pop();
+  renderFacts();
+  updateKGFromFact(fact);
+}
+
+function renderFacts() {
+  const filter = document.getElementById('factFilter').value;
+  const filtered = filter === 'ALL' ? facts : facts.filter(f => f.fact_type === filter);
+  const list = document.getElementById('factList');
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="text-xs text-dim" style="padding:10px;text-align:center;">No facts match filter</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.slice(0, 100).map(f => {
+    const colors = {
+      entity_extraction: 'badge-entity',
+      pattern_detected: 'badge-pattern',
+      anomaly_event: 'badge-anomaly',
+      memory_recall: 'badge-memory',
+      causal_link: 'badge-causal'
+    };
+    const badgeClass = colors[f.fact_type] || 'badge-entity';
+    const timeStr = f.ts ? new Date(f.ts).toLocaleTimeString('en-US', {hour12:false}) : '';
+
+    return `<div class="fact-item">
+      <span class="fact-type ${badgeClass}">${(f.fact_type || '?').replace('_',' ')}</span>
+      <div class="fact-body">
+        <span class="fact-subject">${f.subject || '-'}</span>
+        <span class="fact-predicate"> ${f.predicate || '-'} </span>
+        <span class="fact-object">${f.object || '-'}</span>
+      </div>
+      <div class="fact-meta">${timeStr} · ${(f.confidence || 0).toFixed(2)} conf · ${f.source || '?'}</div>
+    </div>`;
+  }).join('');
+}
+
+function filterFacts() { renderFacts(); }
+function clearFacts() { facts = []; renderFacts(); }
+
+// ===== KNOWLEDGE GRAPH =====
+const KG_COLORS = {
+  entity_extraction: '#00d4ff',
+  pattern_detected: '#ffc400',
+  anomaly_event: '#ff3355',
+  memory_recall: '#00ff94',
+  causal_link: '#ff8c00',
+  belief_state: '#9d5fff',
+  default: '#4a5a78'
+};
+
+const NODE_RADIUS = 22;
+
+function initKG() {
+  kgNodes = [];
+  kgEdges = [];
+  renderKG();
+}
+
+function updateKGFromFact(fact) {
+  const id = fact.fact_id || Math.random().toString(36).slice(2);
+  const color = KG_COLORS[fact.fact_type] || KG_COLORS.default;
+  const label = fact.subject || fact.object || fact.fact_type || '?';
+
+  // Add node
+  const existingIdx = kgNodes.findIndex(n => n.id === id);
+  if (existingIdx >= 0) {
+    kgNodes[existingIdx].label = label;
+    kgNodes[existingIdx].fact = fact;
+  } else {
+    kgNodes.push({
+      id, label, color,
+      x: 150 + Math.random() * 400,
+      y: 100 + Math.random() * 300,
+      fact
+    });
+  }
+
+  // Add edge from subject to object if both exist
+  if (fact.subject && fact.object && fact.subject !== fact.object) {
+    const subNode = kgNodes.find(n => n.label === fact.subject);
+    const objNode = kgNodes.find(n => n.label === fact.object);
+    if (subNode && objNode) {
+      const edgeId = `${subNode.id}->${objNode.id}`;
+      if (!kgEdges.find(e => e.id === edgeId)) {
+        kgEdges.push({ id: edgeId, from: subNode.id, to: objNode.id, label: fact.predicate || '→' });
+      }
+    }
+  }
+
+  renderKG();
+}
+
+function renderKG() {
+  const canvas = document.getElementById('kgCanvas');
+  const container = document.getElementById('kgContainer');
+  if (!canvas || !container) return;
+
+  const W = container.clientWidth || 600;
+  const H = container.clientHeight || 400;
+  canvas.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+  // Physics simulation
+  simulateKG();
+
+  let svg = `<defs>
+    <marker id="arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L6,3 z" fill="var(--border2)"/>
+    </marker>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>`;
+
+  // Draw edges
+  for (const edge of kgEdges) {
+    const fromNode = kgNodes.find(n => n.id === edge.from);
+    const toNode = kgNodes.find(n => n.id === edge.to);
+    if (!fromNode || !toNode) continue;
+
+    const x1 = fromNode.x * kgScale + kgOffset.x;
+    const y1 = fromNode.y * kgScale + kgOffset.y;
+    const x2 = toNode.x * kgScale + kgOffset.x;
+    const y2 = toNode.y * kgScale + kgOffset.y;
+
+    svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"
+      stroke="var(--border2)" stroke-width="1.5" marker-end="url(#arrowhead)"/>`;
+    svg += `<text x="${(x1+x2)/2}" y="${(y1+y2)/2 - 6}"
+      text-anchor="middle" font-size="8" fill="var(--text3)" font-family="JetBrains Mono">${edge.label}</text>`;
+  }
+
+  // Draw nodes
+  for (const node of kgNodes) {
+    const x = node.x * kgScale + kgOffset.x;
+    const y = node.y * kgScale + kgOffset.y;
+    const r = NODE_RADIUS * kgScale;
+    const color = node.color || KG_COLORS.default;
+
+    svg += `<g transform="translate(${x},${y})" style="cursor:pointer"
+      onmousedown="startDragKG(event, '${node.id}')"
+      onmousemove="onDragKG(event)"
+      onmouseup="endDragKG()"
+      onmouseenter="showKGTooltip(event, '${node.id}')"
+      onmouseleave="hideKGTooltip()">`;
+
+    svg += `<circle r="${r}" fill="var(--bg3)" stroke="${color}" stroke-width="2"
+      filter="url(#glow)" opacity="0.9"/>`;
+    svg += `<circle r="${r}" fill="none" stroke="${color}" stroke-width="1"
+      opacity="0.3" stroke-dasharray="4 2"/>`;
+
+    // Label
+    const label = node.label.length > 10 ? node.label.slice(0, 9) + '…' : node.label;
+    svg += `<text y="4" text-anchor="middle" font-size="8" fill="${color}"
+      font-family="JetBrains Mono" font-weight="600">${label}</text>`;
+
+    svg += '</g>';
+  }
+
+  canvas.innerHTML = svg;
+}
+
+function simulateKG() {
+  // Simple force-directed layout
+  const W = 800, H = 500;
+  for (let i = 0; i < 50; i++) {
+    for (const node of kgNodes) {
+      // Repel nodes
+      for (const other of kgNodes) {
+        if (other.id === node.id) continue;
+        const dx = node.x - other.x;
+        const dy = node.y - other.y;
+        const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+        const force = 800 / (dist * dist);
+        node.x += (dx / dist) * force;
+        node.y += (dy / dist) * force;
+      }
+    }
+    // Attract edges
+    for (const edge of kgEdges) {
+      const from = kgNodes.find(n => n.id === edge.from);
+      const to = kgNodes.find(n => n.id === edge.to);
+      if (!from || !to) continue;
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+      const force = (dist - 120) * 0.01;
+      from.x += (dx / dist) * force;
+      from.y += (dy / dist) * force;
+      to.x -= (dx / dist) * force;
+      to.y -= (dy / dist) * force;
+    }
+    // Boundary
+    for (const node of kgNodes) {
+      node.x = Math.max(30, Math.min(W - 30, node.x));
+      node.y = Math.max(30, Math.min(H - 30, node.y));
+    }
+  }
+}
+
+function startDragKG(e, id) {
+  dragging = { id, startX: e.clientX, startY: e.clientY, nodeX: 0, nodeY: 0 };
+  const node = kgNodes.find(n => n.id === id);
+  if (node) { dragging.nodeX = node.x; dragging.nodeY = node.y; }
+  e.preventDefault();
+}
+
+function onDragKG(e) {
+  if (!dragging) return;
+  const node = kgNodes.find(n => n.id === dragging.id);
+  if (node) {
+    const scale = kgScale;
+    node.x = dragging.nodeX + (e.clientX - dragging.startX) / scale;
+    node.y = dragging.nodeY + (e.clientY - dragging.startY) / scale;
+    renderKG();
+  }
+}
+
+function endDragKG() { dragging = null; }
+
+function showKGTooltip(e, id) {
+  const node = kgNodes.find(n => n.id === id);
+  if (!node) return;
+  const tip = document.getElementById('kgTooltip');
+  document.getElementById('kgTooltipTitle').textContent = node.label;
+  const f = node.fact || {};
+  document.getElementById('kgTooltipBody').innerHTML =
+    `<div>Type: <span style="color:${node.color}">${(f.fact_type || 'unknown').replace('_',' ')}</span></div>
+    <div>Predicate: ${f.predicate || '-'}</div>
+    <div>Confidence: ${((f.confidence || 0) * 100).toFixed(0)}%</div>
+    <div>Source: ${f.source || '-'}</div>`;
+  tip.style.display = 'block';
+  tip.style.left = (e.offsetX + 15) + 'px';
+  tip.style.top = (e.offsetY + 10) + 'px';
+}
+
+function hideKGTooltip() {
+  document.getElementById('kgTooltip').style.display = 'none';
+}
+
+function kgZoom(factor) {
+  kgScale *= factor;
+  kgScale = Math.max(0.3, Math.min(3, kgScale));
+  renderKG();
+}
+
+function kgReset() {
+  kgScale = 1;
+  kgOffset = { x: 0, y: 0 };
+  renderKG();
+}
+
+function kgRandomLayout() {
+  const W = 800, H = 500;
+  for (const node of kgNodes) {
+    node.x = 100 + Math.random() * (W - 200);
+    node.y = 80 + Math.random() * (H - 160);
+  }
+  renderKG();
+}
+
+function searchKG() {
+  const q = document.getElementById('kgSearch').value.toLowerCase();
+  if (!q) return;
+  const match = kgNodes.find(n => (n.label || '').toLowerCase().includes(q));
+  if (match) {
+    const container = document.getElementById('kgContainer');
+    const W = container.clientWidth || 600;
+    const H = container.clientHeight || 400;
+    kgOffset.x = W / 2 - match.x * kgScale;
+    kgOffset.y = H / 2 - match.y * kgScale;
+    renderKG();
+  }
+}
+
+// ===== MODAL CONSOLE =====
+async function doModalEval() {
+  const formula = document.getElementById('modalFormula').value.trim();
+  const world = document.getElementById('modalWorld').value || '0';
+  const agent = document.getElementById('modalAgent').value.trim();
+  const output = document.getElementById('consoleOutput');
+
+  if (!formula) return;
+
+  output.innerHTML += `\n<span class="console-prompt">» ${formula}</span>`;
+
+  try {
+    const url = `http://127.0.0.1:7785/eval?formula=${encodeURIComponent(formula)}&world_id=${encodeURIComponent(world)}${agent ? `&agent=${encodeURIComponent(agent)}` : ''}`;
+    const res = await fetchWithTimeout(url, {}, 3000);
+    if (res.ok) {
+      const data = await res.json();
+      const result = data.result !== undefined ? String(data.result) : 'unknown';
+      const color = result === 'true' ? 'console-ok' : result === 'false' ? 'console-err' : 'console-info';
+      output.innerHTML += `\n<span class="${color}">→ ${result} (world ${world})</span>`;
+    } else {
+      output.innerHTML += `\n<span class="console-err">→ HTTP ${res.status}: ${await res.text()}</span>`;
+    }
+  } catch (e) {
+    output.innerHTML += `\n<span class="console-err">→ Error: ${e.message}</span>`;
+  }
+
+  output.scrollTop = output.scrollHeight;
+}
+
+function handleConsoleInput(e) {
+  if (e.key === 'Enter') sendConsoleCmd();
+}
+
+function sendConsoleCmd() {
+  const input = document.getElementById('consoleInput');
+  const cmd = input.value.trim();
+  if (!cmd) return;
+  input.value = '';
+
+  const output = document.getElementById('consoleOutput');
+  output.innerHTML += `\n<span class="console-prompt">» ${cmd}</span>`;
+
+  if (cmd === 'help') {
+    output.innerHTML += `
+<span class="console-info">
+Operators:
+  Kt(a,phi)       - Agent a knows proposition phi
+  BELIEF(a,phi,l) - Agent a believes phi with level l
+  EVER(phi)       - phi holds at some future time
+  POREVER(phi)    - phi holds at all future times
+  MUST(phi)       - phi is obligatory
+  MAY(phi)        - phi is permitted
+  MUST_NOT(phi)   - phi is forbidden
+
+Examples:
+  Kt(alice,knows(bob,trusted))
+  EVER(eventually(recovery))
+  MUST(action(backup))</span>`;
+  } else if (cmd === 'clear') {
+    output.innerHTML = '<span class="console-info">PURPCLAW Modal Logic Console v1.0\n</span>';
+  } else {
+    // Try to parse as formula and eval
+    document.getElementById('modalFormula').value = cmd;
+    doModalEval();
+    document.getElementById('modalFormula').value = '';
+  }
+
+  output.scrollTop = output.scrollHeight;
+}
+
+// ===== WORLD BROWSER =====
+async function loadWorlds() {
+  const list = document.getElementById('worldList');
+  try {
+    const res = await fetchWithTimeout('http://127.0.0.1:7785/stats', {}, 2000);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+
+    const agents = data.agents || {};
+    const worlds = data.worlds || Object.keys(agents);
+
+    if (worlds.length === 0) {
+      list.innerHTML = '<div class="text-xs text-dim" style="padding:10px;text-align:center;">No worlds defined</div>';
+      return;
+    }
+
+    list.innerHTML = worlds.map((w, i) => {
+      const agentCount = (agents[w] || []).length;
+      return `<div class="world-item ${selectedWorld === w ? 'active' : ''}" onclick="selectWorld('${w}')">
+        <span class="world-id">W${w}</span>
+        <span class="world-info">${agents[w] ? Object.keys(agents[w]).join(', ') || 'agent' : 'world'}</span>
+        <span class="world-count">${agentCount || 0} rels</span>
+      </div>`;
+    }).join('');
+
+    document.getElementById('statWorlds').textContent = worlds.length;
+  } catch (e) {
+    list.innerHTML = '<div class="text-xs text-dim" style="padding:10px;text-align:center;">Offline / no data</div>';
+    document.getElementById('statWorlds').textContent = '?';
+  }
+}
+
+function selectWorld(id) {
+  selectedWorld = id;
+  document.getElementById('modalWorld').value = id;
+  loadWorlds();
+}
+
+// ===== RULES INSPECTOR =====
+async function loadRules() {
+  const list = document.getElementById('rulesList');
+  try {
+    const res = await fetchWithTimeout('http://127.0.0.1:7787/stats', {}, 2000);
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    const rules = data.rules || [];
+
+    if (rules.length === 0) {
+      list.innerHTML = '<div class="text-xs text-dim" style="padding:10px;text-align:center;">No rules loaded</div>';
+      return;
+    }
+
+    list.innerHTML = rules.map(r => {
+      const bodyStr = (r.body || []).map(l => {
+        if (l[0] === '!=') return `<span class="rule-ineq">${l[1][0]}!=${l[1][1]}</span>`;
+        return `<span class="rule-body-pred">${l[0]}</span>(<span class="rule-var">${(l[1]||[]).join(', ')}</span>)`;
+      }).join(', ');
+      return `<div class="rule-item">
+        <span class="rule-head">${r.head_pred}</span>(<span class="rule-var">${(r.head_vars||[]).join(', ')}</span>)
+        <span class="rule-arrow">:-</span>${bodyStr}
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = '<div class="text-xs text-dim" style="padding:10px;text-align:center;">Offline</div>';
+  }
+}
+
+// ===== STATS =====
+async function refreshStats() {
+  try {
+    const res = await fetchWithTimeout('http://127.0.0.1:7784/stats', {}, 2000);
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById('statLifted').textContent = data.lifted_count || 0;
+      document.getElementById('statGrounded').textContent = data.grounded_count || 0;
+      document.getElementById('statEntities').textContent = Object.keys(data.entity_index || {}).length;
+      document.getElementById('statPatterns').textContent = Object.keys((data.fact_index || {})['pattern_detected'] || {}).length;
+      document.getElementById('statAnomalies').textContent = Object.keys((data.fact_index || {})['anomaly_event'] || {}).length;
+    }
+  } catch (e) {}
+}
+
+// ===== ENTITY INDEX =====
+async function loadEntityIndex() {
+  try {
+    const res = await fetchWithTimeout('http://127.0.0.1:7784/stats', {}, 2000);
+    if (!res.ok) return;
+    const data = await res.json();
+    const entityIndex = data.entity_index || {};
+
+    const entries = Object.entries(entityIndex);
+    document.getElementById('entityCount').textContent = `${entries.length} entries`;
+
+    if (entries.length === 0) {
+      document.getElementById('entityList').innerHTML = '<div class="text-xs text-dim" style="padding:10px;text-align:center;">No entities indexed</div>';
+      return;
+    }
+
+    document.getElementById('entityList').innerHTML = entries.slice(0, 50).map(([text, info]) => {
+      const count = typeof info === 'number' ? info : (info.count || 0);
+      return `<div class="entity-item">
+        <span class="entity-type-badge badge-entity">ENT</span>
+        <span class="entity-name">${text}</span>
+        <span class="entity-count">×${count}</span>
+      </div>`;
+    }).join('');
+  } catch (e) {}
+}
+
+// ===== BRIDGE STATUS =====
+async function checkBridge() {
+  try {
+    const res = await fetchWithTimeout('http://127.0.0.1:7784/health', {}, 1500);
+    if (res.ok) {
+      bridgeConnected = true;
+      document.getElementById('bridgeDot').style.background = 'var(--green)';
+      document.getElementById('bridgeDot').style.boxShadow = '0 0 6px var(--green)';
+      document.getElementById('bridgeLabel').textContent = 'BRIDGE LIVE';
+      document.getElementById('bridgeLabel').parentElement.style.borderColor = 'var(--green)';
+    } else {
+      setBridgeOffline();
+    }
+  } catch (e) {
+    setBridgeOffline();
+  }
+}
+
+function setBridgeOffline() {
+  bridgeConnected = false;
+  document.getElementById('bridgeDot').style.background = 'var(--red)';
+  document.getElementById('bridgeDot').style.boxShadow = '0 0 6px var(--red)';
+  document.getElementById('bridgeLabel').textContent = 'BRIDGE OFFLINE';
+  document.getElementById('bridgeLabel').parentElement.style.borderColor = 'var(--red)';
+}
+
+// ===== REFRESH ALL =====
+async function refreshBrain() {
+  await refreshStats();
+  await loadWorlds();
+  await loadRules();
+  await loadEntityIndex();
+  await checkBridge();
+}
+
+// ===== UTIL =====
+async function fetchWithTimeout(url, opts = {}, ms = 3000) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...opts, signal: ctrl.signal });
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+// ===== OPEN OTHER DASHBOARD =====
+function openDashboard(type) {
+  const urls = {
+    mission_control: 'mission_control.html',
+    swarm: 'swarm_dashboard.html',
+    memory: 'memory_explorer.html',
+    diag: 'diagnostics_ops.html'
+  };
+  if (urls[type]) window.open(urls[type], '_blank');
+}
+
+// ===== INIT =====
+async function init() {
+  initKG();
+  await checkBridge();
+  await refreshStats();
+  await loadWorlds();
+  await loadRules();
+  await loadEntityIndex();
+
+  // Seed KG with some initial facts from bridge
+  await seedKG();
+
+  // Poll
+  setInterval(checkBridge, 10000);
+  setInterval(refreshStats, 8000);
+  setInterval(loadWorlds, 15000);
+  setInterval(loadEntityIndex, 10000);
+
+  // Inject sample KG data for demo if empty
+  if (kgNodes.length === 0) {
+    const sampleFacts = [
+      { fact_type: 'entity_extraction', subject: 'Vision', predicate: 'detects', object: 'Objects' },
+      { fact_type: 'entity_extraction', subject: 'Memory', predicate: 'stores', object: 'Episodes' },
+      { fact_type: 'pattern_detected', subject: 'System', predicate: 'exhibits', object: 'anomaly_pattern' },
+      { fact_type: 'memory_recall', subject: 'Agent', predicate: 'recalled', object: 'context_A' },
+      { fact_type: 'causal_link', subject: 'Anomaly', predicate: 'causes', object: 'Alert' },
+      { fact_type: 'entity_extraction', subject: 'Bridge', predicate: 'connects', object: 'Neural_Symbolic' },
+    ];
+    for (const f of sampleFacts) updateKGFromFact(f);
+    kgRandomLayout();
+  }
+}
+
+async function seedKG() {
+  try {
+    const res = await fetchWithTimeout('http://127.0.0.1:7784/stats', {}, 2000);
+    if (!res.ok) return;
+    const data = await res.json();
+    const factIndex = data.fact_index || {};
+    const allFacts = [];
+    for (const [type, entries] of Object.entries(factIndex)) {
+      if (entries && typeof entries === 'object') {
+        for (const [id, fact] of Object.entries(entries)) {
+          if (fact && typeof fact === 'object') {
+            allFacts.push({ ...fact, fact_type: type });
+          }
+        }
+      }
+    }
+    for (const f of allFacts.slice(0, 30)) updateKGFromFact(f);
+  } catch (e) {}
+}
+
+init();
+</script>
+</body>
+</html>

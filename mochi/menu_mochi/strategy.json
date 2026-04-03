@@ -1,0 +1,33 @@
+{
+  "product": "MenuMochi",
+  "category": "browser extension / digital pet",
+  "tone": "cute guilt, gremlin sass, emotional blackmail, tiny companion",
+  "cta": "Install MenuMochi and let the tab goblin judge you.",
+  "postingSchedule": [
+    "07:30",
+    "16:30",
+    "21:00"
+  ],
+  "hookCategories": {
+    "testing": [
+      "I made a browser tab pet that guilt-trips you for ignoring it",
+      "This tiny blob lives in your browser tab and follows you around",
+      "Closing this tab now feels emotionally illegal",
+      "I built emotional blackmail into a Chrome extension",
+      "Your browser tab can now look disappointed in you",
+      "Meet the tiny pet that watches your tabs",
+      "This extension makes you feel bad for abandoning a favicon",
+      "I gave a browser tab separation anxiety",
+      "A Tamagotchi for people with 47 tabs open",
+      "The cutest browser extension I should not have built"
+    ],
+    "proven": [],
+    "dropped": []
+  },
+  "crossPostPlatforms": [
+    "Instagram Reels",
+    "YouTube Shorts",
+    "Threads"
+  ],
+  "notes": "Start SELF_ONLY for QA, then switch live after review."
+}

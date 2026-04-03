@@ -1,0 +1,67 @@
+# Environment and keys (MUST NOT be committed)
+.env
+keys.env
+*.env
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Dependencies
+node_modules/
+
+# Build
+.next/
+build/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+
+# Model weights and binary artifacts
+*.pt
+*.bin
+*.gguf
+*.safetensors
+
+# Compressed archives
+*.gz
+
+# TypeScript build cache
+tsconfig.tsbuildinfo
+
+# Runtime state — agent scratch, sessions, persisted job records.
+# These contain LLM outputs, worker job history, and companion state. They
+# can leak secrets via interpolation and explode in size; never commit.
+agent_work/
+agent_work/**
+!agent_work/.gitkeep
+sessions/
+.purpclaw/
+worker-tasks.json
+workers.json
+pool-jobs.json
+bg-sessions/
+
+# CLI / TUI per-user session cache
+.session-cache/
+*.session.json
+
+# Internal scratch and archive
+_scratch/
+.archive/
+purpclaw_settings.json
+
+# Editor + IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+.ui-backup*/
+.claude/
+.kiro/

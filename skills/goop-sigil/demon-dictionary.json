@@ -1,0 +1,10 @@
+{
+  "spaghetti": "Code structure so tangled that no single mind can trace its execution path. Usually inherited. Always cursed.",
+  "god_object": "A file that has absorbed too many responsibilities. Imported by 20+ modules. Begins to act autonomously.",
+  "circular_dependency": "Two or more modules that import each other. Creates a prayer wheel. Logic spins but never exits.",
+  "zombie_process": "A process that should be dead but remains in the process table. Responds to no signal. Refuses to die.",
+  "ghost": "An error that cannot be reproduced. Leaves no logs. Haunts the engineer's dreams.",
+  "dead_code": "Code that no longer runs but remains in the file. Not dead. Sleeping. May awaken.",
+  "race_condition": "Two processes fighting for the same resource. Outcome determined by unseen forces. Unpredictable by design.",
+  "memory_leak": "A demon slowly escaping its cage. Memory consumed but never released. Eventually, the system starves."
+}

@@ -1,0 +1,170 @@
+{
+  "axolotl": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "bee": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "cactus": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "chonk": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "claw": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "crow": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "dragon": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "duck": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "fox": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "ghost": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "goose": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "guardian": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "karen": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "mantis": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "mushroom": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "octopus": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "owl": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "penguin": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "phoenix": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "rabbit": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "robot": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "snake": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "spider": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "turtle": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "void": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "wolf": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-05T12:00:00.000Z",
+    "last_approved": "2026-04-05T12:00:00.000Z"
+  },
+  "navigator": {
+    "version": 2,
+    "status": "approved",
+    "created_at": "2026-04-06T15:00:00.000Z",
+    "last_approved": "2026-04-06T15:00:00.000Z"
+  },
+  "street_builder": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-04-07T21:09:18.580Z",
+    "last_approved": "2026-04-07T21:09:33.889Z"
+  }
+}

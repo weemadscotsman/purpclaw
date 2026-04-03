@@ -1,0 +1,26 @@
+{
+  "services": [
+    {
+      "name": "api",
+      "reachable": true,
+      "latency_ms": 0.003,
+      "error": null
+    },
+    {
+      "name": "db",
+      "reachable": false,
+      "latency_ms": 0.001,
+      "error": null
+    }
+  ],
+  "benchmarks": [
+    {
+      "name": "dummy_bench",
+      "value": 42.0,
+      "unit": "ms",
+      "metadata": {},
+      "timestamp": 1779638804.1329103
+    }
+  ],
+  "saved_at": 1779638804.133419
+}

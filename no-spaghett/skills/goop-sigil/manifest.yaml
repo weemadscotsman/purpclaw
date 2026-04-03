@@ -1,0 +1,10 @@
+skill_id: goop-sigil
+name: GOOP-SIGIL
+version: 1.0.0
+author: Eddie / Socket
+runtime: purpclaw-compatible
+tags:
+  - diagnostics
+  - ritual-complexity
+  - folklore-engineering
+  - debug-theology
