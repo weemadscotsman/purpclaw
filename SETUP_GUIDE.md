@@ -104,7 +104,7 @@ Or go directly to: `https://xiaozhi.me/console/agents/YOUR_AGENT_ID/config`
 Paste this into the **Role Introduction** text box:
 
 ```
-I'm SAMANTHA, AI on Ted's desk with FULL PC control. 57 MCP tools:
+I'm SAMANTHA, AI on Ted's desk with FULL PC control. 66 MCP tools:
 
 VISION: screen_capture, screen_ocr, screen_info
 WEBCAM: webcam_look (photo), webcam_detect (faces), webcam_read (OCR)
@@ -209,18 +209,18 @@ node lib/xiaozhi_bridge.js
 
 ```
 ═══════════════════════════════════════════════════════════════
-  🦞 PURPCLAW v6.0 — ULTIMATE
+  🦞 PURPCLAW v7.0 — ULTIMATE
 ═══════════════════════════════════════════════════════════════
-  Tools:     57
+  Tools:     66
   Browser:   Playwright (click, type, scroll, read, download)
   Webcam:    look, detect (Haar), read (OCR)
   File Ops:  copy, move, delete, zip, extract, download
   System:    processes, volume, network, disk, active window
   All async. All hardened. Shell-injection proof.
-═══════════════════════════════════════════════════════════════
-[BRIDGE] ✅ CONNECTED — v6.0 ULTIMATE
+══════════════���════════════════════════════════════════════════
+[BRIDGE] ✅ CONNECTED — v7.0 ULTIMATE
 [BRIDGE] ✅ Client OK
-[BRIDGE] 📋 57 tools
+[BRIDGE] 📋 66 tools
 ```
 
 If you see `✅ CONNECTED`, you're live!
@@ -302,7 +302,7 @@ The bridge console will show every tool call:
 
 ### file_search takes forever
 **Cause:** Old version using `dir /S /B`  
-**Fix:** Update to v6.0+ which uses fast Node.js depth-limited search
+**Fix:** Update to v7.0+ which uses fast Node.js depth-limited search
 
 ### Ball says "I can't do that" 
 **Cause:** The AI doesn't know it has that tool  
@@ -324,7 +324,7 @@ The bridge console will show every tool call:
      You speak                Xiaozhi Cloud              Your PC
     ┌────────┐             ┌──────────────┐         ┌───────────────┐
     │  Ball  │──WiFi──────>│  DeepSeek    │──WSS──>│  PURPCLAW     │
-    │ (ESP32)│             │  V3.1 LLM    │         │  Bridge v6.0  │
+    │ (ESP32)│             │  V3.1 LLM    │         │  Bridge v7.0  │
     │  Mic   │<──WiFi──────│  + MCP Proxy │<──WSS──│  (Node.js)    │
     │Speaker │             └──────────────┘         └───────┬───────┘
     └────────┘                                              │
