@@ -27,7 +27,7 @@ PURPCLAW is an MCP (Model Context Protocol) bridge that connects a **Xiaozhi AI 
 ```
 ┌──────────────────┐     WebSocket      ┌──────────────────┐
 │   Xiaozhi Ball   │ ◄──────────────── │  xiaozhi_bridge   │
-│  (DeepSeek V3.1) │   MCP Protocol    │     v6.0.0        │
+│  (DeepSeek V3.1) │   MCP Protocol    │     v7.0.0        │
 └──────────────────┘                   └────────┬─────────┘
                                                 │
                               ┌─────────────────┼─────────────────┐
@@ -38,7 +38,7 @@ PURPCLAW is an MCP (Model Context Protocol) bridge that connects a **Xiaozhi AI 
                         └───────────┘   └─────────────┘   └───────────┘
 ```
 
-## 57 MCP Tools
+## 66 MCP Tools
 
 ### Vision (5)
 | Tool | Description |
