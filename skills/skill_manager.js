@@ -39,6 +39,9 @@ module.exports = {
   handler: async (args, context) => {
     const { action, skill_name, code, test_args } = args;
     const { config } = context;
+    if (!config || !config.SKILLS_DIR || typeof config.SKILLS_DIR !== 'string') {
+      throw new Error('Invalid config: SKILLS_DIR is required');
+    }
     const SKILLS_DIR = config.SKILLS_DIR;
     
     if (!fs.existsSync(SKILLS_DIR)) {

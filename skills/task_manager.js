@@ -17,6 +17,9 @@ module.exports = {
   handler: async (args, context) => {
     const { action, task_id, title, notes } = args;
     const { config } = context;
+    if (!config || !config.PURP_DIR || typeof config.PURP_DIR !== 'string') {
+      throw new Error('Invalid config: PURP_DIR is required');
+    }
     const STATE_FILE = path.join(config.PURP_DIR, 'cognitive_tasks.json');
     
     let state = { tasks: {} };
