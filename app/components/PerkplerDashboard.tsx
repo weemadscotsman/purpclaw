@@ -140,13 +140,13 @@ export const PerkplerDashboard: React.FC<PerkplerProps> = ({ className = '' }) =
   const renderPanelContent = (panel: MonitorPanel) => {
     switch (panel.component) {
       case 'agents':
-        return <AgentTower compact />;
+        return <AgentTower />;
       case 'swarm':
-        return <AgentList view="grid" />;
+        return <AgentList />;
       case 'pipeline':
         return (
           <div className="pipeline-view">
-            <LogFeed source="pipeline" />
+            <LogFeed />
           </div>
         );
       case 'voice':
@@ -156,7 +156,7 @@ export const PerkplerDashboard: React.FC<PerkplerProps> = ({ className = '' }) =
           </div>
         );
       case 'logs':
-        return <LogFeed source="all" />;
+        return <LogFeed />;
       case 'shaman':
         return <ShamanDashboard />;
       default:

@@ -69,7 +69,7 @@ const LOG_TYPE_LABELS: Record<string, string> = {
   api_response: 'API',
 };
 
-export export default function LogFeed() {
+export default function LogFeed() {
   const { logs, clearLogs } = useApi();
   const [paused, setPaused] = useState(false);
   const [filter, setFilter] = useState<string | null>(null);

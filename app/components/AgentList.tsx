@@ -177,7 +177,7 @@ function ConnectionStatus({ connected }: { connected: boolean }) {
   );
 }
 
-export export default function AgentList() {
+export default function AgentList() {
   const { agents, divisions, spawnAgent, killAgent, connected } = useApi();
   
   const agentsByDivision = React.useMemo(() => {

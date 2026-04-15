@@ -12,7 +12,7 @@ export default function PipelinePage() {
         <h1 className="text-sm font-bold tracking-[0.3em] text-emerald-400">TASK PIPELINE</h1>
         <p className="text-[10px] text-white/30">Monitor 4 - ASUS Right</p>
       </div>
-      <LogFeed source="pipeline" />
+      <LogFeed />
     </div>
   );
 }

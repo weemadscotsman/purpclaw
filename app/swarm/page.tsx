@@ -12,7 +12,7 @@ export default function SwarmPage() {
         <h1 className="text-sm font-bold tracking-[0.3em] text-cyan-400">SWARM MONITOR</h1>
         <p className="text-[10px] text-white/30">Monitor 3 - DELL Middle</p>
       </div>
-      <AgentList view="grid" />
+      <AgentList />
     </div>
   );
 }

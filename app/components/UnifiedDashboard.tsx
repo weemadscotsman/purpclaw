@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { useApi } from '../hooks/useApi';
-import { AgentList } from './AgentList';
-import { LogFeed } from './LogFeed';
+import AgentList from './AgentList';
+import LogFeed from './LogFeed';
 
 type Tab = 'command' | 'agents' | 'pipeline' | 'system' | 'settings';
 
