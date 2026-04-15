@@ -10,11 +10,34 @@ const EventEmitter = require('events');
 const path = require('path');
 const fs = require('fs');
 const http = require('http');
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 
 const PURP_DIR = path.join(__dirname);
 const SKILLS_DIR = path.join(PURP_DIR, 'skills');
 const AGENT_TOWER_PORT = 7790;
+
+// Detect Kimi Code CLI for local subagent spawning
+let KIMI_CLI_PATH = null;
+try {
+  KIMI_CLI_PATH = execSync('where kimi', { encoding: 'utf8' }).trim().split('\n')[0];
+  console.log(`[TOWER] Kimi Code CLI detected: ${KIMI_CLI_PATH}`);
+} catch (e) {
+  const fallbackPaths = [
+    path.join(process.env.USERPROFILE || 'C:\\Users\\Admin', '.local', 'bin', 'kimi.exe'),
+    path.join(process.env.LOCALAPPDATA || '', 'Programs', 'kimi-cli', 'kimi.exe'),
+    'C:\\Users\\Admin\\.local\\bin\\kimi.exe'
+  ];
+  for (const p of fallbackPaths) {
+    if (fs.existsSync(p)) {
+      KIMI_CLI_PATH = p;
+      console.log(`[TOWER] Kimi Code CLI found at fallback: ${KIMI_CLI_PATH}`);
+      break;
+    }
+  }
+}
+if (!KIMI_CLI_PATH) {
+  console.log('[TOWER] Kimi Code CLI not found - agents will use cloud API or stub fallback');
+}
 
 // Initialize KimiClient for LLM-powered agent execution
 let kimiClient = null;
@@ -205,8 +228,64 @@ async function spawnAgent(agentName, task, options = {}) {
     status: 'working'
   });
 
-  // Execute via LLM if KimiClient is available, otherwise fall back to stub
-  if (kimiClient) {
+  // Execute via Kimi Code CLI if available, otherwise cloud API, otherwise stub
+  if (KIMI_CLI_PATH) {
+    // Primary: spawn local Kimi Code CLI subagent
+    // Use a concise prompt for CLI to avoid hanging on massive persona docs
+    const concisePrompt = buildAgentPrompt(agentName, task);
+    const cliPrompt = sanitizeForCli(`${concisePrompt}\n\nTASK: ${task}`);
+    const args = [
+      '--print',
+      '--yolo',
+      '--work-dir', agentWorkDir,
+      '--prompt', cliPrompt
+    ];
+    if (options.agentFile) {
+      args.push('--agent-file', options.agentFile);
+    }
+    console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} spawning Kimi CLI subagent...`);
+    const child = spawn(KIMI_CLI_PATH, args, {
+      cwd: agentWorkDir,
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, KIMI_WORK_DIR: agentWorkDir, PYTHONIOENCODING: 'utf-8' }
+    });
+
+    activeAgent.pid = child.pid;
+    fs.writeFileSync(pidFile, child.pid.toString(), 'utf8');
+
+    let rawOutput = '';
+    child.stdout.on('data', (data) => {
+      const text = data.toString();
+      rawOutput += text;
+      fs.appendFileSync(logFile, `[${new Date().toISOString()}] stdout: ${text}`);
+      broadcast({ type: 'agent_output', agentId, agentName, emoji: agentInfo.emoji, output: text, timestamp: new Date().toISOString() });
+    });
+    child.stderr.on('data', (data) => {
+      const text = data.toString();
+      rawOutput += text;
+      fs.appendFileSync(logFile, `[${new Date().toISOString()}] stderr: ${text}`);
+      broadcast({ type: 'agent_output', agentId, agentName, emoji: agentInfo.emoji, output: `[ERR] ${text}`, timestamp: new Date().toISOString() });
+    });
+    child.on('close', (code) => {
+      // Extract actual response from --print output by parsing TextPart text fields
+      const textParts = [];
+      const textPartRegex = /TextPart\([^)]*text=['"]([\s\S]*?)['"][^)]*\)/g;
+      let m;
+      while ((m = textPartRegex.exec(rawOutput)) !== null) {
+        // unescape escaped quotes/newlines if needed
+        textParts.push(m[1].replace(/\\n/g, '\n').replace(/\\'/g, "'").replace(/\\"/g, '"'));
+      }
+      const output = textParts.join('\n').trim() || rawOutput.split('\n').filter(l => !l.startsWith('To resume this session:')).join('\n').trim();
+      fs.appendFileSync(logFile, `[${new Date().toISOString()}] EXIT: code ${code}\n`);
+      broadcast({ type: 'agent_complete', agentId, agentName, emoji: agentInfo.emoji, code, output, timestamp: new Date().toISOString() });
+      activeAgent.status = code === 0 ? 'completed' : 'error';
+      activeAgent.result = output;
+      console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} Kimi CLI subagent completed (${agentId}) code=${code}`);
+    });
+
+    console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} spawned Kimi CLI (${agentId}) pid=${child.pid} task: ${task.substring(0, 50)}...`);
+  } else if (kimiClient) {
+    // Secondary: cloud API fallback
     try {
       console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} executing via KimiClient...`);
       const messages = [
@@ -220,10 +299,7 @@ async function spawnAgent(agentName, task, options = {}) {
       });
       const result = response.choices?.[0]?.message?.content || 'No response content';
 
-      // Write result to log
       fs.appendFileSync(logFile, `[${new Date().toISOString()}] LLM RESPONSE:\n${result}\n`);
-
-      // Broadcast the result
       broadcast({ type: 'agent_output', agentId, agentName, emoji: agentInfo.emoji, output: result, timestamp: new Date().toISOString() });
       broadcast({ type: 'agent_complete', agentId, agentName, emoji: agentInfo.emoji, code: 0, output: result, timestamp: new Date().toISOString() });
 
@@ -239,34 +315,83 @@ async function spawnAgent(agentName, task, options = {}) {
       activeAgent.status = 'error';
     }
   } else {
-    // Fallback: spawn child process stub
-    const child = spawn('cmd.exe', ['/c', `echo [${agentInfo.emoji} ${agentName}] Working on: ${task.substring(0, 50)}... && timeout /t 3 /nobreak >nul && echo [${agentInfo.emoji} ${agentName}] Completed task && echo [${agentInfo.emoji} ${agentName}] Result: Task executed successfully`], {
+    // Final fallback: try to locate kimi.exe dynamically, else run a basic Node agent stub
+    let finalCmd = null;
+    let finalArgs = [];
+    try {
+      const whereResult = require('child_process').execSync('where kimi.exe 2>nul || where kimi 2>nul', { encoding: 'utf8', timeout: 3000 }).trim().split('\n')[0];
+      if (whereResult) finalCmd = whereResult;
+    } catch (e) {}
+    if (!finalCmd) {
+      const hardcoded = [
+        path.join(process.env.USERPROFILE || 'C:\\Users\\Admin', '.local', 'bin', 'kimi.exe'),
+        'C:\\Users\\Admin\\.local\\bin\\kimi.exe',
+        path.join(process.env.LOCALAPPDATA || '', 'Microsoft', 'WindowsApps', 'kimi.exe')
+      ];
+      for (const p of hardcoded) { if (p && fs.existsSync(p)) { finalCmd = p; break; } }
+    }
+
+    if (finalCmd) {
+      const cliPrompt = sanitizeForCli(`${prompt}\n\nTASK: ${task}`);
+      finalArgs = ['--print', '--yolo', '--work-dir', agentWorkDir, '--prompt', cliPrompt];
+      if (options.agentFile) finalArgs.push('--agent-file', options.agentFile);
+      console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} spawning Kimi CLI (dynamic locate) (${agentId})...`);
+    } else {
+      // No Kimi CLI anywhere — run a basic Node.js agent stub that at least scans the work dir
+      finalCmd = process.execPath;
+      const stubScript = `
+const fs = require('fs');
+const path = require('path');
+const dir = process.argv[2] || process.cwd();
+console.log('[${agentInfo.emoji} ${agentName}] Agent stub running in: ' + dir);
+console.log('[${agentInfo.emoji} ${agentName}] Task: ${task.replace(/'/g, "\\'")}');
+try {
+  const files = fs.readdirSync(dir).slice(0, 20);
+  console.log('[${agentInfo.emoji} ${agentName}] Files here: ' + files.join(', '));
+} catch (e) {
+  console.log('[${agentInfo.emoji} ${agentName}] Error reading dir: ' + e.message);
+}
+console.log('[${agentInfo.emoji} ${agentName}] Stub complete.');
+`;
+      finalArgs = ['-e', stubScript, agentWorkDir];
+      console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} spawned Node.js stub fallback (${agentId}) — Kimi CLI not found`);
+    }
+
+    const child = spawn(finalCmd, finalArgs, {
       cwd: agentWorkDir,
-      stdio: ['pipe', 'pipe', 'pipe']
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, KIMI_WORK_DIR: agentWorkDir, PYTHONIOENCODING: 'utf-8' }
     });
 
     activeAgent.pid = child.pid;
     fs.writeFileSync(pidFile, child.pid.toString(), 'utf8');
 
-    let output = '';
+    let rawOutput = '';
     child.stdout.on('data', (data) => {
       const text = data.toString();
-      output += text;
+      rawOutput += text;
       fs.appendFileSync(logFile, `[${new Date().toISOString()}] stdout: ${text}`);
       broadcast({ type: 'agent_output', agentId, agentName, emoji: agentInfo.emoji, output: text, timestamp: new Date().toISOString() });
     });
     child.stderr.on('data', (data) => {
       const text = data.toString();
-      output += text;
+      rawOutput += text;
       fs.appendFileSync(logFile, `[${new Date().toISOString()}] stderr: ${text}`);
       broadcast({ type: 'agent_output', agentId, agentName, emoji: agentInfo.emoji, output: `[ERR] ${text}`, timestamp: new Date().toISOString() });
     });
     child.on('close', (code) => {
+      const textParts = [];
+      const textPartRegex = /TextPart\([^)]*text=['"]([\s\S]*?)['"][^)]*\)/g;
+      let m;
+      while ((m = textPartRegex.exec(rawOutput)) !== null) {
+        textParts.push(m[1].replace(/\\n/g, '\n').replace(/\\'/g, "'").replace(/\\"/g, '"'));
+      }
+      const output = textParts.join('\n').trim() || rawOutput.split('\n').filter(l => !l.startsWith('To resume this session:')).join('\n').trim();
       fs.appendFileSync(logFile, `[${new Date().toISOString()}] EXIT: code ${code}\n`);
       broadcast({ type: 'agent_complete', agentId, agentName, emoji: agentInfo.emoji, code, output, timestamp: new Date().toISOString() });
+      activeAgent.status = code === 0 ? 'completed' : 'error';
+      activeAgent.result = output;
     });
-
-    console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} spawned (${agentId}) pid=${child.pid} task: ${task.substring(0, 50)}...`);
   }
 
   // Notify EventBus
@@ -277,6 +402,11 @@ async function spawnAgent(agentName, task, options = {}) {
   ebReq.end();
 
   return { success: true, agent: activeAgent };
+}
+
+function sanitizeForCli(text) {
+  // Remove supplementary-plane characters (most emojis) that crash Windows console
+  return text.replace(/[\u{10000}-\u{10FFFF}]/gu, '');
 }
 
 function buildAgentPrompt(agentName, task) {

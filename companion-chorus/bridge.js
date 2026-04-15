@@ -7,6 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 const http = require('http');
+const { spawn, execSync } = require('child_process');
 const EventSource = require('eventsource');
 
 const CONTEXT_FILE = path.join(process.env.HOME || process.env.USERPROFILE || 'C:\\Users\\Admin', '.companion-context.json');
@@ -16,6 +17,28 @@ const CONFIG_DIR = path.join(process.env.HOME || process.env.USERPROFILE || 'C:\
 const { rollCompanion, displayCompanion, getSpeciesName, getSpeciesEmoji } = require('./src/gacha');
 const { speak, announceCompanion } = require('./src/voice');
 const { generateCritique, generateResponse } = require('./src/minimax');
+
+// Detect Kimi Code CLI
+let KIMI_CLI_PATH = null;
+try {
+  KIMI_CLI_PATH = execSync('where kimi', { encoding: 'utf8' }).trim().split('\n')[0];
+  console.log(`[CHORUS] Kimi Code CLI detected: ${KIMI_CLI_PATH}`);
+} catch (e) {
+  const fallbackPaths = [
+    path.join(process.env.USERPROFILE || 'C:\\Users\\Admin', '.local', 'bin', 'kimi.exe'),
+    'C:\\Users\\Admin\\.local\\bin\\kimi.exe'
+  ];
+  for (const p of fallbackPaths) {
+    if (fs.existsSync(p)) {
+      KIMI_CLI_PATH = p;
+      console.log(`[CHORUS] Kimi Code CLI found at fallback: ${KIMI_CLI_PATH}`);
+      break;
+    }
+  }
+}
+if (!KIMI_CLI_PATH) {
+  console.log('[CHORUS] Kimi Code CLI not found - using MiniMax API fallback');
+}
 
 // Companion roster (same as main.js)
 const PERSONALITY_MAP = {
@@ -105,36 +128,83 @@ function react(companion, eventType, agentName, task) {
 
   const prompts = {
     spawned: [
-      `${agentName} has been summoned. Interesting...`,
-      `A new agent joins the swarm.`,
-      `Watch ${agentName} closely...`,
+      `${agentName} has been summoned. React as your character would.`,
+      `A new agent joins the swarm. Give your take.`,
+      `Watch ${agentName} closely... share your thoughts.`,
     ],
     completed: [
-      `${agentName} finished their task.`,
-      `The swarm grows stronger.`,
-      `Task complete. For now.`,
+      `${agentName} finished their task. React in character.`,
+      `The swarm grows stronger. What's your reaction?`,
+      `Task complete. For now. Say something fitting.`,
     ],
     failed: [
-      `${agentName} has fallen.`,
-      `Failure detected in ${agentName}.`,
-      `The swarm falters...`,
+      `${agentName} has fallen. React in character.`,
+      `Failure detected in ${agentName}. What's your take?`,
+      `The swarm falters... say something fitting.`,
     ],
   };
 
-  const base = prompts[eventType] || ['Something happened.'];
+  const base = prompts[eventType] || ['Something happened. React in character.'];
   const context = `Agent: ${agentName}\nTask: ${task || 'Unknown'}\nEvent: ${eventType}`;
+  const userPrompt = base[Math.floor(Math.random() * base.length)] + '\n\n' + context;
 
-  generateResponse(companion.def.id, base[Math.floor(Math.random() * base.length)] + '\n\n' + context, (err, response) => {
-    if (err || !response) {
-      response = base[Math.floor(Math.random() * base.length)];
-    }
+  const displayResponse = (response) => {
     const color = companion.bones.rarity === 'legendary' ? '\x1b[1;33m' :
                   companion.bones.rarity === 'epic' ? '\x1b[1;35m' :
                   companion.bones.rarity === 'rare' ? '\x1b[1;34m' :
                   companion.bones.rarity === 'uncommon' ? '\x1b[1;32m' : '\x1b[1;36m';
     console.log(`\n${color}[CHORUS] ${companion.def.emoji} ${companion.def.name}:\x1b[0m "${response}"`);
     speak(companion.def.id, response, companion.bones.rarity);
-  });
+  };
+
+  // Build system prompt from companion personality (strip emojis to avoid Windows console codec errors)
+  const sanitizeForCli = (text) => text.replace(/[\u{10000}-\u{10FFFF}]/gu, '');
+  const systemPrompt = sanitizeForCli(`You are ${companion.def.emoji} ${companion.def.name}, a coding companion with a ${companion.def.personality} personality.
+Catchphrase: "${companion.def.catchphrase}"
+Stats: CHAOS ${companion.def.chaos}, SNARK ${companion.def.snark}, WISDOM ${companion.def.wisdom}, PATIENCE ${companion.def.patience}
+
+Respond VERY SHORT — 1 sentence max, in character. Never break character.`);
+  const sanitizedUserPrompt = sanitizeForCli(userPrompt);
+
+  if (KIMI_CLI_PATH) {
+    // Spawn Kimi CLI subagent for the reaction
+    const cliPrompt = `${systemPrompt}\n\n${sanitizedUserPrompt}`;
+    const child = spawn(KIMI_CLI_PATH, [
+      '--print',
+      '--yolo',
+      '--prompt', cliPrompt
+    ], {
+      stdio: ['pipe', 'pipe', 'pipe'],
+      env: { ...process.env, PYTHONIOENCODING: 'utf-8' },
+      timeout: 45000
+    });
+
+    let rawOutput = '';
+    child.stdout.on('data', (data) => { rawOutput += data.toString(); });
+    child.stderr.on('data', (data) => { /* ignore stderr for brevity */ });
+    child.on('close', (code) => {
+      // Parse TextPart text fields from --print output
+      const textParts = [];
+      const textPartRegex = /TextPart\([^)]*text=['"]([\s\S]*?)['"][^)]*\)/g;
+      let m;
+      while ((m = textPartRegex.exec(rawOutput)) !== null) {
+        textParts.push(m[1].replace(/\\n/g, '\n').replace(/\\'/g, "'").replace(/\\"/g, '"'));
+      }
+      const output = textParts.join('\n').trim() || rawOutput.split('\n').filter(l => !l.startsWith('To resume this session:')).join('\n').trim();
+      const fallback = base[Math.floor(Math.random() * base.length)];
+      const cleanedFallback = fallback.replace(/React as your character would\.|Give your take\.|share your thoughts\.|React in character\.|What's your reaction\?|Say something fitting\./g, '...').trim();
+      const response = output || cleanedFallback;
+      displayResponse(response);
+    });
+  } else {
+    // Fallback to MiniMax API
+    generateResponse(companion.def.id, userPrompt, (err, response) => {
+      if (err || !response) {
+        response = base[Math.floor(Math.random() * base.length)].replace('React as your character would.', '...');
+      }
+      displayResponse(response);
+    });
+  }
 }
 
 function handleEvent(event) {
