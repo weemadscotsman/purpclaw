@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
+import DivisionActivityPanel from './components/DivisionActivityPanel';
+import { useAgentEvents } from './hooks/useAgentEvents';
 
 // ============ TYPES ============
 interface ServiceHealth {
@@ -57,23 +59,6 @@ interface TowerStatus {
   registeredAgents: RegisteredAgent[];
 }
 
-interface LogEntry {
-  id: number;
-  time: string;
-  type: 'event' | 'command' | 'response' | 'error' | 'agent' | 'system' | 'chorus';
-  source: string;
-  message: string;
-  metadata?: Record<string, any>;
-}
-
-interface ChorusLine {
-  id: string;
-  time: string;
-  companion: string;
-  emoji: string;
-  message: string;
-}
-
 // ============ SERVICE CONFIG ============
 const SERVICE_CONFIG = [
   { name: 'API Gateway', port: 7780, path: '/api/health', key: 'purpclaw-api' },
@@ -99,8 +84,8 @@ function formatUptime(seconds: number): string {
   return `${m}m`;
 }
 
-function formatTime(date = new Date()): string {
-  return date.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+function formatTime() {
+  return new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 // ============ MAIN COMPONENT ============
@@ -111,130 +96,22 @@ export default function MissionControl() {
   const [activeAgents, setActiveAgents] = useState<ActiveAgent[]>([]);
   const [registeredAgents, setRegisteredAgents] = useState<RegisteredAgent[]>([]);
   const [divisions, setDivisions] = useState<Record<string, Division>>({});
-  const [logs, setLogs] = useState<LogEntry[]>([]);
-  const [chorus, setChorus] = useState<ChorusLine[]>([]);
-  const [sseConnected, setSseConnected] = useState(false);
   const [selectedDivision, setSelectedDivision] = useState<string | null>(null);
   const [selectedAgent, setSelectedAgent] = useState<ActiveAgent | RegisteredAgent | null>(null);
   const [command, setCommand] = useState('');
   const [metrics, setMetrics] = useState({ eventsPerSec: 0, memory: '0MB', teams: 0 });
+  const [localTime, setLocalTime] = useState(formatTime());
 
-  const logIdRef = useRef(0);
+  // Real-time events hook
+  const { logs, chorus, liveOutputs, towerConnected, eventBusConnected } = useAgentEvents();
 
-  const addLog = useCallback((type: LogEntry['type'], source: string, message: string, metadata?: Record<string, any>) => {
-    setLogs(prev => [{
-      id: logIdRef.current++,
-      time: formatTime(),
-      type,
-      source,
-      message,
-      metadata,
-    }, ...prev.slice(0, 499)]);
+  // Clock tick
+  useEffect(() => {
+    const t = setInterval(() => setLocalTime(formatTime()), 1000);
+    return () => clearInterval(t);
   }, []);
 
-  const addChorus = useCallback((companion: string, emoji: string, message: string) => {
-    setChorus(prev => [{
-      id: Date.now().toString() + Math.random().toString(36).substring(2),
-      time: formatTime(),
-      companion,
-      emoji,
-      message,
-    }, ...prev.slice(0, 99)]);
-  }, []);
-
-  // ============ SSE: Tower Stream ============
-  useEffect(() => {
-    let es: EventSource | null = null;
-    let retryCount = 0;
-
-    const connect = () => {
-      try {
-        es = new EventSource('http://localhost:7790/tower/stream');
-
-        es.onopen = () => {
-          setSseConnected(true);
-          retryCount = 0;
-          addLog('system', 'SSE', 'Tower stream connected');
-        };
-
-        es.onmessage = (e) => {
-          try {
-            const msg = JSON.parse(e.data);
-            const data = msg.data || msg;
-            const eventType = msg.type || data.type;
-
-            if (eventType === 'agent_spawned' || eventType === 'agent_spawn') {
-              addLog('agent', 'TOWER', `${data.name || data.agentName} spawned (PID ${data.pid || 'N/A'})`, data);
-              refreshTower();
-            } else if (eventType === 'agent_complete') {
-              addLog('agent', 'TOWER', `${data.agentName} completed (code ${data.code})`, data);
-              refreshTower();
-            } else if (eventType === 'agent_output') {
-              const text = (data.output || '').toString().trim();
-              if (text) addLog('event', data.agentName || 'AGENT', text.substring(0, 200), data);
-            } else if (eventType === 'agent_error') {
-              addLog('error', data.agentName || 'AGENT', data.output || 'Agent error', data);
-            } else if (eventType === 'broadcast' && data.topic?.includes('chorus')) {
-              // Chorus events via EventBus bridge may come here
-            }
-          } catch {}
-        };
-
-        es.onerror = () => {
-          setSseConnected(false);
-          es?.close();
-          retryCount++;
-          if (retryCount < 10) {
-            setTimeout(connect, Math.min(2000 * retryCount, 10000));
-          }
-        };
-      } catch {}
-    };
-
-    connect();
-    return () => es?.close();
-  }, [addLog]);
-
-  // ============ SSE: EventBus (for chorus + system events) ============
-  useEffect(() => {
-    let es: EventSource | null = null;
-    let retryCount = 0;
-
-    const connect = () => {
-      try {
-        es = new EventSource('http://localhost:7782/stream');
-
-        es.onmessage = (e) => {
-          try {
-            const data = JSON.parse(e.data);
-            if (data.topic?.includes('chorus') || data.topic?.includes('companion')) {
-              const msg = data.message || data.payload || data;
-              const companion = msg.companion || msg.name || 'Companion';
-              const emoji = msg.emoji || '🎭';
-              const text = msg.response || msg.message || msg.text || JSON.stringify(msg);
-              if (text && text !== '[object Object]') {
-                addChorus(companion, emoji, text.toString().substring(0, 300));
-                addLog('chorus', companion, text.toString().substring(0, 200), data);
-              }
-            } else if (data.topic?.includes('agent')) {
-              addLog('event', 'EVENTBUS', `${data.topic}`, data);
-            }
-          } catch {}
-        };
-
-        es.onerror = () => {
-          es?.close();
-          retryCount++;
-          if (retryCount < 5) setTimeout(connect, 3000 * retryCount);
-        };
-      } catch {}
-    };
-
-    connect();
-    return () => es?.close();
-  }, [addLog, addChorus]);
-
-  // ============ Polling ============
+  // Polling for structural data
   const refreshTower = useCallback(async () => {
     try {
       const res = await fetch('http://localhost:7790/tower/status', { signal: AbortSignal.timeout(3000) });
@@ -321,59 +198,72 @@ export default function MissionControl() {
     return () => clearInterval(interval);
   }, [refreshTower]);
 
-  // ============ COMMANDS ============
+  // Merge polled active agents with live outputs for real-time updates
+  const mergedActiveAgents = useMemo(() => {
+    const map = new Map<string, ActiveAgent>();
+    for (const a of activeAgents) map.set(a.id, { ...a });
+    for (const live of liveOutputs) {
+      const existing = map.get(live.agentId);
+      if (existing) {
+        existing.status = live.status;
+        if (live.output && !existing.task?.includes(live.output.substring(0, 40))) {
+          existing.task = live.output.substring(0, 120);
+        }
+      } else if (live.status === 'working') {
+        map.set(live.agentId, {
+          id: live.agentId,
+          name: live.agentName,
+          emoji: live.emoji,
+          division: live.division,
+          role: 'Agent',
+          tier: 1,
+          status: live.status,
+          task: live.output.substring(0, 120) || 'Running...',
+          startTime: new Date().toISOString(),
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [activeAgents, liveOutputs]);
+
+  // Commands
   const sendCommand = useCallback(async () => {
     if (!command.trim()) return;
     const text = command;
     setCommand('');
-    addLog('command', 'USER', text);
-
     try {
       const res = await fetch('http://localhost:7780/api/command', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command: text }),
       });
-      const data = await res.json();
-      addLog('response', 'API', JSON.stringify(data).substring(0, 200), data);
-    } catch (e: any) {
-      addLog('error', 'NET', e.message);
-    }
-  }, [command, addLog]);
+      await res.json();
+    } catch {}
+  }, [command]);
 
   const spawnAgent = useCallback(async (agentName: string) => {
-    addLog('agent', 'SPAWN', `Spawning ${agentName}...`);
     try {
       const res = await fetch('http://localhost:7790/api/spawn', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agentName, task: `Manual spawn: ${agentName}` }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        addLog('agent', 'SPAWN', `${agentName} spawned: ${data.agent?.id}`, data);
-      } else {
-        addLog('error', 'SPAWN', `Failed to spawn ${agentName}: ${res.status}`);
-      }
-    } catch (e: any) {
-      addLog('error', 'SPAWN', e.message);
-    }
+      await res.json();
+    } catch {}
     setTimeout(refreshTower, 500);
-  }, [addLog, refreshTower]);
+  }, [refreshTower]);
 
-  // ============ DERIVED STATE ============
+  // Derived state
   const healthyCount = services.filter(s => s.status === 'online').length;
   const totalEvents = useMemo(() => services.find(s => s.port === 7782)?.details?.eventCount || 0, [services]);
   const totalSubscribers = useMemo(() => services.find(s => s.port === 7782)?.details?.subscriberCount || 0, [services]);
-
   const divisionList = useMemo(() => Object.values(divisions).sort((a, b) => a.tier - b.tier), [divisions]);
-
   const filteredAgents = useMemo(() => {
     if (!selectedDivision) return registeredAgents;
     return registeredAgents.filter(a => a.division === selectedDivision);
   }, [registeredAgents, selectedDivision]);
 
-  // ============ RENDER HELPERS ============
+  // Render helpers
   const statusDot = (status: string, size = 'w-2 h-2') => {
     const color = status === 'online' || status === 'healthy' || status === 'working' ? '#34d399' :
                   status === 'degraded' || status === 'idle' ? '#fbbf24' : '#f87171';
@@ -416,7 +306,7 @@ export default function MissionControl() {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-white/30">AGENTS</span>
-              <span className="text-purple-400 font-medium">{activeAgents.length}/{registeredAgents.length}</span>
+              <span className="text-purple-400 font-medium">{mergedActiveAgents.length}/{registeredAgents.length}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-white/30">EVENTS</span>
@@ -429,11 +319,15 @@ export default function MissionControl() {
           </div>
           <div className="w-px h-4 bg-white/10" />
           <div className="flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-full ${sseConnected ? 'bg-cyan-400 animate-pulse' : 'bg-amber-400'}`} />
-            <span className="text-[10px] text-white/40 tracking-widest">{sseConnected ? 'LIVE' : 'RECONNECTING'}</span>
+            <div className={`w-1.5 h-1.5 rounded-full ${towerConnected ? 'bg-cyan-400 animate-pulse' : 'bg-amber-400'}`} />
+            <span className="text-[10px] text-white/40 tracking-widest">{towerConnected ? 'TOWER' : 'TOWER↓'}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className={`w-1.5 h-1.5 rounded-full ${eventBusConnected ? 'bg-cyan-400 animate-pulse' : 'bg-amber-400'}`} />
+            <span className="text-[10px] text-white/40 tracking-widest">{eventBusConnected ? 'BUS' : 'BUS↓'}</span>
           </div>
           <div className="w-px h-4 bg-white/10" />
-          <span className="text-[10px] text-white/20">{formatTime()}</span>
+          <span className="text-[10px] text-white/20">{localTime}</span>
         </div>
       </header>
 
@@ -447,34 +341,13 @@ export default function MissionControl() {
             <span className="text-[10px] text-white/20">{divisionList.length} total</span>
           </div>
 
-          <div className="flex-1 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col">
-            <div className="flex-1 overflow-y-auto p-2 space-y-1">
-              {divisionList.map(div => {
-                const isSelected = selectedDivision === div.id;
-                return (
-                  <button
-                    key={div.id}
-                    onClick={() => setSelectedDivision(isSelected ? null : div.id)}
-                    className={`w-full text-left rounded-lg p-2 transition-all border ${isSelected ? 'bg-white/5 border-white/10' : 'border-transparent hover:bg-white/[0.02]'}`}
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: div.color, boxShadow: `0 0 6px ${div.color}` }} />
-                        <span className="text-xs font-medium text-white/80">{div.id}</span>
-                      </div>
-                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-white/40">T{div.tier}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-white/30">{div.totalAgents} agents</span>
-                      <span className={div.activeCount > 0 ? 'text-emerald-400' : 'text-white/20'}>
-                        {div.activeCount > 0 ? `${div.activeCount} active` : 'idle'}
-                      </span>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <DivisionActivityPanel
+            divisions={divisions}
+            activeAgents={mergedActiveAgents}
+            logs={logs}
+            selectedDivision={selectedDivision}
+            onSelectDivision={setSelectedDivision}
+          />
 
           <div className="flex items-center justify-between mt-1">
             <h2 className="text-[10px] uppercase tracking-[0.25em] text-white/30">
@@ -486,7 +359,7 @@ export default function MissionControl() {
           <div className="flex-1 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col">
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
               {filteredAgents.map(agent => {
-                const live = activeAgents.find(a => a.name === agent.name);
+                const live = mergedActiveAgents.find(a => a.name === agent.name);
                 const isActive = !!live;
                 return (
                   <button
@@ -509,7 +382,7 @@ export default function MissionControl() {
           </div>
         </div>
 
-        {/* CENTER COLUMN: Active Agents + Service Health + Command */}
+        {/* CENTER COLUMN: Active Agents + Live Outputs + Service Health + Command */}
         <div className="col-span-6 flex flex-col gap-3 h-full overflow-hidden">
           {/* Metrics Bar */}
           <div className="grid grid-cols-4 gap-3">
@@ -519,7 +392,7 @@ export default function MissionControl() {
             </div>
             <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
               <div className="text-[9px] uppercase tracking-wider text-white/30 mb-1">Active Agents</div>
-              <div className="text-xl font-light text-purple-400">{activeAgents.length}</div>
+              <div className="text-xl font-light text-purple-400">{mergedActiveAgents.length}</div>
             </div>
             <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
               <div className="text-[9px] uppercase tracking-wider text-white/30 mb-1">Subscribers</div>
@@ -531,21 +404,21 @@ export default function MissionControl() {
             </div>
           </div>
 
-          {/* Active Agents */}
+          {/* Active Operations */}
           <div className="flex-1 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col min-h-0">
             <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between">
               <h2 className="text-[10px] uppercase tracking-[0.25em] text-white/30">Active Operations</h2>
-              <span className="text-[10px] text-white/20">{activeAgents.length} running</span>
+              <span className="text-[10px] text-white/20">{mergedActiveAgents.length} running</span>
             </div>
             <div className="flex-1 overflow-y-auto p-3">
-              {activeAgents.length === 0 ? (
+              {mergedActiveAgents.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-white/20 text-xs gap-2">
                   <span className="text-2xl opacity-50">◈</span>
                   <span>No active operations</span>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
-                  {activeAgents.map(agent => (
+                  {mergedActiveAgents.map(agent => (
                     <div key={agent.id} className="rounded-lg border border-white/5 bg-white/[0.02] p-3 hover:border-white/10 transition-all">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -567,8 +440,43 @@ export default function MissionControl() {
             </div>
           </div>
 
+          {/* Live Output Stream */}
+          <div className="h-56 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col min-h-0">
+            <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between">
+              <h2 className="text-[10px] uppercase tracking-[0.25em] text-white/30">Live Agent Output</h2>
+              <span className="text-[10px] text-white/20">{liveOutputs.length} streams</span>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2 space-y-2">
+              {liveOutputs.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-white/20 text-xs gap-2">
+                  <span className="text-2xl opacity-50">◉</span>
+                  <span>Waiting for agent output...</span>
+                </div>
+              ) : (
+                liveOutputs.map(live => (
+                  <div key={live.agentId} className={`rounded-lg border p-2 transition-all ${live.status === 'error' ? 'border-rose-500/20 bg-rose-500/5' : live.status === 'completed' ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-cyan-500/20 bg-cyan-500/5'}`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{live.emoji}</span>
+                        <span className="text-xs font-medium text-white/80">{live.agentName}</span>
+                        <span className="text-[9px] text-white/30">{live.division}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {live.status === 'working' && <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />}
+                        <span className={`text-[9px] uppercase ${live.status === 'error' ? 'text-rose-400' : live.status === 'completed' ? 'text-emerald-400' : 'text-cyan-400'}`}>{live.status}</span>
+                      </div>
+                    </div>
+                    <div className="text-[10px] text-white/60 font-mono whitespace-pre-wrap leading-snug max-h-24 overflow-y-auto">
+                      {live.output || '...'}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
           {/* Service Health */}
-          <div className="h-48 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col">
+          <div className="h-40 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col">
             <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between">
               <h2 className="text-[10px] uppercase tracking-[0.25em] text-white/30">System Services</h2>
               <span className="text-[10px] text-white/20">{healthyCount}/{services.length} healthy</span>
@@ -602,7 +510,7 @@ export default function MissionControl() {
           {/* Command Input */}
           <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
             <div className="flex items-center gap-3">
-              <span className="text-emerald-400 font-bold">❯</span>
+              <span className="text-emerald-400 font-bold">{'>'}</span>
               <input
                 type="text"
                 value={command}
@@ -632,7 +540,7 @@ export default function MissionControl() {
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               {chorus.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-white/20 text-xs gap-2">
-                  <span className="text-2xl opacity-50">🎭</span>
+                  <span className="text-2xl opacity-50">{'🎭'}</span>
                   <span>Chorus quiet...</span>
                 </div>
               ) : (
@@ -641,7 +549,7 @@ export default function MissionControl() {
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm">{line.emoji}</span>
                       <span className="text-[10px] font-medium text-white/60">{line.companion}</span>
-                      <span className="text-[9px] text-white/20 ml-auto">{line.time}</span>
+                      <span className="text-[9px] text-white/20 ml-auto">{line.timestamp}</span>
                     </div>
                     <div className="text-[11px] text-white/80 leading-snug">{line.message}</div>
                   </div>
@@ -654,25 +562,26 @@ export default function MissionControl() {
           <div className="flex-1 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col min-h-0">
             <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between">
               <h2 className="text-[10px] uppercase tracking-[0.25em] text-white/30">Event Stream</h2>
-              <button onClick={() => setLogs([])} className="text-[10px] text-white/20 hover:text-white/40">Clear</button>
+              <span className="text-[10px] text-white/20">{logs.length}</span>
             </div>
             <div className="flex-1 overflow-y-auto p-2">
               <div className="space-y-0.5">
                 {logs.map(log => {
                   const typeColors: Record<string, string> = {
-                    event: '#38bdf8',
+                    info: '#38bdf8',
                     command: '#f472b6',
                     response: '#34d399',
                     error: '#f87171',
                     agent: '#fbbf24',
                     system: '#a78bfa',
                     chorus: '#e879f9',
+                    warn: '#fbbf24',
                   };
-                  const color = typeColors[log.type] || '#6b7280';
+                  const color = typeColors[log.level] || '#6b7280';
                   return (
                     <div key={log.id} className="flex items-start gap-2 px-2 py-1 rounded hover:bg-white/[0.02]">
-                      <span className="text-[9px] text-white/20 font-mono shrink-0 w-14">{log.time}</span>
-                      <span className="text-[9px] font-medium uppercase tracking-wider shrink-0 w-12" style={{ color }}>{log.type}</span>
+                      <span className="text-[9px] text-white/20 font-mono shrink-0 w-14">{log.timestamp}</span>
+                      <span className="text-[9px] font-medium uppercase tracking-wider shrink-0 w-12" style={{ color }}>{log.level}</span>
                       <span className="text-[9px] text-white/30 shrink-0 w-16 truncate">{log.source}</span>
                       <span className="text-[10px] text-white/60 font-mono flex-1 truncate">{log.message}</span>
                     </div>

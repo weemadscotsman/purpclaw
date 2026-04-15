@@ -1,5 +1,5 @@
-[2026-04-15T18:33:39.878Z] TASK:
-Dashboard real-time test
+[2026-04-15T18:34:22.466Z] TASK:
+Refactor app/page.tsx Mission Control to use useAgentEvents hook for real-time updates. Replace polling-only activeAgents with live event-driven agent state. Ensure all 9 divisions and all registered agents are visible with live status dots. Add a live swarm activity panel showing agent outputs streaming in real time.
 
 AGENT: dragon
 DIVISION: ENGINEERING

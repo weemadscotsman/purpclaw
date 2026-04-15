@@ -1,0 +1,6 @@
+[2026-04-15T18:34:18.562Z] TASK:
+Create a reusable useAgentEvents React hook in app/hooks/useAgentEvents.ts that connects to EventBus SSE (localhost:7782/stream) and listens to agent.spawned, agent.complete, agent_output, agent_error topics. It should return { events, agents, logs, chorus, connected } with proper typing and auto-reconnect logic.
+
+AGENT: owl
+DIVISION: SECURITY
+ROLE: Security Auditor
