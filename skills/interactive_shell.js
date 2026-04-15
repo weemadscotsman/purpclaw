@@ -81,16 +81,16 @@ function buildShellCmd(shell_type) {
 
 module.exports = {
   name: 'interactive_shell',
-  description: 'Launch and interact with persistent shells (Powershell, Node, Python, Bash). Sessions survive bridge reconnects. Max 3 sessions.',
+  description: 'Launch and interact with persistent shells (Powershell, Node, Python, Bash). Sessions survive bridge reconnects. Max 5 sessions. IMPORTANT: session_id is REQUIRED for start/send/read/stop actions. Only action=list works without session_id.',
   inputSchema: {
     type: 'object',
     properties: {
       action: { type: 'string', enum: ['start', 'send', 'read', 'stop', 'list'] },
-      session_id: { type: 'string', description: 'Unique session ID' },
-      shell_type: { type: 'string', enum: ['powershell', 'cmd', 'node', 'python'], description: 'Only needed on start' },
+      session_id: { type: 'string', description: 'REQUIRED (except for list action). Unique session ID (e.g. "main", "build", "test")' },
+      shell_type: { type: 'string', enum: ['powershell', 'cmd', 'node', 'python'], description: 'Only needed on start action' },
       input: { type: 'string', description: 'Text to send to stdin (must include newline to execute)' }
     },
-    required: ['action']
+    required: ['action', 'session_id']
   },
   handler: async (args, context) => {
     const { action, session_id, shell_type, input } = args;

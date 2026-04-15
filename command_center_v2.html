@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PURPCLAW Command Center v2 — Diagnostic Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-dark: #0a0a0f; --bg-panel: #12121a; --bg-card: #1a1a25;
+            --accent: #9b4dca; --accent-glow: #c77dff; --accent-dim: #6b3d9a;
+            --success: #00ff88; --warning: #ffaa00; --danger: #ff4444;
+            --info: #4da6ff; --text: #e0e0e0; --text-dim: #888; --border: #2a2a3a;
+            --epistemic: #4da6ff; --temporal: #ff9944; --doxastic: #aa44ff; --deontic: #44ffaa;
+        }
+        body { background: var(--bg-dark); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: var(--bg-dark); } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+        /* Header */
+        .header { background: linear-gradient(135deg, var(--bg-panel) 0%, #1a0a2a 100%); border-bottom: 1px solid var(--border); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; }
+        .logo { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--accent) 0%, #ff00ff 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .logo-text { font-size: 24px; font-weight: 700; background: linear-gradient(135deg, var(--accent) 0%, #ff00ff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-right { display: flex; gap: 15px; align-items: center; }
+        .status-chip { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        .status-chip.online { background: rgba(0,255,136,0.15); color: var(--success); border: 1px solid var(--success); }
+        .status-chip.warning { background: rgba(255,170,0,0.15); color: var(--warning); border: 1px solid var(--warning); }
+        .status-chip.error { background: rgba(255,68,68,0.15); color: var(--danger); border: 1px solid var(--danger); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 2s infinite; }
+        .dot.green { background: var(--success); } .dot.orange { background: var(--warning); } .dot.red { background: var(--danger); }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        /* Nav */
+        .nav { display: flex; gap: 4px; padding: 12px 25px; background: var(--bg-panel); border-bottom: 1px solid var(--border); overflow-x: auto; }
+        .nav-btn { padding: 10px 20px; background: transparent; border: 1px solid transparent; color: var(--text-dim); font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 8px; transition: all 0.2s; white-space: nowrap; }
+        .nav-btn:hover { background: var(--bg-card); color: var(--text); }
+        .nav-btn.active { background: var(--bg-card); color: var(--accent-glow); border-bottom: 2px solid var(--accent); }
+
+        /* Main */
+        .main { padding: 20px 25px; }
+        .tab-content { display: none; animation: fadeIn 0.3s; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+        /* Grid layouts */
+        .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+
+        /* Cards */
+        .card { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .card-title { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+        .card.wide { grid-column: span 2; }
+        @media(max-width:1100px) { .grid-4{grid-template-columns:repeat(2,1fr)} .grid-3{grid-template-columns:repeat(2,1fr)} }
+        @media(max-width:700px) { .grid-2,.grid-3,.grid-4{grid-template-columns:1fr} .card.wide{grid-column:span 1} }
+
+        /* Stats */
+        .stat { text-align: center; padding: 14px; }
+        .stat-value { font-size: 30px; font-weight: 700; color: var(--accent-glow); }
+        .stat-label { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+        /* Progress */
+        .progress-bar { height: 7px; background: var(--bg-dark); border-radius: 4px; overflow: hidden; margin: 8px 0; }
+        .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+        .fill-green { background: linear-gradient(90deg, #00cc66, var(--success)); }
+        .fill-purple { background: linear-gradient(90deg, var(--accent-dim), var(--accent-glow)); }
+        .fill-blue { background: linear-gradient(90deg, #2266cc, var(--info)); }
+        .fill-orange { background: linear-gradient(90deg, #cc6600, var(--warning)); }
+
+        /* Agent cards */
+        .agent-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+        .agent-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px; transition: all 0.2s; }
+        .agent-card:hover { border-color: var(--accent); transform: translateX(3px); }
+        .agent-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .agent-avatar { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+        .agent-name { font-weight: 600; font-size: 14px; }
+        .agent-role { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+        .agent-status-row { display: flex; gap: 10px; font-size: 11px; color: var(--text-dim); margin-bottom: 10px; }
+        .modal-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+        .modal-badge { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
+        .badge-epistemic { background: rgba(77,166,255,0.2); color: var(--epistemic); }
+        .badge-temporal { background: rgba(255,153,68,0.2); color: var(--temporal); }
+        .badge-doxastic { background: rgba(170,68,255,0.2); color: var(--doxastic); }
+        .badge-deontic { background: rgba(68,255,170,0.2); color: var(--deontic); }
+
+        /* Causal graph */
+        .causal-container { background: var(--bg-dark); border-radius: 8px; padding: 15px; min-height: 320px; position: relative; overflow: hidden; }
+        .causal-svg { width: 100%; height: 320px; }
+        .causal-node { cursor: pointer; }
+        .causal-node circle { transition: all 0.2s; }
+        .causal-node:hover circle { stroke-width: 3px; }
+        .causal-node text { font-size: 11px; fill: var(--text); pointer-events: none; }
+        .causal-edge { stroke: var(--text-dim); stroke-width: 1.5; fill: none; opacity: 0.6; marker-end: url(#arrowhead); }
+        .node-symptom circle { fill: var(--warning); stroke: var(--warning); }
+        .node-cause circle { fill: #cc6600; stroke: #cc6600; }
+        .node-root circle { fill: var(--danger); stroke: var(--danger); }
+        .node-hypothesis circle { fill: var(--accent-dim); stroke: var(--accent); }
+
+        /* Vote tally */
+        .vote-bar { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
+        .vote-label { font-size: 12px; min-width: 100px; color: var(--text-dim); }
+        .vote-track { flex: 1; height: 8px; background: var(--bg-dark); border-radius: 4px; overflow: hidden; }
+        .vote-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-glow)); border-radius: 4px; transition: width 0.4s; }
+        .vote-count { font-size: 12px; font-weight: 600; min-width: 24px; text-align: right; color: var(--accent-glow); }
+
+        /* Service list */
+        .svc-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); }
+        .svc-item:last-child { border-bottom: none; }
+        .svc-left { display: flex; align-items: center; gap: 10px; }
+        .svc-name { font-size: 13px; }
+        .svc-port { font-size: 11px; color: var(--text-dim); font-family: monospace; }
+        .svc-right { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 10px; }
+        .svc-online { background: rgba(0,255,136,0.15); color: var(--success); }
+        .svc-offline { background: rgba(255,68,68,0.15); color: var(--danger); }
+
+        /* Log stream */
+        .log-stream { height: 380px; overflow-y: auto; font-family: 'Consolas', monospace; font-size: 12px; background: var(--bg-dark); border-radius: 8px; padding: 14px; }
+        .log-entry { padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; gap: 12px; align-items: flex-start; }
+        .log-time { color: var(--text-dim); white-space: nowrap; font-size: 11px; }
+        .log-level { font-weight: 600; width: 58px; font-size: 11px; }
+        .log-DEBUG{color:var(--text-dim)} .log-INFO{color:var(--success)} .log-WARN{color:var(--warning)} .log-ERROR{color:var(--danger)} .log-CRITICAL{color:#ff2222;font-weight:700}
+        .log-message { color: var(--text); word-break: break-all; flex: 1; }
+
+        /* Diag agents panel */
+        .diag-status { display: grid; grid-template-columns: repeat(5,1fr); gap: 10px; }
+        .diag-agent { background: var(--bg-card); border-radius: 8px; padding: 12px; text-align: center; border: 1px solid var(--border); }
+        .diag-agent-name { font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+        .diag-agent-status { width: 10px; height: 10px; border-radius: 50%; margin: 0 auto 6px; }
+        .diag-agent-status.ok { background: var(--success); } .diag-agent-status.warn { background: var(--warning); } .diag-agent-status.err { background: var(--danger); }
+        .diag-agent-detail { font-size: 10px; color: var(--text-dim); }
+
+        /* Mini charts */
+        .mini-chart { height: 55px; display: flex; align-items: flex-end; gap: 3px; padding: 8px 0; }
+        .mbar { flex: 1; background: var(--accent); border-radius: 2px; min-height: 4px; transition: height 0.5s; }
+
+        /* Modal knowledge panel */
+        .modal-kb { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+        .modal-kb-item { background: var(--bg-card); border-radius: 8px; padding: 10px 12px; border-left: 3px solid; }
+        .modal-kb-item.epistemic { border-color: var(--epistemic); }
+        .modal-kb-item.temporal { border-color: var(--temporal); }
+        .modal-kb-item.doxastic { border-color: var(--doxastic); }
+        .modal-kb-item.deontic { border-color: var(--deontic); }
+        .modal-kb-title { font-size: 11px; font-weight: 600; margin-bottom: 5px; }
+        .modal-kb-content { font-size: 11px; color: var(--text-dim); font-family: monospace; }
+
+        /* Toggle */
+        .toggle { position: relative; width: 46px; height: 24px; }
+        .toggle input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--bg-dark); border-radius: 24px; transition: 0.3s; }
+        .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: var(--text); border-radius: 50%; transition: 0.3s; }
+        .toggle input:checked + .toggle-slider { background: var(--accent); }
+        .toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <div class="logo">
+        <div class="logo-icon">🧠</div>
+        <span class="logo-text">PURPCLAW</span>
+        <span style="font-size:13px;color:var(--text-dim);margin-left:8px;">Command Center v2</span>
+    </div>
+    <div class="header-right">
+        <div class="status-chip online" id="sysChip">
+            <div class="dot green"></div>
+            <span id="sysChipText">All Systems Online</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-dim);">
+            Uptime: <span id="uptime" style="color:var(--text);font-weight:600;">0h 0m</span>
+        </div>
+    </div>
+</header>
+
+<!-- Nav -->
+<nav class="nav">
+    <button class="nav-btn active" data-tab="overview">OVERVIEW</button>
+    <button class="nav-btn" data-tab="diagnostics">DIAGNOSTICS</button>
+    <button class="nav-btn" data-tab="agents">AGENTS</button>
+    <button class="nav-btn" data-tab="memory">MEMORY</button>
+    <button class="nav-btn" data-tab="symbolic">SYMBOLIC</button>
+    <button class="nav-btn" data-tab="services">SERVICES</button>
+    <button class="nav-btn" data-tab="logs">LOGS</button>
+</nav>
+
+<!-- Main -->
+<main class="main">
+
+    <!-- OVERVIEW -->
+    <div class="tab-content active" id="tab-overview">
+        <div class="grid-4" style="margin-bottom:18px;">
+            <div class="card"><div class="stat"><div class="stat-value" id="sAgents">—</div><div class="stat-label">Active Agents</div></div></div>
+            <div class="card"><div class="stat"><div class="stat-value" id="sDiag">—</div><div class="stat-label">Diag Agents</div></div></div>
+            <div class="card"><div class="stat"><div class="stat-value" id="sRules">—</div><div class="stat-label">Rules Fired</div></div></div>
+            <div class="card"><div class="stat"><div class="stat-value" id="sEvents">0</div><div class="stat-label">Events/min</div></div></div>
+        </div>
+        <div class="grid-3" style="margin-bottom:18px;">
+            <div class="card">
+                <div class="card-header"><span class="card-title">📊 Performance</span></div>
+                <div class="mini-chart" id="perfChart"></div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-top:4px;">
+                    <span>CPU</span><span id="cpuVal">0%</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">🧠 Memory Matrix v2</span></div>
+                <div class="mini-chart" id="memChart"></div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-top:4px;">
+                    <span>Atoms</span><span id="memVal">0</span>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">⚡ API Latency</span></div>
+                <div class="mini-chart" id="latencyChart"></div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-dim);margin-top:4px;">
+                    <span>Avg</span><span id="latVal">0ms</span>
+                </div>
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header"><span class="card-title">🔌 Service Status</span></div>
+                <div id="serviceList">Loading...</div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">🕵️ Shadow Protocol</span>
+                    <label class="toggle">
+                        <input type="checkbox" id="shadowToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div id="shadowStatus" style="font-size:12px;color:var(--text-dim);">
+                    Shadow Protocol v1.0 active. Monitoring for hidden signals...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DIAGNOSTICS -->
+    <div class="tab-content" id="tab-diagnostics">
+        <div class="grid-2" style="margin-bottom:18px;">
+            <div class="card">
+                <div class="card-header"><span class="card-title">🔬 Diagnostic Agents</span></div>
+                <div class="diag-status" id="diagAgents">
+                    <div class="diag-agent"><div class="diag-agent-name">MemoryDiag</div><div class="diag-agent-status ok"></div><div class="diag-agent-detail" id="ddMem">—</div></div>
+                    <div class="diag-agent"><div class="diag-agent-name">VisionDiag</div><div class="diag-agent-status ok"></div><div class="diag-agent-detail" id="ddVis">—</div></div>
+                    <div class="diag-agent"><div class="diag-agent-name">NetworkDiag</div><div class="diag-agent-status ok"></div><div class="diag-agent-detail" id="ddNet">—</div></div>
+                    <div class="diag-agent"><div class="diag-agent-name">ResourceDiag</div><div class="diag-agent-status ok"></div><div class="diag-agent-detail" id="ddRes">—</div></div>
+                    <div class="diag-agent"><div class="diag-agent-name">AppDiag</div><div class="diag-agent-status ok"></div><div class="diag-agent-detail" id="ddApp">—</div></div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">🗳️ Root Cause Vote Tally</span></div>
+                <div id="voteTally" style="font-size:12px;color:var(--text-dim);">Run diagnosis to see votes...</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">🔗 Causal Graph</span>
+                <div style="display:flex;gap:10px;">
+                    <button onclick="runDiagnosis()" style="padding:6px 14px;background:var(--accent);border:none;color:#fff;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Run Diagnosis</button>
+                    <button onclick="refreshGraph()" style="padding:6px 14px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);border-radius:6px;cursor:pointer;font-size:12px;">Refresh</button>
+                </div>
+            </div>
+            <div class="causal-container">
+                <svg class="causal-svg" id="causalSvg">
+                    <defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="var(--text-dim)"/></marker></defs>
+                    <text x="50%" y="50%" text-anchor="middle" fill="var(--text-dim)" font-size="13">Run diagnosis to generate causal graph</text>
+                </svg>
+            </div>
+            <div style="margin-top:10px;display:flex;gap:15px;font-size:11px;color:var(--text-dim);">
+                <span><span style="color:var(--warning);">●</span> Symptom</span>
+                <span><span style="color:#cc6600;">●</span> Cause</span>
+                <span><span style="color:var(--danger);">●</span> Root Cause</span>
+                <span><span style="color:var(--accent);">●</span> Hypothesis</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- AGENTS -->
+    <div class="tab-content" id="tab-agents">
+        <div class="grid-2" style="margin-bottom:18px;">
+            <div class="card">
+                <div class="card-header"><span class="card-title">🤖 Modal Logic Agents</span></div>
+                <div class="agent-grid" id="agentGrid">Loading...</div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">📚 Modal Knowledge Base</span></div>
+                <div class="modal-kb" id="modalKb">Loading...</div>
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header"><span class="card-title">🔵 Epistemic State</span></div>
+                <div id="epistemicState" style="font-size:12px;color:var(--text-dim);">No data</div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">🟠 Temporal State</span></div>
+                <div id="temporalState" style="font-size:12px;color:var(--text-dim);">No data</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MEMORY -->
+    <div class="tab-content" id="tab-memory">
+        <div class="grid-2" style="margin-bottom:18px;">
+            <div class="card">
+                <div class="card-header"><span class="card-title">🧠 Memory Matrix v2 Stats</span></div>
+                <div id="memStats">Loading...</div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">🔗 Lifted Symbolic Facts</span></div>
+                <div id="liftedFacts" style="font-size:12px;color:var(--text-dim);max-height:200px;overflow-y:auto;">Loading...</div>
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header"><span class="card-title">⏪ Temporal Projection</span></div>
+                <div style="padding:10px;">
+                    <input id="projQuery" placeholder="What was I thinking about..." style="width:100%;padding:8px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);border-radius:6px;margin-bottom:8px;font-size:12px;">
+                    <input id="projTime" type="datetime-local" style="width:100%;padding:8px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);border-radius:6px;margin-bottom:8px;font-size:12px;">
+                    <button onclick="doProjection()" style="padding:7px 16px;background:var(--accent);border:none;color:#fff;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Project</button>
+                    <div id="projResults" style="margin-top:10px;font-size:12px;color:var(--text-dim);"></div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">🔄 Counterfactual Branches</span></div>
+                <div id="cfBranches" style="font-size:12px;color:var(--text-dim);max-height:200px;overflow-y:auto;">Run counterfactual from diagnostics</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SYMBOLIC -->
+    <div class="tab-content" id="tab-symbolic">
+        <div class="grid-2" style="margin-bottom:18px;">
+            <div class="card">
+                <div class="card-header"><span class="card-title">📜 Datalog Rules Engine</span></div>
+                <div id="rulesStats">Loading...</div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">🧩 Active Constraints</span></div>
+                <div id="constraints">Loading...</div>
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header"><span class="card-title">🔍 Query Symbolic Engine</span></div>
+                <div style="padding:10px;">
+                    <input id="symQuery" placeholder="ancestor(X,Y)" style="width:100%;padding:8px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);border-radius:6px;margin-bottom:8px;font-size:12px;font-family:monospace;">
+                    <button onclick="doSymQuery()" style="padding:7px 16px;background:var(--accent);border:none;color:#fff;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Query</button>
+                    <div id="symQueryResults" style="margin-top:10px;font-size:12px;color:var(--text-dim);max-height:180px;overflow-y:auto;"></div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">⚡ Counterfactual Reasoning</span></div>
+                <div style="padding:10px;">
+                    <input id="cfQuery" placeholder="What if I had forgotten..." style="width:100%;padding:8px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);border-radius:6px;margin-bottom:8px;font-size:12px;">
+                    <button onclick="doCounterfactual()" style="padding:7px 16px;background:var(--accent);border:none;color:#fff;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">Reason</button>
+                    <div id="cfResults" style="margin-top:10px;font-size:12px;color:var(--text-dim);"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SERVICES -->
+    <div class="tab-content" id="tab-services">
+        <div class="grid-3">
+            <div class="card">
+                <div class="card-header"><span class="card-title">🌉 Neuro Symbolic Bridge</span></div>
+                <div id="svc-bridge" style="font-size:12px;">Loading...</div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">🔵 Modal Logic Engine</span></div>
+                <div id="svc-modal" style="font-size:12px;">Loading...</div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">🔬 Autonomous Diag</span></div>
+                <div id="svc-diag" style="font-size:12px;">Loading...</div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">📜 Symbolic Rules Engine</span></div>
+                <div id="svc-rules" style="font-size:12px;">Loading...</div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">🧠 Memory Matrix v2</span></div>
+                <div id="svc-memory" style="font-size:12px;">Loading...</div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span class="card-title">👁️ Vision Monitor</span></div>
+                <div id="svc-vision" style="font-size:12px;">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="tab-content" id="tab-logs">
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">📜 Real-time Log Stream</span>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <select id="logFilter" style="padding:5px 10px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);border-radius:5px;font-size:12px;">
+                        <option value="all">All Levels</option>
+                        <option value="DEBUG">DEBUG</option>
+                        <option value="INFO">INFO</option>
+                        <option value="WARN">WARN</option>
+                        <option value="ERROR">ERROR</option>
+                        <option value="CRITICAL">CRITICAL</option>
+                    </select>
+                    <button onclick="clearLogs()" style="padding:5px 14px;background:var(--bg-card);border:1px solid var(--border);color:var(--text);border-radius:5px;cursor:pointer;font-size:12px;">Clear</button>
+                </div>
+            </div>
+            <div class="log-stream" id="logStream"></div>
+        </div>
+    </div>
+
+</main>
+
+<script>
+// === State ===
+let startTime = Date.now();
+let eventCount = 0;
+let logs = [];
+let diagData = null;
+
+// === Tab nav ===
+document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+});
+
+// === Log helpers ===
+function getTime() { return new Date().toTimeString().split(' ')[0]; }
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+function addLog(lvl, msg) {
+    logs.push({ t: getTime(), lvl, msg, id: Date.now() });
+    if (logs.length > 600) logs.shift();
+    renderLogs();
+    if (lvl === 'ERROR' || lvl === 'CRITICAL') eventCount++;
+}
+function renderLogs() {
+    const f = document.getElementById('logFilter')?.value || 'all';
+    const el = document.getElementById('logStream');
+    if (!el) return;
+    const filtered = f === 'all' ? logs : logs.filter(l => l.lvl === f);
+    el.innerHTML = filtered.map(l => `
+        <div class="log-entry">
+            <span class="log-time">${l.t}</span>
+            <span class="log-level log-${l.lvl}">${l.lvl}</span>
+            <span class="log-message">${escapeHtml(l.msg)}</span>
+        </div>`).join('');
+    el.scrollTop = el.scrollHeight;
+}
+function clearLogs() { logs = []; renderLogs(); addLog('INFO', 'Log stream cleared'); }
+document.getElementById('logFilter')?.addEventListener('change', renderLogs);
+
+// === Charts ===
+function genBars(id, n, max) {
+    const c = document.getElementById(id);
+    if (!c) return;
+    c.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+        const b = document.createElement('div');
+        b.className = 'mbar';
+        b.style.height = (Math.random() * max + 5) + 'px';
+        c.appendChild(b);
+    }
+}
+
+// === Uptime ===
+function fmtUptime() {
+    const ms = Date.now() - startTime;
+    return Math.floor(ms / 3600000) + 'h ' + Math.floor((ms % 3600000) / 60000) + 'm';
+}
+
+// === Service health checks ===
+const SERVICES = [
+    { name: 'Neuro Symbolic Bridge', port: 7784, icon: '🌉' },
+    { name: 'Modal Logic Engine', port: 7785, icon: '🔵' },
+    { name: 'Autonomous Diagnostics', port: 7786, icon: '🔬' },
+    { name: 'Symbolic Rules Engine', port: 7787, icon: '📜' },
+    { name: 'Memory Matrix v2', port: 7780, icon: '🧠' },
+    { name: 'Vision Monitor', port: 7781, icon: '👁️' },
+    { name: 'Music Analysis', port: 7782, icon: '🎵' },
+    { name: 'YOLO Service', port: 7779, icon: '🎯' },
+];
+
+async function checkServiceHealth() {
+    let online = 0, offline = 0;
+    for (const s of SERVICES) {
+        try {
+            const r = await fetch(`http://127.0.0.1:${s.port}/health`, { method: 'GET', signal: AbortSignal.timeout(800) });
+            if (r.ok) { online++; continue; }
+        } catch {}
+        offline++;
+    }
+    const chip = document.getElementById('sysChip');
+    const chipText = document.getElementById('sysChipText');
+    if (offline === 0) {
+        chip.className = 'status-chip online';
+        chipText.textContent = 'All Systems Online';
+    } else if (offline < SERVICES.length / 2) {
+        chip.className = 'status-chip warning';
+        chipText.textContent = `${offline} Service${offline > 1 ? 's' : ''} Offline`;
+    } else {
+        chip.className = 'status-chip error';
+        chipText.textContent = `${offline} Services Offline`;
+    }
+}
+
+async function updateServiceList() {
+    const el = document.getElementById('serviceList');
+    if (!el) return;
+    let html = '';
+    for (const s of SERVICES) {
+        let status, cls;
+        try {
+            const r = await fetch(`http://127.0.0.1:${s.port}/health`, { method: 'GET', signal: AbortSignal.timeout(800) });
+            if (r.ok) { status = 'Online'; cls = 'svc-online'; }
+        } catch { status = 'Offline'; cls = 'svc-offline'; }
+        html += `<div class="svc-item">
+            <div class="svc-left"><span style="font-size:16px;">${s.icon}</span><div><div class="svc-name">${s.name}</div><div class="svc-port">:${s.port}</div></div></div>
+            <span class="svc-right ${cls}">● ${status}</span>
+        </div>`;
+    }
+    el.innerHTML = html;
+}
+
+// === Memory Matrix v2 ===
+async function updateMemoryStats() {
+    try {
+        const r = await fetch('http://127.0.0.1:7780/stats', { signal: AbortSignal.timeout(1500) });
+        const d = await r.json();
+        document.getElementById('memVal').textContent = d.total_atoms || 0;
+        document.getElementById('sDiag').textContent = d.lifted_facts || 0;
+        const html = `
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span>Lifted Facts</span><span style="color:var(--accent-glow);">${d.lifted_facts || 0}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span>Counterfactual Branches</span><span style="color:var(--accent-glow);">${d.counterfactual_branches || 0}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span>Temporal Entities</span><span style="color:var(--accent-glow);">${d.temporal_entities || 0}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;"><span>Rules Connected</span><span style="color:${d.rules_connected ? 'var(--success)' : 'var(--danger)'};">${d.rules_connected ? 'Yes' : 'No'}</span></div>`;
+        document.getElementById('memStats').innerHTML = html;
+    } catch { document.getElementById('memStats').innerHTML = '<span style="color:var(--text-dim);font-size:12px;">Memory Matrix unavailable</span>'; }
+}
+
+// === Modal Logic Agents ===
+async function updateAgents() {
+    const grid = document.getElementById('agentGrid');
+    if (!grid) return;
+    const agents = [
+        { id: 'agent1', name: 'PURPCLAW Core', role: 'Primary orchestrator', emoji: '🧠', color: '135deg,#9b4dca,#ff00ff' },
+        { id: 'agent2', name: 'Shadow Watcher', role: 'Deep signal detection', emoji: '👁️', color: '135deg,#4da6ff,#0066cc' },
+        { id: 'agent3', name: 'Temporal Agent', role: 'Time-series reasoning', emoji: '⏰', color: '135deg,#ff9944,#cc5500' },
+    ];
+    let html = '';
+    for (const a of agents) {
+        html += `<div class="agent-card">
+            <div class="agent-top">
+                <div class="agent-avatar" style="background:linear-gradient(${a.color});">${a.emoji}</div>
+                <div><div class="agent-name">${a.name}</div><div class="agent-role">${a.role}</div></div>
+            </div>
+            <div class="modal-badges">
+                <span class="modal-badge badge-epistemic">Epistemic</span>
+                <span class="modal-badge badge-temporal">Temporal</span>
+                <span class="modal-badge badge-doxastic">Doxastic</span>
+                <span class="modal-badge badge-deontic">Deontic</span>
+            </div>
+        </div>`;
+    }
+    grid.innerHTML = html;
+
+    // Fetch modal knowledge
+    try {
+        const r = await fetch('http://127.0.0.1:7785/agent/agent1/state', { signal: AbortSignal.timeout(1500) });
+        const d = await r.json();
+        document.getElementById('sAgents').textContent = '3';
+        const kbHtml = `
+            <div class="modal-kb-item epistemic">
+                <div class="modal-kb-title">Epistemic</div>
+                <div class="modal-kb-content">${(d.epistemic || []).slice(0,3).join('<br>') || '—'}</div>
+            </div>
+            <div class="modal-kb-item temporal">
+                <div class="modal-kb-title">Temporal</div>
+                <div class="modal-kb-content">${(d.temporal || []).slice(0,3).join('<br>') || '—'}</div>
+            </div>
+            <div class="modal-kb-item doxastic">
+                <div class="modal-kb-title">Doxastic</div>
+                <div class="modal-kb-content">${(d.doxastic || []).slice(0,3).join('<br>') || '—'}</div>
+            </div>
+            <div class="modal-kb-item deontic">
+                <div class="modal-kb-title">Deontic</div>
+                <div class="modal-kb-content">${(d.deontic || []).slice(0,3).join('<br>') || '—'}</div>
+            </div>`;
+        document.getElementById('modalKb').innerHTML = kbHtml;
+    } catch {
+        document.getElementById('modalKb').innerHTML = '<span style="color:var(--text-dim);font-size:12px;">Modal engine unavailable</span>';
+    }
+}
+
+// === Autonomous Diagnostics ===
+async function runDiagnosis() {
+    addLog('INFO', 'Running autonomous diagnosis...');
+    try {
+        const r = await fetch('http://127.0.0.1:7786/diagnose', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ symptom: 'general_check', severity: 'INFO' }),
+            signal: AbortSignal.timeout(5000)
+        });
+        diagData = await r.json();
+        updateDiagDisplay();
+        addLog('INFO', `Diagnosis complete. Root cause: ${diagData.root_cause || 'unknown'}`);
+    } catch (e) { addLog('ERROR', 'Diagnosis failed: ' + e.message); }
+}
+
+function updateDiagDisplay() {
+    if (!diagData) return;
+    // Vote tally
+    const tally = document.getElementById('voteTally');
+    if (tally && diagData.findings) {
+        const sorted = Object.entries(diagData.findings).sort((a,b) => b[1].votes - a[1].votes);
+        tally.innerHTML = sorted.map(([cause, d]) => `
+            <div class="vote-bar">
+                <span class="vote-label">${cause.substring(0,20)}</span>
+                <div class="vote-track"><div class="vote-fill" style="width:${Math.min(100, (d.votes / 5) * 100)}%"></div></div>
+                <span class="vote-count">${d.votes}</span>
+            </div>`).join('') || '<span style="color:var(--text-dim);">No votes yet</span>';
+    }
+}
+
+async function refreshGraph() {
+    try {
+        const r = await fetch('http://127.0.0.1:7786/causal-graph/dot', { signal: AbortSignal.timeout(2000) });
+        const d = await r.json();
+        renderCausalDot(d.dot || '');
+    } catch { addLog('WARN', 'Could not fetch causal graph'); }
+}
+
+function renderCausalDot(dotSrc) {
+    const svg = document.getElementById('causalSvg');
+    if (!svg || !dotSrc) return;
+    // Simple DOT parser → SVG
+    const lines = dotSrc.split('\n');
+    let gContent = '';
+    let nodeId = 0;
+    const nodeMap = {};
+    for (const line of lines) {
+        const nm = line.match(/^\s*"([^"]+)"\s*\[([^]]+)/);
+        if (nm) {
+            const id = 'n' + nodeId++;
+            nodeMap[nm[1]] = id;
+            let fill = '#6b3d9a', label = nm[1];
+            if (nm[2].includes('symptom')) fill = '#ffaa00';
+            else if (nm[2].includes('root_cause')) fill = '#ff4444';
+            else if (nm[2].includes('cause')) fill = '#cc6600';
+            gContent += `<g class="causal-node" transform="translate(${80 + nodeId*70},${60 + nodeId*20})">
+                <circle r="22" fill="${fill}" stroke="${fill}"/>
+                <text text-anchor="middle" dy="35" font-size="10" fill="#e0e0e0">${label.substring(0,12)}</text></g>`;
+        }
+        const edge = line.match(/^\s*"([^"]+)"\s*->\s*"([^"]+)"/);
+        if (edge && nodeMap[edge[1]] && nodeMap[edge[2]]) {
+            gContent += `<line class="causal-edge" x1="${80 + nodeId*70 - 30}" y1="${60 + nodeId*20}" x2="${80 + nodeId*70 - 60}" y2="${60 + nodeId*20}"/>`;
+        }
+    }
+    svg.innerHTML = `<defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="var(--text-dim)"/></marker></defs>${gContent || '<text x="50%" y="50%" text-anchor="middle" fill="var(--text-dim)">No graph data</text>'}`;
+}
+
+// === Symbolic Rules ===
+async function updateRulesStats() {
+    try {
+        const r = await fetch('http://127.0.0.1:7787/stats', { signal: AbortSignal.timeout(1500) });
+        const d = await r.json();
+        document.getElementById('sRules').textContent = d.inference_steps || 0;
+        document.getElementById('rulesStats').innerHTML = `
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span>Total Facts</span><span style="color:var(--accent-glow);">${d.total_facts}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span>Derived</span><span style="color:var(--accent-glow);">${d.derived_facts}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);"><span>Rules</span><span style="color:var(--accent-glow);">${d.rules}</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;"><span>Constraints</span><span style="color:var(--accent-glow);">${d.constraints}</span></div>`;
+    } catch { document.getElementById('rulesStats').innerHTML = '<span style="color:var(--text-dim);font-size:12px;">Rules engine unavailable</span>'; }
+}
+
+async function doSymQuery() {
+    const q = document.getElementById('symQuery').value;
+    if (!q) return;
+    try {
+        const r = await fetch('http://127.0.0.1:7787/query', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ predicate: q.split('(')[0], terms: q.match(/\(([^)]+)\)/)?.[1]?.split(',') || [] }),
+            signal: AbortSignal.timeout(3000)
+        });
+        const d = await r.json();
+        document.getElementById('symQueryResults').innerHTML = (d.results || []).map(r =>
+            `<div style="padding:4px 0;border-bottom:1px solid var(--border);font-family:monospace;">${r.predicate}(${r.terms?.join(',')})</div>`).join('') || 'No results';
+    } catch (e) { document.getElementById('symQueryResults').innerHTML = 'Error: ' + e.message; }
+}
+
+// === Memory projection ===
+async function doProjection() {
+    const q = document.getElementById('projQuery').value;
+    if (!q) return;
+    try {
+        const r = await fetch('http://127.0.0.1:7780/project', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query: q }),
+            signal: AbortSignal.timeout(3000)
+        });
+        const d = await r.json();
+        const mems = d.projected_memories || [];
+        document.getElementById('projResults').innerHTML = mems.length ? mems.map(m =>
+            `<div style="padding:4px 0;border-bottom:1px solid var(--border);">[${m.similarity?.toFixed(2)}] ${escapeHtml(m.content?.substring(0,80))}</div>`).join('') : 'No results';
+    } catch (e) { document.getElementById('projResults').innerHTML = 'Error: ' + e.message; }
+}
+
+// === Counterfactual ===
+async function doCounterfactual() {
+    const q = document.getElementById('cfQuery').value;
+    if (!q) return;
+    try {
+        const r = await fetch('http://127.0.0.1:7780/what_if/forgotten', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ memory_id: q.substring(0, 20), query: q }),
+            signal: AbortSignal.timeout(3000)
+        });
+        const d = await r.json();
+        document.getElementById('cfResults').innerHTML = `
+            <div style="padding:4px 0;"><span style="color:var(--accent-glow);">Branch:</span> ${d.branch_id || 'none'}</div>
+            <div style="padding:4px 0;"><span style="color:var(--accent-glow);">Assumption:</span> ${d.assumption || 'none'}</div>
+            <div style="padding:4px 0;"><span style="color:var(--accent-glow);">Derived lost:</span> ${d.reinforcement?.forgetting_cost || 0}</div>`;
+    } catch (e) { document.getElementById('cfResults').innerHTML = 'Error: ' + e.message; }
+}
+
+// === Lifted facts ===
+async function updateLiftedFacts() {
+    try {
+        const r = await fetch('http://127.0.0.1:7780/lifted', { signal: AbortSignal.timeout(1500) });
+        const d = await r.json();
+        const facts = d.lifted_facts || [];
+        document.getElementById('liftedFacts').innerHTML = facts.slice(0, 20).map(f =>
+            `<div style="padding:4px 0;border-bottom:1px solid var(--border);font-family:monospace;">
+                <span style="color:var(--accent-glow);">${f.predicate}</span>(${f.subject || '_'}${f.object ? ',' + f.object : ''})
+                — ${escapeHtml(f.content_preview?.substring(0,50))}
+            </div>`).join('') || 'No lifted facts';
+    } catch {}
+}
+
+// === Services tab ===
+async function updateServicesTab() {
+    for (const s of SERVICES) {
+        const el = document.getElementById('svc-' + s.port);
+        if (!el) continue;
+        try {
+            const r = await fetch(`http://127.0.0.1:${s.port}/health`, { signal: AbortSignal.timeout(800) });
+            const d = await r.json().catch(() => ({}));
+            el.innerHTML = `<div style="color:var(--success);">● Online</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-top:4px;">
+                    ${Object.keys(d).slice(0,4).map(k => `${k}: ${JSON.stringify(d[k]).substring(0,30)}`).join('<br>') || 'healthy'}
+                </div>`;
+        } catch {
+            el.innerHTML = `<div style="color:var(--danger);">● Offline</div>`;
+        }
+    }
+}
+
+// === Main update loop ===
+function updateAll() {
+    document.getElementById('uptime').textContent = fmtUptime();
+    document.getElementById('sEvents').textContent = eventCount;
+    genBars('perfChart', 12, 70);
+    genBars('memChart', 12, 70);
+    genBars('latencyChart', 12, 70);
+}
+
+// === Init ===
+async function init() {
+    addLog('INFO', 'Command Center v2 initialized');
+    addLog('INFO', 'PURPCLAW Neuro-Symbolic Stack ready');
+    updateAll();
+    updateServiceList();
+    checkServiceHealth();
+    updateMemoryStats();
+    updateAgents();
+    updateRulesStats();
+    updateLiftedFacts();
+    updateServicesTab();
+
+    setInterval(updateAll, 5000);
+    setInterval(updateServiceList, 20000);
+    setInterval(checkServiceHealth, 20000);
+    setInterval(updateMemoryStats, 10000);
+    setInterval(updateAgents, 15000);
+    setInterval(updateRulesStats, 10000);
+    setInterval(updateLiftedFacts, 15000);
+    setInterval(updateServicesTab, 20000);
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

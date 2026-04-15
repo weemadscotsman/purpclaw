@@ -51,7 +51,7 @@ module.exports = {
       return `Sent command to Avatar: ${action} -> ${param}. Response: ${response}`;
     } catch (e) {
       if (e.code === 'ECONNREFUSED') {
-         return 'Avatar bridge is offline! The AI must launch simple_bridge.py and the Electron render first.';
+         return 'Avatar bridge is offline! Cannot connect to port 7777. To fix: (1) Run simple_bridge.py from PURPCLAW directory, (2) Start the Electron render process. Both must be running before socket_rig will work.';
       }
       return `Failed to send to Avatar: ${e.message}`;
     }

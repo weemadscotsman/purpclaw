@@ -1,0 +1,6 @@
+[2026-04-15T17:27:21.796Z] TASK:
+test the companion chorus integration
+
+AGENT: dragon
+DIVISION: ENGINEERING
+ROLE: Chief Architect

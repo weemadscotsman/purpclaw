@@ -3,16 +3,16 @@ const path = require('path');
 
 module.exports = {
   name: 'task_manager',
-  description: 'A cognitive tool to plan out complex multi-step objectives. Break big objectives into sub-tasks, execute them safely, and check them off to stay organized.',
+  description: 'A cognitive tool to plan out complex multi-step objectives. Break big objectives into sub-tasks, execute them safely, and check them off to stay organized. IMPORTANT: task_id is REQUIRED for create/update/complete actions. Only action=status works without task_id.',
   inputSchema: {
     type: 'object',
     properties: {
       action: { type: 'string', enum: ['create', 'update', 'complete', 'status'] },
-      task_id: { type: 'string', description: 'Unique ID for the task (e.g. T1, T2)' },
-      title: { type: 'string', description: 'What to achieve' },
+      task_id: { type: 'string', description: 'REQUIRED for create/update/complete actions. Unique ID (e.g. "T1", "T2", "build-step-1")' },
+      title: { type: 'string', description: 'What to achieve (required for create)' },
       notes: { type: 'string', description: 'Progress notes or next steps' }
     },
-    required: ['action']
+    required: ['action', 'task_id']
   },
   handler: async (args, context) => {
     const { action, task_id, title, notes } = args;
