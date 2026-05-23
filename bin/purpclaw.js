@@ -2581,7 +2581,7 @@ function cmdRollback(args) {
 async function cmdPool(args) {
   const sub   = (args[0] || '').toLowerCase();
   const rest  = args.slice(1).join(' ').trim();
-  const POOL_PORT = parseInt(process.env.POOL_PORT || '7880', 10);
+  const POOL_PORT = parseInt(process.env.POOL_PORT || '7885', 10);
 
   function poolReq(method, path, body) {
     return new Promise((resolve, reject) => {
