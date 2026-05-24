@@ -206,6 +206,38 @@ module.exports = {
       max_memory: '64MB',
       autorestart: true,
       windowsHide: true
+},
+    {
+      name: 'purpclaw-context',
+      script: './lib/context-bus.js',
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 2,
+      restart_delay: 10000,
+      max_memory: '64MB',
+      autorestart: true,
+      windowsHide: true
+    },
+    {
+      // Proactive reasoning heartbeat — opt-in. Set PURPCLAW_PROACTIVE=1 in .env
+      // to actually run the tick; default is on, set to 0 to keep dormant.
+      name: 'purpclaw-reasoning',
+      script: './lib/reasoning-loop.js',
+      env: {
+        PURPCLAW_PROACTIVE   : env.PURPCLAW_PROACTIVE    || '1',
+        PURPCLAW_TICK_MS     : env.PURPCLAW_TICK_MS      || '30000',
+        REASONING_PORT       : env.REASONING_PORT        || '7892',
+        POOL_PORT            : env.POOL_PORT             || '7885',
+      },
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 2,
+      restart_delay: 15000,
+      max_memory: '64MB',
+      autorestart: true,
+      windowsHide: true
     },
     // ── Python services (wrapped with run_py.js → pythonw.exe = no console window) ──
     {

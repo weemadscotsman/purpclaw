@@ -64,6 +64,17 @@ const JOB_CONTRACT = require(path.join(PURP_DIR, 'lib', 'job-contract.js'));
 const PROACTIVE = require(path.join(PURP_DIR, 'lib', 'proactive-maintenance.js'));
 const SPAGHETTI = require(path.join(PURP_DIR, 'lib', 'spaghetti-audit.js'));
 
+const CTX_PORT = parseInt(process.env.CONTEXT_PORT || '7881', 10);
+
+function ctxGet(path) {
+  return new Promise(resolve => {
+    http.get({ hostname: '127.0.0.1', port: CTX_PORT, path }, res => {
+      let d = ''; res.on('data', c => d += c);
+      res.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve(null); } });
+    }).on('error', () => resolve(null));
+  });
+}
+
 const PORTS = {
   orchestrator : parseInt(process.env.ORCHESTRATOR_PORT  || '7784', 10),
   api          : parseInt(process.env.API_PORT           || '7780', 10),
@@ -71,6 +82,7 @@ const PORTS = {
   eventbus     : parseInt(process.env.EVENTBUS_PORT      || '7782', 10),
   state        : parseInt(process.env.STATE_PORT         || '7783', 10),
   memory       : parseInt(process.env.MEMORY_PORT        || '7880', 10),
+  pool          : parseInt(process.env.POOL_PORT            || '7885', 10),
   metrics      : parseInt(process.env.METRICS_PORT       || '7890', 10),
   voice        : parseInt(process.env.VOICE_PORT         || '7781', 10),
 };
@@ -571,26 +583,33 @@ async function cmdRestart(args) {
 async function cmdStatus() {
   banner();
 
-  // Probe all service health endpoints in parallel
-  const checks = await Promise.allSettled([
-    ping(PORTS.orchestrator, '/health').then(ok => ({ name: 'orchestrator', port: PORTS.orchestrator, ok })),
-    ping(PORTS.api,          '/health').then(ok => ({ name: 'api',          port: PORTS.api,          ok })),
-    ping(PORTS.tower,        '/health').then(ok => ({ name: 'tower',        port: PORTS.tower,        ok })),
-    ping(PORTS.eventbus,     '/health').then(ok => ({ name: 'eventbus',     port: PORTS.eventbus,     ok })),
-    ping(PORTS.state,        '/health').then(ok => ({ name: 'state',        port: PORTS.state,        ok })),
-    ping(PORTS.memory,       '/health').then(ok => ({ name: 'memory',       port: PORTS.memory,       ok })),
-    ping(PORTS.metrics,      '/health').then(ok => ({ name: 'metrics',      port: PORTS.metrics,      ok })),
-    ping(PORTS.voice,        '/health').then(ok => ({ name: 'voice',        port: PORTS.voice,        ok })),
-  ]);
+  // Probe every service in the registry (core + optional), so new services
+  // automatically show up here without code edits.
+  const allServices = SERVICE_REGISTRY.getServices().filter(s => s.healthPort && s.healthPath);
+  const checks = await Promise.allSettled(
+    allServices.map(s => ping(s.healthPort, s.healthPath).then(ok => ({
+      key: s.key, name: s.name, port: s.healthPort, group: s.group, required: s.required !== false, ok
+    })))
+  );
 
-  sectionHead('  SERVICE HEALTH');
-  for (const r of checks) {
-    const svc = r.status === 'fulfilled' ? r.value : { name: '?', port: 0, ok: false };
-    const portStr = col(C.gray, `:${svc.port}`);
-    const label   = svc.ok
-      ? col(C.green, `${svc.name}`)
-      : col(C.red,   `${svc.name}`);
-    console.log(`  ${tick(svc.ok)}  ${label.padEnd(30)}${portStr}`);
+  const coreSvcs = checks.filter(r => r.value && r.value.group === 'core');
+  const optSvcs  = checks.filter(r => r.value && r.value.group !== 'core');
+
+  sectionHead('  CORE SERVICES');
+  for (const r of coreSvcs) {
+    const s = r.value;
+    const port  = col(C.gray, `:${s.port}`);
+    const label = s.ok ? col(C.green, s.name) : col(C.red, s.name);
+    console.log(`  ${tick(s.ok)}  ${label.padEnd(34)}${port}`);
+  }
+
+  const onlineOpt = optSvcs.filter(r => r.value.ok);
+  if (onlineOpt.length) {
+    sectionHead('  OPTIONAL SERVICES (online)');
+    for (const r of onlineOpt) {
+      const s = r.value;
+      console.log(`  ${tick(true)}  ${col(C.green, s.name).padEnd(34)}${col(C.gray, ':' + s.port)}  ${col(C.gray, '· ' + s.group)}`);
+    }
   }
 
   // Orchestrator metrics
@@ -708,7 +727,7 @@ async function cmdStatus() {
   try {
     const poolRes = await new Promise((resolve, reject) => {
       const req = http.request(
-        { hostname: '127.0.0.1', port: PORTS.memory, path: '/pool/stats', method: 'GET' },
+        { hostname: '127.0.0.1', port: 7885, path: '/pool/stats', method: 'GET' },
         res => { let d = ''; res.on('data', c => d += c); res.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve(null); } }); }
       );
       req.setTimeout(2000, () => { req.destroy(); resolve(null); });
@@ -727,13 +746,26 @@ async function cmdStatus() {
       console.log(`  Queries served   : ${col(C.gray, String(qc))}`);
       console.log(`  Uptime           : ${col(C.gray, ups)}`);
       if (ia) console.log(`  Last indexed     : ${col(C.gray, ia)}`);
-      console.log(`  Pool endpoint    : ${col(C.cyan, 'http://localhost:' + PORTS.memory)}`);
-      console.log(`  ${col(C.green, '✔')}  Pool service online`);
+      console.log(`  Pool endpoint    : ${col(C.cyan, 'http://localhost:7885')}`);
+console.log(`  ${col(C.green, '✔')}  Pool service online`);
+    }
+
+    // ── Context Bus ──────────────────────────────────────────────
+    const ctx = await ctxGet('/context/stats');
+    if (ctx) {
+      sectionHead('  CONTEXT BUS');
+      console.log(`  Active agents  : ${col(C.green, String(ctx.activeAgents))}`);
+      console.log(`  Workflows      : ${col(C.cyan, String(ctx.totalWorkflows))}`);
+      console.log(`  Locks held     : ${col(C.cyan, String(ctx.activeLocks))}`);
+      console.log(`  Agents spawned : ${col(C.gray, String(ctx.stats.totalAgentsSpawned))}`);
+    } else {
+      sectionHead('  CONTEXT BUS');
+      console.log(col(C.red, '  ✗ offline'));
     }
   } catch {
     sectionHead('  KNOWLEDGE POOL');
-    console.log(`  ${tick(false)}  ${col(C.red, 'pool service offline')}  ${col(C.gray, ':' + PORTS.memory)}`);
-    console.log(col(C.gray, '  Boot the pool:  npx pm2 start ecosystem.config.js --only purpclaw-pool'));
+    console.log(`  ${tick(false)}  ${col(C.red, 'pool service offline')}  ${col(C.gray, ':7885')}`);
+    console.log(col(C.gray, '  Boot: purpclaw pool reindex or pm2 start --only purpclaw-pool'));
   }
 
   // ── Queue snapshot ─────────────────────────────────────────────────────────
@@ -2578,6 +2610,105 @@ function cmdRollback(args) {
 
 // ── profiles ───────────────────────────────────────────────────────────────────
 
+// ── Context Bus (cross-agent state) ─────────────────────────────────────────
+async function cmdContext(args) {
+  const sub  = (args[0] || '').toLowerCase();
+  const rest = args.slice(1).join(' ').trim();
+  const CTX_PORT = parseInt(process.env.CONTEXT_PORT || '7881', 10);
+
+  function ctxGet(path) {
+    return new Promise(resolve => {
+      http.get({ hostname: '127.0.0.1', port: CTX_PORT, path }, res => {
+        let d = ''; res.on('data', c => d += c);
+        res.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve(null); } });
+      }).on('error', () => resolve(null));
+    });
+  }
+
+  if (sub === 'stats') {
+    const s = await ctxGet('/context/stats');
+    if (!s) return console.log(col(C.red, '  ✗ context-bus offline on :' + CTX_PORT));
+    console.log('');
+    console.log(col(C.bold, '  CONTEXT BUS · CROSS-AGENT STATE'));
+    console.log('  ─────────────────────────────────────────────────');
+    console.log(`  Active agents  : ${col(C.green, s.activeAgents)}`);
+    console.log(`  Total agents  : ${s.totalAgents}`);
+    console.log(`  Workflows     : ${s.totalWorkflows}`);
+    console.log(`  Active locks  : ${s.activeLocks}`);
+    console.log(`  Agents spawned: ${s.stats.totalAgentsSpawned}`);
+    console.log(`  Completed     : ${s.stats.totalWorkflowsCompleted}`);
+    console.log(`  Failures      : ${s.stats.totalFailures}`);
+    console.log('');
+    return;
+  }
+
+  if (sub === 'team' && rest) {
+    const team = await ctxGet('/context/team/' + encodeURIComponent(rest));
+    if (!team) return console.log(col(C.red, '  ✗ context-bus offline'));
+    if (!team.length) return console.log(col(C.gray, `  No active team for "${rest}"`));
+    console.log('');
+    console.log(col(C.bold, `  TEAM: ${rest.toUpperCase()}`));
+    team.forEach(a => {
+      const age = Math.round((Date.now() - (a._lastSeen || 0)) / 1000);
+      console.log(`  ${col(C.cyan, String(a.agentId).padEnd(15))} ${a.status}  ${age}s ago`);
+    });
+    console.log('');
+    return;
+  }
+
+  if (sub === 'agent' && rest) {
+    const a = await ctxGet('/context/agent/' + encodeURIComponent(rest));
+    if (!a) return console.log(col(C.red, '  ✗ context-bus offline'));
+    if (a.not_found) return console.log(col(C.gray, `  Agent "${rest}" not found`));
+    console.log('');
+    console.log(col(C.bold, `  AGENT: ${rest}`));
+    Object.entries(a).forEach(([k, v]) => { if (!k.startsWith('_')) console.log(`  ${String(k).padEnd(15)} ${v}`); });
+    console.log('');
+    return;
+  }
+
+  if (sub === 'workflows') {
+    const wf = await ctxGet('/context/workflows');
+    if (!wf) return console.log(col(C.red, '  ✗ context-bus offline'));
+    const keys = Object.keys(wf);
+    if (!keys.length) return console.log(col(C.gray, '  No workflows yet'));
+    console.log('');
+    console.log(col(C.bold, '  WORKFLOWS'));
+    keys.forEach(id => { const w = wf[id]; console.log(`  ${col(C.cyan, id.padEnd(8))} ${w.status}  ${w.command || ''}`); });
+    console.log('');
+    return;
+  }
+
+  if (sub === 'lock' && rest) {
+    const parts = rest.split(' ');
+    const resourceId = parts[0];
+    const agentId = parts[1] || 'cli';
+    const ttlMs = parseInt(parts[2] || '30000', 10);
+    const body = JSON.stringify({ resourceId, agentId, ttlMs });
+    return new Promise(resolve => {
+      const req = http.request({ hostname: '127.0.0.1', port: CTX_PORT, path: '/context/lock', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, res => {
+        let d = ''; res.on('data', c => d += c);
+        res.on('end', () => { try { const r = JSON.parse(d); console.log(col(r.success ? C.green : C.red, `  ${r.success ? '✓' : '✗'} ${resourceId} ${r.success ? 'locked' : (r.reason || r.lockedBy)}`)); } catch { console.log(col(C.red, '  lock failed')); } resolve(); });
+      });
+      req.on('error', e => { console.log(col(C.red, '  ✗ ' + e.message)); resolve(); });
+      req.write(body); req.end();
+    });
+  }
+
+  // Default help
+  console.log('');
+  console.log(col(C.bold, '  CONTEXT BUS · cross-agent shared state'));
+  console.log('  ─────────────────────────────────────────────────');
+  console.log('  ' + cmd('purpclaw context stats',             'active agents, workflows, locks'));
+  console.log('  ' + cmd('purpclaw context team <intent>',      'active team for an intent'));
+  console.log('  ' + cmd('purpclaw context agent <name>',      'agent state snapshot'));
+  console.log('  ' + cmd('purpclaw context workflows',          'all workflow states'));
+  console.log('  ' + cmd('purpclaw context lock <res> <agent>', 'acquire resource lock'));
+  console.log('');
+  console.log(col(C.gray, '  Context bus monitors EventBus events. Live. Query it any time.'));
+  console.log('');
+}
+
 async function cmdPool(args) {
   const sub   = (args[0] || '').toLowerCase();
   const rest  = args.slice(1).join(' ').trim();
@@ -2961,6 +3092,60 @@ async function cmdMochi(args) {
   rl.on('SIGINT', closeNow);
 }
 
+// ── tick (manual reasoning heartbeat) ─────────────────────────────────────────
+async function cmdTick(args) {
+  const { tick, readState } = require(path.join(PURP_DIR, 'lib', 'reasoning-tick'));
+  const sub = (args[0] || '').toLowerCase();
+
+  if (sub === 'status' || sub === 'last') {
+    sectionHead('  REASONING TICK · LAST STATE');
+    const s = readState();
+    if (!s.lastTickAt) { console.log(col(C.gray, '  No ticks recorded yet. Run `purpclaw tick` to fire one.\n')); return; }
+    console.log(`  Last tick     : ${col(C.cyan, s.lastTickId || '?')}`);
+    console.log(`  At            : ${col(C.gray, s.lastTickAt)}`);
+    if (s.lastSummary) {
+      console.log(`  Duration      : ${col(C.gray, s.lastSummary.durationMs + 'ms')}`);
+      console.log(`  Services      : ${col(C.green, String(s.lastSummary.online))}/${s.lastSummary.online + s.lastSummary.offline}  online`);
+      if (s.lastSummary.requiredDown) console.log(`  ${col(C.red, 'Required down:')} ${s.lastSummary.requiredDown}`);
+      if (s.lastSummary.newlyDown && s.lastSummary.newlyDown.length) console.log(`  ${col(C.yellow, 'Newly down  :')} ${s.lastSummary.newlyDown.join(', ')}`);
+      console.log(`  Proposals     : ${col(C.cyan, String(s.lastSummary.proposals))}`);
+      console.log(`  Writes to pool: heartbeat=${s.lastSummary.writes?.heartbeat ? 'yes' : 'no'}  failures=${s.lastSummary.writes?.failures || 0}`);
+    }
+    const knownDown = Object.keys(s.knownDown || {});
+    if (knownDown.length) console.log(`  Persistent-down: ${col(C.red, knownDown.join(', '))}`);
+    console.log('');
+    return;
+  }
+
+  banner();
+  sectionHead('  REASONING TICK · FIRING');
+  const spin = spinner('the swarm is taking a heartbeat...').start();
+  try {
+    const r = await tick({ verbose: false });
+    spin.succeed(`tick ${r.tickId} done in ${r.durationMs}ms`);
+    console.log('');
+    console.log(`  Services       : ${col(C.green, r.services.online + '/' + r.services.total)}  online`);
+    if (r.services.requiredDown) console.log(`  ${col(C.red, 'Required down :')} ${r.services.requiredDown}`);
+    if (r.newlyDown.length) {
+      console.log(`  ${col(C.yellow, 'Newly down    :')} ${r.newlyDown.map(d => d.key + ' (:' + d.port + ')').join(', ')}`);
+    }
+    console.log(`  Pool          : ${r.poolAlive ? col(C.green, 'reachable') : col(C.red, 'offline')}`);
+    if (r.poolStats) console.log(`  Pool snapshot : ${r.poolStats.skills} skills · ${r.poolStats.agents} agents · ${r.poolStats.memories} memories`);
+    console.log(`  Wrote to pool : heartbeat=${r.writes.heartbeat ? col(C.green, 'yes') : col(C.gray, 'skipped')}  failures=${r.writes.failures}`);
+    if (r.writes.errors.length) console.log(`  ${col(C.yellow, 'Write errors :')} ${r.writes.errors.length}`);
+    if (r.proposals.length) {
+      console.log('');
+      console.log(col(C.cyan, '  Proactive proposals (not executed):'));
+      for (const p of r.proposals) console.log(`    · ${p.command}   ${col(C.gray, '(' + p.reason + ')')}`);
+    }
+    console.log('');
+    console.log(col(C.gray, '  proposals are NOT executed — they\'re proposals. Run them with: purpclaw run "<command>"'));
+    console.log(col(C.gray, '  enable continuous ticking: PURPCLAW_PROACTIVE=1 in .env, then `purpclaw restart purpclaw-reasoning`\n'));
+  } catch (e) {
+    spin.fail(`tick failed: ${e.message}`);
+  }
+}
+
 function cmdSpaghetti(args) {
   const sub = (args[0] || 'audit').toLowerCase();
   const target = args[1];
@@ -3135,8 +3320,10 @@ async function main() {
 case 'registry': return cmdRegistry(args);
     case 'install':   return cmdRegistry(['install', ...args]);
     case 'search':    return cmdRegistry(['search', ...args]);
-    case 'resume':    return cmdResume(args);
-    case 'pool':       return cmdPool(args);
+ case 'resume':   return cmdResume(args);
+    case 'context':  return cmdContext(args);
+    case 'pool':     return cmdPool(args);
+    case 'tick':     return cmdTick(args);
     case 'mochi':      return cmdMochi(args);
     case 'spaghetti': return cmdSpaghetti(args);
     case 'agents':    return cmdAgents();
