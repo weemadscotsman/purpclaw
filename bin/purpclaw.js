@@ -3771,6 +3771,10 @@ function cmdHelp() {
     ['purpclaw smoke',                 'End-to-end self-test: services + LLM + pool + memory + dispatch'],
     ['purpclaw smoke --quick',         'Skip the orchestrator workflow round-trip'],
     ['purpclaw smoke --json',          'Machine-readable for CI'],
+    ['purpclaw safe-start --dark',     'Sequentially wake defined-but-dark services (no Windows cmd flood)'],
+    ['purpclaw safe-start <name>',     'Start one service with circuit breaker + stabilisation watch'],
+    ['purpclaw safe-stop --dark',      'Sequentially put the dark cluster back to sleep'],
+    ['purpclaw safe-stop <name>',      'Stop one service cleanly'],
   ]);
 
   section('☁  CLOUD / SCALE  (worker pool)', [
@@ -3973,6 +3977,10 @@ case 'registry': return cmdRegistry(args);
     case 'overview':
     case 'what-is-purpclaw':
     case 'whatis':    return loadCmd('overview').run(args, sharedCtx());
+    case 'safe-start':
+    case 'safestart': return loadCmd('safe-start').run(args, sharedCtx());
+    case 'safe-stop':
+    case 'safestop':  return loadCmd('safe-stop').run(args, sharedCtx());
     default:
       // Unknown command — treat as an inline task for convenience
       // e.g. `purpclaw fix the auth bug` → same as `purpclaw run "fix the auth bug"`

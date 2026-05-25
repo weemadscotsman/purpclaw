@@ -386,6 +386,23 @@ Things a runtime needs to graduate from "prototype" to "infrastructure":
 | **Garbage collection** | `purpclaw gc` sweeps test scratch, ages out sessions, compacts task store |
 | **Front door** | `purpclaw` with no args drops into a stack-aware chat REPL — the AI knows its own services, agents, ports, file layout |
 | **Multi-provider socket** | `LLM_PROVIDER=…` swaps cognition without touching the runtime — Claude, Gemini, OpenAI, Kimi, MiniMax, Groq, DeepSeek, OpenRouter, Ollama, custom |
+| **Cascade-safe lifecycle** | `purpclaw safe-start` / `safe-stop` launch services one-at-a-time with a stabilisation watch + restart-count circuit breaker — prevents the Windows cmd-window spawn cascade that took out the operator's desktop on 2026-05-25 |
+
+## ⚠ Windows Safety: Always Use safe-start
+
+**Never** start multiple defined-but-dark services with a single `pm2 start` call on Windows. When any of them crash-loops on launch, the npx/cmd.exe/Python-interpreter wrappers each flash a window that doesn't always honour `windowsHide: true` under crash conditions. Combined with PM2's autorestart, this produces a cmd-window spawn cascade fast enough to overwhelm Explorer.
+
+The correct ritual:
+
+```bash
+purpclaw safe-start --dark                       # wake the dark cluster, safely
+purpclaw safe-start vision                       # wake one service
+purpclaw safe-start vision --stabilise=10000     # extra stabilisation time
+purpclaw safe-start chorus --force               # bypass restart-count breaker
+purpclaw safe-stop --dark                        # put it back to sleep
+```
+
+Defined-but-dark cluster: `reasoning, autodream, voice, bridge, chorus, vision, stt, yolo, avatar`.
 
 ---
 

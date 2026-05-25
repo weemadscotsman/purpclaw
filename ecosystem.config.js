@@ -1,3 +1,28 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// PURPCLAW PM2 ECOSYSTEM
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// ⚠  WINDOWS SAFETY NOTE
+// ─────────────────────
+// Starting multiple services at once on Windows can trigger a cmd-window
+// spawn cascade when any service crash-loops on launch — npx, cmd.exe, and
+// the Python interpreter wrapper each can flash a window that doesn't
+// respect `windowsHide: true` cleanly under crash conditions.
+//
+// On 2026-05-25 a 4-service simultaneous start caused exactly this and took
+// out the operator's desktop. The fix:
+//
+//   USE `purpclaw safe-start` INSTEAD OF `pm2 start ecosystem.config.js`
+//
+// safe-start launches ONE service at a time, watches the restart count for
+// a stabilisation window, aborts the batch if any service crashes, and
+// refuses to start any service with >3 historical restarts.
+//
+// The defined-but-dark cluster (vision, voice, bridge, chorus, autodream,
+// reasoning, stt, yolo, avatar) is the most failure-prone — always wake it
+// with `purpclaw safe-start --dark`.
+// ═══════════════════════════════════════════════════════════════════════════
+
 const fs = require('fs');
 const path = require('path');
 
