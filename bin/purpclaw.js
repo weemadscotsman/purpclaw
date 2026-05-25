@@ -2728,7 +2728,8 @@ async function cmdDoctor() {
       console.log(`    · ${col(C.yellow, o.name.padEnd(26))} port ${o.port} — pm2 entry: ${o.pm2}`);
     }
     console.log(col(C.gray, '\n  Resolve: find the PID with `netstat -ano | findstr :<port>` and stop it,'));
-    console.log(col(C.gray, '           then `pm2 restart ' + orphans.map(o => o.pm2).join(' ') + '`.'));
+    console.log(col(C.gray, '           then use the cascade-safe launcher (NOT raw pm2 start):'));
+    console.log(col(C.cyan,  '             purpclaw safe-start ' + orphans.map(o => o.pm2.replace('purpclaw-', '')).join(' ')));
   }
   if (crashLoops.length) {
     console.log('\n  ' + col(C.yellow + C.bold, '⚠  CRASH-LOOP HISTORY'));
@@ -2738,6 +2739,7 @@ async function cmdDoctor() {
     }
     console.log(col(C.gray, '\n  Inspect: pm2 logs ' + crashLoops[0].pm2 + ' --lines 30'));
     console.log(col(C.gray, '  Reset:   pm2 reset ' + crashLoops.map(c => c.pm2).join(' ')));
+    console.log(col(C.gray, '  Restart (safely): purpclaw safe-start ' + crashLoops.map(c => c.pm2.replace('purpclaw-', '')).join(' ') + ' --force'));
   }
 
   console.log('');
