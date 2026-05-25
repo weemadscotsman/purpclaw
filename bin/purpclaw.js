@@ -3707,7 +3707,7 @@ function cmdHelp() {
     ['purpclaw pool reindex',          'Rebuild index from disk'],
   ]);
 
-  section('📦  REGISTRY  (139 skills  ·  38 agents)', [
+  section('📦  REGISTRY  (139 skills  ·  38 Claude-agent definitions)', [
     ['purpclaw registry browse',       'See all skills + agents with install status'],
     ['purpclaw install <name>',        'Install a skill from the local registry'],
     ['purpclaw search "<text>"',       'Keyword-search across all 139 skills'],
@@ -3724,7 +3724,7 @@ function cmdHelp() {
   ]);
 
   section('🤖  AGENTS + FORGE', [
-    ['purpclaw agents',                'List all 38 agents, divisions, and scores'],
+    ['purpclaw agents',                'List swarm agents (44 in tower), divisions, scores'],
     ['purpclaw forge [name]',          'Draw a gacha soul + create a new agent'],
     ['purpclaw look [1 2 3]',          'Capture screens + vision analysis'],
     ['purpclaw look --list',           'List detected monitors'],
@@ -3766,6 +3766,9 @@ function cmdHelp() {
     ['purpclaw gc',                    'Dry-run: list what would be cleaned'],
     ['purpclaw gc --apply',            'Sweep proof-test scratch, age-out sessions, compact tasks'],
     ['purpclaw gc --apply --aggressive', 'Shorter TTLs (1d sessions, 3d workspaces, 6h tasks)'],
+    ['purpclaw smoke',                 'End-to-end self-test: services + LLM + pool + memory + dispatch'],
+    ['purpclaw smoke --quick',         'Skip the orchestrator workflow round-trip'],
+    ['purpclaw smoke --json',          'Machine-readable for CI'],
   ]);
 
   section('☁  CLOUD / SCALE  (worker pool)', [
@@ -3798,7 +3801,7 @@ function cmdHelp() {
     [7782, 'eventbus      — central pub/sub broker'],
     [7783, 'state-store   — shared state namespaces'],
     [7784, 'orchestrator  — priority queue + governance'],
-    [7790, 'agent-tower   — 38 agents, swarm spawning'],
+    [7790, 'agent-tower   — 44 swarm agents (animals), spawning'],
     [7791, 'gatekeeper    — pre-merge validation'],
     [7881, 'context-bus   — cross-agent context propagation'],
     [7884, 'neuro-symbolic bridge (Python)'],
@@ -3963,6 +3966,8 @@ case 'registry': return cmdRegistry(args);
     case 'architecture':
     case 'arch':
     case 'concepts':  return loadCmd('architecture').run(args, sharedCtx());
+    case 'smoke':
+    case 'selftest':  return loadCmd('smoke').run(args, sharedCtx());
     default:
       // Unknown command — treat as an inline task for convenience
       // e.g. `purpclaw fix the auth bug` → same as `purpclaw run "fix the auth bug"`
