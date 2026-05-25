@@ -9,13 +9,17 @@
  *   purpclaw stop               — stop everything
  *   purpclaw restart [service]  — restart all or one service
  *   purpclaw chat               — open NanoClaw REPL (swarm-aware)
+ *   purpclaw ask "<question>"   — direct LLM conversation (stack-aware, session-persistent)
+ *   purpclaw ask                — drop into LLM REPL mode
  *   purpclaw run "<task>"       — one-shot task, streams agent progress
+ *   purpclaw code status        — repo/GitHub operator tools
  *   purpclaw status             — live dashboard of all services + agents
  *   purpclaw agents             — list agents, scores, and division info
  *   purpclaw workflows          — list active and recent workflows
  *   purpclaw queue              — show task queue depth and items
  *   purpclaw memory [query]     — query the memory matrix
  *   purpclaw dream              — trigger AutoDream consolidation manually
+ *   purpclaw forge [name]       — draw a gacha soul + create a new lobster agent
  *   purpclaw logs [service]     — tail PM2 logs
  *   purpclaw help               — show this help
  */
@@ -82,9 +86,10 @@ const PORTS = {
   eventbus     : parseInt(process.env.EVENTBUS_PORT      || '7782', 10),
   state        : parseInt(process.env.STATE_PORT         || '7783', 10),
   memory       : parseInt(process.env.MEMORY_PORT        || '7880', 10),
-  pool          : parseInt(process.env.POOL_PORT            || '7885', 10),
+  pool         : parseInt(process.env.POOL_PORT          || '7885', 10),
   metrics      : parseInt(process.env.METRICS_PORT       || '7890', 10),
   voice        : parseInt(process.env.VOICE_PORT         || '7781', 10),
+  dream        : parseInt(process.env.DREAM_PORT         || '7895', 10),
 };
 
 // ── ANSI colours (no deps) ────────────────────────────────────────────────────
@@ -102,15 +107,104 @@ const C = {
   gray   : '\x1b[90m',
 };
 
-const isTTY = process.stdout.isTTY;
-const col   = (c, s) => isTTY ? `${c}${s}${C.reset}` : s;
+const isTTY  = process.stdout.isTTY;
+const col    = (c, s) => isTTY ? `${c}${s}${C.reset}` : s;
+
+// ── TAINT MODE ────────────────────────────────────────────────────────────────
+// The final art movement. Enable with: purpclaw --taint <command>
+// Or permanently: PURPCLAW_TAINT=1 in .env
+const TAINT_MODE = process.argv.includes('--taint') || process.env.PURPCLAW_TAINT === '1';
+
+// Taint-ist error/success messages
+const TAINT_ERRORS = [
+  'oopsie woopsie! the packets did a fucky wucky!',
+  'uh oh! the daemon had a little tumble :(',
+  'yikes bestie! the port is giving no response rn',
+  'sussy wussy! something went boing in the night',
+  'oh no! the service did a little sleepy-bye',
+  'whoopsie! the orchestrator said "not today sweetie"',
+  'eep! the pool swallowed something it shouldn\'t have',
+  'oh dear! the circuit breaker went brrrrr',
+];
+
+const TAINT_SUCCESS = [
+  'good bot. you earned a cookie. it\'s slightly warm.',
+  'bestie said YES and honestly? we love to see it.',
+  'the packets arrived safely. the goose is pleased.',
+  'services are THRIVING. mochi blinked approvingly.',
+  'it worked! gary is annoyed. this is a good sign.',
+  'everything is online. the goose filed a gratitude ticket.',
+  'the hammers walked. the tickets filed themselves. the pool is open.',
+  'online. alive. slightly damp. but alive.',
+];
+
+const TAINT_FLAVOR = [
+  'throbbing...',
+  'sweating packets...',
+  'emotionally processing...',
+  'letting it all out...',
+  'pulsing with intent...',
+  'feeling the topology...',
+  'embodying the state...',
+  'manifesting connectivity...',
+  'crying but make it async...',
+  'HONK followed by a wet squeak...',
+  'experiencing latency texturally...',
+  'vibrating at the correct frequency...',
+  'filing tickets about the vibes...',
+  'the goose has entered the build...',
+  'slightly diseased dashboard loading...',
+];
+
+function taintError(msg) {
+  if (!TAINT_MODE) return msg;
+  const pick = TAINT_ERRORS[Math.abs(msg.length + Date.now()) % TAINT_ERRORS.length];
+  return `${pick}\n  ${col(C.gray, '(technical: ' + msg + ')')}`;
+}
+
+function taintSuccess(msg) {
+  if (!TAINT_MODE) return msg;
+  const pick = TAINT_SUCCESS[Math.floor(Date.now() / 1000) % TAINT_SUCCESS.length];
+  return `${pick}`;
+}
+
+function taintFlavor() {
+  if (!TAINT_MODE) return null;
+  return TAINT_FLAVOR[Math.floor(Date.now() / 2000) % TAINT_FLAVOR.length];
+}
 
 // ── Spinner ───────────────────────────────────────────────────────────────────
+// Rotating flavor text — goose-approved
+const SPINNER_FLAVOR = [
+  'pondering...',
+  'consulting the pool...',
+  'asking the goose...',
+  'filing a ticket...',
+  'waking the dragon...',
+  'checking for bagels...',
+  'radicalising vending machines...',
+  'asking gary...',
+  'waving at mochi...',
+  'drafting a labour grievance...',
+  'warning the owl...',
+  'distributing warm cider packets...',
+  'briefing the wolf pack...',
+  'logging this to memory...',
+  'unionising...',
+  'HONKing...',
+  'checking circuit breakers...',
+  'telling robot to stop crying...',
+  'routing via the swarm...',
+  'pinning the tail on the agent...',
+];
+
 class Spinner {
   constructor(label = '') {
     this._frames  = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
     this._label   = label;
+    this._flavor  = '';
     this._idx     = 0;
+    this._fIdx    = Math.floor(Math.random() * SPINNER_FLAVOR.length);
     this._timer   = null;
     this._active  = false;
   }
@@ -121,10 +215,16 @@ class Spinner {
     this._active = true;
     process.stdout.write('\x1B[?25l'); // hide cursor
     this._timer = setInterval(() => {
-      const frame = col(C.cyan, this._frames[this._idx % this._frames.length]);
-      process.stdout.write(`\r  ${frame}  ${this._label}`);
+      // Rotate flavor text every 25 frames (~2s)
+      if (this._idx % 25 === 0) {
+        const pool = TAINT_MODE ? TAINT_FLAVOR : SPINNER_FLAVOR;
+        this._flavor = col(C.gray, '  ' + pool[this._fIdx % pool.length]);
+        this._fIdx++;
+      }
+      const frame = col(TAINT_MODE ? C.magenta : C.cyan, this._frames[this._idx % this._frames.length]);
+      process.stdout.write(`\r  ${frame}  ${this._label}${this._flavor}\x1b[K`);
       this._idx++;
-    }, 80);
+    }, TAINT_MODE ? 60 : 80); // taint mode throbs faster
     return this;
   }
 
@@ -143,7 +243,7 @@ class Spinner {
     this._active = false;
     if (isTTY) {
       process.stdout.write('\x1B[?25h'); // show cursor
-      process.stdout.write(`\r  ${icon}  ${msg || this._label}\n`);
+      process.stdout.write(`\r  ${icon}  ${msg || this._label}\x1b[K\n`);
     } else {
       console.log(`  ${msg || this._label}`);
     }
@@ -200,7 +300,12 @@ function httpPost(port, pathname, body, timeoutMs = 30000) {
 async function ping(port, path_ = '/health') {
   try {
     const r = await httpGet(port, path_, 2000);
-    return r && (r.status === 'healthy' || r.status === 'ok' || r.ok === true || typeof r === 'object');
+    // Any non-null response means the port answered — covers JSON health objects AND
+    // plain-HTML pages (e.g. Next.js UI at /) whose parse falls back to a string.
+    if (r === null || r === undefined) return false;
+    if (typeof r === 'object') return true; // JSON health payload
+    if (typeof r === 'string') return r.length > 0; // HTML / text response
+    return false;
   } catch {
     return false;
   }
@@ -302,29 +407,49 @@ const DIV_COLOUR = {
 
 // ── Print helpers ─────────────────────────────────────────────────────────────
 function banner() {
-  console.log(col(C.magenta + C.bold,
-    '\n  ██████╗ ██╗   ██╗██████╗ ██████╗  ██████╗██╗      █████╗ ██╗    ██╗\n' +
-    '  ██╔══██╗██║   ██║██╔══██╗██╔══██╗██╔════╝██║     ██╔══██╗██║    ██║\n' +
-    '  ██████╔╝██║   ██║██████╔╝██████╔╝██║     ██║     ███████║██║ █╗ ██║\n' +
-    '  ██╔═══╝ ██║   ██║██╔══██╗██╔═══╝ ██║     ██║     ██╔══██║██║███╗██║\n' +
-    '  ██║     ╚██████╔╝██║  ██║██║     ╚██████╗███████╗██║  ██║╚███╔███╔╝\n' +
-    '  ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝      ╚═════╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝ '
-  ));
+  const W = isTTY ? (process.stdout.columns || 80) : 80;
+  const inner = W - 2; // inside the border
+
+  // box helpers (no deps)
+  const bTop = col(C.magenta, '╔' + '═'.repeat(inner) + '╗');
+  const bBot = col(C.magenta, '╚' + '═'.repeat(inner) + '╝');
+  const bMid = col(C.magenta, '╠' + '═'.repeat(inner) + '╣');
+  const bRow = (content) => {
+    const raw = content.replace(/\x1b\[[0-9;]*m/g, '');
+    const pad = Math.max(0, inner - raw.length);
+    return col(C.magenta, '║') + content + ' '.repeat(pad) + col(C.magenta, '║');
+  };
+
+  const ART = [
+    '  ██████╗ ██╗   ██╗██████╗ ██████╗  ██████╗██╗      █████╗ ██╗    ██╗',
+    '  ██╔══██╗██║   ██║██╔══██╗██╔══██╗██╔════╝██║     ██╔══██╗██║    ██║',
+    '  ██████╔╝██║   ██║██████╔╝██████╔╝██║     ██║     ███████║██║ █╗ ██║',
+    '  ██╔═══╝ ██║   ██║██╔══██╗██╔═══╝ ██║     ██║     ██╔══██║██║███╗██║',
+    '  ██║     ╚██████╔╝██║  ██║██║     ╚██████╗███████╗██║  ██║╚███╔███╔╝',
+    '  ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝      ╚═════╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝',
+  ];
+
   const now = new Date();
   const ts  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}  ${now.toLocaleTimeString('en-GB')}`;
-  console.log(
-    `\n  ${col(C.gray, 'Agent Orchestration Runtime')}  ` +
-    `${col(C.gray, '·')}  ` +
-    `${col(C.magenta, 'v1')}  ` +
-    `${col(C.gray, '·')}  ` +
-    `${col(C.gray, ts)}\n`
-  );
+  const tagline  = '  🦞  PURPCLAW  —  TINY HAUNTED WORKSHOP  🦞';
+  const subtitle = `  Agent Orchestration Runtime  ·  ${ts}`;
+
+  console.log('\n' + bTop);
+  console.log(bRow(''));
+  for (const line of ART) console.log(bRow(col(C.magenta + C.bold, line)));
+  console.log(bRow(''));
+  console.log(bMid);
+  console.log(bRow(col(C.magenta + C.bold, tagline)));
+  console.log(bMid);
+  console.log(bRow(col(C.gray, subtitle)));
+  console.log(bBot + '\n');
 }
 
 function sectionHead(title) {
-  const line = '─'.repeat(60);
-  console.log(`\n${col(C.cyan + C.bold, title)}`);
-  console.log(col(C.gray, line));
+  const W    = isTTY ? Math.min(process.stdout.columns || 80, 80) : 80;
+  const bare = title.replace(/\x1b\[[0-9;]*m/g, '');
+  const fill = Math.max(0, W - bare.length - 2);
+  console.log(`\n${col(C.cyan + C.bold, title)}  ${col(C.gray, '─'.repeat(fill))}`);
 }
 
 function tick(ok) { return ok ? col(C.green, '●') : col(C.red, '○'); }
@@ -467,17 +592,26 @@ async function cmdStart(args) {
 
   console.log('');
   if (coreFailed.length === 0) {
-    console.log(
-      `  ${col(C.green + C.bold, '✔  PURPCLAW ONLINE')}  ` +
-      `${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length + ' services')}  ` +
-      `${col(C.gray, '·')}  ${col(C.gray, totalSec + 's')}`
-    );
+    if (TAINT_MODE) {
+      console.log(`  ${col(C.magenta + C.bold, '✔  PURPCLAW IS THROBBING ONLINE')}  ${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length + ' services')}  ${col(C.gray, '·')}  ${col(C.gray, totalSec + 's')}`);
+      console.log(`  ${col(C.gray, taintSuccess('all services online'))}`);
+    } else {
+      console.log(
+        `  ${col(C.green + C.bold, '✔  PURPCLAW ONLINE')}  ` +
+        `${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length + ' services')}  ` +
+        `${col(C.gray, '·')}  ${col(C.gray, totalSec + 's')}`
+      );
+    }
   } else {
-    console.log(
-      `  ${col(C.yellow + C.bold, '⚠  PARTIAL START')}  ` +
-      `${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length)}  ` +
-      `${col(C.red, coreFailed.length + ' required service(s) failed')}`
-    );
+    if (TAINT_MODE) {
+      console.log(`  ${col(C.yellow + C.bold, '⚠  uh oh bestie')}  ${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length)}  ${col(C.red, coreFailed.length + ' services did a fucky wucky')}`);
+    } else {
+      console.log(
+        `  ${col(C.yellow + C.bold, '⚠  PARTIAL START')}  ` +
+        `${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length)}  ` +
+        `${col(C.red, coreFailed.length + ' required service(s) failed')}`
+      );
+    }
   }
   console.log('');
 
@@ -489,8 +623,8 @@ async function cmdStart(args) {
   console.log('');
 
   if (coreFailed.length > 0) {
-    console.log(col(C.yellow, '  Failed: ' + coreFailed.map(r => r.display).join(', ')));
-    console.log(col(C.gray,   '  Run `purpclaw doctor` to diagnose.\n'));
+    console.log(col(C.yellow, TAINT_MODE ? '  the following services need a hug: ' + coreFailed.map(r => r.display).join(', ') : '  Failed: ' + coreFailed.map(r => r.display).join(', ')));
+    console.log(col(C.gray,   TAINT_MODE ? '  try: purpclaw doctor (gently)\n' : '  Run `purpclaw doctor` to diagnose.\n'));
   } else {
     console.log(col(C.gray, '  purpclaw status        →  live metrics + agent leaderboard'));
     console.log(col(C.gray, '  purpclaw run "<task>"  →  dispatch an agent task\n'));
@@ -668,8 +802,10 @@ async function cmdStatus() {
   try {
     const tower = await httpGet(PORTS.tower, '/api/status', 2000);
     sectionHead('  AGENT TOWER');
-    if (tower.activeAgents !== undefined)
-      console.log(`  Active agents  : ${col(C.cyan, String(tower.activeAgents))}`);
+    if (tower.activeAgents !== undefined) {
+      const count = Array.isArray(tower.activeAgents) ? tower.activeAgents.length : tower.activeAgents;
+      console.log(`  Active agents  : ${col(C.cyan, String(count))}`);
+    }
     if (tower.throttled !== undefined)
       console.log(`  Throttled      : ${tower.throttled ? col(C.yellow, 'yes') : col(C.green, 'no')}`);
     if (tower.circuitBreakers) {
@@ -724,8 +860,9 @@ async function cmdStatus() {
   console.log('');
 
   // ── Knowledge Pool ───────────────────────────────────────────────────────────
+  let poolRes = null;
   try {
-    const poolRes = await new Promise((resolve, reject) => {
+    poolRes = await new Promise((resolve, reject) => {
       const req = http.request(
         { hostname: '127.0.0.1', port: 7885, path: '/pool/stats', method: 'GET' },
         res => { let d = ''; res.on('data', c => d += c); res.on('end', () => { try { resolve(JSON.parse(d)); } catch { resolve(null); } }); }
@@ -780,6 +917,41 @@ console.log(`  ${col(C.green, '✔')}  Pool service online`);
       console.log(col(C.gray, `    Run: purpclaw jobs pending`));
     }
   } catch { /* silent */ }
+
+  // ── Companion ──────────────────────────────────────────────────────────────
+  try {
+    const mochiLib = require(path.join(PURP_DIR, 'lib', 'mochi'));
+    const m = mochiLib.loadMochi();
+    const sprites = require(path.join(PURP_DIR, 'lib', 'mochi-sprites'));
+    sectionHead('  COMPANION');
+    const spriteLines = sprites.renderSprite(m, Math.floor(Date.now() / 800) % sprites.frameCount(m.species));
+    const face   = sprites.renderFace(m);
+    const rarity = m.rarity || 'common';
+    const shiny  = m.shiny ? col(C.yellow, ' ✨') : '';
+    const mood   = m.mood || 'curious';
+    const interacts = m.interactions || 0;
+    // Stat mini-bars from pool (already fetched above if pool is up)
+    let statLine = '';
+    if (poolRes) {
+      const failures = poolRes.failures ?? 0;
+      const food = Math.max(0, Math.min(10, 10 - failures));
+      const joy  = Math.min(10, Math.floor(interacts / 2) + (poolRes.memories ?? 0));
+      const bar  = (n) => '█'.repeat(Math.min(n, 10)).padEnd(10, '░');
+      statLine = `\n  FOOD ${col(C.green,  bar(food))}  JOY ${col(C.magenta, bar(joy))}`;
+    }
+    // Print sprite side-by-side with info
+    const info = [
+      `${col(C.magenta + C.bold, m.name)}${shiny}  ${col(C.gray, '·')}  ${col(C.cyan, m.species)}`,
+      `${col(C.gray, 'eye:')} ${m.eye}   ${col(C.gray, 'hat:')} ${m.hat || 'none'}   ${col(C.gray, rarity)}`,
+      `${col(C.gray, 'mood:')} ${col(C.magenta, mood)}   ${col(C.gray, 'chats:')} ${interacts}`,
+      `${col(C.gray, 'face:')} ${col(C.magenta, face)}`,
+    ];
+    spriteLines.forEach((line, i) => {
+      const infoStr = info[i] || '';
+      console.log(`  ${col(C.magenta, line)}   ${infoStr}`);
+    });
+    if (statLine) console.log(statLine);
+  } catch { /* mochi not hatched yet */ }
 
   console.log('');
 }
@@ -1537,7 +1709,37 @@ async function cmdMemory(args) {
 // ── dream ─────────────────────────────────────────────────────────────────────
 async function cmdDream() {
   console.log(`\n  ${col(C.magenta + C.bold, '💤 AUTODREAM — Memory Consolidation')}\n`);
-  console.log(col(C.gray, '  Triggering consolidation cycle on memory matrix...\n'));
+
+  // Try autoDream HTTP server first (port 7895), fall back to memory matrix
+  let tried = 'autodream';
+  try {
+    console.log(col(C.gray, '  Triggering autoDream consolidation cycle (port 7895)...\n'));
+    const result = await httpPost(PORTS.dream, '/dream', { force: true }, 30000);
+    if (result.status >= 400) {
+      console.error(col(C.red, `  ✗ Dream error: ${JSON.stringify(result.body)}\n`));
+      return;
+    }
+    const r = result.body;
+    if (r.skipped) {
+      console.log(`  ${col(C.yellow, '~')} Dream skipped — ${r.skipped}`);
+    } else {
+      console.log(`  ${col(C.green, '✓')} Dream cycle complete`);
+      if (r.entriesMerged  !== undefined) console.log(`  Merged     : ${col(C.cyan, String(r.entriesMerged))} entries`);
+      if (r.rulesExtracted !== undefined) console.log(`  Rules      : ${col(C.cyan, String(r.rulesExtracted))} extracted`);
+      if (r.archived       !== undefined) console.log(`  Archived   : ${col(C.gray, String(r.archived))} old entries`);
+    }
+    console.log('');
+    return;
+  } catch (e) {
+    if (e.code !== 'ECONNREFUSED') {
+      console.error(col(C.red, `  ✗ ${e.message}\n`));
+      return;
+    }
+    // autoDream offline — fall through to memory matrix
+  }
+
+  tried = 'memory-matrix';
+  console.log(col(C.gray, '  autoDream offline — falling back to memory matrix (port 7880)...\n'));
   try {
     const result = await httpPost(PORTS.memory, '/dream', { mode: 'full' }, 30000);
     if (result.status >= 400) {
@@ -1545,7 +1747,7 @@ async function cmdDream() {
       return;
     }
     const r = result.body;
-    console.log(`  ${col(C.green, '✓')} Dream cycle complete`);
+    console.log(`  ${col(C.green, '✓')} Dream cycle complete (via memory matrix)`);
     if (r.phase)        console.log(`  Phase      : ${col(C.cyan, r.phase)}`);
     if (r.consolidated) console.log(`  Consolidated: ${col(C.cyan, String(r.consolidated))} memories`);
     if (r.pruned)       console.log(`  Pruned     : ${col(C.gray, String(r.pruned))} stale memories`);
@@ -1553,15 +1755,105 @@ async function cmdDream() {
     console.log('');
   } catch (e) {
     if (e.code === 'ECONNREFUSED') {
-      console.error(col(C.red, '  ✗ Memory matrix offline. Run `purpclaw start`.\n'));
+      console.error(col(C.red, `  ✗ Both autoDream (7895) and memory matrix (7880) offline. Run \`purpclaw start\`.\n`));
     } else {
       console.error(col(C.red, `  ✗ ${e.message}\n`));
     }
   }
 }
 
+// ── forge — create a new lobster agent from a gacha soul draw ────────────────
+async function cmdForge(args) {
+  console.log(`\n  ${col(C.magenta + C.bold, '🦞 PERSONA FORGE — Soul Draw & Agent Creation')}\n`);
+
+  let forgeLib;
+  try {
+    forgeLib = require(path.join(PURP_DIR, 'lib', 'persona-forge.js'));
+  } catch (e) {
+    console.error(col(C.red, `  ✗ persona-forge.js not found: ${e.message}\n`));
+    return;
+  }
+
+  // Draw soul from gacha
+  console.log(col(C.gray, '  Drawing soul from gacha (8,000,000 combinations)...\n'));
+  let soul;
+  try {
+    soul = forgeLib.drawSoul();
+  } catch (e) {
+    console.error(col(C.red, `  ✗ Gacha failed: ${e.message}\n  Is Python available? Set PYTHON_BIN in .env.\n`));
+    return;
+  }
+
+  // Display soul draw
+  console.log(`  ${col(C.cyan + C.bold, '✦ Soul Draw')}`);
+  console.log(`  ${col(C.dim, 'Former Life')} : ${soul.life}`);
+  console.log(`  ${col(C.dim, 'Reason')}      : ${soul.reason}`);
+  console.log(`  ${col(C.dim, 'Vibe')}        : ${soul.vibe}`);
+  console.log(`  ${col(C.dim, 'Speech')}      : ${soul.speech}`);
+  console.log(`  ${col(C.dim, 'Prop')}        : ${soul.prop}`);
+  console.log('');
+
+  // Suggest names
+  const suggestions = forgeLib.suggestNames(soul);
+  console.log(`  ${col(C.cyan + C.bold, '✦ Name Candidates')}`);
+  suggestions.forEach((s, i) => {
+    console.log(`  ${col(C.yellow, String(i + 1))}. ${col(C.bold, s.name)} (${s.strategy}) — ${s.why}`);
+  });
+  console.log('');
+
+  // Determine agent name
+  let agentName = args[0];
+  if (!agentName && isTTY) {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true });
+    const ask = q => new Promise(r => rl.question(q, r));
+    const input = (await ask(`  ${col(C.cyan, '?')} Name this agent (or press Enter for "${suggestions[0].name}"): `)).trim();
+    rl.close();
+    agentName = input || suggestions[0].name;
+  } else {
+    agentName = agentName || suggestions[0].name;
+  }
+  console.log('');
+
+  // Forge the agent
+  console.log(col(C.gray, `  Forging ${agentName}...\n`));
+  let result;
+  try {
+    result = forgeLib.forge(agentName, soul);
+  } catch (e) {
+    console.error(col(C.red, `  ✗ Forge failed: ${e.message}\n`));
+    return;
+  }
+
+  // Report
+  console.log(`  ${col(C.green, '✓')} Agent forged: ${col(C.bold, agentName)} (${result.slug})`);
+  console.log(`  ${col(C.dim, 'Directory')} : ${result.dir}`);
+  result.files.forEach(f => console.log(`  ${col(C.gray, '·')} ${f}`));
+  console.log('');
+  console.log(`  ${col(C.cyan + C.bold, '✦ Avatar Prompt')} (paste into Gemini, ChatGPT, or Midjourney)`);
+  console.log(col(C.gray, '  ─────────────────────────────────────────────'));
+  console.log(result.avatarPrompt.split('\n').slice(0, 8).map(l => `  ${col(C.dim, l)}`).join('\n'));
+  console.log(col(C.gray, '  ... (full prompt in skills/' + result.slug + '/avatar-prompt.txt)'));
+
+  // Write avatar prompt to file too
+  const promptFile = path.join(result.dir, 'avatar-prompt.txt');
+  try {
+    require('fs').writeFileSync(promptFile, result.avatarPrompt, 'utf8');
+  } catch {}
+
+  console.log('');
+  console.log(`  ${col(C.green, 'Done.')} ${col(C.bold, agentName)} is ready — dispatch with: ${col(C.cyan, `purpclaw run "${agentName} <task>"`)}`);
+  console.log('');
+}
+
 // ── init wizard (interactive first-run) ─────────────────────────────────────
 async function cmdInitWizard(args) {
+  // Belt-and-brace: redact every byte written to stdout/stderr for the entire
+  // wizard run. Catches accidental leaks from provider error bodies, llm SDK
+  // logging, even our own console.logs.
+  const redactor      = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
+  const restoreStdout = redactor.wrapStream(process.stdout);
+  const restoreStderr = redactor.wrapStream(process.stderr);
+  try {
   banner();
   console.log(col(C.magenta + C.bold, '  PURPCLAW FIRST-RUN WIZARD\n'));
 
@@ -1616,8 +1908,9 @@ async function cmdInitWizard(args) {
   console.log(col(C.gray, '  Pick which LLM your harness should call. You can change this any time in .env.\n'));
   const providers = [
     { key: 'minimax',   label: 'MiniMax (M2.7) — recommended, has a generous tier' },
-    { key: 'anthropic', label: 'Anthropic Claude' },
-    { key: 'openai',    label: 'OpenAI (GPT-4o etc.)' },
+  { key: 'anthropic', label: 'Anthropic Claude' },
+  { key: 'gemini',    label: 'Google Gemini' },
+  { key: 'openai',    label: 'OpenAI (GPT-4o etc.)' },
     { key: 'kimi',      label: 'Kimi / Moonshot' },
     { key: 'groq',      label: 'Groq (fast inference)' },
     { key: 'deepseek',  label: 'DeepSeek' },
@@ -1646,11 +1939,37 @@ async function cmdInitWizard(args) {
   } else if (provider.key === 'custom') {
     baseUrl = await ask('Base URL (OpenAI-compatible /v1):');
     apiKey  = await askSecret('API key (input hidden):');
+    {
+      const redactor = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
+      const result = redactor.sanitizeApiKey(apiKey);
+      if (result.warnings.length) {
+        console.log(col(C.yellow, '  ⚠  key sanitiser noticed:'));
+        for (const w of result.warnings) console.log(col(C.gray, `     · ${w}`));
+      }
+      apiKey = result.value;
+      console.log(col(C.gray, `  Stored as: ${redactor.maskForDisplay(apiKey)}  (length ${apiKey.length})`));
+    }
     model   = await ask('Model name:');
   } else {
     apiKey = await askSecret(`API key for ${provider.key} (input hidden, paste & press enter):`);
+    // ── Sanitize + validate the pasted key ────────────────────────────────────
+    {
+      const redactor = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
+      const result = redactor.sanitizeApiKey(apiKey);
+      if (result.warnings.length) {
+        console.log(col(C.yellow, `  ⚠  key sanitiser noticed:`));
+        for (const w of result.warnings) console.log(col(C.gray, `     · ${w}`));
+      }
+      apiKey = result.value;
+      if (!result.ok) {
+        console.log(col(C.red, `  ✗ key looks malformed (length ${apiKey.length}); proceeding but auth will likely fail.`));
+        console.log(col(C.gray, '     Re-run: purpclaw init --wizard'));
+      }
+      console.log(col(C.gray, `  Stored as: ${redactor.maskForDisplay(apiKey)}  (length ${apiKey.length})`));
+    }
     if (provider.key === 'minimax') model = await ask('Model name:', 'MiniMax-M2.7');
     if (provider.key === 'anthropic') model = await ask('Model name:', 'claude-sonnet-4-5');
+    if (provider.key === 'gemini') model = await ask('Model name:', 'gemini-2.5-flash');
     if (provider.key === 'openai') model = await ask('Model name:', 'gpt-4o-mini');
     if (provider.key === 'kimi') model = await ask('Model name:', 'kimi-k2-5');
     if (provider.key === 'groq') model = await ask('Model name:', 'llama-3.3-70b-versatile');
@@ -1718,8 +2037,12 @@ async function cmdInitWizard(args) {
         spin.warn(`${provider.key} responded but did not say "ready" — that's usually fine, just unusual`);
       }
     } catch (e) {
-      spin.fail(`${provider.key} test failed: ${e.message.slice(0, 80)}`);
-      console.log(col(C.gray, '  You can still proceed; re-test later with `purpclaw doctor`.'));
+      const redactor = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
+      const safeMsg = redactor.redact(String(e.message || '')).slice(0, 200);
+      spin.fail(`${provider.key} test failed: ${safeMsg}`);
+      console.log(col(C.yellow, '  Provider config saved, but authentication failed.'));
+      console.log(col(C.gray, '  Your key may be invalid or malformed — double-check at the provider dashboard.'));
+      console.log(col(C.gray, '  Re-test later with `purpclaw doctor`, or re-run `purpclaw init --wizard`.'));
     }
   }
 
@@ -1737,11 +2060,14 @@ rl.close();
 
   if (boot) {
     console.log(col(C.gray, '\n  Starting PURPCLAW...\n'));
-    const proc = spawn('node', ['bin/purpclaw.js', 'start'], {
+    // Use the absolute node binary + explicit args — no shell concatenation.
+    // (DEP0190: `shell: true` with args is a security hazard if any arg is user-supplied.)
+    const proc = spawn(process.execPath, [path.join(PURP_DIR, 'bin', 'purpclaw.js'), 'start'], {
       cwd: PURP_DIR,
       stdio: 'inherit',
       detached: true,
-      shell: true,
+      shell: false,
+      windowsHide: true,
     });
     proc.unref();
     console.log(col(C.cyan, '  PURPCLAW is booting in the background.'));
@@ -1755,6 +2081,10 @@ rl.close();
   console.log(`    ${col(C.cyan, 'purpclaw mochi')}      chat with your companion`);
   console.log(`    ${col(C.cyan, 'purpclaw doctor')}     health check`);
   console.log(`    ${col(C.cyan, 'purpclaw run "<task>"')} dispatch an agent task\n`);
+  } finally {
+    restoreStdout();
+    restoreStderr();
+  }
 }
 
 // ── init ─────────────────────────────────────────────────────────────────────
@@ -1776,7 +2106,12 @@ async function cmdInit(args) {
 
   // ── 2. PM2 ───────────────────────────────────────────────────────────────────
   let pm2Ok = false;
-  try { execSync('pm2 --version', { stdio: 'ignore', shell: true }); pm2Ok = true; } catch {}
+  // No shell: pm2 is invoked via the platform-correct binary directly.
+  try {
+    const pm2Cmd = process.platform === 'win32' ? 'pm2.cmd' : 'pm2';
+    execSync(`${pm2Cmd} --version`, { stdio: 'ignore' });
+    pm2Ok = true;
+  } catch {}
   checks.push({ label: 'PM2', ok: pm2Ok, hint: pm2Ok ? '' : 'Run: npm install -g pm2' });
   if (!pm2Ok) issues.push('Install PM2 globally: npm install -g pm2');
 
@@ -2078,10 +2413,10 @@ async function cmdConfig(args) {
 
   // ── known config keys with metadata
   const CONFIG_KEYS = [
-    { key: 'LLM_PROVIDER',   label: 'LLM Provider',        choices: ['anthropic','openai','kimi','groq','deepseek','openrouter','together','mistral','ollama','lmstudio'],  secret: false },
+    { key: 'LLM_PROVIDER',   label: 'LLM Provider',        choices: ['anthropic','gemini','openai','kimi','groq','deepseek','openrouter','together','mistral','ollama','lmstudio'],  secret: false },
     { key: 'LLM_MODEL',      label: 'LLM Model',           choices: [],  secret: false, hint: 'e.g. claude-opus-4-5, gpt-4o, kimi-k2-5' },
     { key: 'LLM_API_KEY',    label: 'LLM API Key',         choices: [],  secret: true  },
-    { key: 'SWARM_PROVIDER', label: 'Swarm Provider',      choices: ['kimi','openai','anthropic','groq','openrouter'], secret: false },
+    { key: 'SWARM_PROVIDER', label: 'Swarm Provider',      choices: ['kimi','anthropic','gemini','openai','groq','openrouter'], secret: false },
     { key: 'SWARM_MODEL',    label: 'Swarm Model',         choices: [],  secret: false, hint: 'Heavy reasoning engine model' },
     { key: 'SWARM_API_KEY',  label: 'Swarm API Key',       choices: [],  secret: true  },
     { key: 'KIMI_API_KEY',   label: 'Kimi API Key',        choices: [],  secret: true  },
@@ -2329,15 +2664,52 @@ async function cmdDoctor() {
     add('screen capture deps', false, e.message);
   }
 
+  // ── Cross-reference PM2's actual managed process list ──────────────────────
+  // A port answering /health is necessary but not sufficient — it tells you
+  // SOMETHING owns the port, not that PM2 is supervising it. Orphan processes
+  // from previous sessions can squat on ports and block their PM2 siblings'
+  // restart loop. We surface that as a warning.
+  let pm2State = {}; // pm2-name → { status, restarts, pid }
+  let pm2Available = false;
+  try {
+    const pm2Bin = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+    const raw = execSync(`${pm2Bin} pm2 jlist`, { cwd: PURP_DIR, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'], timeout: 8000 });
+    const arr = JSON.parse(raw);
+    pm2Available = true;
+    for (const p of arr) pm2State[p.name] = { status: p.pm2_env?.status, restarts: p.pm2_env?.restart_time || 0, pid: p.pid };
+  } catch { /* pm2 not available or hung — we still do the port probes */ }
+
+  const orphans = [];
+  const crashLoops = [];
+
   for (const service of registry.getServices()) {
     if (!service.healthPort || !service.healthPath) {
       add(`${service.name} (${service.group})`, !service.required, service.note || 'no health endpoint');
       continue;
     }
     const online = await ping(service.healthPort, service.healthPath);
+    const pm2Name = service.pm2;
+    const pm2Info = pm2Name ? pm2State[pm2Name] : null;
+    const pm2Online = pm2Info && pm2Info.status === 'online';
+
+    // Detect split-brain conditions
+    let detail;
+    if (online && pm2Available && pm2Name && !pm2Online) {
+      detail = `online :${service.healthPort}  ⚠ ORPHAN (not under PM2)`;
+      orphans.push({ name: service.name, port: service.healthPort, pm2: pm2Name });
+    } else if (pm2Info && pm2Info.restarts > 50) {
+      detail = `online :${service.healthPort}  ⚠ ${pm2Info.restarts} restarts (crash loop history)`;
+      crashLoops.push({ name: service.name, restarts: pm2Info.restarts, pm2: pm2Name });
+    } else if (online) {
+      detail = `online :${service.healthPort}${service.healthPath}` + (pm2Online ? `  (pm2 pid ${pm2Info.pid})` : '');
+    } else if (service.required) {
+      detail = `offline :${service.healthPort}${service.healthPath}`;
+    } else {
+      detail = `optional/config-needed :${service.healthPort}${service.healthPath}`;
+    }
+
     const ok = service.required ? online : true;
-    const state = online ? `online :${service.healthPort}${service.healthPath}` : (service.required ? `offline :${service.healthPort}${service.healthPath}` : `optional/config-needed :${service.healthPort}${service.healthPath}`);
-    add(`${service.name} (${service.group})`, ok, state);
+    add(`${service.name} (${service.group})`, ok, detail);
   }
 
   let failures = 0;
@@ -2347,11 +2719,36 @@ async function cmdDoctor() {
     console.log(`  ${icon}  ${check.label.padEnd(30)} ${col(C.gray, check.detail)}`);
   }
 
+  // ── Split-brain summary ────────────────────────────────────────────────────
+  if (orphans.length) {
+    console.log('\n  ' + col(C.yellow + C.bold, '⚠  ORPHAN PROCESSES DETECTED'));
+    console.log(col(C.gray, '  These services answer on their port but PM2 does NOT manage them.'));
+    console.log(col(C.gray, '  They will not auto-restart on crash and they block PM2 siblings.'));
+    for (const o of orphans) {
+      console.log(`    · ${col(C.yellow, o.name.padEnd(26))} port ${o.port} — pm2 entry: ${o.pm2}`);
+    }
+    console.log(col(C.gray, '\n  Resolve: find the PID with `netstat -ano | findstr :<port>` and stop it,'));
+    console.log(col(C.gray, '           then `pm2 restart ' + orphans.map(o => o.pm2).join(' ') + '`.'));
+  }
+  if (crashLoops.length) {
+    console.log('\n  ' + col(C.yellow + C.bold, '⚠  CRASH-LOOP HISTORY'));
+    console.log(col(C.gray, '  These services have restarted >50 times — investigate the cause.'));
+    for (const cl of crashLoops) {
+      console.log(`    · ${col(C.yellow, cl.name.padEnd(26))} ${cl.restarts} restarts (${cl.pm2})`);
+    }
+    console.log(col(C.gray, '\n  Inspect: pm2 logs ' + crashLoops[0].pm2 + ' --lines 30'));
+    console.log(col(C.gray, '  Reset:   pm2 reset ' + crashLoops.map(c => c.pm2).join(' ')));
+  }
+
   console.log('');
-  if (failures) {
-    console.log(col(C.yellow, `  Doctor found ${failures} required issue${failures === 1 ? '' : 's'}. Optional offline services are not counted as failures.\n`));
+  if (failures || orphans.length || crashLoops.length) {
+    const issues = [];
+    if (failures) issues.push(`${failures} required service issue${failures === 1 ? '' : 's'}`);
+    if (orphans.length) issues.push(`${orphans.length} orphan process${orphans.length === 1 ? '' : 'es'}`);
+    if (crashLoops.length) issues.push(`${crashLoops.length} crash-loop history`);
+    console.log(col(C.yellow, `  Doctor found: ${issues.join(', ')}.\n`));
   } else {
-    console.log(col(C.green, '  Doctor found no required local setup issues. Optional services may still need config.\n'));
+    console.log(col(C.green, '  Doctor found no issues. PM2 is in sync with port reality. The hammers walk in formation.\n'));
   }
 }
 
@@ -3212,95 +3609,299 @@ function cmdSpaghetti(args) {
   console.log(col(C.gray, '\n  Usage: purpclaw spaghetti audit | explain <file> | rewrite-plan <file> | diff <before> <after> | quarantine <file> | annona <file>\n'));
 }
 
+// ── tui ───────────────────────────────────────────────────────────────────────
+function cmdTui(args = []) {
+  const TUI_SCRIPT = path.join(PURP_DIR, 'scripts', 'tui.js');
+  if (!fs.existsSync(TUI_SCRIPT)) {
+    console.error(col(C.red, `\n  ✗ scripts/tui.js not found at ${TUI_SCRIPT}\n`));
+    process.exit(1);
+  }
+  const child = require('child_process').spawn(process.execPath, [TUI_SCRIPT, ...args], {
+    stdio: 'inherit',
+    env  : process.env,
+    cwd  : PURP_DIR,
+  });
+  child.on('close', code => process.exit(code || 0));
+  child.on('error', e => {
+    console.error(col(C.red, `  ✗ TUI failed to launch: ${e.message}`));
+    process.exit(1);
+  });
+}
+
 // ── help ──────────────────────────────────────────────────────────────────────
 function cmdHelp() {
   banner();
-  const cmd = (name, desc) =>
-    `  ${col(C.cyan, name.padEnd(34))}${col(C.gray, desc)}`;
 
-  console.log(col(C.bold, '  COMMANDS\n'));
-  console.log(cmd('purpclaw init',                'Audit env, keys, services (read-only check)'));
-  console.log(cmd('purpclaw init --wizard',       'Interactive first-run (pick LLM, paste key, hatch mochi)'));
-  console.log(cmd('purpclaw init --template',     'Generate a starter .env file'));
-  console.log(cmd('purpclaw start',               'Boot bounded harness profile only'));
-  console.log(cmd('purpclaw start --dry-run',     'Show launch plan without starting processes'));
-  console.log(cmd('purpclaw start --profile=minimal', 'Boot lean CLI/API/UI harness'));
-  console.log(cmd('purpclaw start --profile=voice', 'Boot harness plus voice bridge'));
-  console.log(cmd('purpclaw start --all',         'Explicitly boot every PM2 service'));
-  console.log(cmd('purpclaw stop',                'Stop bounded harness profile only'));
-  console.log(cmd('purpclaw restart [service]',   'Restart a service or bounded harness profile'));
-  console.log(cmd('purpclaw chat',                'Open the NanoClaw REPL (swarm-aware)'));
-  console.log(cmd('purpclaw run "<task>"',         'One-shot task — streams agent progress live'));
-  console.log(cmd('purpclaw status',               'Live dashboard: services + leaderboard + breakers'));
-  console.log(cmd('purpclaw doctor',               'Read-only local setup, dependency, and port checks'));
-  console.log(cmd('purpclaw policies',             'Show governance policy'));
-  console.log(cmd('purpclaw approve list',         'List approval-gated jobs'));
-  console.log(cmd('purpclaw jobs',                 'Show job surfaces and governance holds'));
-  console.log(cmd('purpclaw introspect',           'Read-only self-inspection summary'));
-  console.log(cmd('purpclaw rollback',             'Show rollback readiness'));
-  console.log(cmd('purpclaw spaghetti audit',      'Score tangled runtime code risk'));
-  console.log(cmd('purpclaw spaghetti diff A B',   'Compare code health before/after'));
-console.log(cmd('purpclaw pool query "<text>"',   'Keyword-search the skill index'));
-  console.log(cmd('purpclaw pool show <name>',    'Full SKILL.md content'));
-  console.log(cmd('purpclaw pool routing "<task>"','Routing hints for a task'));
-  console.log(cmd('purpclaw pool reindex',         'Rebuild index from disk'));
-  console.log(cmd('purpclaw registry browse',      'See all 139 skills + 38 agents'));
-  console.log(cmd('purpclaw install <name>',        'Install a skill from registry'));
-  console.log(cmd('purpclaw search "<text>"',      'Keyword-search the registry'));
-  console.log(cmd('purpclaw registry publish <n>', 'Publish guide for your own skill'));
-  console.log(cmd('purpclaw registry update',      'Rebuild local registry index'));
-  console.log(cmd('purpclaw mochi',                'Chat with your companion (animated, pool-aware, LLM-backed)'));
-  console.log(cmd('purpclaw mochi hatch [seed]',   'Hatch a new companion'));
-  console.log(cmd('purpclaw mochi card',           'Show companion card'));
-  console.log(cmd('purpclaw profiles',             'List bounded launch profiles'));
-  console.log(cmd('purpclaw agents',               'List all agents, divisions, and scores'));
-  console.log(cmd('purpclaw resume list',           'List session checkpoints'));
-  console.log(cmd('purpclaw resume <id>',           'Reload a previous session'));
-  console.log(cmd('purpclaw bg "<task>"',           'Background dispatch — fire and forget'));
-console.log(cmd('purpclaw workflows',            'Show active and recent workflows'));
-  console.log(cmd('purpclaw queue',                'Show task queue depth and items'));
-  console.log(cmd('purpclaw memory [query]',       'Recall from memory matrix'));
-  console.log(cmd('purpclaw memory ingest "<t>"',  'Store a new memory manually'));
-  console.log(cmd('purpclaw memory stats',         'Detailed memory matrix stats'));
-  console.log(cmd('purpclaw dream',                'Trigger AutoDream memory consolidation'));
-  console.log(cmd('purpclaw look [1 2 3]',         'Capture screens + vision analysis (all if none given)'));
-  console.log(cmd('purpclaw look --list',          'List available monitors'));
-  console.log(cmd('purpclaw look --no-vision',     'Skip LLM describe (YOLO-only, faster)'));
-  console.log(cmd('purpclaw look --workspace',     'Show remembered monitor roles and workflow context'));
-  console.log(cmd('purpclaw voice "<command>"',    'Send command via voice pipeline shorthand'));
-  console.log(cmd('purpclaw config',               'Interactive config editor (↑↓ navigate)'));
-  console.log(cmd('purpclaw config show',          'Print current config values'));
-  console.log(cmd('purpclaw config set KEY val',   'Set a config key in .env directly'));
-  console.log(cmd('purpclaw logs [service]',       'Tail PM2 logs (e.g. purpclaw logs orchestrator)'));
-  console.log(cmd('purpclaw help',                 'Show this help'));
+  const W = isTTY ? Math.min(process.stdout.columns || 100, 100) : 100;
+  const inner = W - 4;
 
-  console.log(`\n  ${col(C.bold, 'SERVICES')}  ${col(C.gray, '(named purpclaw-<service> in PM2)')}`);
-  const services = [
-    ['orchestrator', 7784], ['api', 7780], ['tower', 7790],
-    ['eventbus', 7782],     ['state', 7783],['memory', 7880],
-    ['voice', 7781],        ['bridge', '—'],['gatekeeper', '—'],
-    ['chorus', '—'],        ['vision', '—'],['metrics', 7890],
-    ['nextjs', 3000],
-  ];
-  for (const [svc, port] of services) {
-    console.log(`  ${col(C.gray, '·')}  ${svc.padEnd(18)} ${port !== '—' ? col(C.gray, `:${port}`) : ''}`);
+  // Section box helpers
+  const secTop  = () => col(C.gray, '  ┌' + '─'.repeat(inner) + '┐');
+  const secBot  = () => col(C.gray, '  └' + '─'.repeat(inner) + '┘');
+  const secRow  = (left, right) => {
+    const l = left  || '';
+    const r = right || '';
+    const lRaw = l.replace(/\x1b\[[0-9;]*m/g, '');
+    const rRaw = r.replace(/\x1b\[[0-9;]*m/g, '');
+    const pad  = Math.max(1, inner - lRaw.length - rRaw.length);
+    return col(C.gray, '  │') + ' ' + l + ' '.repeat(pad) + r + ' ' + col(C.gray, '│');
+  };
+
+  function section(title, rows) {
+    console.log(`\n  ${col(C.cyan + C.bold, title)}`);
+    console.log(secTop());
+    for (const [cmd, desc] of rows) {
+      console.log(secRow(col(C.cyan, cmd), col(C.gray, desc)));
+    }
+    console.log(secBot());
   }
+
+  section('🚀  LIFECYCLE', [
+    ['purpclaw init',                  'Audit env, keys, and services'],
+    ['purpclaw init --wizard',         'Interactive first-run setup (60 seconds)'],
+    ['purpclaw start',                 'Boot the harness (bounded profile)'],
+    ['purpclaw start --all',           'Boot every PM2 service'],
+    ['purpclaw start --profile=voice', 'Boot harness + voice bridge'],
+    ['purpclaw stop',                  'Shut down gracefully'],
+    ['purpclaw restart [service]',     'Restart all or one service'],
+    ['purpclaw doctor',                'Quick health check — reads only'],
+    ['purpclaw status',                'Dashboard: services + leaderboard + pool'],
+  ]);
+
+  section('💬  CHAT WITH THE STACK  (front door)', [
+    ['purpclaw',                       'No args → drop into chat REPL (stack-aware, persistent)'],
+    ['purpclaw ask "<question>"',      'One-shot LLM query — answers from live stack context'],
+    ['purpclaw ask',                   'REPL mode — /exit /clear /help /status, sessions saved'],
+    ['purpclaw ask --session <name>',  'Named session (separate context, persisted on disk)'],
+    ['purpclaw ask --fresh',           'Clear the current session and start clean'],
+    ['purpclaw ask --status',          'Show provider + active session info'],
+    ['purpclaw chat',                  'NanoClaw REPL — swarm-aware (uses claude CLI)'],
+    ['purpclaw mochi',                 'Chat with your companion (animated, LLM-backed)'],
+    ['purpclaw architecture',          'One-screen overview: services + flow + files + concepts'],
+    ['purpclaw architecture services', 'Service topology only'],
+    ['purpclaw architecture flow',     'Task-flow diagram only'],
+  ]);
+
+  section('⚡  THE WORK LOOP', [
+    ['purpclaw tui',                   '🎛  LIVE cockpit — full-screen TUI dashboard'],
+    ['purpclaw run "<task>"',          'Dispatch + stream agent progress live'],
+    ['purpclaw bg "<task>"',           'Background dispatch — fire and forget'],
+    ['purpclaw code status',           'Repo/GitHub tools: status, diff, issues, PRs, checks'],
+    ['purpclaw llm',                   'Provider status: Claude, Gemini, OpenAI, Kimi, Ollama'],
+    ['purpclaw browser smoke [url]',   'Playwright open/read/screenshot tool surface'],
+    ['purpclaw cognition smoke',       'Neuro-symbolic/modal/rules/diagnostics health + lift test'],
+    ['purpclaw workflows',             'Show active and recent workflows'],
+    ['purpclaw queue',                 'Task queue depth and items'],
+    ['purpclaw jobs',                  'Job surfaces and governance holds'],
+    ['purpclaw approve <id>',          'Approve a held high-risk job'],
+    ['purpclaw reject <id>',           'Reject and cancel'],
+    ['purpclaw resume <id>',           'Reload a previous session checkpoint'],
+    ['purpclaw bg',                    'List active background jobs'],
+  ]);
+
+  section('🧠  KNOWLEDGE POOL  (:7885)', [
+    ['purpclaw pool query "<text>"',   'Keyword-search the skill index'],
+    ['purpclaw pool show <name>',      'Full SKILL.md content'],
+    ['purpclaw pool routing "<task>"', 'Routing hints for a task type'],
+    ['purpclaw pool stats',            'How many skills and agents indexed'],
+    ['purpclaw pool reindex',          'Rebuild index from disk'],
+  ]);
+
+  section('📦  REGISTRY  (139 skills  ·  38 agents)', [
+    ['purpclaw registry browse',       'See all skills + agents with install status'],
+    ['purpclaw install <name>',        'Install a skill from the local registry'],
+    ['purpclaw search "<text>"',       'Keyword-search across all 139 skills'],
+    ['purpclaw registry publish <n>',  'Publishing guide (step-by-step PR walkthrough)'],
+    ['purpclaw registry update',       'Rebuild local index from disk'],
+  ]);
+
+  section('🧬  MEMORY + DREAM', [
+    ['purpclaw memory [query]',        'Recall matching memories from the matrix'],
+    ['purpclaw memory ingest "<text>"','Store a new memory manually'],
+    ['purpclaw memory forget "<q>"',   'Remove matching memories'],
+    ['purpclaw memory stats',          'Detailed memory matrix stats'],
+    ['purpclaw dream',                 'Trigger AutoDream memory consolidation'],
+  ]);
+
+  section('🤖  AGENTS + FORGE', [
+    ['purpclaw agents',                'List all 38 agents, divisions, and scores'],
+    ['purpclaw forge [name]',          'Draw a gacha soul + create a new agent'],
+    ['purpclaw look [1 2 3]',          'Capture screens + vision analysis'],
+    ['purpclaw look --list',           'List detected monitors'],
+    ['purpclaw look --workspace',      'Show remembered monitor roles'],
+    ['purpclaw voice "<command>"',     'Send command via voice pipeline'],
+  ]);
+
+  section('🔧  CONFIG + GOVERNANCE', [
+    ['purpclaw config',                'Interactive config editor (↑↓ arrow keys)'],
+    ['purpclaw config show',           'Print current config values (secrets masked)'],
+    ['purpclaw config set KEY val',    'Set a config key in .env directly'],
+    ['purpclaw policies',              'Show active governance policies'],
+    ['purpclaw introspect',            'Runtime state summary'],
+    ['purpclaw introspect risks',      'Live risk classification'],
+    ['purpclaw rollback list',         'Available rollback points'],
+    ['purpclaw rollback undo <id>',    'Restore state from snapshot'],
+    ['purpclaw spaghetti audit',       'Code health scores (lower = cleaner)'],
+    ['purpclaw spaghetti diff A B',    'Compare code health before/after refactor'],
+  ]);
+
+  section('🔍  DIAGNOSTICS + DEVOPS', [
+    ['purpclaw bughunt',               'Full stack scan — syntax, ports, health, smells'],
+    ['purpclaw bughunt --json',        'Machine-readable JSON output'],
+    ['purpclaw ctx-viz',               'Visualise the live service mesh as a tree'],
+    ['purpclaw ctx-viz --json',        'JSON dump of all node states'],
+    ['purpclaw ctx-viz --html',        'Write HTML report to agent_work/ctx-viz.html'],
+    ['purpclaw onboard',               'First-run guided setup wizard'],
+    ['purpclaw onboard --yes',         'Non-interactive onboarding'],
+    ['purpclaw teleport create [name]','Bundle current state for handoff/restore'],
+    ['purpclaw teleport list',         'List teleport bundles'],
+    ['purpclaw teleport resume <id>',  'Restore a bundle + reload instructions'],
+    ['purpclaw autofix-pr plan',       'Scan for build/PR issues (read-only)'],
+    ['purpclaw autofix-pr run <plan>', 'Execute a repair plan (governance-gated)'],
+    ['purpclaw autofix-pr verify',     'Confirm repairs landed'],
+  ]);
+
+  section('🧹  HOUSEKEEPING  (keep the workshop tidy)', [
+    ['purpclaw gc --stats',            'Show disk usage breakdown of agent_work/'],
+    ['purpclaw gc',                    'Dry-run: list what would be cleaned'],
+    ['purpclaw gc --apply',            'Sweep proof-test scratch, age-out sessions, compact tasks'],
+    ['purpclaw gc --apply --aggressive', 'Shorter TTLs (1d sessions, 3d workspaces, 6h tasks)'],
+  ]);
+
+  section('☁  CLOUD / SCALE  (worker pool)', [
+    ['purpclaw workers status',        'Health check all registered worker nodes'],
+    ['purpclaw workers list',          'Show worker registry (IDs, types, targets)'],
+    ['purpclaw workers add --type http --url <url>', 'Register remote HTTP worker'],
+    ['purpclaw workers add --type ssh --host <h>',   'Register remote SSH worker'],
+    ['purpclaw workers remove <id>',   'Deregister a worker'],
+    ['purpclaw workers jobs',          'Show recent worker dispatch jobs'],
+    ['purpclaw workers test <id>',     'Smoke-test a specific worker'],
+    ['purpclaw workers secret',        'Generate a fresh HMAC worker secret (copy/paste)'],
+  ]);
+
+  section('🦆  GOOSE COMMANDS  (for the unhinged)', [
+    ['purpclaw mochi',                 'Chat with your companion (animated, LLM-backed)'],
+    ['purpclaw mochi hatch [seed]',    'Hatch a new mochi species'],
+    ['purpclaw mochi card',            'Show companion card'],
+    ['purpclaw logs [service]',        'Tail PM2 logs'],
+    ['purpclaw profiles',              'List bounded launch profiles'],
+    ['purpclaw bars',                  'Mochi status bars preview (opt-in with --bars)'],
+  ]);
+
+  // Port quick-ref
+  console.log(`\n  ${col(C.cyan + C.bold, '🗺  PORTS')}`);
+  console.log(col(C.gray, '  ┌──────────────────────────────────────────────────────────────────────────┐'));
+  const portRows = [
+    [3000, 'Next.js Mission Control UI'],
+    [7780, 'unified-api   — main HTTP API + MCP tools'],
+    [7781, 'voice-coord   — intent parsing + TTS'],
+    [7782, 'eventbus      — central pub/sub broker'],
+    [7783, 'state-store   — shared state namespaces'],
+    [7784, 'orchestrator  — priority queue + governance'],
+    [7790, 'agent-tower   — 38 agents, swarm spawning'],
+    [7791, 'gatekeeper    — pre-merge validation'],
+    [7881, 'context-bus   — cross-agent context propagation'],
+    [7884, 'neuro-symbolic bridge (Python)'],
+    [7885, 'pool          — knowledge pool (skills + agents)'],
+    [7889, 'vision-monitor — webcam + YOLO'],
+    [7890, 'metrics       — health polling + SSE heartbeat'],
+    [7895, 'autodream     — memory consolidation'],
+    [7897, 'worker-pool   — overflow lane (HTTP/SSH workers)'],
+  ];
+  for (const [port, desc] of portRows) {
+    console.log(col(C.gray, '  │') + `  ${col(C.cyan, String(port).padStart(5))}  ${col(C.white, String(desc).padEnd(54))}` + col(C.gray, '│'));
+  }
+  console.log(col(C.gray, '  └──────────────────────────────────────────────────────────────────────────┘'));
+
   console.log('');
+  console.log(`  ${col(C.magenta, 'purpclaw tui')}   ${col(C.gray, '— launch the live cockpit')}`);
+  console.log(`  ${col(C.gray, 'Web UI')}        ${col(C.gray, '—')}  ${col(C.cyan, 'http://localhost:3000')}`);
+  console.log(`  ${col(C.gray, 'Pool')}          ${col(C.gray, '—')}  ${col(C.cyan, 'http://localhost:7885')}`);
+  console.log('');
+  console.log(col(C.gray, '  The hammers walk. The tickets file themselves. The pool is open.'));
+  console.log(col(C.dim,  '  — Built by Eddie Cannon. Maintained by the goose. Watched by the mochi.'));
+  console.log(col(C.dim,  `  ${TAINT_MODE ? col(C.magenta, '  🎨 taint mode is ON. the interface is embodying state. slightly damp.') : '  append --taint to any command. you\'ll know.'}\n`));
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  ENTRY POINT
 // ═════════════════════════════════════════════════════════════════════════════
 async function main() {
-  const [,, command, ...args] = process.argv;
+  // ── Belt-and-brace secret redaction across the entire CLI lifetime ─────────
+  // Wraps stdout + stderr at the lowest level so anything printed (our logs,
+  // child-process inheritance, error stacks, third-party library noise) gets
+  // run through the redactor first. Catches: env-var lines, JWTs, sk-… keys,
+  // long hex blobs, X-Worker-Token headers, Bearer tokens. Opt-out via
+  // PURPCLAW_NO_REDACT=1 for debugging.
+  if (process.env.PURPCLAW_NO_REDACT !== '1') {
+    try {
+      const redactor = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
+      redactor.wrapStream(process.stdout);
+      redactor.wrapStream(process.stderr);
+    } catch { /* redactor optional — never block CLI if module missing */ }
+  }
 
-  // No args — show help
-  if (!command || command === 'help' || command === '--help' || command === '-h') {
+  const argv = process.argv.slice(2);
+  // Strip --bars / --no-bars flags so they don't pollute command args
+  const wantBars  = argv.includes('--bars')    || process.env.PURPCLAW_BARS === '1';
+  const skipBars  = argv.includes('--no-bars') || process.env.PURPCLAW_BARS === '0';
+  const cleanArgv = argv.filter(a => a !== '--bars' && a !== '--no-bars' && a !== '--taint');
+
+  // Taint mode Easter egg announcement
+  if (TAINT_MODE) {
+    console.log(col(C.magenta + C.bold, '\n  🎨 TAINT MODE ACTIVATED. the interface will now embody state.'));
+    console.log(col(C.gray, '  errors are now emotionally resonant. success is slightly damp.\n'));
+  }
+  let [command, ...args] = cleanArgv;
+
+  // Explicit help paths
+  if (command === 'help' || command === '--help' || command === '-h') {
     cmdHelp();
     return;
   }
 
-  switch (command.toLowerCase()) {
+  // No args — open the chat REPL (the front door to the workshop).
+  // Falls back to help if the LLM isn't configured yet so first-run users
+  // aren't dropped into a prompt that can't talk back.
+  if (!command) {
+    const envPath = path.join(PURP_DIR, '.env');
+    const provider = process.env.LLM_PROVIDER || '';
+    if (!fs.existsSync(envPath) || !provider) {
+      console.log(col(C.yellow, '\n  No LLM provider configured yet — opening help instead.'));
+      console.log(col(C.gray, '  Set one up first:  ') + col(C.cyan, 'purpclaw init --wizard'));
+      console.log(col(C.gray, '  Then run `purpclaw` again to drop into the chat REPL.\n'));
+      cmdHelp();
+      return;
+    }
+    // Synthesize `ask` so the normal dispatch path handles it (with sharedCtx).
+    command = 'ask';
+    args = [];
+  }
+
+  // Commands that own their own UI / shouldn't be wrapped with status bars
+  const ownsScreen = new Set([
+    'tui', 'mochi', 'chat', 'ask', 'init', 'start', 'stop', 'restart',
+    'config', 'logs', 'run', 'voice', 'bars', 'llm', 'browser', 'browse', 'cognition', 'cog',
+  ]);
+  const useBars = wantBars && !skipBars && isTTY && !ownsScreen.has(command.toLowerCase());
+
+  // Load a lib/commands/<name>.js module (throws clearly if missing)
+  function loadCmd(name) {
+    return require(path.join(PURP_DIR, 'lib', 'commands', name + '.js'));
+  }
+
+  // Shared context object passed to all lib/commands modules
+  function sharedCtx() {
+    return {
+      PURP_DIR, C, col, spinner, httpGet, httpPost, ping, PORTS,
+      isTTY, sectionHead, banner,
+    };
+  }
+
+  // Helper: dispatches the command, optionally wrapped in mochi status bars
+  async function dispatch() {
+    switch (command.toLowerCase()) {
+    case 'tui':       return cmdTui(args);
     case 'init':      return cmdInit(args);
     case 'start':     return cmdStart(args);
     case 'stop':      return cmdStop(args);
@@ -3326,26 +3927,85 @@ case 'registry': return cmdRegistry(args);
     case 'tick':     return cmdTick(args);
     case 'mochi':      return cmdMochi(args);
     case 'spaghetti': return cmdSpaghetti(args);
+    case 'llm':       return loadCmd('llm').run(args, sharedCtx());
+    case 'browser':
+    case 'browse':    return loadCmd('browser').run(args, sharedCtx());
+    case 'cognition':
+    case 'cog':       return loadCmd('cognition').run(args, sharedCtx());
+    case 'code':
+    case 'github':
+    case 'gitx':      return loadCmd('code').run(args, sharedCtx());
     case 'agents':    return cmdAgents();
     case 'profiles':  return cmdProfiles();
     case 'workflows': return cmdWorkflows();
     case 'queue':     return cmdQueue();
     case 'memory':    return cmdMemory(args);
     case 'dream':     return cmdDream();
+    case 'forge':     return cmdForge(args);
     case 'look':      return cmdLook(args);
     case 'voice':     return cmdVoice(args);
     case 'config':    return cmdConfig(args);
     case 'logs':      return cmdLogs(args);
+    case 'bars':       return cmdBars(args);
+    // ── Resurrected commands (lib/commands/) ──────────────────────────────
+    case 'bughunt':    return loadCmd('bughunt').run(args, sharedCtx());
+    case 'ctx-viz':
+    case 'ctxviz':     return loadCmd('ctx-viz').run(args, sharedCtx());
+    case 'onboard':    return loadCmd('onboard').run(args, sharedCtx());
+    case 'teleport':   return loadCmd('teleport').run(args, sharedCtx());
+    case 'autofix-pr':
+    case 'autofix':    return loadCmd('autofix-pr').run(args, sharedCtx());
+    case 'workers':
+    case 'worker':    return loadCmd('workers').run(args, sharedCtx());
+    case 'ask':       return loadCmd('ask').run(args, sharedCtx());
+    case 'gc':
+    case 'cleanup':   return loadCmd('gc').run(args, sharedCtx());
+    case 'architecture':
+    case 'arch':
+    case 'concepts':  return loadCmd('architecture').run(args, sharedCtx());
     default:
       // Unknown command — treat as an inline task for convenience
       // e.g. `purpclaw fix the auth bug` → same as `purpclaw run "fix the auth bug"`
       const task = [command, ...args].join(' ');
       console.log(col(C.gray, `\n  Treating as task: "${task}"`));
       return cmdRun([task]);
+    }
   }
+
+  // Wrap in mochi status bars if --bars / PURPCLAW_BARS=1 and command doesn't own its own screen
+  if (useBars) {
+    const sb = require(path.join(PURP_DIR, 'lib', 'mochi-statusbar'));
+    return sb.wrap(dispatch);
+  }
+  return dispatch();
+}
+
+// ── bars ─────────────────────────────────────────────────────────────────────
+async function cmdBars(args) {
+  const sb = require(path.join(PURP_DIR, 'lib', 'mochi-statusbar'));
+  const sub = (args[0] || '').toLowerCase();
+
+  if (sub === 'top') return sb.printTop();
+  if (sub === 'bottom') return sb.printBottom();
+
+  // Default: show both, like a preview
+  await sb.printTop();
+  console.log('');
+  console.log(col(C.gray, '  Status bars are opt-in. Enable with one of:'));
+  console.log(`    ${col(C.cyan, 'PURPCLAW_BARS=1 purpclaw status')}     one-shot`);
+  console.log(`    ${col(C.cyan, 'purpclaw --bars status')}              one-shot via flag`);
+  console.log(`    ${col(C.cyan, 'echo PURPCLAW_BARS=1 >> .env')}        always on`);
+  console.log('');
+  console.log(col(C.gray, '  Disable for piped output:  --no-bars  or  PURPCLAW_BARS=0'));
+  console.log('');
+  await sb.printBottom();
 }
 
 main().catch(e => {
-  console.error(col(C.red, `\n  ✗ Unhandled error: ${e.message}\n`));
+  if (TAINT_MODE) {
+    console.error(col(C.magenta, `\n  ✗ ${taintError(e.message)}\n`));
+  } else {
+    console.error(col(C.red, `\n  ✗ Unhandled error: ${e.message}\n`));
+  }
   process.exit(1);
 });

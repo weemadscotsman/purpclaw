@@ -12,16 +12,16 @@ if (fs.existsSync(envFile)) {
   });
 }
 
-const XIAOZHI_MCP_URL = env.XIAOZHI_MCP_URL; // MUST be set in .env - no fallback
+const XIAOZHI_MCP_URL = env.XIAOZHI_MCP_URL;
 const KIMI_API_KEY = env.KIMI_API_KEY || '';
 const MINIMAX_API_KEY = env.MINIMAX_API_KEY || '';
-const OPENCLAW_TOKEN = env.OPENCLAW_TOKEN; // MUST be set in .env - no fallback
+const OPENCLAW_TOKEN = env.OPENCLAW_TOKEN;
 const OPENCLAW_GATEWAY = env.OPENCLAW_GATEWAY || 'ws://127.0.0.1:18789';
-const PYTHON_BIN = env.PYTHON_BIN || 'python';
+const PYTHON_BIN = 'C:/Users/Admin/AppData/Local/Programs/Python/Python311/python.exe';
 
 module.exports = {
   apps: [
-    // ── Node.js services (wrapped with run_node.js to suppress CMD windows) ──
+    // ── Node.js services ──────────────────────────────────────────────────────
     {
       name: 'purpclaw-eventbus',
       script: './unified_eventbus.js',
@@ -70,10 +70,9 @@ module.exports = {
       name: 'purpclaw-tower',
       script: './agent_tower.js',
       env: {
-        // Tuned for MiniMax Plus plan: 1-2 concurrent OpenClaw agents, 4500 req / 5h
-        PURPCLAW_MAX_ACTIVE_AGENTS: env.PURPCLAW_MAX_ACTIVE_AGENTS || '2',
-        PURPCLAW_MAX_ACTIVE_PER_DIVISION: env.PURPCLAW_MAX_ACTIVE_PER_DIVISION || '1',
-        PURPCLAW_SPAWN_COOLDOWN_MS: env.PURPCLAW_SPAWN_COOLDOWN_MS || '4000'
+        PURPCLAW_MAX_ACTIVE_AGENTS: env.PURPCLAW_MAX_ACTIVE_AGENTS || '48',
+        PURPCLAW_MAX_ACTIVE_PER_DIVISION: env.PURPCLAW_MAX_ACTIVE_PER_DIVISION || '8',
+        PURPCLAW_SPAWN_COOLDOWN_MS: env.PURPCLAW_SPAWN_COOLDOWN_MS || '1000'
       },
       exec_mode: 'fork',
       wait_ready: false,
@@ -111,7 +110,10 @@ module.exports = {
     {
       name: 'purpclaw-nextjs',
       script: './node_modules/next/dist/bin/next',
-      args: 'start -p 3000',
+      // dev mode is correct for a workshop with active edits — production `start`
+      // requires `next build` first, and the workshop pace doesn't suit that.
+      // If you ever ship: run `next build` then change this to 'start -p 3000'.
+      args: 'dev -p 3000',
       cwd: './',
       exec_mode: 'fork',
       wait_ready: false,
@@ -194,7 +196,7 @@ module.exports = {
       max_memory: '64MB',
       autorestart: true,
       windowsHide: true
-},
+    },
     {
       name: 'purpclaw-pool',
       script: './pool_service.js',
@@ -206,7 +208,7 @@ module.exports = {
       max_memory: '64MB',
       autorestart: true,
       windowsHide: true
-},
+    },
     {
       name: 'purpclaw-context',
       script: './lib/context-bus.js',
@@ -220,15 +222,31 @@ module.exports = {
       windowsHide: true
     },
     {
-      // Proactive reasoning heartbeat — opt-in. Set PURPCLAW_PROACTIVE=1 in .env
-      // to actually run the tick; default is on, set to 0 to keep dormant.
+      name: 'purpclaw-workers',
+      script: './worker_service.js',
+      env: {
+        WORKER_PORT: env.WORKER_PORT || '7897',
+        TOWER_PORT: env.TOWER_PORT || '7790',
+        WORKER_MAX_CONCURRENT: env.WORKER_MAX_CONCURRENT || '4',
+        WORKER_SECRET: env.WORKER_SECRET || '',   // set in .env to enable auth
+      },
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 2,
+      restart_delay: 10000,
+      max_memory: '64MB',
+      autorestart: true,
+      windowsHide: true
+    },
+    {
       name: 'purpclaw-reasoning',
       script: './lib/reasoning-loop.js',
       env: {
-        PURPCLAW_PROACTIVE   : env.PURPCLAW_PROACTIVE    || '1',
-        PURPCLAW_TICK_MS     : env.PURPCLAW_TICK_MS      || '30000',
-        REASONING_PORT       : env.REASONING_PORT        || '7892',
-        POOL_PORT            : env.POOL_PORT             || '7885',
+        PURPCLAW_PROACTIVE: env.PURPCLAW_PROACTIVE || '1',
+        PURPCLAW_TICK_MS: env.PURPCLAW_TICK_MS || '30000',
+        REASONING_PORT: env.REASONING_PORT || '7892',
+        POOL_PORT: env.POOL_PORT || '7885',
       },
       exec_mode: 'fork',
       wait_ready: false,
@@ -239,7 +257,28 @@ module.exports = {
       autorestart: true,
       windowsHide: true
     },
-    // ── Python services (wrapped with run_py.js → pythonw.exe = no console window) ──
+    // ── Python services ────────────────────────────────────────────────────────
+    {
+      name: 'purpclaw-stt',
+      script: './voice_stt.py',
+      args: '--port 7896',
+      interpreter: PYTHON_BIN,
+      env: {
+        STT_PORT   : env.STT_PORT    || '7896',
+        STT_MODEL  : env.STT_MODEL   || 'base',
+        STT_DEVICE : env.STT_DEVICE  || 'cpu',
+        STT_COMPUTE: env.STT_COMPUTE || 'int8',
+        STT_LANGUAGE: env.STT_LANGUAGE || '',
+      },
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 2,
+      restart_delay: 15000,
+      max_memory: '512MB',   // whisper model can be large
+      autorestart: true,
+      windowsHide: true
+    },
     {
       name: 'purpclaw-memory',
       script: './memory_matrix_v2.py',
@@ -307,6 +346,20 @@ module.exports = {
       max_restarts: 2,
       restart_delay: 10000,
       max_memory: '128MB',
+      autorestart: true,
+      windowsHide: true
+    },
+    {
+      name: 'purpclaw-autodream',
+      script: './autoDream.py',
+      args: '--server',
+      interpreter: PYTHON_BIN,
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 2,
+      restart_delay: 30000,
+      max_memory: '64MB',
       autorestart: true,
       windowsHide: true
     },
