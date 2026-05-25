@@ -59,6 +59,18 @@ The cascade is now structurally impossible to reproduce via `purpclaw safe-start
 
 **Known orphans (elevation-protected on 2026-05-25):** YOLO (:7779), Avatar (:7777) — both Python processes started outside PM2. They DO answer their health endpoints; they just aren't supervised. If you don't need auto-restart-on-crash for them, you can leave them.
 
+**For all-orphans cleanup at once, an admin script ships with the repo:**
+
+```powershell
+# Right-click PowerShell → Run as Administrator
+cd "E:\god folder\02_ACTIVE_PROJECTS\PURPCLAW"
+.\scripts\admin-orphan-cleanup.ps1            # interactive, asks before each kill
+.\scripts\admin-orphan-cleanup.ps1 -DryRun    # show what would happen
+.\scripts\admin-orphan-cleanup.ps1 -Force     # no prompts (DANGEROUS)
+```
+
+This script: reads PM2's managed PID list, scans all 24 known PURPCLAW ports, cross-references — anything answering on a port but NOT in PM2 is an orphan. Confirms before each stop. Tells you the `purpclaw safe-start <name>` commands to run afterward.
+
 ### 3. PM2 daemon is gone
 
 **Symptom:** `npx pm2 ping` returns no response, or `purpclaw doctor` reports `pm2 jlist failed`.
