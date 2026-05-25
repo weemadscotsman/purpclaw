@@ -3729,6 +3729,8 @@ function cmdHelp() {
 
   section('🤖  AGENTS + FORGE', [
     ['purpclaw agents',                'List swarm agents (44 in tower), divisions, scores'],
+    ['purpclaw roster',                'Compare tower swarm vs disk persona files'],
+    ['purpclaw roster --missing',      'Show animals lacking persona files (Codex migration target)'],
     ['purpclaw forge [name]',          'Draw a gacha soul + create a new agent'],
     ['purpclaw look [1 2 3]',          'Capture screens + vision analysis'],
     ['purpclaw look --list',           'List detected monitors'],
@@ -3988,6 +3990,7 @@ case 'registry': return cmdRegistry(args);
     case 'safestop':  return loadCmd('safe-stop').run(args, sharedCtx());
     case 'heal':
     case 'recover':   return loadCmd('heal').run(args, sharedCtx());
+    case 'roster':    return loadCmd('roster').run(args, sharedCtx());
     default:
       // Unknown command — treat as an inline task for convenience
       // e.g. `purpclaw fix the auth bug` → same as `purpclaw run "fix the auth bug"`

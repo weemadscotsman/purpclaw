@@ -5,6 +5,8 @@
 
 📖 **For the full architecture, philosophy, and operational maturity model:** see [docs/SYSTEM_OVERVIEW.md](./docs/SYSTEM_OVERVIEW.md)
 
+🩹 **If something has gone sideways and you need to recover:** see [docs/RECOVERY.md](./docs/RECOVERY.md) — or run `purpclaw heal`.
+
 ---
 
 ## 5-minute quickstart
