@@ -3677,9 +3677,11 @@ function cmdHelp() {
     ['purpclaw ask --status',          'Show provider + active session info'],
     ['purpclaw chat',                  'NanoClaw REPL — swarm-aware (uses claude CLI)'],
     ['purpclaw mochi',                 'Chat with your companion (animated, LLM-backed)'],
-    ['purpclaw architecture',          'One-screen overview: services + flow + files + concepts'],
+    ['purpclaw architecture',          'Live runtime overview: services + flow + files + concepts'],
     ['purpclaw architecture services', 'Service topology only'],
     ['purpclaw architecture flow',     'Task-flow diagram only'],
+    ['purpclaw overview',              'Canonical doc — what PURPCLAW is + philosophy (the README)'],
+    ['purpclaw overview --raw',        'Raw markdown for piping'],
   ]);
 
   section('⚡  THE WORK LOOP', [
@@ -3968,6 +3970,9 @@ case 'registry': return cmdRegistry(args);
     case 'concepts':  return loadCmd('architecture').run(args, sharedCtx());
     case 'smoke':
     case 'selftest':  return loadCmd('smoke').run(args, sharedCtx());
+    case 'overview':
+    case 'what-is-purpclaw':
+    case 'whatis':    return loadCmd('overview').run(args, sharedCtx());
     default:
       // Unknown command — treat as an inline task for convenience
       // e.g. `purpclaw fix the auth bug` → same as `purpclaw run "fix the auth bug"`
