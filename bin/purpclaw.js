@@ -3751,22 +3751,62 @@ async function main() {
     return;
   }
 
-  // No args — open the chat REPL (the front door to the workshop).
-  // Falls back to help if the LLM isn't configured yet so first-run users
-  // aren't dropped into a prompt that can't talk back.
+  // No args — first-run experience. Auto-detect keys, show menu, launch.
   if (!command) {
-    const envPath = path.join(PURP_DIR, '.env');
-    const provider = process.env.LLM_PROVIDER || '';
-    if (!fs.existsSync(envPath) || !provider) {
-      console.log(col(C.yellow, '\n  No LLM provider configured yet — opening help instead.'));
-      console.log(col(C.gray, '  Set one up first:  ') + col(C.cyan, 'purpclaw init --wizard'));
-      console.log(col(C.gray, '  Then run `purpclaw` again to drop into the chat REPL.\n'));
-      cmdHelp();
-      return;
+    const setup = require(path.join(PURP_DIR, 'lib', 'commands', 'setup'));
+    const found = setup.scanForKeys();
+    const ready = Object.keys(found).length;
+
+    console.log('');
+    console.log(col(C.cyan + C.bold, '  🟣 PURPCLAW v0.1.1 — AI Workstation OS'));
+    console.log(col(C.gray, '  ─────────────────────────────────────────'));
+
+    if (ready > 0) {
+      console.log(col(C.green, `  ✅ ${ready} provider(s) detected:`));
+      Object.entries(found).slice(0, 5).forEach(([id, info]) => {
+        console.log(col(C.gray, `     ${id} — ${info.source === 'local' ? 'local' : info.key}`));
+      });
+    } else {
+      console.log(col(C.yellow, '  ⚠ No API keys detected.'));
     }
-    // Synthesize `ask` so the normal dispatch path handles it (with sharedCtx).
-    command = 'ask';
-    args = [];
+
+    console.log('');
+    console.log(col(C.white, '  What would you like to launch?'));
+    console.log('');
+    console.log(col(C.cyan, `    ${col(C.bold, '1')}. CLI chat        `) + col(C.gray, '(purpclaw ask — interactive agent chat)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '2')}. TUI cockpit     `) + col(C.gray, '(purpclaw tui — live dashboard)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '3')}. TUI ask         `) + col(C.gray, '(purpclaw tui ask — full-screen chat)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '4')}. WebUI           `) + col(C.gray, '(http://localhost:3000 — mission control)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '5')}. Setup wizard    `) + col(C.gray, '(configure providers)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '6')}. Help            `) + col(C.gray, '(show all commands)'));
+    console.log('');
+
+    // Read a single keypress (or line) for the choice
+    const rl = require('readline').createInterface({ input: process.stdin, output: process.stdout });
+    rl.question(col(C.white, '  Choice [1]: '), (answer) => {
+      rl.close();
+      const choice = (answer || '1').trim().toLowerCase();
+
+      if (choice === '1') { command = 'ask'; args = []; }
+      else if (choice === '2') { command = 'tui'; args = []; }
+      else if (choice === '3') { command = 'tui'; args = ['ask']; }
+      else if (choice === '4') {
+        console.log(col(C.green, '\n  🚀 Opening WebUI at http://localhost:3000'));
+        console.log(col(C.gray, '  Make sure the backend is running: purpclaw start\n'));
+        const { exec } = require('child_process');
+        exec('start http://localhost:3000');
+        process.exit(0);
+      }
+      else if (choice === '5') { command = 'setup'; args = []; }
+      else { command = 'help'; args = []; }
+    });
+
+    // Wait for the readline to complete before dispatching
+    await new Promise(resolve => {
+      const check = setInterval(() => {
+        if (command) { clearInterval(check); resolve(); }
+      }, 50);
+    });
   }
 
   // Commands that own their own UI / shouldn't be wrapped with status bars
