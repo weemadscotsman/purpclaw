@@ -101,13 +101,25 @@ const actBox = blessed.box({ parent: rightPanel, top: '75%', height: '10%', widt
 const pllBox = blessed.box({ parent: rightPanel, top: '85%', height: '8%', width: '100%',
   style: { fg: 'gray' }, content: ' polled --' });
 
-// ── Bottom status ────────────────────────────────────────────
+// ── Bottom status with Mochi SB ────────────────────────────────
 const statusBar = blessed.box({
   bottom: 2, left: 0, width: '100%', height: 1,
   style: { fg: 'gray', bg: 'black' },
   content: ' tokens: 0k · saved: 0 · actions: 0t 0 turns'
 });
 screen.append(statusBar);
+
+// Pull real Mochi status from mochi-statusbar if available
+async function updateMochiStatus() {
+  if (!MOCHI_SB) return;
+  try {
+    const top = await MOCHI_SB.renderStatus();
+    if (top && top.length > 5) {
+      // Use first meaningful part from real mochi status
+      statusBar.setContent(top.replace(/\x1b\[[0-9;]*m/g, '').substring(0, 120));
+    }
+  } catch {}
+}
 
 // ── Input ────────────────────────────────────────────────────
 const inputBox = blessed.textbox({
@@ -125,10 +137,42 @@ const helpLine = blessed.box({
 screen.append(helpLine);
 
 // ── Mochi moods ──────────────────────────────────────────────
-const moods = { idle: '🐱 idle', happy: '😸 happy', sad: '😿 sad', alert: '😾 alert', thinking: '🐱 💭' };
-function setMood(m, timeout) {
-  mochiBox.setContent(moods[m] || moods.idle); screen.render();
-  if (timeout) setTimeout(() => { mochiBox.setContent(moods.idle); screen.render(); }, timeout);
+// ── REAL Mochi sprites (from lib/mochi-sprites.js) ──────────
+let mochiFrame = 0; let mochiSpecies = 'axolotl'; let mochiEye = '✦'; let mochiHat = 'none';
+let mochiAnimInterval = null;
+const MOCHI_SPRITES = (() => { try { return require(path.join(__dirname, '..', 'lib', 'mochi-sprites')); } catch { return null; } })();
+const MOCHI_SB = (() => { try { return require(path.join(__dirname, '..', 'lib', 'mochi-statusbar')); } catch { return null; } })();
+
+function renderMochi() {
+  if (!MOCHI_SPRITES) return '🐱';
+  try {
+    const lines = MOCHI_SPRITES.renderSprite({ species: mochiSpecies, eye: mochiEye, hat: mochiHat }, mochiFrame);
+    // Take the middle line (body) as the compact representation
+    return lines && lines.length > 2 ? lines[Math.floor(lines.length/2)].trim() : '🐱';
+  } catch { return '🐱'; }
+}
+
+function animMochi() {
+  mochiFrame = (mochiFrame + 1) % 3;
+  if (MOCHI_SPRITES) {
+    const sprite = renderMochi();
+    mochiBox.setContent(sprite);
+    screen.render();
+  }
+}
+
+function setMochiMood(mood) {
+  // Map moods to eye expressions
+  const eyeMap = { idle: '·', happy: '✦', thinking: '◉', sad: '°', alert: '@' };
+  mochiEye = eyeMap[mood] || '·';
+  const sprite = renderMochi();
+  mochiBox.setContent(sprite);
+  screen.render();
+  if (mood === 'thinking') {
+    if (!mochiAnimInterval) mochiAnimInterval = setInterval(animMochi, 400);
+  } else {
+    if (mochiAnimInterval) { clearInterval(mochiAnimInterval); mochiAnimInterval = null; }
+  }
 }
 
 // ── Poll APIs ────────────────────────────────────────────────
@@ -227,7 +271,7 @@ inputBox.on('submit', async (text) => {
 
   chatLog.add('{cyan-fg}purp ❯ ' + cmd + '{/}');
   state.thinking = true;
-  setMood('thinking');
+  setMochiMood('thinking');
   render();
 
   try {
@@ -249,10 +293,12 @@ inputBox.on('submit', async (text) => {
       state.tokens.saved = Math.round((state.tokens.prompt + state.tokens.completion) * 0.4);
     }
     chatHistory.push({ role: 'user', content: cmd });
-    setMood('happy', 2000);
+    setMochiMood('happy');
+    setTimeout(() => setMochiMood('idle'), 2000);
   } catch (e) {
     chatLog.add('{red-fg}Error: ' + e.message + '{/}');
-    setMood('sad', 2000);
+    setMochiMood('sad');
+    setTimeout(() => setMochiMood('idle'), 2000);
   }
 
   state.thinking = false;
