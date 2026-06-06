@@ -11,6 +11,9 @@ logs/
 .DS_Store
 Thumbs.db
 
+# Dependencies
+node_modules/
+
 # Build
 .next/
 build/
@@ -19,6 +22,18 @@ dist/
 # Python
 __pycache__/
 *.pyc
+
+# Model weights and binary artifacts
+*.pt
+*.bin
+*.gguf
+*.safetensors
+
+# Compressed archives
+*.gz
+
+# TypeScript build cache
+tsconfig.tsbuildinfo
 
 # Runtime state — agent scratch, sessions, persisted job records.
 # These contain LLM outputs, worker job history, and companion state. They
@@ -36,6 +51,11 @@ bg-sessions/
 # CLI / TUI per-user session cache
 .session-cache/
 *.session.json
+
+# Internal scratch and archive
+_scratch/
+.archive/
+purpclaw_settings.json
 
 # Editor + IDE
 .vscode/

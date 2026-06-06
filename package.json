@@ -1,11 +1,12 @@
 {
   "name": "purpclaw",
   "version": "0.1.0",
-  "description": "PURPCLAW — the tiny haunted workshop. Resident autonomous agent runtime with CLI front door.",
-  "keywords": ["ai", "agent", "autonomous", "orchestration", "hermes", "mochi", "harness"],
+  "description": "Open-source coding-agent CLI. Terminal-first, multi-agent, self-improving. Supports OpenAI, Anthropic, Gemini, Ollama, and 13 more providers.",
+  "keywords": ["ai", "agent", "cli", "coding", "mcp", "openai", "gemini", "ollama", "anthropic", "multi-agent"],
+  "type": "commonjs",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_GITHUB/purpclaw.git"
+    "url": "https://github.com/weemadscotsman/purpclaw.git"
   },
   "homepage": "https://purpclaw.dev",
   "license": "MIT",
@@ -13,6 +14,25 @@
   "bin": {
     "purpclaw": "./bin/purpclaw.js"
   },
+  "files": [
+    "bin/",
+    "lib/",
+    "app/",
+    "components/",
+    "public/",
+    "config/",
+    "scripts/",
+    "service_registry.js",
+    "ecosystem.config.js",
+    "unified_api.js",
+    "orchestrator.js",
+    "agent_tower.js",
+    "boot.js",
+    "purpclaw.js",
+    "README.md",
+    "LICENSE",
+    ".env.example"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",

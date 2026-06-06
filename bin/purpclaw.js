@@ -1763,6 +1763,84 @@ async function cmdDream() {
 }
 
 // ── forge — create a new lobster agent from a gacha soul draw ────────────────
+async function cmdLora(args) {
+  const sub = (args[0] || 'help').toLowerCase();
+  const { spawn } = require('child_process');
+  const path = require('path');
+
+  console.log('');
+  console.log(`  \x1b[1m\x1b[35m🧠  PURPCLAW LORA\x1b[0m  \x1b[90m· LoRA fine-tuning pipeline\x1b[0m`);
+  console.log('');
+
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    console.log(`  \x1b[36musage:\x1b[0m`);
+    console.log(`    purpclaw lora status`);
+    console.log(`    purpclaw lora train [options]`);
+    console.log('');
+    console.log(`  \x1b[36mtrain options:\x1b[0m`);
+    console.log(`    --base HF_MODEL       base model (default: Qwen/Qwen2.5-1.5B-Instruct)`);
+    console.log(`    --epochs N            training epochs (default: 1)`);
+    console.log(`    --batch-size N        per-device batch size (default: 4)`);
+    console.log(`    --min-examples N      minimum training examples (default: 10)`);
+    console.log(`    --quant NAME          GGUF quant (default: q4_k_m)`);
+    console.log(`    --ollama-name NAME    output model name (default: purpclaw-quill)`);
+    console.log(`    --skip-export         train only, no merge/gguf/ollama`);
+    console.log(`    --skip-merge          skip merge step`);
+    console.log(`    --dry-run             show plan, don't train`);
+    console.log('');
+    return;
+  }
+
+  if (sub === 'status') {
+    const fs = require('fs');
+    const trainDir = process.env.PURPCLAW_TRAINING_DIR || 'E:/training';
+    const rawDir = require('path').join(trainDir, 'raw');
+    const adapters = require('path').join(trainDir, 'adapters');
+    const merged = require('path').join(trainDir, 'merged');
+    const gguf = require('path').join(trainDir, 'gguf');
+
+    const examples = fs.existsSync(rawDir) ?
+      fs.readdirSync(rawDir).filter(f => f.endsWith('.ndjson'))
+        .reduce((s, f) => s + fs.readFileSync(require('path').join(rawDir, f), 'utf-8').split('\n').filter(Boolean).length, 0)
+      : 0;
+
+    console.log(`  \x1b[36mtraining dir:\x1b[0m    ${trainDir}`);
+    console.log(`  \x1b[36mraw examples:\x1b[0m    ${examples} \x1b[90m(across .ndjson files in raw/)\x1b[0m`);
+    console.log(`  \x1b[36madapters:\x1b[0m        ${fs.existsSync(adapters) ? fs.readdirSync(adapters).length + ' dirs' : 'none'}`);
+    console.log(`  \x1b[36mmerged:\x1b[0m          ${fs.existsSync(merged) ? fs.readdirSync(merged).length + ' dirs' : 'none'}`);
+    console.log(`  \x1b[36mgguf:\x1b[0m            ${fs.existsSync(gguf) ? fs.readdirSync(gguf).filter(f => f.endsWith('.gguf')).length + ' files' : 'none'}`);
+    console.log('');
+    if (examples < 10) {
+      console.log(`  \x1b[33m⚠\x1b[0m  need at least 10 examples to train. let the runtime accumulate trajectories.`);
+    } else {
+      console.log(`  \x1b[32m✓\x1b[0m  ready to train. run: \x1b[36mpurpclaw lora train\x1b[0m`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'train') {
+    const scriptPath = path.join(__dirname, '..', 'scripts', 'lora-train.py');
+    const py = process.env.PYTHON_BIN || 'C:/Users/Admin/AppData/Local/Programs/Python/Python311/python.exe';
+    const cmd = [py, scriptPath, ...args.slice(1)];
+    console.log(`  \x1b[36mstarting:\x1b[0m  ${cmd.join(' ')}\n`);
+    const child = spawn(cmd[0], cmd.slice(1), { stdio: 'inherit', cwd: process.cwd() });
+    child.on('exit', code => {
+      console.log('');
+      if (code === 0) {
+        console.log(`  \x1b[32m✓\x1b[0m  LoRA pipeline complete.`);
+        console.log(`  \x1b[90mnext:\x1b[0m  pm2 restart purpclaw-api  \x1b[90m— to pick up the new LLM_MODEL\x1b[0m`);
+      } else {
+        console.log(`  \x1b[31m✗\x1b[0m  pipeline exited with code ${code}`);
+      }
+      console.log('');
+    });
+    return;
+  }
+
+  console.log(`  \x1b[33munknown subcommand. try:\x1b[0m  purpclaw lora help\n`);
+}
+
 async function cmdForge(args) {
   console.log(`\n  ${col(C.magenta + C.bold, '🦞 PERSONA FORGE — Soul Draw & Agent Creation')}\n`);
 
@@ -2504,10 +2582,14 @@ async function cmdConfig(args) {
 
   // Print menu
   let selected = 0;
+  let firstRender = true;
 
   function renderMenu() {
     // Move cursor up to redraw
-    if (selected > 0) process.stdout.write(`\x1B[${CONFIG_KEYS.length + 2}A`);
+    if (!firstRender) {
+      process.stdout.write(`\x1B[${CONFIG_KEYS.length + 2}A`);
+    }
+    firstRender = false;
 
     CONFIG_KEYS.forEach((k, i) => {
       const val    = env[k.key] || process.env[k.key] || '';
@@ -2754,41 +2836,6 @@ async function cmdDoctor() {
   }
 }
 
-// ── approve ─────────────────────────────────────────────────────────────────
-function cmdApprove(args) {
-  const gov = require(path.join(PURP_DIR, 'lib', 'governance.js'));
-
-  if (!args.length) {
-    const pending = gov.pendingApprovals(PURP_DIR);
-    if (!pending.length) {
-      console.log(col(C.gray, '  No pending approvals.\n'));
-      return;
-    }
-    sectionHead('  PENDING APPROVALS');
-    for (const entry of pending) {
-      const risks = (entry.risks || []).map(r =>
-        r === 'critical' ? col(C.red, 'CRITICAL') :
-        r === 'destructive' ? col(C.red, 'DESTRUCTIVE') :
-        r === 'self-modification' ? col(C.yellow, 'SELF-MOD') :
-        col(C.gray, r)
-      ).join(' ');
-      console.log(`  ${col(C.cyan, entry.id.padEnd(25))}  ${risks}`);
-      console.log(col(C.gray, `    ${entry.command?.slice(0, 80) || entry.jobType || '?'}`));
-    }
-    console.log(col(C.gray, '\n  purpclaw approve <approval-id>'));
-    console.log(col(C.gray, '  purpclaw reject  <approval-id> [reason]'));
-    return;
-  }
-
-  const approvalId = args[0];
-  const result = gov.setApprovalStatus(PURP_DIR, approvalId, 'approved');
-  if (!result.id) {
-    console.log(col(C.red, `  ✗ Approval ${approvalId} not found`));
-  } else {
-    console.log(col(C.green, `  ✓ Approved: ${approvalId}`));
-  }
-}
-
 // ── reject ──────────────────────────────────────────────────────────────────
 function cmdReject(args) {
   const gov = require(path.join(PURP_DIR, 'lib', 'governance.js'));
@@ -2814,196 +2861,6 @@ function cmdReject(args) {
     console.log(col(C.yellow, `  ✗ Rejected: ${approvalId}`));
   }
 }
-
-// ── jobs ─────────────────────────────────────────────────────────────────────
-function cmdJobs(args) {
-  const gov = require(path.join(PURP_DIR, 'lib', 'governance.js'));
-  const sub = (args[0] || '').toLowerCase();
-
-  if (sub === 'pending') {
-    const pending = gov.pendingApprovals(PURP_DIR);
-    if (!pending.length) {
-      console.log(col(C.gray, '  No pending approvals.\n'));
-      return;
-    }
-    sectionHead('  PENDING APPROVALS');
-    for (const entry of pending) {
-      console.log(`  ${col(C.cyan, entry.id)}  ${col(C.yellow, (entry.risks || []).join(', '))}`);
-      console.log(col(C.gray, `    ${entry.command?.slice(0, 80) || entry.jobType || '?'}`));
-      console.log(col(C.gray, `    created: ${entry.createdAt}`));
-    }
-    return;
-  }
-
-  if (sub === 'recent') {
-    const all = gov.listApprovals(PURP_DIR);
-    const byId = {};
-    for (const e of all) byId[e.id] = e;
-    const unique = Object.values(byId).slice(-20).reverse();
-    sectionHead('  RECENT APPROVAL LOG (last 20)');
-    for (const entry of unique) {
-      const icon = entry.status === 'approved' ? col(C.green, '✓') :
-                   entry.status === 'rejected' ? col(C.red, '✗') :
-                   col(C.gray, '·');
-      console.log(`  ${icon}  ${col(C.gray, String(entry.createdAt || '').slice(0, 19))}  ${entry.id}  ${entry.status}`);
-    }
-    return;
-  }
-
-  // Default: summary
-  const pending = gov.pendingApprovals(PURP_DIR);
-  sectionHead('  GOVERNANCE STATUS');
-  console.log(`  ${pending.length > 0 ? col(C.red, String(pending.length)) : col(C.green, '0')}  pending approval(s)`);
-  console.log(col(C.gray, '  purpclaw jobs pending | recent'));
-  console.log('');
-}
-
-// ── policies ─────────────────────────────────────────────────────────────────
-function cmdPolicies() {
-  const gov = require(path.join(PURP_DIR, 'lib', 'governance.js'));
-  const policy = gov.readPolicy(PURP_DIR);
-
-  sectionHead('  GOVERNOR — POLICIES');
-  console.log(`  Mode: ${col(C.cyan, policy.mode)}`);
-  console.log('');
-  console.log(`  ${col(C.red, 'Require approval for:')}`);
-  for (const r of (policy.requireApprovalFor || [])) {
-    console.log(`    ${col(C.red, '⚠')}  ${r}`);
-  }
-  console.log('');
-  console.log(`  ${col(C.green, 'Allow without approval:')}`);
-  for (const r of (policy.allowWithoutApproval || [])) {
-    console.log(`    ${col(C.green, '✓')}  ${r}`);
-  }
-  console.log(col(C.gray, '\n  purpclaw approve <id> | reject <id>'));
-  console.log(col(C.gray, '  purpclaw jobs pending | recent'));
-}
-
-
-// ── introspect ────────────────────────────────────────────────────────────────
-function cmdIntrospect(args) {
-  const gov  = require(path.join(PURP_DIR, 'lib', 'governance.js'));
-  const reg  = (() => { try { return require(path.join(PURP_DIR, 'service_registry.js')); } catch { return null; } })();
-  const fs   = require('fs');
-
-  const sub = (args[0] || '').toLowerCase();
-  const target = args[1] || '';
-
-  if (sub === 'risks') {
-    sectionHead('  RISK CLASSIFICATION');
-    console.log(col(C.gray, '  Testing: npm install self-modification'));
-    const risks = gov.classifyRisk('npm install purpclaw orchestrator self-modification');
-    for (const r of risks) {
-      const label = r === 'destructive' ? col(C.red, 'DESTRUCTIVE') :
-                    r === 'self-modification' ? col(C.yellow, 'SELF-MOD') :
-                    r === 'dependency-change' ? col(C.yellow, 'DEP-CHANGE') :
-                    col(C.gray, r);
-      console.log(`    ${col(C.yellow, '⚠')}  ${label}`);
-    }
-    console.log('');
-    console.log(col(C.gray, '  Testing: status doctor look (read-only)'));
-    const safe = gov.classifyRisk('purpclaw doctor status look');
-    for (const r of safe) console.log(`    ${col(C.green, '✓')}  ${r}`);
-    console.log('');
-    return;
-  }
-
-  if (sub === 'policies') {
-    const policy = gov.readPolicy(PURP_DIR);
-    console.log(col(C.cyan, `Mode: ${policy.mode}`));
-    console.log(col(C.gray, `Require: ${policy.requireApprovalFor.join(', ')}`));
-    return;
-  }
-
-  // Default: full introspect report
-  sectionHead('  PURPCLAW INTROSPECT');
-  console.log('');
-  console.log(`  ${col(C.white, 'Governance mode:')}  ${col(C.cyan, gov.readPolicy(PURP_DIR).mode)}`);
-  const pending = gov.pendingApprovals(PURP_DIR);
-  console.log(`  ${col(C.white, 'Pending approvals:')}  ${pending.length > 0 ? col(C.red, String(pending.length)) : col(C.green, '0')}`);
-  console.log('');
-
-  if (reg) {
-    try {
-      const services = reg.getServices();
-      const required = services.filter(s => s.required);
-      const optional = services.filter(s => !s.required);
-      console.log(`  ${col(C.white, 'Services:')}  ${col(C.green, String(required.length))} required, ${col(C.gray, String(optional.length))} optional`);
-    } catch { console.log(col(C.gray, '  Service registry: not accessible')); }
-  }
-
-  console.log('');
-  console.log(`  ${col(C.gray, 'Sub-commands:')}`);
-  console.log(`    ${col(C.cyan, 'purpclaw introspect risks')}      — test risk classification`);
-  console.log(`    ${col(C.cyan, 'purpclaw introspect policies')}  — show current policy mode`);
-  console.log('');
-}
-
-
-
-// ── rollback ─────────────────────────────────────────────────────────────────
-function cmdRollback(args) {
-  const sub = (args[0] || '').toLowerCase();
-  const fs = require('fs');
-
-  const gov = require(path.join(PURP_DIR, 'lib', 'governance.js'));
-
-  if (sub === 'list') {
-    sectionHead('  AVAILABLE ROLLBACK POINTS');
-    // Show recent completed jobs that could be rolled back
-    const agent_work = path.join(PURP_DIR, 'agent_work');
-    const jobs = [];
-    try {
-      for (const entry of fs.readdirSync(agent_work)) {
-        if (entry.startsWith('job-') && fs.statSync(path.join(agent_work, entry)).isDirectory()) {
-          const meta = path.join(agent_work, entry, '.meta.json');
-          if (fs.existsSync(meta)) {
-            try { jobs.push(JSON.parse(fs.readFileSync(meta, 'utf8'))); } catch {}
-          }
-        }
-      }
-    } catch {}
-
-    if (!jobs.length) {
-      console.log(col(C.gray, '  No completed jobs with rollback metadata.\n'));
-      return;
-    }
-
-    const recent = jobs.slice(-20).reverse();
-    for (const job of recent) {
-      const ts = job.completedAt || job.createdAt || '';
-      const id = job.id || job.workflowId || '?';
-      const desc = (job.command || job.description || '?').slice(0, 60);
-      console.log(`  ${col(C.cyan, id.padEnd(20))}  ${col(C.gray, ts.slice(0, 19))}  ${desc}`);
-    }
-    console.log(col(C.gray, '\n  Rollback a job: purpclaw rollback undo <job-id>\n'));
-    return;
-  }
-
-  if (sub === 'undo') {
-    const jobId = args[1];
-    if (!jobId) {
-      console.log(col(C.gray, '  Usage: purpclaw rollback undo <job-id>'));
-      console.log(col(C.gray, '  List available: purpclaw rollback list'));
-      return;
-    }
-    console.log(col(C.yellow, `  Rollback for ${jobId} — implemented as governance checkpoint, not auto-revert.`));
-    console.log(col(C.gray, '  Check purpclaw jobs recent to see what changed.'));
-    console.log(col(C.gray, '  For auto-revert on self-change failures, see policies.json: POL-005.'));
-    return;
-  }
-
-  // Default: show rollback status
-  sectionHead('  ROLLBACK');
-  const agent_work = path.join(PURP_DIR, 'agent_work');
-  let count = 0;
-  try { count = fs.readdirSync(agent_work).filter(e => e.startsWith('job-')).length; } catch {}
-  console.log(`  ${count} job directories in agent_work/`);
-  console.log(col(C.gray, '  purpclaw rollback list     — show available rollback points'));
-  console.log(col(C.gray, '  purpclaw rollback undo <id> — rollback a specific job'));
-  console.log('');
-}
-
 
 
 
@@ -3613,6 +3470,24 @@ function cmdSpaghetti(args) {
 
 // ── tui ───────────────────────────────────────────────────────────────────────
 function cmdTui(args = []) {
+  // `purpclaw tui ask` opens the interactive agent chat TUI.
+  // `purpclaw tui` (no subcommand) opens the live dashboard cockpit.
+  const sub = (args[0] || '').toLowerCase();
+  if (sub === 'ask') {
+    const TUI_ASK = path.join(PURP_DIR, 'scripts', 'tui-ask.js');
+    if (!fs.existsSync(TUI_ASK)) {
+      console.error(col(C.red, `\n  ✗ scripts/tui-ask.js not found at ${TUI_ASK}\n`));
+      process.exit(1);
+    }
+    const child = require('child_process').spawn(process.execPath, [TUI_ASK, ...args.slice(1)], {
+      stdio: 'inherit',
+      env  : process.env,
+      cwd  : PURP_DIR,
+    });
+    child.on('close', code => process.exit(code || 0));
+    child.on('error', e => { console.error(col(C.red, `\n  ✗ tui-ask failed: ${e.message}\n`)); process.exit(1); });
+    return;
+  }
   const TUI_SCRIPT = path.join(PURP_DIR, 'scripts', 'tui.js');
   if (!fs.existsSync(TUI_SCRIPT)) {
     console.error(col(C.red, `\n  ✗ scripts/tui.js not found at ${TUI_SCRIPT}\n`));
@@ -3917,7 +3792,8 @@ async function main() {
   // Helper: dispatches the command, optionally wrapped in mochi status bars
   async function dispatch() {
     switch (command.toLowerCase()) {
-    case 'tui':       return cmdTui(args);
+    case 'tui':
+    case 'ui':        return cmdTui(args);
     case 'init':      return cmdInit(args);
     case 'start':     return cmdStart(args);
     case 'stop':      return cmdStop(args);
@@ -3951,6 +3827,7 @@ case 'registry': return cmdRegistry(args);
     case 'code':
     case 'github':
     case 'gitx':      return loadCmd('code').run(args, sharedCtx());
+    case 'lora':      return cmdLora(args);
     case 'agents':    return cmdAgents();
     case 'profiles':  return cmdProfiles();
     case 'workflows': return cmdWorkflows();
@@ -3974,6 +3851,10 @@ case 'registry': return cmdRegistry(args);
     case 'workers':
     case 'worker':    return loadCmd('workers').run(args, sharedCtx());
     case 'ask':       return loadCmd('ask').run(args, sharedCtx());
+    case 'commit':
+        case 'review':
+        case 'find':
+        case 'claudecode':return loadCmd('claudecode').run([command, ...args], sharedCtx());
     case 'gc':
     case 'cleanup':   return loadCmd('gc').run(args, sharedCtx());
     case 'architecture':
@@ -3988,6 +3869,7 @@ case 'registry': return cmdRegistry(args);
     case 'safestart': return loadCmd('safe-start').run(args, sharedCtx());
     case 'safe-stop':
     case 'safestop':  return loadCmd('safe-stop').run(args, sharedCtx());
+    case 'services':  return loadCmd('services').run(args, sharedCtx());
     case 'heal':
     case 'recover':   return loadCmd('heal').run(args, sharedCtx());
     case 'roster':    return loadCmd('roster').run(args, sharedCtx());
