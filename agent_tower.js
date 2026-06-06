@@ -152,7 +152,7 @@ async function spawnAgent(agentName, task, options = {}) {
       role: agentInfo.role
     });
   } else {
-    prompt = buildAgentPrompt(agentName, task);
+    prompt = await buildAgentPrompt(agentName, task);
   }
 
   const activeAgent = {
@@ -243,7 +243,7 @@ function sanitizeForCli(text) {
   return text.replace(/[\u{10000}-\u{10FFFF}]/gu, '');
 }
 
-function buildAgentPrompt(agentName, task) {
+async function buildAgentPrompt(agentName, task) {
   const info = AGENT_TOWER.registry[agentName.toLowerCase()];
   if (!info) return '';
 
@@ -255,7 +255,48 @@ function buildAgentPrompt(agentName, task) {
   prompt += `Tower Tier: ${tierInfo.name}\n`;
   prompt += `Skills: ${info.skills.join(', ')}\n\n`;
   prompt += `Your Task:\n${task}\n\n`;
-  prompt += `Remember: You are ${info.name}. Work with your division and team.\n`;
+  prompt += `Remember: You are ${info.name}. Work with your division and team.\n\n`;
+
+  // Append cognitive spine context (best-effort, 2s timeout)
+  prompt += `--- Cognitive Context ---\n`;
+  try {
+    const http = require('http');
+    const ctx = await new Promise(resolve => {
+      const req = http.get({ hostname: '127.0.0.1', port: 7880, path: '/memory/context', timeout: 2000 }, res => {
+        let d = ''; res.on('data', c => d += c);
+        res.on('end', () => {
+          try { resolve(JSON.parse(d)); } catch { resolve(null); }
+        });
+      });
+      req.on('error', () => resolve(null));
+      req.on('timeout', () => { req.destroy(); resolve(null); });
+      req.end();
+    });
+    if (ctx && ctx.context && ctx.context.length > 0) {
+      prompt += `Recent memory: ${JSON.stringify(ctx.context).substring(0, 300)}\n`;
+    } else {
+      prompt += `Memory: no recent context\n`;
+    }
+  } catch { prompt += `Memory: unavailable\n`; }
+
+  // Rules summary
+  try {
+    const http = require('http');
+    const rules = await new Promise(resolve => {
+      const req = http.get({ hostname: '127.0.0.1', port: 7880, path: '/rules/stats', timeout: 2000 }, res => {
+        let d = ''; res.on('data', c => d += c);
+        res.on('end', () => {
+          try { resolve(JSON.parse(d)); } catch { resolve(null); }
+        });
+      });
+      req.on('error', () => resolve(null));
+      req.on('timeout', () => { req.destroy(); resolve(null); });
+      req.end();
+    });
+    if (rules) {
+      prompt += `Rules: ${rules.facts || 0} facts, ${rules.rules || 0} rules active\n`;
+    }
+  } catch {}
 
   return prompt;
 }
