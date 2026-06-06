@@ -3745,9 +3745,13 @@ async function main() {
   }
   let [command, ...args] = cleanArgv;
 
-  // Explicit help paths
+  // Explicit help/version paths
   if (command === 'help' || command === '--help' || command === '-h') {
-    cmdHelp();
+    cmdHelp(); return;
+  }
+  if (command === 'version' || command === '--version' || command === '-v' || command === '-V') {
+    const pkg = require(path.join(PURP_DIR, 'package.json'));
+    console.log('purpclaw v' + (pkg.version || '0.1.0'));
     return;
   }
 
