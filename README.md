@@ -15,7 +15,7 @@ PurpClaw is not another AI application. It's trying to become an **operating sys
 | **Provider lock-in** | One vendor | 17 providers, switch mid-session |
 | **Memory** | Session-only, lost on disconnect | Persistent cognitive memory with neuro-symbolic reasoning |
 | **Tools** | Fixed set, no extensibility | 54 tools + unlimited MCP servers |
-| **Agents** | One or none | 152 specialized agents across 5 divisions |
+| **Agents** | One or none | 35 runtime agents (152 skill dirs, 54 code modules) |
 | **Self-improvement** | None | Karpathy ratchet — trains its own LoRA overnight |
 | **Interface** | One (chat or CLI) | CLI + full-screen TUI + WebUI dashboard |
 | **Token efficiency** | Feeds entire codebase to LLM | OmniCode index — semantic lookup, saves 99% on token burn |
