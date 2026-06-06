@@ -409,33 +409,21 @@ purpclaw training export       # export training data
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Install (one line)
 
+### npm (after publish)
 ```bash
-# Clone
-git clone https://github.com/weemadscotsman/purpclaw.git
-cd purpclaw
+npm install -g purpclaw && purpclaw tui ng
+```
 
-# Install
-npm install
+### PowerShell
+```powershell
+iex (irm https://raw.githubusercontent.com/weemadscotsman/purpclaw/main/scripts/install.ps1)
+```
 
-# Copy .env and set your API key
-cp .env.example .env
-# Edit .env — pick a provider and set its key
-
-# Start the core services (16 services in order)
-purpclaw safe-start --core
-
-# Use the CLI
-purpclaw ask --provider ollama "explain the codebase"
-purpclaw ask "deploy the API"                    # uses default provider
-
-# Launch the TUI
-purpclaw tui ask                                  # interactive agent chat
-purpclaw tui                                      # dashboard cockpit
-
-# Open the WebUI
-# http://localhost:3000
+### macOS / Linux
+```bash
+curl -fsSL https://raw.githubusercontent.com/weemadscotsman/purpclaw/main/scripts/install.sh | bash
 ```
 
 ## 🔧 Configuration
