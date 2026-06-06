@@ -945,7 +945,7 @@ import http.server
 import socketserver
 from urllib.parse import urlparse, parse_qs
 
-PORT = 7780
+PORT = 7880
 
 
 class ReuseAddrTCPServer(socketserver.TCPServer):
@@ -1129,5 +1129,5 @@ if __name__ == "__main__":
     print()
     print("All tests passed.")
 
-    print("\n[MEMv2] Starting server on port 7780...")
-    run_v2_server(7780)
+    print("\n[MEMv2] Starting server on port 7880...")
+    run_v2_server(7880)

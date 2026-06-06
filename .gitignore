@@ -62,3 +62,6 @@ purpclaw_settings.json
 .idea/
 *.swp
 *.swo
+.ui-backup*/
+.claude/
+.kiro/
