@@ -216,6 +216,16 @@ purpclaw (CLI)
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the contributor guide. New providers can be added by extending `lib/llm-provider.js`'s `PROVIDERS` registry. New tools are just modules in `lib/tools/`.
 
-## License
+## License & Sponsorship
 
-MIT
+**License:** MIT — forever free, irrevocably open.
+
+**Support the swarm:** PurpClaw is built by Eddie & the swarm, full-time, daily. If it saves your team money on token burn (OmniCode) or unblocks your stack (ratchet training), consider sponsoring.
+
+| Tier | Price | Perks |
+|------|-------|-------|
+| 🧪 Pilot | $200/mo | Logo on README, early access to new providers/tools, monthly status update |
+| 📈 Growth | $500/mo | All above + roadmap priority voting, quarterly call with the maintainer |
+| 🏛 Strategic | $1,000+/mo | All above + dedicated support channel, co-marketing, influence over feature direction |
+
+*(GitHub Sponsors and Open Collective pages coming soon — hit the repo's Sponsor button to express interest.)*
