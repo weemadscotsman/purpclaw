@@ -1,6 +1,7 @@
 # PURPCLAW
 
 ## End-to-End System Overview 🟣⚙️
+> Last updated: 2026-06-06
 
 PURPCLAW is a **persistent AI orchestration runtime** designed to behave less like a chatbot and more like a **living operational kernel** for software, automation, cognition, and infrastructure management.
 

@@ -1,4 +1,5 @@
 # PURPCLAW Recovery Runbook
+> Last updated: 2026-06-06
 
 When something has gone sideways — desktop crash, PC reboot, "I have no idea what state this stack is in" — this is the page.
 

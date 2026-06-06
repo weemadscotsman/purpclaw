@@ -1,6 +1,7 @@
 # PurpClaw
 
 > **Open-source coding-agent CLI.** Terminal-first. Cloud + local. One workflow, many brains.
+> Last updated: 2026-06-06
 
 PurpClaw is a Claude Code-style coding agent that runs in your terminal. It reads files, edits code, runs shell commands, searches code semantically, and dispatches work to specialized agents — all from a single CLI. Switch between 17 LLM providers (OpenAI, Anthropic, Gemini, GitHub Models, Codex, Ollama, Atomic Chat, ...) without changing your workflow.
 
