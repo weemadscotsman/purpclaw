@@ -1,10 +1,26 @@
 # PurpClaw
 
-> **The AI Operating System for Developers.**
-> Terminal-first. Multi-agent. Self-improving. MCP native.
+> **The AI Workstation OS.**
+> A terminal-first, multi-agent, self-improving AI operating system.
 > 17 providers · 54 tools · 152 agents · 25 microservices · 3 surfaces (CLI, TUI, WebUI)
 
-PurpClaw is not a chat wrapper. It's a **persistent AI orchestration runtime** — a governed multi-agent cognition and execution environment that lives in your terminal, orchestrates 152 specialized agents across 5 divisions, stores persistent memory with neuro-symbolic reasoning, monitors itself with 5 diagnostic agents, consolidates memories overnight, improves its own LoRA model via a Karpathy-style ratchet, speaks through Kokoro TTS, sees through YOLO, and thinks in modal logic.
+PurpClaw is not another AI application. It's trying to become an **operating system for AI work** — where the CLI is the shell, the agents are processes, the memory matrix is persistent storage, the event bus is IPC, the orchestrator is the scheduler, the providers are CPUs, the swarm is multiprocessing, and the training ratchet is software evolution.
+
+## Why PurpClaw over everything else
+
+| Problem | Everyone Else | PurpClaw |
+|---|---|---|
+| **Provider lock-in** | One vendor | 17 providers, switch mid-session |
+| **Memory** | Session-only, lost on disconnect | Persistent cognitive memory with neuro-symbolic reasoning |
+| **Tools** | Fixed set, no extensibility | 54 tools + unlimited MCP servers |
+| **Agents** | One or none | 152 specialized agents across 5 divisions |
+| **Self-improvement** | None | Karpathy ratchet — trains its own LoRA overnight |
+| **Interface** | One (chat or CLI) | CLI + full-screen TUI + WebUI dashboard |
+| **Token efficiency** | Feeds entire codebase to LLM | OmniCode index — semantic lookup, saves 99% on token burn |
+| **Voice** | None or cloud-only | Full local pipeline: Whisper STT → LLM → Kokoro TTS |
+| **Vision** | None | YOLO object detection + screen/camera monitor |
+| **MCP ecosystem** | Consumes one server | MCP client — any server becomes a tool |
+| **Privacy** | Telemetry by default | No telemetry, self-hosted, auditable |
 
 ```
 npm install -g purpclaw     # once published
