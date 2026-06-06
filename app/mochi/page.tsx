@@ -12,7 +12,21 @@
  *   - Stats are computed from real swarm state, not random numbers
  */
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
+
+// Real face engine — loaded dynamically for Next.js SSR compat
+let _generateFace: any = null;
+let _moodToFace: any = null;
+let MOCHI_SPRITES_LOADED = false;
+async function loadFaceEngine() {
+  if (MOCHI_SPRITES_LOADED) return;
+  try {
+    const sprites = await import('../../lib/mochi-sprites.js');
+    _generateFace = sprites.generateFace;
+    _moodToFace = sprites.moodToFace;
+    MOCHI_SPRITES_LOADED = true;
+  } catch {}
+}
 
 type Mochi = {
   hatched: boolean;
@@ -64,22 +78,11 @@ const FACES: Record<string, (e: string) => string> = {
   mushroom: e => `|${e}  ${e}|`,   chonk   : e => `(${e}.${e})`,
 };
 
-let _sprites: any = null;
-try {
-  // Dynamically load the real face engine (100k+ combos, mood-aware, voice-synced)
-  _sprites = {
-    generateFace: (await import('../../lib/mochi-sprites.js')).generateFace,
-    moodToFace: (await import('../../lib/mochi-sprites.js')).moodToFace,
-    voiceFace: (await import('../../lib/mochi-sprites.js')).voiceFace,
-  };
-} catch { _sprites = null; }
-
 function face(species?: string, eye?: string, mood?: string): string {
   // Use the real face engine if available
-  if (_sprites && mood) {
+  if (_generateFace && mood) {
     try {
-      const moodKey = mood.toLowerCase();
-      return _sprites.generateFace({ mood: moodKey });
+      return _generateFace({ mood: mood.toLowerCase() });
     } catch {}
   }
   const e = eye || '·';
