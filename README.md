@@ -2,9 +2,11 @@
 
 > **The AI Workstation OS.**
 > A terminal-first, multi-agent, self-improving AI operating system.
-> 17 providers · 54 tools · 152 agents · 25 microservices · 3 surfaces (CLI, TUI, WebUI)
+> 17 providers · 110+ tools · 35 runtime agents (152 skill directories) · 9 core services · 3 surfaces (CLI, TUI, WebUI)
 
 PurpClaw is not another AI application. It's trying to become an **operating system for AI work** — where the CLI is the shell, the agents are processes, the memory matrix is persistent storage, the event bus is IPC, the orchestrator is the scheduler, the providers are CPUs, the swarm is multiprocessing, and the training ratchet is software evolution.
+
+**Honest numbers:** 35 agents are deployable at runtime (152 skill directories contain 54 with executable code and 42 with documented personas). 9 core services are running (25 total defined — the cognitive cluster is built but offline). The 7-layer memory architecture exists in code (1,133 lines) but 6 of 7 layers are currently offline — the architecture points in a direction, the runtime hasn't caught up yet.
 
 ## Why PurpClaw over everything else
 
@@ -262,17 +264,18 @@ Available via `POST /api/chat/swarm` with SSE streaming.
 
 ---
 
-## 👥 152 Agents across 5 Divisions
+## 👥 Agent Reality (152 skill directories → 35 runtime agents)
 
-Each agent under `skills/` has AGENT.md, SKILL.md, GOALS.md, PROTOCOLS.md:
+Not all 152 are independently running. Here's the breakdown:
 
-| Division | Agents | Purpose |
+| Type | Count | Meaning |
 |---|---|---|
-| **CORE** | duck, bee, rabbit, fox, owl, wolf, shark, phoenix, turtle, mantis | Base operations, routing, planning, execution |
-| **OPS** | crow, panda, penguin, hawk, raven, jellyfish, moth, cactus, chonk, ghost | Monitoring, deployment, security, cleanup |
-| **MEDIA_OPS** | kraken, octopus, gorilla, dragon | Media processing, GPU compute, batch jobs |
-| **COGNITIVE** | innovator, scientist, spider, elephant, mushroom | Research, exploration, data extraction |
-| **SPECIAL** | snake, godmode, guardian, void | Red-teaming, jailbreak, pentesting, memory ops |
+| **Runtime Agent** | 35 | Registered in tower, spawnable, has executable code |
+| **Skill Agent** | 54 | Has .js module, can be loaded programmatically |
+| **Persona Agent** | 42 | Has AGENT.md, defined personality/role, no runtime code |
+| **Shell** | 56 | Directory exists, undocumented or template-only |
+
+5 divisions: CORE (duck, bee, rabbit, fox, owl, wolf, shark, phoenix, turtle, mantis) · OPS (crow, panda, penguin, hawk, raven, jellyfish, moth, ghost) · MEDIA (kraken, octopus, gorilla, dragon) · COGNITIVE (innovator, scientist, spider, elephant, mushroom) · SPECIAL (snake, godmode, guardian, void)
 
 ---
 
