@@ -3778,7 +3778,8 @@ async function main() {
     console.log(col(C.cyan, `    ${col(C.bold, '3')}. TUI ask         `) + col(C.gray, '(purpclaw tui ask — full-screen chat)'));
     console.log(col(C.cyan, `    ${col(C.bold, '4')}. WebUI           `) + col(C.gray, '(http://localhost:3000 — mission control)'));
     console.log(col(C.cyan, `    ${col(C.bold, '5')}. Setup wizard    `) + col(C.gray, '(configure providers)'));
-    console.log(col(C.cyan, `    ${col(C.bold, '6')}. Help            `) + col(C.gray, '(show all commands)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '6')}. Guided tour     `) + col(C.gray, '(TTS-narrated walkthrough)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '7')}. Help            `) + col(C.gray, '(show all commands)'));
     console.log('');
 
     // Read a single keypress (or line) for the choice
@@ -3798,6 +3799,7 @@ async function main() {
         process.exit(0);
       }
       else if (choice === '5') { command = 'setup'; args = []; }
+      else if (choice === '6') { command = 'tour'; args = []; }
       else { command = 'help'; args = []; }
     });
 
@@ -3894,6 +3896,8 @@ case 'registry': return cmdRegistry(args);
     case 'setup':
     case 'wizard':
     case 'onboard':   return loadCmd('setup').run(args, sharedCtx());
+    case 'tour':
+    case 'walkthrough':return loadCmd('tour').run(args, sharedCtx());
     case 'commit':
         case 'review':
         case 'find':
