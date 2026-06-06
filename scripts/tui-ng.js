@@ -109,14 +109,16 @@ const statusBar = blessed.box({
 });
 screen.append(statusBar);
 
-// Pull real Mochi status from mochi-statusbar if available
-async function updateMochiStatus() {
-  if (!MOCHI_SB) return;
+// Pull real Mochi state from API (unified across terminal + browser)
+let mochiSpecies = 'axolotl'; let mochiHat = 'none';
+async function syncMochiState() {
   try {
-    const top = await MOCHI_SB.renderStatus();
-    if (top && top.length > 5) {
-      // Use first meaningful part from real mochi status
-      statusBar.setContent(top.replace(/\x1b\[[0-9;]*m/g, '').substring(0, 120));
+    const r = await fetch('http://127.0.0.1:7780/api/mochi', { signal: AbortSignal.timeout(2000) });
+    if (r.ok) {
+      const m = await r.json();
+      if (m.species) mochiSpecies = m.species;
+      if (m.hat) mochiHat = m.hat;
+      if (m.mood) setMochiMood(m.mood);
     }
   } catch {}
 }
@@ -138,7 +140,7 @@ screen.append(helpLine);
 
 // ── Mochi moods ──────────────────────────────────────────────
 // ── REAL Mochi sprites (from lib/mochi-sprites.js) ──────────
-let mochiFrame = 0; let mochiSpecies = 'axolotl'; let mochiEye = '✦'; let mochiHat = 'none';
+let mochiFrame = 0; let mochiEye = '✦';
 let mochiAnimInterval = null;
 const MOCHI_SPRITES = (() => { try { return require(path.join(__dirname, '..', 'lib', 'mochi-sprites')); } catch { return null; } })();
 const MOCHI_SB = (() => { try { return require(path.join(__dirname, '..', 'lib', 'mochi-statusbar')); } catch { return null; } })();
