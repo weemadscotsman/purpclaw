@@ -31,6 +31,8 @@ import pickle
 import hashlib
 import threading
 import re
+import numpy as np
+import struct
 from collections import OrderedDict, defaultdict
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any, Callable, Set, Tuple
@@ -58,36 +60,64 @@ try:
 except ImportError:
     RULES_ENGINE = None
 
-# ── Quantization helpers (8-bit, reused from base) ─────────────────────────
+# ── Quantization helpers (TurboQuant 8-bit adaptive quantization) ───────────
 
-QUANT_BOUNDARIES = [(i / 128.0) - 1.0 for i in range(257)]
+ROTATION_SEED = 42
+_ROTATION_MATRIX = None
+_ROTATION_MATRIX_T = None
+
+def _get_rotation_matrix(dims=384):
+    global _ROTATION_MATRIX, _ROTATION_MATRIX_T
+    if _ROTATION_MATRIX is None:
+        rng = np.random.default_rng(ROTATION_SEED)
+        H = rng.standard_normal((dims, dims))
+        Q, _ = np.linalg.qr(H)
+        _ROTATION_MATRIX = Q.astype(np.float32)
+        _ROTATION_MATRIX_T = Q.T.astype(np.float32)
+    return _ROTATION_MATRIX, _ROTATION_MATRIX_T
 
 def quantize_vec(vector: List[float], dims: int = 384) -> bytes:
     if len(vector) < dims:
         vector = vector + [0.0] * (dims - len(vector))
     elif len(vector) > dims:
         vector = vector[:dims]
-    quantized = bytearray(dims)
-    for i, v in enumerate(vector):
-        v = max(-1.0, min(1.0, v))
-        q = int((v + 1.0) * 127.5)
-        quantized[i] = max(0, min(255, q))
-    return bytes(quantized)
+    
+    R, _ = _get_rotation_matrix(dims)
+    v_arr = np.array(vector, dtype=np.float32)
+    rotated = np.dot(v_arr, R)
+    
+    max_val = np.max(np.abs(rotated))
+    scale = float(max_val / 127.0) if max_val > 0 else 1.0
+    
+    quantized = np.clip(np.round(rotated / scale), -128, 127).astype(np.int8)
+    return quantized.tobytes() + struct.pack('<f', scale)
 
 def dequantize_vec(quantized: bytes, dims: int = 384) -> List[float]:
-    result = []
-    for i in range(min(len(quantized), dims)):
-        result.append((quantized[i] / 127.5) - 1.0)
-    while len(result) < dims:
-        result.append(0.0)
-    return result
+    if len(quantized) < dims + 4:
+        scale = 1.0 / 127.5
+        q_bytes = quantized[:dims]
+        if len(q_bytes) < dims:
+            q_bytes = q_bytes + b'\x80' * (dims - len(q_bytes))
+        rotated = (np.frombuffer(q_bytes, dtype=np.uint8).astype(np.float32) - 127.5) * scale
+        _, R_T = _get_rotation_matrix(dims)
+        original = np.dot(rotated, R_T)
+        return original.tolist()
+    
+    q_bytes = quantized[:dims]
+    scale, = struct.unpack('<f', quantized[dims:dims+4])
+    rotated = np.frombuffer(q_bytes, dtype=np.int8).astype(np.float32) * scale
+    _, R_T = _get_rotation_matrix(dims)
+    original = np.dot(rotated, R_T)
+    return original.tolist()
 
 def cosine_sim(q1: bytes, q2: bytes) -> float:
-    v1 = dequantize_vec(q1)
-    v2 = dequantize_vec(q2)
-    dot = sum(a * b for a, b in zip(v1, v2))
-    mag1 = sum(a * a for a in v1) ** 0.5
-    mag2 = sum(b * b for b in v2) ** 0.5
+    v1 = np.array(dequantize_vec(q1), dtype=np.float32)
+    v2 = np.array(dequantize_vec(q2), dtype=np.float32)
+    
+    dot = float(np.dot(v1, v2))
+    mag1 = float(np.linalg.norm(v1))
+    mag2 = float(np.linalg.norm(v2))
+    
     if mag1 == 0 or mag2 == 0:
         return 0.0
     return dot / (mag1 * mag2)

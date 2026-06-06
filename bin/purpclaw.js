@@ -30,8 +30,9 @@ const path  = require('path');
 const fs    = require('fs');
 const http  = require('http');
 const https = require('https');
-const { spawn, execSync } = require('child_process');
+const { spawn: rawSpawn, execSync } = require('child_process');
 const readline = require('readline');
+const { trackedSpawn, execSafe, installCleanup, list: listChildren } = require('../lib/child-registry');
 
 // ── Root and config ───────────────────────────────────────────────────────────
 const PURP_DIR      = path.resolve(__dirname, '..');
@@ -350,11 +351,12 @@ function pm2(args, opts = {}) {
       command   = 'npx';
       finalArgs = ['pm2', ...args];
     }
-    const child = spawn(command, finalArgs, {
+    const child = trackedSpawn(command, finalArgs, {
+      tag: `pm2 ${args.join(' ')}`,
+      timeoutMs: opts.timeoutMs || 60_000,
       cwd        : PURP_DIR,
       stdio      : opts.silent ? 'pipe' : 'inherit',
       shell      : false,
-      windowsHide: true,
     });
     child.on('close', code => code === 0 ? resolve(code) : reject(new Error(`pm2 exited ${code}`)));
     child.on('error', reject);
@@ -1103,13 +1105,15 @@ async function cmdBg(args) {
   };
   fs.writeFileSync(sessionFile, JSON.stringify(meta, null, 2));
 
-  // Spawn detached: node bin/purpclaw.js run "<task>" 2>&1 >> agent_work/bg-sessions/<jobId>.log
+  // Spawn tracked: node bin/purpclaw.js run "<task>" with output redirected to log
   const LOG_FILE = path.join(BG_DIR, jobId + '.log');
-  const spawnCmd = `node "${path.join(PURP_DIR, 'bin', 'purpclaw.js')}" run "${task.replace(/"/g, '\"')}" >> "${LOG_FILE}" 2>&1 &`;
-  
-  try {
-    require('child_process').exec(spawnCmd);
-  } catch(e) { /* fire and forget */ }
+  const logFd = fs.openSync(LOG_FILE, 'a');
+  trackedSpawn(process.execPath, [path.join(PURP_DIR, 'bin', 'purpclaw.js'), 'run', task], {
+    tag: `bg-${jobId}`,
+    timeoutMs: 30 * 60_000,  // 30 min hard budget for background tasks
+    stdio: ['ignore', logFd, logFd],
+    cwd: PURP_DIR,
+  });
 
   banner();
   sectionHead('  BACKGROUND DISPATCHED');
@@ -1765,8 +1769,7 @@ async function cmdDream() {
 // ── forge — create a new lobster agent from a gacha soul draw ────────────────
 async function cmdLora(args) {
   const sub = (args[0] || 'help').toLowerCase();
-  const { spawn } = require('child_process');
-  const path = require('path');
+  const path_mod = require('path');
 
   console.log('');
   console.log(`  \x1b[1m\x1b[35m🧠  PURPCLAW LORA\x1b[0m  \x1b[90m· LoRA fine-tuning pipeline\x1b[0m`);
@@ -1824,7 +1827,12 @@ async function cmdLora(args) {
     const py = process.env.PYTHON_BIN || 'C:/Users/Admin/AppData/Local/Programs/Python/Python311/python.exe';
     const cmd = [py, scriptPath, ...args.slice(1)];
     console.log(`  \x1b[36mstarting:\x1b[0m  ${cmd.join(' ')}\n`);
-    const child = spawn(cmd[0], cmd.slice(1), { stdio: 'inherit', cwd: process.cwd() });
+    const child = trackedSpawn(cmd[0], cmd.slice(1), { 
+      tag: 'lora-train',
+      timeoutMs: 30 * 60_000,  // 30 min for LoRA training
+      stdio: 'inherit', 
+      cwd: process.cwd() 
+    });
     child.on('exit', code => {
       console.log('');
       if (code === 0) {
@@ -2128,7 +2136,6 @@ rl.close();
 
   // ── Offer to boot ──
   console.log('');
-  const { spawn } = require('child_process');
   const rl2 = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: isTTY });
   const boot = await new Promise(r => {
     if (!isTTY) return r(false);  // non-interactive — skip
@@ -2138,16 +2145,14 @@ rl.close();
 
   if (boot) {
     console.log(col(C.gray, '\n  Starting PURPCLAW...\n'));
-    // Use the absolute node binary + explicit args — no shell concatenation.
-    // (DEP0190: `shell: true` with args is a security hazard if any arg is user-supplied.)
-    const proc = spawn(process.execPath, [path.join(PURP_DIR, 'bin', 'purpclaw.js'), 'start'], {
+    // Use trackedSpawn — purpclaw start uses PM2 internally, so services
+    // survive even after this CLI parent exits. No detached: true needed.
+    trackedSpawn(process.execPath, [path.join(PURP_DIR, 'bin', 'purpclaw.js'), 'start'], {
+      tag: 'purpclaw-boot',
+      timeoutMs: 0,  // no timeout — PM2 keeps this alive
       cwd: PURP_DIR,
       stdio: 'inherit',
-      detached: true,
-      shell: false,
-      windowsHide: true,
     });
-    proc.unref();
     console.log(col(C.cyan, '  PURPCLAW is booting in the background.'));
     console.log(col(C.gray, '  Watch: purpclaw status'));
     console.log(col(C.gray, '  Web:   http://localhost:3000\n'));
@@ -2342,9 +2347,11 @@ async function cmdInit(args) {
 // ── logs ──────────────────────────────────────────────────────────────────────
 async function cmdLogs(args) {
   const service = args[0] ? `purpclaw-${args[0]}` : '--merge';
-  const child = spawn('pm2', ['logs', service, '--lines', '50'], {
+  const child = trackedSpawn('pm2', ['logs', service, '--lines', '50'], {
+    tag: 'pm2-logs',
+    timeoutMs: 0,  // user controls duration via Ctrl+C
     stdio : 'inherit',
-    shell : true,
+    shell : false,  // no shell needed — pm2 is in PATH
     cwd   : PURP_DIR,
   });
   child.on('close', code => process.exit(code || 0));
@@ -2384,7 +2391,9 @@ async function cmdChat(args) {
   };
 
   // Pass any extra args (e.g. --session, --skill) through to nanoclaw
-  const child = spawn(process.execPath, [NANOCLAW, ...args], {
+  const child = trackedSpawn(process.execPath, [NANOCLAW, ...args], {
+    tag: 'nanoclaw',
+    timeoutMs: 0,  // user controls duration
     stdio  : 'inherit',
     env,
     cwd    : PURP_DIR,
@@ -3479,7 +3488,9 @@ function cmdTui(args = []) {
       console.error(col(C.red, `\n  ✗ scripts/tui-ask.js not found at ${TUI_ASK}\n`));
       process.exit(1);
     }
-    const child = require('child_process').spawn(process.execPath, [TUI_ASK, ...args.slice(1)], {
+    const child = trackedSpawn(process.execPath, [TUI_ASK, ...args.slice(1)], {
+      tag: 'tui-ask',
+      timeoutMs: 0,  // user controls duration
       stdio: 'inherit',
       env  : process.env,
       cwd  : PURP_DIR,
@@ -3493,7 +3504,9 @@ function cmdTui(args = []) {
     console.error(col(C.red, `\n  ✗ scripts/tui.js not found at ${TUI_SCRIPT}\n`));
     process.exit(1);
   }
-  const child = require('child_process').spawn(process.execPath, [TUI_SCRIPT, ...args], {
+  const child = trackedSpawn(process.execPath, [TUI_SCRIPT, ...args], {
+    tag: 'tui',
+    timeoutMs: 0,  // user controls duration
     stdio: 'inherit',
     env  : process.env,
     cwd  : PURP_DIR,

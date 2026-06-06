@@ -250,6 +250,26 @@ function setupServer() {
         return;
       }
 
+      // POST /state/set — compatibility shim for legacy callers
+      if (pathname === '/state/set' && method === 'POST') {
+        let body = '';
+        req.on('data', chunk => body += chunk);
+        req.on('end', () => {
+          try {
+            const parsed = JSON.parse(body);
+            const namespace = String(parsed.namespace || 'default');
+            const key = String(parsed.key || new Date().toISOString());
+            const value = parsed.value || parsed;
+            setState(namespace, key, value);
+            log(`SET ${namespace}.${key}`);
+            sendJson(res, 200, { ok: true });
+          } catch (e) {
+            sendJson(res, 400, { error: e.message });
+          }
+        });
+        return;
+      }
+
       // PUT /state/:namespace (replace entire namespace)
       if (pathname.match(/^\/state\/[a-zA-Z_]+$/) && method === 'PUT') {
         let body = '';

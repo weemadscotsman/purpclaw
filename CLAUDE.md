@@ -1,25 +1,20 @@
-# PURPCLAW — Project Context for Claude Code
+# PURPCLAW — Project Context for AI Agents
 
-> Last updated: 2026-05-25 (post-STABILITY-7).
-> Canonical narrative: **[docs/SYSTEM_OVERVIEW.md](./docs/SYSTEM_OVERVIEW.md)**
+> Last updated: 2026-06-06 (v0.1.0 ship).
+> Canonical architecture: **[ARCHITECTURE.md](./ARCHITECTURE.md)**
 > Recovery runbook: **[docs/RECOVERY.md](./docs/RECOVERY.md)**
 
 ---
 
 ## What Is This?
 
-PURPCLAW is a persistent AI orchestration runtime — a 25-service distributed agent platform that runs locally under PM2 supervision, dispatches to a 44-agent swarm tower, falls back to an HMAC-signed HTTP/SSH worker pool when capacity hits, and presents itself through a CLI front door (`purpclaw`), a Next.js Mission Control UI (:3000), and a full-screen TUI cockpit (`purpclaw tui`).
+PURPCLAW is a persistent AI orchestration runtime — a 25-service distributed agent platform that runs locally under PM2 supervision, dispatches to a 152-agent swarm (35 runtime), falls back to an HMAC-signed HTTP/SSH worker pool when capacity hits, and presents itself through a CLI front door (`purpclaw`), a Next.js Mission Control UI (:3000), and a full-screen TUI cockpit (`purpclaw tui`). 17 LLM providers. 110+ tools. 7-layer world model. Self-improving via Karpathy ratchet.
 
 It is **not** a chatbot. It is a governed operational kernel for software, automation, and cognition workflows.
 
 ## Stack Topology
 
-### Two agent layers (these are distinct — do not conflate)
-
-- **Layer A — Swarm agents (in-tower)**: 44 animal-themed agents defined in-code in `agent_tower.js` (penguin, dragon, wolf, owl, karen, etc.). Divisions: ENGINEERING, SECURITY, INTELLIGENCE, OPERATIONS, MANAGEMENT, MEDIA_OPS, SCIENCE, CREATIVE, INFRASTRUCTURE.
-- **Layer B — Persona files**: 38+ `agents/*.md` files. Some are Claude Code agent definitions (architect, code-reviewer); one (`karen.md`) mirrors a Layer-A swarm animal. Most Layer-A animals **don't yet have** persona files — see `purpclaw roster --missing`.
-
-### Service ports (25 PM2 entries, 16 core + 9 dark)
+### Service ports (25 total: 16 core + 9 dark)
 
 **Core (always-on baseline):**
 
@@ -30,34 +25,53 @@ It is **not** a chatbot. It is a governed operational kernel for software, autom
 | 7782 | EventBus | purpclaw-eventbus |
 | 7783 | State Store | purpclaw-state |
 | 7784 | Orchestrator | purpclaw-orchestrator |
-| 7785 | Modal Logic | purpclaw-modal |
-| 7786 | Diagnostics | purpclaw-diagnostics |
-| 7787 | Rules Engine | purpclaw-rules |
 | 7790 | Agent Tower | purpclaw-tower |
 | 7791 | Gatekeeper | purpclaw-gatekeeper |
-| 7880 | Memory Matrix | purpclaw-memory |
 | 7881 | Context Bus | purpclaw-context |
-| 7884 | Neuro-Symbolic Bridge | purpclaw-bridge-ns |
 | 7885 | Knowledge Pool | purpclaw-pool |
 | 7890 | Metrics Aggregator | purpclaw-metrics |
 | 7897 | Worker Pool (overflow lane) | purpclaw-workers |
 
+**Cognitive Spine (single process on 7880 — boot with `python cognitive_spine.py`):**
+Imports memory, rules, modal logic, diagnostics, neuro-symbolic bridge, and autodream directly. One port. No port soup.
+
 **Defined-but-dark cluster (off by default — `purpclaw safe-start --dark` to wake):**
-voice (7781), bridge (7792), chorus, vision (7889), reasoning (7892), autodream (7895), stt (7896), yolo (7779), avatar (7777).
+voice (7781), bridge (7792), chorus, vision (7889), reasoning (7892), stt (7896), yolo (7779), avatar (7777).
 
-## ⚠️ CRITICAL — Windows Safety Rule
+## ⚠️ CRITICAL — Spawn Safety (NO detached, NO shell:true, NO cmd /c start)
 
-**On 2026-05-25 the operator's desktop crashed** from a cmd-window spawn cascade triggered by starting multiple PM2 services simultaneously. The chain was: `pm2 start ecosystem.config.js --only A,B,C,D` → one service crash-loops → each restart flashes a cmd window because `windowsHide: true` doesn't always survive the Python-interpreter crash path → Explorer chokes.
+**On 2026-06-06 the spawn cascade was SLAUGHTERED.** All 11 files now use `lib/child-registry.js`. Every spawn is tracked, time-bounded, and auto-killed on SIGINT/SIGTERM.
 
-**Never run `pm2 start` directly on multiple services.** Always use:
+**Must-use patterns:**
 
-```bash
-purpclaw safe-start --core         # 16 stable services, one-at-a-time
-purpclaw safe-start --dark         # the flaky cluster, one-at-a-time
-purpclaw safe-start <name>         # a single named service
+```javascript
+const { trackedSpawn, execSafe, installCleanup } = require('./lib/child-registry');
+
+// At process startup, ONCE:
+installCleanup();
+
+// For any spawn:
+const child = trackedSpawn('node', ['script.js'], {
+  tag: 'my-worker',          // debug label
+  timeoutMs: 30_000,         // hard kill after 30s
+});
+
+// For shell commands:
+const r = await execSafe('git', ['log', '--oneline'], { timeoutMs: 30_000 });
+// → { ok, code, stdout, stderr }
+
+// For opening URLs/files (NOT cmd /c start):
+trackedSpawn('rundll32', ['url.dll,FileProtocolHandler', url]);
 ```
 
-`safe-start` has a stabilisation watch (3.5s) and a circuit breaker (refuses anything with >3 historical restarts unless `--force`). This is structural — the cascade is no longer reachable via the CLI.
+**BANNED patterns (will be rejected in code review):**
+- `spawn(cmd, args, { detached: true })` — process survives parent, never cleaned up
+- `spawn(cmd, args, { shell: true })` — spawns cmd.exe wrapper on Windows
+- `exec('cmd /c start ...')` — opens new console window, never tracked
+- `spawn('cmd.exe', ['/k', ...])` — persistent cmd window
+- `proc.unref()` without child-registry tracking
+
+**`safe-start` still works** — it's now backed by `trackedSpawn`, so even if a service crash-loops, the registry cleans up.
 
 ## Key CLI Commands (the AI should know these by heart)
 
@@ -89,25 +103,9 @@ purpclaw forge [name]              # gacha-style agent generation
 
 ## Critical Patterns
 
-### Spawn pattern (prevent spawn bomb)
-
-Any fire-and-forget child process MUST be:
-
-```javascript
-spawn(cmd, args, {
-  detached: true,
-  stdio: 'ignore',
-  windowsHide: true,    // critical on Windows — see cascade above
-  env: { ... }
-});
-child.unref();
-```
-
-**Wrong**: `stdio: ['pipe','pipe','pipe']` without `unref()` — pipe handles tether parent to child, causing process accumulation across PM2 restarts.
-
 ### PM2 invocation from CLI
 
-The `pm2()` wrapper in `bin/purpclaw.js` uses `cmd.exe /c npx pm2 ...` on Windows with `windowsHide: true`. `lib/commands/safe-start.js` and `safe-stop.js` do the same. **Never bypass these** — direct `npx pm2 start` calls don't get the same wrapping and can spawn visible windows.
+The `pm2()` wrapper in `bin/purpclaw.js` now uses `trackedSpawn` with no shell on all platforms. `lib/commands/safe-start.js` and `safe-stop.js` do the same. **Never bypass these** — direct `npx pm2 start` calls don't get the same tracking and can still spawn visible windows.
 
 ### Secret redaction
 
@@ -148,48 +146,40 @@ Fixed-delay reconnects in companion-chorus historically caused EventBus DOS — 
 - **PREFER `purpclaw safe-start` over `pm2 start`** — always, no exceptions.
 - **VERIFY with `purpclaw smoke`** after any service-state change.
 
-## Recent Major Work (last session — 2026-05-25)
+## Recent Major Work (last session — 2026-06-06)
 
-Seven `STABILITY-*` commits banked:
-
-```
-STABILITY-7: RECOVERY runbook, TUI hint sanitised, roster command
-STABILITY-6: heal recovery command + karen persona file
-STABILITY-5: --core profile, doctor + ask now recommend safe-start
-STABILITY-4: safe-start guardrail — prevent Windows cmd-window cascade
-STABILITY-3: enshrine System Overview, render in terminal, refresh README
-STABILITY-2: smoke test, agent-layer fix, untrack runtime cruft
-STABILITY-1: front door, secret redaction, self-knowledge, housekeeping
-```
-
-If picking up where things left off: read `docs/RECOVERY.md` first, then run `purpclaw heal` to see what state the stack is in.
+v0.1.0 shipped:
+- npm publish (`purpclaw` v0.1.0, weemadscotsman/purpclaw)
+- Spawn cascade fixed (11 files, zero detached/shell/cmd leaks)
+- Cognitive Spine booted live (1 process, 6 modules, port 7880)
+- Smith + Neo adversarial pair (8 attack classes, reliability ledger)
+- 110 tools confirmed, 17 providers, 7 memory layers
+- Documentation cleanup (34 docs archived, QUICKSTART/ARCHITECTURE created)
 
 ## Documentation Index
 
 | File | Status | Purpose |
 |---|---|---|
-| `docs/SYSTEM_OVERVIEW.md` | ✅ CURRENT | Canonical architecture + philosophy + maturity model |
+| `README.md` | ✅ CURRENT (2026-06-06) | Project overview + honest numbers |
+| `ARCHITECTURE.md` | ✅ CURRENT (2026-06-06) | Full architecture: 25 services, 7 memory layers, 152 agents, 110 tools |
+| `QUICKSTART.md` | ✅ CURRENT (2026-06-06) | One-line install + core commands + service table |
+| `CLAUDE.md` (this file) | ✅ CURRENT (2026-06-06) | What every AI session reads on entry |
+| `CHANGELOG.md` | ✅ CURRENT (2026-06-06) | Curated change history through ship |
 | `docs/RECOVERY.md` | ✅ CURRENT | Operator runbook for crash recovery |
-| `README.md` | ✅ CURRENT | Top-level pointer + 5-minute quickstart |
-| `CLAUDE.md` (this file) | ✅ CURRENT | What every future Claude session reads on entry |
-| `TEAM_HANDOVER.md` | ⚠️ partially stale | Handover notes, may predate STABILITY commits |
-| `QUICKSTART.md` | ⚠️ may be stale | Quick-start guide, may need refresh |
-| `CAPTAINS_LOG.md` | ⚠️ partially stale | Session history (26KB — large, last updated 2026-05-24) |
-| `PURPCLAW_Runbook.md` | ❌ DEPRECATED | Replaced by `docs/RECOVERY.md` |
-| `PURPCLAW_COMPLETE_ARCHITECTURE.md` | ❌ STALE | 2026-04-20 — describes 18-service stack; we now have 25 |
-| `agent-frameworks-INTEGRATION.md` | ❌ STALE | 2026-04-20 — historical reference only |
-| `HARVEST_MANIFEST.txt` | ❌ STALE | 2026-04-20 — one-off, can be removed |
-| `agent_profiles.json` | ⚠️ partially stale | 2026-04-25 — predates Layer-A/B reconciliation |
+| `docs/INDEX.md` | ✅ CURRENT (2026-06-06) | Documentation navigation map |
+| `docs/legacy/` | 📦 ARCHIVED (2026-06-06) | 34 pre-June docs, see legacy/README.md |
 
-## Known Gaps (as of 2026-05-25)
+## Known Gaps (as of 2026-06-06)
 
-1. **43 swarm animals lack persona files.** User has them in Codex (43 agents / 222 skills, 30-at-a-time load cap). Migration plan: use `purpclaw roster --json` to drive a controlled extraction.
-2. **YOLO (:7779) + Avatar (:7777) are orphan processes** — they answer their ports but PM2 doesn't supervise them. They were started with elevation; need an admin terminal to clean up.
-3. **Dark cluster intentionally dark.** Voice, vision, autodream, reasoning, stt, chorus stay off by default. `safe-start --dark` to wake when needed.
+1. **Cognitive Spine is built but not integrated.** It boots and responds to HTTP, but agent decisions don't yet flow through Memory → Neuro-Symbolic → Rules → Modal → Action. The code exists. The integration doesn't.
+2. **PM2 is empty.** 0 apps running. Services run via boot.js or manually. Full PM2 deployment needs `purpclaw safe-start --core`.
+3. **LoRA training gets SIGTERM** at 0/2 iterations — environment issue, not code. Pipeline is built.
+4. **7-layer world model exists in code** (1,133 lines across 6 modules) but only Layer 1 (episodic) is online. Layers 2-7 need integration audit.
 
-## What NOT To Do (updated)
+## What NOT To Do
 
-- **Never** call `pm2 start ecosystem.config.js --only ...` directly — use `purpclaw safe-start`. (The original CLAUDE.md said "never kill running processes" — that rule has been relaxed by the operator: you CAN stop processes you verify aren't your own or PM2's daemon, but you should still ask before killing anything ambiguous.)
-- **Never** commit secrets, agent_work/, or untracked vendored projects without operator confirmation.
-- **Never** start the dark cluster without `safe-start --dark` (or single-service safe-start) — direct `pm2 start` on those is the exact pattern that crashed the desktop.
-- **Never** trust port reachability alone — always cross-reference with `pm2 jlist` to catch orphans.
+- **Never** use `detached: true`, `shell: true`, or `cmd /c start` in any spawn — use `lib/child-registry.js`.
+- **Never** call `pm2 start ecosystem.config.js` directly — use `purpclaw safe-start`.
+- **Never** commit secrets, agent_work/, or `.next` cache.
+- **Never** run `npm run build` while `next dev` is running — corrupts `.next` cache.
+- **Never** trust port reachability alone — always cross-reference with PM2 to catch orphans.

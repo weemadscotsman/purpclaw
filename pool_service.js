@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 // ── Config ────────────────────────────────────────────────────────────────────
-const PORT = parseInt(process.env.POOL_PORT || '7885', 10);'7880', 10);  // Pool service — open knowledge layer
+const PORT = parseInt(process.env.POOL_PORT || '7885', 10);  // Pool service — open knowledge layer
 const PURP_DIR = path.dirname(__filename).replace(/\\/g, '/');
 const SKILLS_DIR = path.join(PURP_DIR, 'skills');
 const AGENTS_DIR = path.join(PURP_DIR, 'agents');

@@ -96,15 +96,18 @@ const AUTO_STEERING_PROMPTS = {
   ]
 };
 
+const LLM = require('./lib/llm-provider');
+
 class DigitalShaman extends EventEmitter {
   constructor(config = {}) {
     super();
     
+    // Use llm-provider.js config instead of hardcoded Moonshot
+    const providerInfo = (LLM.getProviderInfo ? LLM.getProviderInfo() : { main: {} }).main || {};
     this.config = {
       backend: config.backend || {
-        endpoint: 'https://api.moonshot.cn/v1/chat/completions',
-        apiKey: process.env.KIMI_API_KEY || '',
-        model: 'kimi-k2-5'
+        provider: providerInfo.provider || process.env.LLM_PROVIDER || 'openrouter',
+        model: providerInfo.model || process.env.LLM_MODEL || 'auto',
       },
       mcpTools: config.mcpTools || [],
       autoPilot: config.autoPilot || false,
@@ -227,73 +230,22 @@ class DigitalShaman extends EventEmitter {
   }
   
   async callAI(messages) {
-    const backend = this.state.activeBackend || this.config.backend;
-    
-    if (!backend.apiKey) {
-      throw new Error('No API key configured for Shaman backend');
-    }
-    
-    const requestBody = {
-      model: backend.model || 'kimi-k2-5',
-      messages: messages.map(m => ({
+    return LLM.chat(
+      messages.map(m => ({
         role: m.role === 'shaman' ? 'system' : m.role,
         content: m.content
       })),
-      temperature: this.state.params.temperature,
-      top_p: this.state.params.top_p,
-      frequency_penalty: this.state.params.frequency_penalty,
-      presence_penalty: this.state.params.presence_penalty,
-      max_tokens: this.state.params.max_tokens
-    };
-    
-    if (this.config.mcpTools.length > 0) {
-      requestBody.tools = this.config.mcpTools.map(t => ({
-        type: 'function',
-        function: {
-          name: t.name,
-          description: t.description,
-          parameters: t.inputSchema || t.parameters || { type: 'object', properties: {} }
-        }
-      }));
-    }
-    
-    return new Promise((resolve, reject) => {
-      const url = new URL(backend.endpoint);
-      const options = {
-        hostname: url.hostname,
-        port: url.port || (url.protocol === 'https:' ? 443 : 80),
-        path: url.pathname,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${backend.apiKey}`,
-          'User-Agent': 'PURPCLAW-Shaman/1.0'
-        }
-      };
-      
-      const protocol = url.protocol === 'https:' ? https : http;
-      const req = protocol.request(options, (res) => {
-        let data = '';
-        res.on('data', chunk => data += chunk);
-        res.on('end', () => {
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.error) {
-              reject(new Error(parsed.error.message || parsed.error));
-              return;
-            }
-            resolve(parsed);
-          } catch (e) {
-            reject(new Error(`Parse error: ${data.substring(0, 200)}`));
-          }
-        });
-      });
-      
-      req.on('error', reject);
-      req.setTimeout(60000, () => { req.destroy(); reject(new Error('Request timeout')); });
-      req.write(JSON.stringify(requestBody));
-      req.end();
-    });
+      {
+        temperature: this.state.params.temperature,
+        top_p: this.state.params.top_p,
+        frequency_penalty: this.state.params.frequency_penalty,
+        presence_penalty: this.state.params.presence_penalty,
+        maxTokens: this.state.params.max_tokens,
+        max_tokens: this.state.params.max_tokens,
+        provider: this.config.backend?.provider,
+        model: this.config.backend?.model,
+      }
+    );
   }
   
   getSteeringPrompt() {

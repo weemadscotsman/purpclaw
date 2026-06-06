@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "name": "PURPCLAW Complex Agent Harness Canonical Goals",
+  "goals": [
+    {
+      "id": "api-ui-security-test",
+      "task": "Add an API route, wire the UI panel, audit security, and write verification notes.",
+      "minSubtasks": 3,
+      "requiredDomains": ["backend", "frontend", "security"]
+    },
+    {
+      "id": "codebase-cleanup-docs",
+      "task": "Analyze a codebase for tangled imports, produce a cleanup plan, update documentation, and verify the result.",
+      "minSubtasks": 3,
+      "requiredDomains": ["analysis", "testing"]
+    },
+    {
+      "id": "runtime-health-fix-report",
+      "task": "Inspect runtime health, identify failing services, propose fixes, run validation, and return one operator report.",
+      "minSubtasks": 3,
+      "requiredDomains": ["analysis", "infrastructure", "testing"]
+    },
+    {
+      "id": "performance-cache-benchmark",
+      "task": "Find a performance bottleneck, design a cache improvement, apply backend wiring, benchmark the result, and document the tradeoffs.",
+      "minSubtasks": 3,
+      "requiredDomains": ["performance", "backend"]
+    },
+    {
+      "id": "multi-agent-productivity",
+      "task": "Plan a complex productivity workflow, delegate work to specialists, preserve handoff context, synthesize the final answer, and record lessons for the next run.",
+      "minSubtasks": 3,
+      "requiredDomains": ["analysis"]
+    }
+  ]
+}

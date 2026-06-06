@@ -1,5 +1,5 @@
-const { exec, spawn } = require('child_process');
-const { execSync } = require('child_process');
+const { exec: rawExec, spawn: rawSpawn, execSync } = require('child_process');
+const { trackedSpawn } = require('./lib/child-registry');
 
 /**
  * Monitor information structure
@@ -68,13 +68,14 @@ function getMonitors() {
  * @param {number} height - Window height
  */
 function launchWindow(command, x, y, width, height) {
-    // Start the window first
-    const child = spawn('cmd', ['/k', command], {
+    // Launch via rundll32 — no cmd.exe wrapper. FileProtocolHandler resolves
+    // URLs, file paths, and executables the same way Windows 'start' does.
+    const child = trackedSpawn('rundll32', ['url.dll,FileProtocolHandler', command], {
+        tag: `window-${command.substring(0, 30)}`,
+        timeoutMs: 10_000,  // window launch is fast; clean up if stuck
         stdio: 'ignore',
-        detached: true,
-        shell: true
     });
-    child.unref();
+    child.unref();  // don't block parent but child-registry still tracks it
 
     console.log(`Launching window: ${command.substring(0, 50)}... at (${x}, ${y}) ${width}x${height}`);
 

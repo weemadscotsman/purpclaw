@@ -310,14 +310,8 @@ const SERVICE_CONFIG = [
   { name: 'Voice Coordinator',   port: 7781, path: '/health',         key: 'voice',            optional: true, note: 'voice/text command router' },
   { name: 'Voice Bridge',        port: 7792, path: '/health',         key: 'bridge',           optional: true, note: 'browser voice socket bridge' },
   { name: 'Speech To Text',      port: 7896, path: '/health',         key: 'stt',              optional: true, note: 'local microphone transcription (whisper)' },
-  // ── Cognitive (5) ────────────────────────────────────────────────────────
-  { name: 'Memory Matrix v2',    port: 7880, path: '/health',         key: 'memory',           optional: true, note: 'long-term memory store (Python)' },
-  { name: 'Neuro-Symbolic',      port: 7884, path: '/health',         key: 'bridge-ns',        optional: true, note: 'symbolic ↔ neural bridge' },
-  { name: 'Modal Logic Engine',  port: 7785, path: '/health',         key: 'modal',            optional: true, note: 'modal logic reasoner' },
-  { name: 'Autonomous Diag.',    port: 7786, path: '/health',         key: 'diagnostics',      optional: true, note: '5-agent runtime diagnostics' },
-  { name: 'Symbolic Rules',      port: 7787, path: '/health',         key: 'rules',            optional: true, note: 'Prolog rules engine' },
-  // ── Cognitive (continued, optional) ──────────────────────────────────────
-  { name: 'AutoDream',           port: 7895, path: '/health',         key: 'autodream',        optional: true,  note: 'memory consolidation daemon' },
+  // ── Cognitive (1 spine, 6 engines) ────────────────────────────────────────
+  { name: 'Cognitive Spine',      port: 7880, path: '/cognitive/health', key: 'cognitive',       optional: true, note: 'memory+rules+modal+neuro+diagnostics+autodream' },
   { name: 'Reasoning Loop',      port: 7892, path: '/health',         key: 'reasoning',        optional: true,  note: 'proactive heartbeat tick' },
   // ── Vision (2) ────────────────────────────────────────────────────────────
   { name: 'Vision Monitor',      port: 7889, path: '/health',         key: 'vision',           optional: true,  note: 'screen/camera monitor' },
@@ -326,6 +320,8 @@ const SERVICE_CONFIG = [
   { name: 'Companion Chorus',    port: -1,    path: '/health',         key: 'chorus',           optional: true,  note: 'companion reaction bridge (no health port)' },
   // ── Avatar (1) ────────────────────────────────────────────────────────────
   { name: 'Avatar Bridge',       port: 7777, path: '/health',         key: 'avatar',           optional: true,  note: 'physical avatar control' },
+  { name: 'Thringlet Bridge',    port: 7799, path: '/health',         key: 'thringlet',        optional: true,  note: 'runtime→emotion translator' },
+  { name: 'Harness Service',     port: 7798, path: '/health',         key: 'harness',          optional: true,  note: 'productivity harness executor' },
   // ── Terminal (1) ──────────────────────────────────────────────────────────
   { name: 'Terminal Fly',        port: -1,    path: '/health',         key: 'fly',              optional: true,  note: 'terminal-fly (no health port)' },
 ];

@@ -1,0 +1,6 @@
+{
+  "name": "No Spaghett",
+  "description": "Analyzes your codebase for spaghetti code, circular dependencies, and god objects.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

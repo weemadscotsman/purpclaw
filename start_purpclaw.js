@@ -5,8 +5,11 @@
  * Launches all components of the PURPCLAW swarm
  */
 
-const { spawn } = require('child_process');
+const { spawn: rawSpawn } = require('child_process');
 const path = require('path');
+const { trackedSpawn, installCleanup } = require('./lib/child-registry');
+
+installCleanup();  // kill all tracked children on SIGINT/SIGTERM
 
 console.log('🚀 PURPCLAW v7.0 - Unified Startup System');
 console.log('='.repeat(50));
@@ -34,9 +37,10 @@ const processes = [];
 function startComponent(component) {
   console.log(`${component.color} Starting ${component.name} on port ${component.port}...`);
 
-  const proc = spawn('node', [component.file], {
+  const proc = trackedSpawn('node', [component.file], {
+    tag: component.name,
+    timeoutMs: 0,  // services run indefinitely
     stdio: 'pipe',
-    shell: true,
     env: { ...process.env, PORT: component.port }
   });
 

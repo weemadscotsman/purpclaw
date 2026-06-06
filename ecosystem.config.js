@@ -141,6 +141,30 @@ module.exports = {
       windowsHide: true
     },
     {
+      name: 'purpclaw-harness',
+      script: './harness_service.js',
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 2,
+      restart_delay: 10000,
+      max_memory: '64MB',
+      autorestart: true,
+      windowsHide: true
+    },
+    {
+      name: 'purpclaw-thringlet',
+      script: './thringlet_bridge.js',
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 2,
+      restart_delay: 10000,
+      max_memory: '64MB',
+      autorestart: true,
+      windowsHide: true
+    },
+    {
       name: 'purpclaw-nextjs',
       script: './node_modules/next/dist/bin/next',
       // dev mode is correct for a workshop with active edits — production `start`
@@ -317,87 +341,18 @@ module.exports = {
       autorestart: true,
       windowsHide: true
     },
+    // ── Cognitive Spine (single process, replaces memory/modal/rules/neuro/diagnostics/autodream) ──
     {
-      name: 'purpclaw-memory',
-      script: './memory_matrix_v2.py',
+      name: 'purpclaw-cognitive',
+      script: './cognitive_spine.py',
       args: '--port 7880',
       interpreter: PYTHON_BIN,
       exec_mode: 'fork',
       wait_ready: false,
-      kill_timeout: 5000,
+      kill_timeout: 10000,
       max_restarts: 2,
       restart_delay: 10000,
-      max_memory: '128MB',
-      autorestart: true,
-      windowsHide: true
-    },
-    {
-      name: 'purpclaw-bridge-ns',
-      script: './neuro_symbolic_bridge.py',
-      args: '--port 7884',
-      interpreter: PYTHON_BIN,
-      exec_mode: 'fork',
-      wait_ready: false,
-      kill_timeout: 5000,
-      max_restarts: 2,
-      restart_delay: 10000,
-      max_memory: '128MB',
-      autorestart: true,
-      windowsHide: true
-    },
-    {
-      name: 'purpclaw-modal',
-      script: './modal_logic_engine.py',
-      args: '--port 7785',
-      interpreter: PYTHON_BIN,
-      exec_mode: 'fork',
-      wait_ready: false,
-      kill_timeout: 5000,
-      max_restarts: 2,
-      restart_delay: 10000,
-      max_memory: '128MB',
-      autorestart: true,
-      windowsHide: true
-    },
-    {
-      name: 'purpclaw-diagnostics',
-      script: './autonomous_diagnostics.py',
-      args: '--port 7786',
-      interpreter: PYTHON_BIN,
-      exec_mode: 'fork',
-      wait_ready: false,
-      kill_timeout: 5000,
-      max_restarts: 2,
-      restart_delay: 10000,
-      max_memory: '128MB',
-      autorestart: true,
-      windowsHide: true
-    },
-    {
-      name: 'purpclaw-rules',
-      script: './symbolic_rules_engine.py',
-      args: '--port 7787',
-      interpreter: PYTHON_BIN,
-      exec_mode: 'fork',
-      wait_ready: false,
-      kill_timeout: 5000,
-      max_restarts: 2,
-      restart_delay: 10000,
-      max_memory: '128MB',
-      autorestart: true,
-      windowsHide: true
-    },
-    {
-      name: 'purpclaw-autodream',
-      script: './autoDream.py',
-      args: '--server',
-      interpreter: PYTHON_BIN,
-      exec_mode: 'fork',
-      wait_ready: false,
-      kill_timeout: 5000,
-      max_restarts: 2,
-      restart_delay: 30000,
-      max_memory: '64MB',
+      max_memory: '256MB',
       autorestart: true,
       windowsHide: true
     },
@@ -428,6 +383,20 @@ module.exports = {
       max_memory: '64MB',
       autorestart: true,
       windowsHide: true
-    }
+    },
+    // ── Chat Gateways (no-op if env vars not set) ──
+    {
+      name: 'purpclaw-telegram',
+      script: './lib/gateways/telegram.js',
+      env: { TELEGRAM_BOT_TOKEN: '', PORT: '7795' },
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 2,
+      restart_delay: 10000,
+      max_memory: '32MB',
+      autorestart: true,
+      windowsHide: true
+    },
   ]
 };

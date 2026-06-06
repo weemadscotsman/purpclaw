@@ -180,7 +180,7 @@ export function useAgentTower() {
 
   const spawnAgent = useCallback(async (division: string, agentName: string): Promise<void> => {
     try {
-      const res = await fetch(`${TOWER_BASE_URL}/tower/spawn`, {
+      const res = await fetch(`${TOWER_BASE_URL}/api/spawn`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ agentName, task: `Task for ${agentName} in ${division}` }),
@@ -196,7 +196,7 @@ export function useAgentTower() {
 
   const spawnTeam = useCallback(async (teamName: string, leader: string, members: string[]): Promise<void> => {
     try {
-      const res = await fetch(`${TOWER_BASE_URL}/tower/teams`, {
+      const res = await fetch(`${TOWER_BASE_URL}/api/team/spawn`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: teamName, leader, members, task: `Team task for ${teamName}` }),
@@ -212,7 +212,7 @@ export function useAgentTower() {
 
   const killAgent = useCallback(async (agentId: string): Promise<void> => {
     try {
-      const res = await fetch(`${TOWER_BASE_URL}/tower/agents/${encodeURIComponent(agentId)}`, {
+      const res = await fetch(`${TOWER_BASE_URL}/api/agents/${encodeURIComponent(agentId)}`, {
         method: 'DELETE',
       });
       if (!res.ok) {
@@ -226,7 +226,7 @@ export function useAgentTower() {
 
   const killTeam = useCallback(async (teamId: string): Promise<void> => {
     try {
-      const res = await fetch(`${TOWER_BASE_URL}/tower/teams/${encodeURIComponent(teamId)}`, {
+      const res = await fetch(`${TOWER_BASE_URL}/api/teams/${encodeURIComponent(teamId)}`, {
         method: 'DELETE',
       });
       if (!res.ok) {

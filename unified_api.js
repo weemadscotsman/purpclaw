@@ -24,22 +24,8 @@ const os = require('os');
 
 const AgentTower = require('./agent_tower.js');
 
-let kimiClient = null;
-try {
-  const { KimiClient } = require('./kimi_client.js');
-  if (process.env.KIMI_API_KEY) {
-    kimiClient = new KimiClient({
-      apiKey: process.env.KIMI_API_KEY,
-      defaultModel: 'kimi-k2-5',
-      maxAgents: 100
-    });
-    console.log('[KIMI] KimiClient initialized with API key');
-  } else {
-    console.log('[KIMI] No KIMI_API_KEY in environment - Kimi subagent mode disabled');
-  }
-} catch (e) {
-  console.log('[KIMI] kimi_client.js not found - run npm install or check path');
-}
+// ── LLM provider for unified backend access ──
+const LLM = require('./lib/llm-provider');
 
 // ========== DIGITAL SHAMAN LAYER ==========
 let shaman = null;
@@ -48,23 +34,15 @@ try {
   const { DigitalShaman } = require('./digital_shaman.js');
   const { ShamanEvaluator } = require('./shaman_evaluator.js');
   
+  // Shaman config read from llm-provider.js via its own constructor default
   shaman = new DigitalShaman({
-    backend: {
-      endpoint: 'https://api.moonshot.cn/v1/chat/completions',
-      apiKey: process.env.KIMI_API_KEY || '',
-      model: 'kimi-k2-5'
-    },
     mcpTools: [],
     autoPilot: false,
     maxCycles: 12
   });
   
   shamanEvaluator = new ShamanEvaluator({
-    backend: {
-      endpoint: 'https://api.moonshot.cn/v1/chat/completions',
-      apiKey: process.env.KIMI_API_KEY || '',
-      model: 'kimi-k2-5'
-    }
+    // Evaluator reads from environment: LLM_PROVIDER, LLM_MODEL, LLM_API_KEY
   });
   
   console.log('[SHAMAN] Digital Shaman Layer initialized');

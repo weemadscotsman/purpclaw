@@ -14,9 +14,12 @@
  */
 
 const http = require('http');
-const { spawn, execSync } = require('child_process');
+const { spawn: rawSpawn, execSync } = require('child_process');
 const path = require('path');
 const net = require('net');
+const { trackedSpawn, installCleanup } = require('./lib/child-registry');
+
+installCleanup();  // kill all tracked children on SIGINT/SIGTERM
 
 const PURP_DIR = __dirname;
 const PORTS = {
@@ -158,11 +161,11 @@ function spawnService(name, script, args = [], waitPort = null, healthPath = nul
     log(name, `Starting ${name}...`);
     log(name, '═══════════════════════════════════════════════');
 
-    const proc = spawn('node', [script, ...args], {
+    const proc = trackedSpawn('node', [script, ...args], {
+      tag: name,
+      timeoutMs: 0,  // services run indefinitely
       cwd: PURP_DIR,
       stdio: ['pipe', 'pipe', 'pipe'],
-      shell: true,
-      detached: false,
       env: { ...process.env }
     });
 
@@ -367,14 +370,14 @@ async function startNextJS() {
   log('NEXT', '═══════════════════════════════════════════════');
 
   return new Promise((resolve, reject) => {
-    const nextProc = spawn(
+    const nextProc = trackedSpawn(
       'node',
       ['node_modules/next/dist/bin/next', 'dev', '-p', String(PORTS.NEXT)],
       {
+        tag: 'Next.js',
+        timeoutMs: 0,  // Next.js dev server runs indefinitely
         cwd: PURP_DIR,
         stdio: ['pipe', 'pipe', 'pipe'],
-        shell: true,
-        detached: false,
         env: { ...process.env }
       }
     );

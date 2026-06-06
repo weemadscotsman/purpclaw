@@ -23,7 +23,7 @@ from ultralytics import YOLO
 import cv2
 
 PORT = 7779
-MODEL_PATH = 'yolov8n.pt'
+MODEL_PATH = 'models/yolov8n.pt'
 model = None
 model_lock = threading.Lock()
 

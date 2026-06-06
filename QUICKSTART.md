@@ -1,39 +1,29 @@
-# PURPCLAW — The Tiny Haunted Workshop
+# PURPCLAW — Quick Start
 
-**PURPCLAW** is a local AI agent harness that runs on your machine, connects to LLM providers you choose, and orchestrates specialist agents ("the hammers") to do your bidding — with a goose that files tickets, a mochi that watches the door, and an open knowledge pool that everyone drinks from.
-
----
-
-## Installation (One Line)
-
-### macOS / Linux
-```bash
-curl -fsSL https://purpclaw.dev/install.sh | sh
-```
-
-### Windows (PowerShell, Run as Administrator)
-```powershell
-irm https://purpclaw.dev/install.ps1 | iex
-```
-
-### Manual
-```bash
-git clone https://github.com/YOUR_GITHUB/purpclaw.git ~/.purpclaw
-cd ~/.purpclaw && npm install
-npm install -g pm2
-node bin/purpclaw.js init --wizard
-```
+**PURPCLAW** is a terminal-first AI operating system — 17 LLM providers, 110+ tools, 152 agent directories, a 7-layer memory architecture, and a self-improving training ratchet. One command to install. One command to boot.
 
 ---
 
-## First Run Wizard
+## One-Line Install
 
-`purpclaw init --wizard` runs a 60-second setup walkthrough:
+```bash
+npm install -g purpclaw
+```
 
-1. **Pick your LLM provider** — MiniMax (default, generous tier), Anthropic, OpenAI, Kimi, Groq, DeepSeek, OpenRouter, Ollama (local), or custom OpenAI-compatible
-2. **Paste your API key** — stored locally in `.env`, never sent anywhere except your chosen provider
-3. **Choose your companion** — which sprite blinks at you in the terminal while the swarm works
-4. **Boot the swarm** — PM2 starts the 8 core services, Mission Control comes online at `:3000`
+That's it. Already published to npm as `purpclaw` v0.1.0.
+
+---
+
+## First Boot
+
+```bash
+purpclaw setup --wizard
+```
+
+Walks through:
+1. **Pick your LLM provider** — Anthropic, OpenAI, DeepSeek, MiniMax, Kimi, Groq, OpenRouter, Ollama (local), Gemini, GitHub Models, Codex, Atomic Chat, or any OpenAI-compatible endpoint
+2. **Paste your API key** — stored locally in `~/.purpclaw/.env`
+3. **Boot the swarm** — PM2 starts core services, WebUI comes online at `:3000`
 
 ---
 
@@ -41,184 +31,150 @@ node bin/purpclaw.js init --wizard
 
 ```bash
 # Boot and shutdown
-purpclaw start          Boot the harness (all 8 services)
-purpclaw stop           Shut down gracefully
-purpclaw status         Live dashboard: services + pool + orchestrator
+purpclaw start              Boot the full 25-service stack
+purpclaw safe-start         Boot one service at a time (Windows-safe)
+purpclaw safe-start --dark  Wake the cognitive cluster (memory, rules, modal, etc.)
+purpclaw stop               Shut down gracefully
+purpclaw status             Live dashboard
 
 # The work loop
-purpclaw run "task"     Run a task through the orchestrator
-purpclaw bg "task"      Background dispatch — fire and forget, results in agent_work/bg-sessions/
-purpclaw jobs           List active jobs and their status
-purpclaw approve <id>   Approve a held high-risk job
-purpclaw reject <id>    Reject and cancel
+purpclaw run "build a landing page"    Run through orchestrator
+purpclaw ask "what does this code do"  Direct LLM conversation
+purpclaw bg "refactor auth module"     Fire and forget, results in agent_work/
 
-# Skills and agents
-purpclaw install <name>   Install a skill from the local registry
-purpclaw search "<text>"  Keyword search across 139 skills + 38 agents
-purpclaw registry browse  Full catalog with install status
-purpclaw registry publish <name>  Publishing guide (step-by-step PR walkthrough)
+# Agents and swarm
+purpclaw agents list         List all 35 runtime agents
+purpclaw swarm "audit security"  Fan-out to Planner+Builder+Auditor+Security
+purpclaw chat                 NanoClaw REPL (swarm-aware)
 
-# The knowledge pool (always running at :7880)
-purpclaw pool query <text>     Search skills by keyword
-purpclaw pool show <name>      Full SKILL.md content
-purpclaw pool stats            How many skills/agents indexed
-purpclaw pool routing <text>   Routing hints for a task
-purpclaw pool reindex          Rebuild index from disk
+# Self-improvement
+purpclaw lora train           Fine-tune on your own agent work
+purpclaw training status      Check training buffer stats
+purpclaw ratchet run          Run Karpathy self-improvement cycle
 
-# Session management
-purpclaw resume list           List all session checkpoints
-purpclaw resume <id>           Reload a specific session
-purpclaw workflows             Show active and recent workflows
-
-# Self-inspection
-purpclaw doctor         Quick health check
-purpclaw policies       Show active governance policies
-purpclaw jobs pending   Show jobs waiting for approval
-purpclaw jobs recent    Show last 10 completed jobs
-purpclaw introspect     Runtime state summary
-purpclaw introspect risks  Live risk classification
-purpclaw spaghetti audit   Code health scores (lower = cleaner)
-purpclaw spaghetti diff A B   Compare code before/after refactor
-purpclaw rollback list    Available rollback points
-purpclaw rollback undo <id>  Restore state from snapshot
-
-# Help
-purpclaw help           Full command reference
+# Diagnostics
+purpclaw doctor               Health check (all 25 services)
+purpclaw heal                  Auto-recover from common failures
+purpclaw spaghetti audit       Code health scores
+purpclaw logs [service]        Stream service logs
 ```
 
 ---
 
-## Architecture
+## Service Architecture (25 total)
 
-```
-PURPCLAW — the tiny haunted workshop
+### Core (always running)
+| Service | Port | What it does |
+|---|---|---|
+| eventbus | 7782 | Pub/sub between all services |
+| state | 7783 | Shared state store |
+| api | 7780 | Main HTTP gateway |
+| tower | 7790 | Agent spawner (152 agent dirs) |
+| orchestrator | 7784 | Task routing + governance gate |
+| gatekeeper | 7791 | Security policies |
+| metrics | 7890 | Telemetry + health |
 
-  Layer 5: GOVERNANCE        policies.json + approval ledger
-  Layer 4: ORCHESTRATION    orchestrator.js — the foreman
-  Layer 3: AGENTS            dragon, owl, mushroom, robot, goose...
-  Layer 2: SKILLS            139 skill files (how to do things)
-  Layer 1: SERVICES          PM2 swarm (8 processes)
-    eventbus   :7782  pub/sub between services
-    state      :7783  shared state store
-    api        :7780  main HTTP API
-    tower      :7790  agent spawner (the hammers)
-    orchestrator:7784 orchestration + governance gate
-    gatekeeper :7791  security policies
-    metrics    :7890  telemetry
-    pool       :7880  knowledge pool (skills + agents)
-    mission-ctrl:3000  Mission Control web UI
+### Runtime
+| Service | Port | What it does |
+|---|---|---|
+| context | 7881 | Context bus |
+| pool | 7885 | Knowledge pool (skills + agents) |
+| workers | 7897 | Worker service |
+| reasoning | 7892 | Proactive reasoning loop |
 
-  MISSION CONTROL:  http://localhost:3000
-  KNOWLEDGE POOL:  http://localhost:7880
-  API:             http://localhost:7780
-```
+### Media + Interface
+| Service | Port | What it does |
+|---|---|---|
+| nextjs | 3000 | Mission Control WebUI |
+| voice | 7781 | Voice command coordinator |
+| bridge | 7792 | Voice bridge (WebSocket) |
+| chorus | — | Companion chorus bridge |
+| vision | — | YOLO object detection monitor |
+| stt | 7896 | Whisper speech-to-text |
+| yolo | 7779 | YOLO service |
+| avatar | 7777 | Simple bridge |
 
----
+### Cognitive (defined but dark by default)
+Wake with `purpclaw safe-start --dark` or boot `cognitive_spine.py` directly:
 
-## How Work Gets Done
+| Service | Port | What it does |
+|---|---|---|
+| memory | 7880 | Memory Matrix v2 (temporal + counterfactual) |
+| rules | 7787 | Datalog symbolic rules engine |
+| modal | 7785 | Kripke modal logic (epistemic/temporal/doxastic/deontic) |
+| diagnostics | 7786 | Autonomous diagnostic orchestrator |
+| bridge-ns | 7884 | Neuro-symbolic bridge |
+| autodream | — | Memory consolidation engine |
 
-```
-you: purpclaw run "build me a landing page for my startup"
-
-orchestrator:
-  1. classify (what type of job is this?)
-  2. govern (any risks? approval needed?)
-  3. contract (give/needs/avoid for this task type)
-  4. dispatch (which agent(s)?)
-  5. execute (hammers walk)
-  6. verify (spaghetti check? tests?)
-  7. log (every action appended to agent_work/)
-
-pool (always queryable):
-  - skills indexed: "css", "html", "copywriting", "responsive", "image-gen"
-  - agents available: goose (drafts), wolf (research), owl (review)
-  - past failures: "don't use table layouts for responsiveness"
-  - user preferences: "keep copy short, no jargon"
-
-output: a landing page, built by your hammers, remembered by your pool
-```
+**Or better: boot just `python cognitive_spine.py --port 7880`** — it imports all six cognitive modules directly into one process. One port. No port soup.
 
 ---
 
-## Key Files
+## Interfaces
+
+- **CLI**: `purpclaw` — the terminal front door
+- **TUI**: `purpclaw tui` — full-screen terminal UI with Mochi sprites, slash commands, streaming
+- **WebUI**: `http://localhost:3000` — Mission Control dashboard
+- **WebUI Mission**: `http://localhost:3000/mission` — Full MissionControl with 17 tabs
+
+---
+
+## File Layout
 
 ```
 PURPCLAW/
-  bin/purpclaw.js          CLI front door
-  orchestrator.js         The foreman
-  agent_tower.js          Agent spawning
-  unified_api.js          Backend routing
-  lib/governance.js       Risk classification + approval ledger
-  lib/job-contract.js     Job type classification + gate assignment
-  lib/spaghetti-audit.js  Code health scoring
-  lib/snapshot.js         Pre-execution rollback snapshots
-  pool_service.js         Knowledge pool service (port 7880)
-  service_registry.js     Active service registry
-  policies.json           Governance rules (editable)
-  ecosystem.config.js      PM2 service definitions
-  agent_work/             Job history + snapshots
-    .pool_index.json      Skill/agent index
-    .pool_queries.jsonl   Query audit log
-  skills/                 139 skill files (the nails)
-  agents/                  Specialist agent profiles
-  docs/                   Architecture decision records
+  bin/purpclaw.js          CLI front door (npm binary)
+  unified_api.js           Main HTTP API (7780)
+  orchestrator.js          Task router + governance
+  agent_tower.js           Agent spawning
+  boot.js                  Unified boot sequence
+  cognitive_spine.py       Single cognitive surface (memory+rules+modal+neuro+diagnostics+autodream)
+  ecosystem.config.js      PM2 service definitions (25 services)
+  lib/child-registry.js    Spawn tracker — no more cmd-window cascade
+  lib/llm-provider.js      17-provider abstraction
+  lib/training-buffer.js   Agent work → training data
+  skills/                  139 skill directories
+  agents/                  152 agent directories (54 with executable code)
+  docs/                    Architecture + recovery + roadmap
+  agent_work/              Job history + training exports
 ```
 
 ---
 
-## Mission Control UI
+## Recovery
 
-Open http://localhost:3000 when the harness is running. Shows:
-- Active services and their health
-- Job queue and status
-- Spaghetti scores across the codebase
-- Governance approval queue
-- Pool query log
+```bash
+purpclaw doctor              # Quick health check
+purpclaw heal                 # Auto-recover: port collisions, zombie PIDs, .next corruption
+purpclaw logs <service>       # Stream service logs
+```
+
+See `docs/RECOVERY.md` for common failure patterns and fixes.
 
 ---
 
 ## FAQ
 
-**"Is this secure?"**
+**What's the minimum to run?**
 
-The governance layer (policies.json) classifies every job by risk. High-risk jobs (filesystem mutations, external network calls, service restarts) are held for approval before executing. Low-risk jobs (read-only inspection, linting) run directly. The approval ledger is append-only JSONL.
+`npm install -g purpclaw` then `purpclaw ask "hello"` — the CLI auto-starts what it needs.
 
-**"Where does it send my code?"**
+**Do I need all 25 services?**
 
-Only to the LLM provider you configure in `.env`. Code never touches PURPCLAW's infrastructure.
+No. 9 core services handle most workflows. The cognitive cluster is optional. The media services (vision, voice, yolo) need hardware.
 
-**"How do I add a new skill?"**
+**Why Python AND Node?**
 
-Drop a `SKILL.md` file in `skills/<name>/`. The pool service picks it up on next boot, or rebuild the index with `purpclaw pool reindex`.
+Python for ML workloads (Whisper, YOLO, cognitive engines). Node for the CLI, API, orchestration, and WebUI. They talk over HTTP.
 
-**"The goose is filing tickets. What does that mean?"**
+**How do I add a skill?**
 
-The GOOSE agent handles enforcement: catching policy violations, maintaining quality gates, and making sure agents don't drift from their assigned roles. It's middle management, but with a beak.
+Drop a `SKILL.md` in `skills/<name>/` and run `purpclaw pool reindex`.
 
-**"Something broke. What do I do?"**
+**What about the spawn cascade?**
 
-```bash
-purpclaw doctor           # quick health check
-purpclaw rollback list     # see rollback points
-purpclaw rollback undo <id> # restore a snapshot
-npm run build             # rebuild Next.js
-```
+Fixed. All spawns now go through `lib/child-registry.js` — zero `detached: true`, zero `shell: true`, zero `cmd /c start`. See `docs/RECOVERY.md` if anything leaks.
 
 ---
 
-## Registry (Skills / Agents)
-
-The workshop has a marketplace of distributable components:
-
-```bash
-purpclaw registry browse          # see all 139 skills + 38 agents
-purpclaw install ai-first-engineering   # install a skill
-purpclaw search python testing      # find by keyword
-purpclaw registry publish <name>   # publish your own skill (opens guide)
-purpclaw registry update            # rebuild local index from disk
-```
-
----
-
-*Built by Eddie Cannon. Maintained by the goose. Watched by the mochi.*
-*The hammers walk. The tickets file themselves. The pool is open.*
+*Built by Eddie Cannon (weemadscotsman). Ship date: 2026-06-06. v0.1.0.*

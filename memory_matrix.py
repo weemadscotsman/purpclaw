@@ -35,6 +35,8 @@ from collections import OrderedDict
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional, Any, Callable
 import hashlib
+import numpy as np
+import struct
 
 # Suppress warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -99,55 +101,74 @@ class RingBuffer:
             return list(self.buffer[-n:])
 
 # ============================================================================
-# 8-BIT QUANTIZATION FOR EMBEDDINGS
+# 8-BIT QUANTIZATION FOR EMBEDDINGS (TurboQuant implementation)
 # ============================================================================
+
+ROTATION_SEED = 42
+_ROTATION_MATRIX = None
+_ROTATION_MATRIX_T = None
+
+def _get_rotation_matrix(dims=384):
+    global _ROTATION_MATRIX, _ROTATION_MATRIX_T
+    if _ROTATION_MATRIX is None:
+        rng = np.random.default_rng(ROTATION_SEED)
+        H = rng.standard_normal((dims, dims))
+        Q, _ = np.linalg.qr(H)
+        _ROTATION_MATRIX = Q.astype(np.float32)
+        _ROTATION_MATRIX_T = Q.T.astype(np.float32)
+    return _ROTATION_MATRIX, _ROTATION_MATRIX_T
 
 class QuantizedMemory:
     """8-bit quantized embedding storage for memory efficiency."""
 
-    # Pre-compute quantization boundaries (256 levels for 8-bit)
-    QUANT_BOUNDARIES = [(i / 128.0) - 1.0 for i in range(257)]  # -1.0 to 1.0
-
     @staticmethod
     def quantize(vector: List[float], dims: int = 384) -> bytes:
-        """Compress float32 vector to 8-bit quantized bytes."""
+        """Compress float32 vector to 8-bit quantized bytes using TurboQuant."""
         if len(vector) < dims:
             vector = vector + [0.0] * (dims - len(vector))
         elif len(vector) > dims:
             vector = vector[:dims]
-
-        # Quantize to 0-255 range
-        quantized = bytearray(dims)
-        for i, v in enumerate(vector):
-            # Clamp to -1, 1 range
-            v = max(-1.0, min(1.0, v))
-            # Map to 0-255
-            q = int((v + 1.0) * 127.5)
-            q = max(0, min(255, q))
-            quantized[i] = q
-        return bytes(quantized)
+        
+        R, _ = _get_rotation_matrix(dims)
+        v_arr = np.array(vector, dtype=np.float32)
+        rotated = np.dot(v_arr, R)
+        
+        max_val = np.max(np.abs(rotated))
+        scale = float(max_val / 127.0) if max_val > 0 else 1.0
+        
+        quantized = np.clip(np.round(rotated / scale), -128, 127).astype(np.int8)
+        return quantized.tobytes() + struct.pack('<f', scale)
 
     @staticmethod
     def dequantize(quantized: bytes, dims: int = 384) -> List[float]:
-        """Restore float32 vector from 8-bit quantized bytes."""
-        result = []
-        for i in range(min(len(quantized), dims)):
-            v = (quantized[i] / 127.5) - 1.0
-            result.append(v)
-        while len(result) < dims:
-            result.append(0.0)
-        return result
+        """Restore float32 vector from 8-bit quantized bytes using TurboQuant."""
+        if len(quantized) < dims + 4:
+            scale = 1.0 / 127.5
+            q_bytes = quantized[:dims]
+            if len(q_bytes) < dims:
+                q_bytes = q_bytes + b'\x80' * (dims - len(q_bytes))
+            rotated = (np.frombuffer(q_bytes, dtype=np.uint8).astype(np.float32) - 127.5) * scale
+            _, R_T = _get_rotation_matrix(dims)
+            original = np.dot(rotated, R_T)
+            return original.tolist()
+        
+        q_bytes = quantized[:dims]
+        scale, = struct.unpack('<f', quantized[dims:dims+4])
+        rotated = np.frombuffer(q_bytes, dtype=np.int8).astype(np.float32) * scale
+        _, R_T = _get_rotation_matrix(dims)
+        original = np.dot(rotated, R_T)
+        return original.tolist()
 
     @staticmethod
     def cosine_similarity(q1: bytes, q2: bytes) -> float:
-        """Fast cosine similarity on quantized vectors."""
-        v1 = QuantizedMemory.dequantize(q1)
-        v2 = QuantizedMemory.dequantize(q2)
-
-        dot = sum(a * b for a, b in zip(v1, v2))
-        mag1 = sum(a * a for a in v1) ** 0.5
-        mag2 = sum(b * b for b in v2) ** 0.5
-
+        """Fast cosine similarity on quantized vectors using TurboQuant."""
+        v1 = np.array(QuantizedMemory.dequantize(q1), dtype=np.float32)
+        v2 = np.array(QuantizedMemory.dequantize(q2), dtype=np.float32)
+        
+        dot = float(np.dot(v1, v2))
+        mag1 = float(np.linalg.norm(v1))
+        mag2 = float(np.linalg.norm(v2))
+        
         if mag1 == 0 or mag2 == 0:
             return 0.0
         return dot / (mag1 * mag2)

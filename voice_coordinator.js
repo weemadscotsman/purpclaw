@@ -12,6 +12,7 @@
 const net = require('net');
 const http = require('http');
 const path = require('path');
+const { trackedSpawn } = require('./lib/child-registry');
 
 const VOICE_COORD_PORT = 7781;
 
@@ -163,8 +164,11 @@ function log(...args) {
 function speak(text) {
   if (!text || text.length === 0) return;
   try {
-    const cmd = `cmd.exe /c "${KOKORO}" "${text.replace(/"/g, '\\"')}"`;
-    require('child_process').exec(cmd, { windowsHide: true });
+    trackedSpawn('cmd.exe', ['/c', KOKORO, text.replace(/"/g, '\\"')], {
+      tag: 'tts-speak',
+      timeoutMs: 30_000,
+      stdio: 'ignore',
+    }).unref();
     log('SPEAK:', text.substring(0, 80));
   } catch (e) {
     log('TTS Error:', e.message);

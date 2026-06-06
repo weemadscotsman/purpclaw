@@ -221,10 +221,10 @@ async function fetchAll() {
 
 // ── draw helpers ──────────────────────────────────────────────────────────────
 function hbar(W, l, f, r) { return col(C.purple, l + f.repeat(W - 2) + r); }
-const boxTop = W => hbar(W, '╔', '═', '╗');
-const boxBot = W => hbar(W, '╚', '═', '╝');
-const boxMid = W => hbar(W, '╠', '═', '╣');
-const boxL   = ()  => col(C.purple, '║');
+const boxTop = W => hbar(W, '╭', '─', '╮');
+const boxBot = W => hbar(W, '╰', '─', '╯');
+const boxMid = W => hbar(W, '├', '─', '┤');
+const boxL   = ()  => col(C.purple, '│');
 
 function drawFrame(out, W, H) {
   out.push(at(1, 1) + boxTop(W));
@@ -339,8 +339,9 @@ function drawOverview(out, R1, RN, W, data) {
     const floors = [...DIVISIONS].reverse();
     for (const div of floors) {
       if (lr > RN) break;
-      // TODO: wire activeCount to real per-division data when tower exposes it
-      const activeCount = 0;
+      const activeCount = data.towerStat && Array.isArray(data.towerStat.activeAgents)
+        ? data.towerStat.activeAgents.filter(a => String(a.division).toUpperCase() === div.key).length
+        : 0;
       const slots  = Math.min(div.slots, 7);
       let windows  = '';
       for (let i = 0; i < slots; i++) windows += (i < activeCount ? ACTIVE : IDLE) + ' ';
@@ -419,7 +420,11 @@ function drawOverview(out, R1, RN, W, data) {
 // ── AGENTS TAB ────────────────────────────────────────────────────────────────
 function drawAgents(out, R1, RN, W) {
   let routing = {}, scores = {};
-  try { routing = require(path.join(PURP_DIR, 'agent_routing_matrix.js')).AGENT_ROUTING || {}; } catch {}
+  const routingPath = path.join(PURP_DIR, 'agent_routing_matrix.js');
+  try {
+    delete require.cache[require.resolve(routingPath)];
+    routing = require(routingPath).AGENT_ROUTING || {};
+  } catch {}
   try {
     const f = path.join(PURP_DIR, 'agent_score.json');
     // agent_score.json structure: { agents: { name: { totalTasks, successes, ... } }, intents, history, meta }

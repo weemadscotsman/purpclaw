@@ -2,18 +2,18 @@
 
 > **The AI Workstation OS.**
 > A terminal-first, multi-agent, self-improving AI operating system.
-> 17 providers · 110+ tools · 35 runtime agents (152 skill directories) · 9 core services · 3 surfaces (CLI, TUI, WebUI)
+> 17 providers · 110+ tools · 35 deployable agents (152 directories) · 9 core services · 3 surfaces (CLI, TUI, WebUI)
 
-PurpClaw is not another AI application. It's trying to become an **operating system for AI work** — where the CLI is the shell, the agents are processes, the memory matrix is persistent storage, the event bus is IPC, the orchestrator is the scheduler, the providers are CPUs, the swarm is multiprocessing, and the training ratchet is software evolution.
+PurpClaw is not another AI application. It's trying to become an **operating system for AI work** — where the CLI is the shell, the agents are processes, the world model is persistent storage, the event bus is IPC, the orchestrator is the scheduler, the providers are CPUs, the swarm is multiprocessing, and the training ratchet is software evolution.
 
-**Honest numbers:** 35 agents are deployable at runtime (152 skill directories contain 54 with executable code and 42 with documented personas). 9 core services are running (25 total defined — the cognitive cluster is built but offline). The 7-layer memory architecture exists in code (1,133 lines) but 6 of 7 layers are currently offline — the architecture points in a direction, the runtime hasn't caught up yet.
+**Honest numbers:** 35 agents are deployable at runtime (152 skill directories — 54 with executable code, 42 with documented personas). 9 core services are running (25 total defined). The 7-layer world model (1,133 lines across 6 modules) exists in code — episodic memory is online, layers 2-7 are built but awaiting integration.
 
 ## Why PurpClaw over everything else
 
 | Problem | Everyone Else | PurpClaw |
 |---|---|---|
 | **Provider lock-in** | One vendor | 17 providers, switch mid-session |
-| **Memory** | Session-only, lost on disconnect | Persistent cognitive memory with neuro-symbolic reasoning |
+| **World Model** | Session-only, lost on disconnect | 7-layer world model: episodic, semantic, procedural, symbolic, temporal, counterfactual, emotional |
 | **Tools** | Fixed set, no extensibility | 54 tools + unlimited MCP servers |
 | **Agents** | One or none | 35 runtime agents (152 skill dirs, 54 code modules) |
 | **Self-improvement** | None | Karpathy ratchet — trains its own LoRA overnight |

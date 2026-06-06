@@ -397,6 +397,54 @@ function startGatekeeperServer() {
       return;
     }
 
+    // POST /api/propose-amendments — store a proposed policy/skill amendment
+    if (url.pathname === '/api/propose-amendments' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', () => {
+        try {
+          const amendment = JSON.parse(body);
+          const id = `amend-${Date.now()}`;
+          const entry = { id, ...amendment, status: 'pending', createdAt: new Date().toISOString() };
+          // Store in a simple in-memory ledger
+          if (!global.__gatekeeper_amendments) global.__gatekeeper_amendments = [];
+          global.__gatekeeper_amendments.push(entry);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, id, amendment: entry }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+      return;
+    }
+
+    // POST /api/amend-patch — approve or reject a pending amendment
+    if (url.pathname === '/api/amend-patch' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', () => {
+        try {
+          const { amendmentId, action } = JSON.parse(body);
+          const ledger = global.__gatekeeper_amendments || [];
+          const entry = ledger.find(a => a.id === amendmentId);
+          if (!entry) {
+            res.writeHead(404, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Amendment not found' }));
+            return;
+          }
+          entry.status = action === 'approve' ? 'approved' : 'rejected';
+          entry.resolvedAt = new Date().toISOString();
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, amendment: entry }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+      return;
+    }
+
     res.writeHead(404);
     res.end('Not found');
   });

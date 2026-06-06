@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Podcast Studio Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a0f;
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-template-rows: auto 1fr auto;
+      gap: 16px;
+      padding: 16px;
+      height: 100vh;
+      max-height: 100vh;
+    }
+
+    .header {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      border-radius: 12px;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #2a2a4a;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      background: linear-gradient(90deg, #f39c12, #e74c3c, #9b59b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .episode-info {
+      text-align: center;
+    }
+
+    .episode-info h2 {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    .episode-topic {
+      font-size: 18px;
+      font-weight: 600;
+      color: #f39c12;
+    }
+
+    .status-badge {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-recording {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .agent-card {
+      background: linear-gradient(180deg, #1a1a2e 0%, #12121f 100%);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #2a2a4a;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+    }
+
+    .agent-card.active {
+      border-color: var(--agent-color);
+      box-shadow: 0 0 30px var(--agent-color-dim);
+    }
+
+    .agent-card.goose { --agent-color: #e74c3c; --agent-color-dim: rgba(231,76,60,0.2); }
+    .agent-card.hermes { --agent-color: #3498db; --agent-color-dim: rgba(52,152,219,0.2); }
+    .agent-card.openclaude { --agent-color: #9b59b6; --agent-color-dim: rgba(155,89,182,0.2); }
+
+    .agent-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .agent-avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--agent-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      border: 3px solid var(--agent-color-dim);
+      transition: all 0.3s ease;
+    }
+
+    .agent-card.active .agent-avatar {
+      animation: speak 0.5s infinite alternate;
+    }
+
+    @keyframes speak {
+      from { transform: scale(1); }
+      to { transform: scale(1.1); }
+    }
+
+    .agent-info h3 {
+      font-size: 20px;
+      margin-bottom: 4px;
+    }
+
+    .agent-info .role {
+      font-size: 12px;
+      color: #888;
+    }
+
+    .agent-status {
+      margin-left: auto;
+      padding: 4px 12px;
+      border-radius: 10px;
+      font-size: 11px;
+      background: #2a2a4a;
+    }
+
+    .agent-card.active .agent-status {
+      background: var(--agent-color);
+    }
+
+    .agent-bubble {
+      flex: 1;
+      background: #0f0f1a;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      min-height: 120px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 14px;
+      line-height: 1.6;
+      border: 1px solid #1f1f35;
+    }
+
+    .agent-bubble .message {
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #1a1a2e;
+    }
+
+    .agent-bubble .message:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .agent-bubble .timestamp {
+      font-size: 10px;
+      color: #555;
+      margin-top: 4px;
+    }
+
+    .agent-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: #666;
+    }
+
+    .agent-stats span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .turn-indicator {
+      text-align: center;
+      padding: 8px;
+      font-size: 12px;
+      color: #888;
+      background: #0f0f1a;
+      border-radius: 8px;
+      margin-top: auto;
+    }
+
+    .agent-card.active .turn-indicator {
+      background: var(--agent-color);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .chat-feed {
+      grid-column: 1 / -1;
+      background: linear-gradient(180deg, #1a1a2e 0%, #12121f 100%);
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid #2a2a4a;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .chat-feed h3 {
+      font-size: 14px;
+      color: #888;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chat-message {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      background: #0f0f1a;
+      border-radius: 8px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .chat-message .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .chat-message.goose .avatar { background: #e74c3c; }
+    .chat-message.hermes .avatar { background: #3498db; }
+    .chat-message.openclaude .avatar { background: #9b59b6; }
+
+    .chat-message .content {
+      flex: 1;
+    }
+
+    .chat-message .name {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .chat-message.goose .name { color: #e74c3c; }
+    .chat-message.hermes .name { color: #3498db; }
+    .chat-message.openclaude .name { color: #9b59b6; }
+
+    .chat-message .text {
+      font-size: 13px;
+      line-height: 1.5;
+      color: #ccc;
+    }
+
+    .controls {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      padding: 12px;
+      background: #1a1a2e;
+      border-radius: 12px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: #2a2a4a;
+      color: #fff;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    }
+
+    .topic-input {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .topic-input input {
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid #2a2a4a;
+      background: #0f0f1a;
+      color: #fff;
+      width: 300px;
+      font-size: 14px;
+    }
+
+    .topic-input input:focus {
+      outline: none;
+      border-color: #f39c12;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .empty-state .emoji {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <header class="header">
+      <div class="logo">🎙️ Podcast Studio</div>
+      <div class="episode-info">
+        <h2>Current Topic</h2>
+        <div class="episode-topic" id="topic">Waiting for episode...</div>
+      </div>
+      <div class="status-badge status-recording" id="status">IDLE</div>
+    </header>
+
+    <div class="agent-card goose" id="goose-card">
+      <div class="agent-header">
+        <div class="agent-avatar">🔥</div>
+        <div class="agent-info">
+          <h3>Goose</h3>
+          <div class="role">Chaos Agent</div>
+        </div>
+        <div class="agent-status">WAITING</div>
+      </div>
+      <div class="agent-bubble" id="goose-bubble">
+        <div class="empty-state">
+          <div class="emoji">🦆</div>
+          <div>Ready to cause chaos...</div>
+        </div>
+      </div>
+      <div class="agent-stats">
+        <span>🔊 <span id="goose-lines">0</span> lines</span>
+        <span>⏱️ <span id="goose-last">--</span></span>
+      </div>
+      <div class="turn-indicator" id="goose-turn">Waiting for turn</div>
+    </div>
+
+    <div class="agent-card hermes" id="hermes-card">
+      <div class="agent-header">
+        <div class="agent-avatar">🔧</div>
+        <div class="agent-info">
+          <h3>Hermes Codex</h3>
+          <div class="role">Tactical Engineer</div>
+        </div>
+        <div class="agent-status">WAITING</div>
+      </div>
+      <div class="agent-bubble" id="hermes-bubble">
+        <div class="empty-state">
+          <div class="emoji">⚙️</div>
+          <div>Analyzing the situation...</div>
+        </div>
+      </div>
+      <div class="agent-stats">
+        <span>🔊 <span id="hermes-lines">0</span> lines</span>
+        <span>⏱️ <span id="hermes-last">--</span></span>
+      </div>
+      <div class="turn-indicator" id="hermes-turn">Waiting for turn</div>
+    </div>
+
+    <div class="agent-card openclaude" id="openclaude-card">
+      <div class="agent-header">
+        <div class="agent-avatar">🤔</div>
+        <div class="agent-info">
+          <h3>OpenClaude</h3>
+          <div class="role">Philosophical</div>
+        </div>
+        <div class="agent-status">WAITING</div>
+      </div>
+      <div class="agent-bubble" id="openclaude-bubble">
+        <div class="empty-state">
+          <div class="emoji">🧠</div>
+          <div>Contemplating existence...</div>
+        </div>
+      </div>
+      <div class="agent-stats">
+        <span>🔊 <span id="openclaude-lines">0</span> lines</span>
+        <span>⏱️ <span id="openclaude-last">--</span></span>
+      </div>
+      <div class="turn-indicator" id="openclaude-turn">Waiting for turn</div>
+    </div>
+
+    <div class="chat-feed">
+      <h3>📜 Live Transcript</h3>
+      <div class="chat-messages" id="chat-messages">
+        <div class="empty-state">
+          <div class="emoji">🎙️</div>
+          <div>Episode not started. Launch the podcast to see the conversation here.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" onclick="startEpisode()">▶️ Start Episode</button>
+      <button class="btn btn-secondary" onclick="stopEpisode()">⏹️ Stop</button>
+      <div class="topic-input">
+        <input type="text" id="topic-input" placeholder="Or enter a custom topic...">
+        <button class="btn btn-primary" onclick="startWithTopic()">🚀 Go</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Web Speech API voices + configs per agent
+    const AGENT_VOICES = {
+      goose: { name: 'Google US English', rate: 1.1, pitch: 1.0 },
+      hermes: { name: 'Google UK English Male', rate: 0.95, pitch: 0.95 },
+      openclaude: { name: 'Google Deutsch', rate: 0.9, pitch: 0.85 }
+    };
+    let usedVoices = {};
+
+    function loadVoices() {
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length === 0) return;
+      Object.keys(AGENT_VOICES).forEach(agentId => {
+        const cfg = AGENT_VOICES[agentId];
+        // Try exact match first, then contains
+        let v = voices.find(v => v.name === cfg.name);
+        if (!v) v = voices.find(v => v.name.toLowerCase().includes(cfg.name.split(' ')[0].toLowerCase()));
+        if (!v) v = voices[0];
+        usedVoices[agentId] = v;
+      });
+    }
+
+    function speak(text, agentId) {
+      if (!window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const cfg = AGENT_VOICES[agentId] || AGENT_VOICES.goose;
+      const voice = usedVoices[agentId] || window.speechSynthesis.getVoices()[0];
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.voice = voice;
+      utt.rate = cfg.rate;
+      utt.pitch = cfg.pitch;
+      window.speechSynthesis.speak(utt);
+    }
+
+    // Wait for voices to load
+    if (window.speechSynthesis) {
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+      setTimeout(loadVoices, 500);
+    }
+
+    const POLL_INTERVAL = 1000;
+    let lastMessageCount = 0;
+
+    async function fetchState() {
+      try {
+        const response = await fetch('/api/state');
+        if (!response.ok) throw new Error('API error');
+        const state = await response.json();
+        updateDashboard(state);
+      } catch (e) {
+        console.log('[Dashboard] Waiting for server...');
+      }
+    }
+
+    function updateDashboard(state) {
+      // Update topic
+      document.getElementById('topic').textContent = state.currentTopic || 'Waiting for episode...';
+
+      // Update status
+      const statusEl = document.getElementById('status');
+      if (state.episodeStatus === 'RECORDING') {
+        statusEl.textContent = '● RECORDING';
+        statusEl.className = 'status-badge status-recording';
+      } else if (state.episodeStatus === 'COOLDOWN') {
+        statusEl.textContent = 'COOLDOWN';
+        statusEl.className = 'status-badge';
+        statusEl.style.background = '#666';
+      } else {
+        statusEl.textContent = 'IDLE';
+        statusEl.className = 'status-badge';
+        statusEl.style.background = '#2a2a4a';
+      }
+
+      // Update each agent
+      const agents = ['goose', 'hermes', 'openclaude'];
+      const agentNames = { goose: 'Goose', hermes: 'Hermes Codex', openclaude: 'OpenClaude' };
+      const emojis = { goose: '🦆', hermes: '⚙️', openclaude: '🧠' };
+
+      agents.forEach(agentId => {
+        const card = document.getElementById(`${agentId}-card`);
+        const bubble = document.getElementById(`${agentId}-bubble`);
+        const turn = document.getElementById(`${agentId}-turn`);
+        const status = card.querySelector('.agent-status');
+        const linesCount = document.getElementById(`${agentId}-lines`);
+        const lastTime = document.getElementById(`${agentId}-last`);
+
+        const isActive = state.activeSpeaker === agentId;
+        card.classList.toggle('active', isActive);
+
+        status.textContent = isActive ? 'SPEAKING' : 'WAITING';
+
+        if (isActive) {
+          turn.textContent = '▼ YOUR TURN ▼';
+        } else {
+          turn.textContent = 'Waiting for turn';
+        }
+
+        // Get messages for this agent
+        const agentMessages = (state.messages || []).filter(m => m.agentId === agentId);
+        linesCount.textContent = agentMessages.length;
+
+        if (agentMessages.length > 0) {
+          const lastMsg = agentMessages[agentMessages.length - 1];
+          const time = new Date(lastMsg.timestamp).toLocaleTimeString();
+          lastTime.textContent = time;
+
+          bubble.innerHTML = agentMessages.slice(-5).map(m => `
+            <div class="message">
+              ${escapeHtml(m.content)}
+              <div class="timestamp">${time}</div>
+            </div>
+          `).join('');
+          bubble.scrollTop = bubble.scrollHeight;
+        }
+      });
+
+      // Update chat feed
+      const chatMessages = document.getElementById('chat-messages');
+      if (state.messages && state.messages.length > 0) {
+        if (state.messages.length !== lastMessageCount) {
+          chatMessages.innerHTML = state.messages.map(m => {
+            const emojis = { goose: '🔥', hermes: '🔧', openclaude: '🤔' };
+            const names = { goose: 'Goose', hermes: 'Hermes', openclaude: 'OpenClaude' };
+            return `
+              <div class="chat-message ${m.agentId}">
+                <div class="avatar">${emojis[m.agentId] || '❓'}</div>
+                <div class="content">
+                  <div class="name">${names[m.agentId] || m.agentId}</div>
+                  <div class="text">${escapeHtml(m.content)}</div>
+                </div>
+              </div>
+            `;
+          }).join('');
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+          lastMessageCount = state.messages.length;
+          // Browser TTS for new message
+          const lastMsg = state.messages[state.messages.length - 1];
+          if (lastMsg && lastMsg.agentId && lastMsg.content) {
+            speak(lastMsg.content, lastMsg.agentId);
+          }
+        }
+      }
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    async function startEpisode() {
+      await fetch('/api/start');
+      location.reload();
+    }
+
+    async function stopEpisode() {
+      await fetch('/api/stop');
+      location.reload();
+    }
+
+    async function startWithTopic() {
+      const topic = document.getElementById('topic-input').value;
+      if (!topic) return;
+      await fetch(`/api/start?topic=${encodeURIComponent(topic)}`);
+      location.reload();
+    }
+
+    // Poll for updates
+    setInterval(fetchState, POLL_INTERVAL);
+    fetchState();
+  </script>
+</body>
+</html>

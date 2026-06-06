@@ -67,9 +67,8 @@ class ShamanEvaluator {
       minCyclePerPhase: config.minCyclePerPhase || 2,
       useToolAnchoring: config.useToolAnchoring !== false,
       backend: config.backend || {
-        endpoint: 'https://api.moonshot.cn/v1/chat/completions',
-        apiKey: process.env.KIMI_API_KEY || '',
-        model: 'kimi-k2-5'
+        provider: process.env.LLM_PROVIDER || 'openrouter',
+        model: process.env.LLM_MODEL || 'auto',
       },
       ...config
     };
@@ -301,9 +300,8 @@ class LLMEvaluator {
   constructor(config = {}) {
     this.config = {
       backend: config.backend || {
-        endpoint: 'https://api.moonshot.cn/v1/chat/completions',
-        apiKey: process.env.KIMI_API_KEY || '',
-        model: 'kimi-k2-5'
+        provider: process.env.LLM_PROVIDER || 'openrouter',
+        model: process.env.LLM_MODEL || 'auto',
       },
       ...config
     };
@@ -353,45 +351,20 @@ Be thoughtful. The goal is creative breakthrough, not premature conclusion.`;
   async callAI(prompt) {
     const { backend } = this.config;
     
-    const requestBody = {
-      model: backend.model || 'kimi-k2-5',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.3,
-      max_tokens: 500
-    };
-    
-    return new Promise((resolve, reject) => {
-      const url = new URL(backend.endpoint);
-      const options = {
-        hostname: url.hostname,
-        port: url.port || (url.protocol === 'https:' ? 443 : 80),
-        path: url.pathname,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${backend.apiKey}`
+    try {
+      const result = await LLM.complete(
+        prompt,
+        {
+          temperature: 0.3,
+          maxTokens: 500,
+          provider: backend?.provider,
+          model: backend?.model,
         }
-      };
-      
-      const protocol = url.protocol === 'https:' ? https : http;
-      const req = protocol.request(options, (res) => {
-        let data = '';
-        res.on('data', chunk => data += chunk);
-        res.on('end', () => {
-          try {
-            const parsed = JSON.parse(data);
-            resolve(parsed.choices?.[0]?.message?.content || '');
-          } catch (e) {
-            reject(e);
-          }
-        });
-      });
-      
-      req.on('error', reject);
-      req.setTimeout(30000, () => { req.destroy(); reject(new Error('Timeout')); });
-      req.write(JSON.stringify(requestBody));
-      req.end();
-    });
+      );
+      return result || '';
+    } catch (e) {
+      throw e;
+    }
   }
 }
 
