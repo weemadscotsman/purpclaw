@@ -3851,6 +3851,9 @@ case 'registry': return cmdRegistry(args);
     case 'workers':
     case 'worker':    return loadCmd('workers').run(args, sharedCtx());
     case 'ask':       return loadCmd('ask').run(args, sharedCtx());
+    case 'setup':
+    case 'wizard':
+    case 'onboard':   return loadCmd('setup').run(args, sharedCtx());
     case 'commit':
         case 'review':
         case 'find':
