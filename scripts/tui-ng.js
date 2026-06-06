@@ -263,11 +263,39 @@ inputBox.on('submit', async (text) => {
 
   // Slash commands
   if (cmd === '/help') {
-    chatLog.add('{yellow-fg}/model <name>  /provider <name>  /agents  /clear  /quit{/}');
+    chatLog.add('{yellow-fg}/model <name>  /provider <name>  /agents  /spawn <agent>  /clear  /quit{/}');
     inputBox.focus(); return;
   }
   if (cmd === '/clear') { chatLog.setContent(''); inputBox.focus(); return; }
   if (cmd === '/quit') { process.exit(0); }
+  if (cmd.startsWith('/spawn ')) {
+    const [_, agent, ...task] = cmd.split(' ');
+    chatLog.add('{yellow-fg}⚡ spawning ' + agent + ' with task: ' + task.join(' ') + '{/}');
+    try {
+      const r = await fetch(API + '/api/agents/spawn', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: agent, task: task.join(' '), priority: 'normal' })
+      });
+      const j = await r.json();
+      chatLog.add('{green-fg}' + agent + ' spawned: ' + (j.jobId || j.id || 'ok') + '{/}');
+      setMochiMood('happy'); setTimeout(() => setMochiMood('idle'), 2000);
+    } catch (e) { chatLog.add('{red-fg}spawn failed: ' + e.message + '{/}'); }
+    inputBox.clearValue(); inputBox.focus(); return;
+  }
+  if (cmd.startsWith('/provider ')) {
+    state.provider = cmd.split(' ')[1];
+    chatLog.add('{green-fg}provider → ' + state.provider + '{/}');
+    updateTopBar(); inputBox.clearValue(); inputBox.focus(); return;
+  }
+  if (cmd.startsWith('/model ')) {
+    state.model = cmd.split(' ')[1];
+    chatLog.add('{green-fg}model → ' + state.model + '{/}');
+    updateTopBar(); inputBox.clearValue(); inputBox.focus(); return;
+  }
+  if (cmd === '/agents') {
+    chatLog.add('{yellow-fg}registered: 35 agents across 9 divisions ● active: ' + state.agents.active + '{/}');
+    inputBox.clearValue(); inputBox.focus(); return;
+  }
 
   chatLog.add('{cyan-fg}purp ❯ ' + cmd + '{/}');
   state.thinking = true;
