@@ -84,6 +84,9 @@ try {
 
 const execAsync = promisify(exec);
 const PORT = 7780;
+const API_KEY = process.env.PURPCLAW_API_KEY || '';  // empty = no auth (local dev)
+const AUTH_REQUIRED = !!API_KEY && process.env.PURPCLAW_NO_AUTH !== '1';
+const MUTATING_METHODS = new Set(['POST', 'PUT', 'DELETE', 'PATCH']);
 const XIAOZHI_WS_URL = process.env.XIAOZHI_WS_URL || process.env.XIAOZHI_MCP_URL || '';
 const PURP_DIR = __dirname;
 const PURP_STATE = path.join(PURP_DIR, 'loop_state.json');
@@ -2595,7 +2598,15 @@ const server = http.createServer(async (req, res) => {
   const pathname = parsedUrl.pathname;
   const method = req.method;
 
-  if (method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type' }); res.end(); return; }
+  if (method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type,Authorization' }); res.end(); return; }
+
+  // ── API Key auth (only for mutating endpoints when configured) ─────
+  if (AUTH_REQUIRED && MUTATING_METHODS.has(method)) {
+    const auth = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (auth !== API_KEY) {
+      return sendJson(res, 401, { error: 'Unauthorized', message: 'Set PURPCLAW_API_KEY in .env or pass Authorization: Bearer <key>' });
+    }
+  }
 
   if (pathname === '/api/stream' && method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive', 'Access-Control-Allow-Origin': '*' });
