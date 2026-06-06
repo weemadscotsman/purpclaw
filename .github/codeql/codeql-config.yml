@@ -1,0 +1,10 @@
+name: "CodeQL Config"
+paths-ignore:
+  - '**/tesseract-ocr*/**'
+  - '**/Open-Higgsfield-AI*/**'
+  - '**/brain_dashboard.html'
+  - '**/node_modules/**'
+  - '**/.next/**'
+  - '**/skills/**'
+  - '**/docs/**'
+  - '**/agents/**'
