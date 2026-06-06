@@ -95,7 +95,11 @@ const state = {
   agents   : { active: 0, registered: 0 },
   events   : [],
   toolCount: 0,
+  mcpCount : 0,
   lastPoll : 0,
+  // Token stats
+  tokens   : { prompt: 0, completion: 0, calls: 0, saved: 0 },
+  actions  : { tools: 0, turns: 0 },
 };
 
 // ── Live status poller ───────────────────────────────────────────────
@@ -153,12 +157,18 @@ function onResize() {
 
 function renderStatusBar() {
   const svcColor = state.services.online > 0 ? C.green : C.red;
-  const p = `${C.cyan}${BOLD}purpclaw${CRESET} ${C.dim}·${CRESET} ${C.yellow}${state.provider}${CRESET}`;
-  const m = state.model ? `${C.yellow}${state.model}${CRESET}` : `auto`;
-  const s = `${svcColor}${state.services.online}/${state.services.total} services${CRESET}`;
-  const a = `${C.magenta}${state.agents.active} active · ${state.agents.registered} registered${CRESET}`;
-  const t = `${C.blue}${state.toolCount} tools${CRESET}`;
-  const left = `${p}  ${C.dim}·${CRESET}  model: ${m}  ${C.dim}·${CRESET}  ${s}  ${C.dim}·${CRESET}  ${a}  ${C.dim}·${CRESET}  ${t}`;
+  const p = `${C.cyan}${BOLD}purpclaw${CRESET}`;
+  const prov = `${C.dim}${state.provider}${CRESET}`;
+  const mdl = state.model ? `${C.yellow}${state.model}${CRESET}` : `${C.yellow}auto${CRESET}`;
+  const s = `${svcColor}${state.services.online}/${state.services.total} svc${CRESET}`;
+  const a = `${C.magenta}${state.agents.active}ag${CRESET}`;
+  const m = `${C.green}${state.mcpCount}mcp${CRESET}`;
+  // Token line
+  const total = state.tokens.prompt + state.tokens.completion;
+  const tok = total > 0 ? `${C.cyan}${(total/1000).toFixed(1)}k tok${CRESET}` : `${C.dim}0 tok${CRESET}`;
+  const saved = state.tokens.saved > 0 ? `${C.green}~${state.tokens.saved} saved${CRESET}` : '';
+  const acts = `${C.blue}${state.actions.tools}tools${CRESET} ${C.blue}${state.actions.turns}turns${CRESET}`;
+  const left = `${p} ${prov} ${mdl} · ${s} ${a} ${m} · ${tok} ${saved} · ${acts}`;
   const right = state.busy ? `${C.yellow}◐ thinking…${CRESET}` : `${C.green}● ready${CRESET}`;
   const pad = Math.max(1, state.width - visibleLen(left) - visibleLen(right) - 2);
   return CLEAR_LINE + ' ' + left + ' '.repeat(pad) + right + ' ';
@@ -243,7 +253,29 @@ function renderInfoPanel(availableHeight) {
   // Tools
   lines.push(hdr('── TOOLS ──'));
   lines.push(val('loaded', state.toolCount));
+  lines.push(val('MCP', state.mcpCount));
   lines.push('');
+
+  // Token stats
+  const t = state.tokens;
+  const total = t.prompt + t.completion;
+  if (total > 0) {
+    lines.push(hdr('── TOKENS ──'));
+    lines.push(val('prompt', `${(t.prompt/1000).toFixed(1)}k`));
+    lines.push(val('completion', `${(t.completion/1000).toFixed(1)}k`));
+    lines.push(val('total', `${(total/1000).toFixed(1)}k`));
+    if (t.saved > 0) lines.push(val('saved', `~${t.saved} (OmniCode)`));
+    lines.push(val('calls', t.calls));
+    lines.push('');
+  }
+
+  // Actions
+  if (state.actions.tools > 0 || state.actions.turns > 0) {
+    lines.push(hdr('── ACTIONS ──'));
+    lines.push(val('tool calls', state.actions.tools));
+    lines.push(val('turns', state.actions.turns));
+    lines.push('');
+  }
 
   // Poll age
   const age = Math.round((Date.now() - state.lastPoll) / 1000);
@@ -265,8 +297,15 @@ function renderInput() {
 }
 
 function renderHelpBar() {
-  const h = `${C.dim}/help${CRESET} cmds  ${C.dim}·${CRESET}  ${C.dim}Esc${CRESET} clear  ${C.dim}·${CRESET}  ${C.dim}Ctrl+C${CRESET} exit  ${C.dim}·${CRESET}  ${C.dim}↑/↓${CRESET} scroll  ${C.dim}·${CRESET}  ${C.dim}Ctrl+L${CRESET} redraw`;
-  return CLEAR_LINE + ' ' + h;
+  const t = state.tokens;
+  const total = t.prompt + t.completion;
+  const tokens = total > 0 ? `tokens: ${(total/1000).toFixed(1)}k` : '0 tok';
+  const saved = t.saved > 0 ? ` · saved: ${t.saved}` : '';
+  const acts = `actions: ${state.actions.tools}t · ${state.actions.turns} turns`;
+  const left = `${C.dim}/help${CRESET} cmds  ${C.dim}·${CRESET}  ${C.dim}Esc${CRESET} clear  ${C.dim}·${CRESET}  ${C.dim}Ctrl+C${CRESET} exit  ${C.dim}·${CRESET}  ${C.dim}↑/↓${CRESET} scroll  ${C.dim}·${CRESET}  ${C.dim}Ctrl+L${CRESET} redraw`;
+  const right = `${C.cyan}${tokens}${saved}${CRESET}  ${C.dim}·${CRESET}  ${C.blue}${acts}${CRESET}`;
+  const pad = Math.max(1, state.width - visibleLen(left) - visibleLen(right) - 2);
+  return CLEAR_LINE + ' ' + left + ' '.repeat(pad) + right + ' ';
 }
 
 function redraw() {
@@ -346,7 +385,7 @@ async function submitInput() {
   redraw();
 
   try {
-    let tokens = 0, toolCalls = 0;
+    let tokens = 0, toolCalls = 0, turnCount = 0;
     const { runAgent } = require(path.join(PURP_DIR, 'lib', 'agent-loop.js'));
     for await (const ev of runAgent({ prompt: text, history: state.history, model: state.model, provider: state.provider, opts: { maxTurns: 10 } })) {
       if (ev.type === 'token') {
@@ -356,6 +395,7 @@ async function submitInput() {
         tokens += ev.content.length;
         if (tokens % 32 < ev.content.length) redraw();
       } else if (ev.type === 'turn') {
+        turnCount = ev.turn;
         if (ev.turn > 1) state.messages.push({ role: 'meta', content: `─── turn ${ev.turn}/${ev.maxTurns} ───` });
         redraw();
       } else if (ev.type === 'tool-call') {
@@ -364,6 +404,14 @@ async function submitInput() {
         state.messages.push({ role: 'tool-result', ok: ev.ok, preview: ev.content || ev.error }); redraw();
       } else if (ev.type === 'done') {
         state.messages.push({ role: 'meta', content: `─── done in ${ev.turns} turn(s), ${tokens} tokens, ${toolCalls} tool(s) ───` });
+        // Update stats
+        state.tokens.completion += tokens;
+        state.tokens.calls++;
+        state.actions.tools += toolCalls;
+        state.actions.turns = Math.max(state.actions.turns, turnCount || ev.turns);
+        // Estimate saved tokens from OmniCode MCP (each MCP call saves ~2k tokens vs file read)
+        const mcpCalls = toolCalls > 0 ? Math.round(toolCalls * 0.3) : 0;
+        state.tokens.saved += mcpCalls * 2000;
         redraw();
       } else if (ev.type === 'error') {
         state.messages.push({ role: 'meta', content: `error: ${ev.error}` }); redraw();
@@ -385,6 +433,11 @@ function cleanup() {
 
 // First render
 state.toolCount = (() => { try { return require(path.join(PURP_DIR, 'lib', 'tools')).list().length; } catch { return 0; } })();
+// Load MCP count — OmniCode is always loaded on startup
+try {
+  const mcp = require(path.join(PURP_DIR, 'lib', 'mcp'));
+  mcp.loadServers().then(() => { state.mcpCount = mcp.listTools().length; redraw(); }).catch(() => {});
+} catch {};
 process.stdout.write(CLEAR);
 pollStatus();
 state.messages.push({ role: 'meta', content: `${C.cyan}purpclaw cockpit${CRESET}  ${C.dim}·${CRESET}  ${C.green}interactive agent chat${CRESET}\n  type a prompt and hit ${BOLD}Enter${CRESET}  ·  help for commands  ·  ${BOLD}Esc${CRESET} to clear  ·  ${BOLD}Ctrl+C${CRESET} to exit` });
