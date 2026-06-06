@@ -1,6 +1,6 @@
 {
   "name": "purpclaw",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Open-source coding-agent CLI. Terminal-first, multi-agent, self-improving. Supports OpenAI, Anthropic, Gemini, Ollama, and 13 more providers.",
   "keywords": [
     "ai",
@@ -102,5 +102,6 @@
     "darwin",
     "linux",
     "win32"
-  ]
+  ],
+  "main": "bin/purpclaw.js"
 }
