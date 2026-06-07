@@ -381,9 +381,9 @@ The pipeline exists. It's hungry. Run the stack, let agents work, feed the buffe
 
 ## Personal Model Growth
 
-> **We don't take your data. We help you feed it to your own AI until it becomes a statistically significant version of your bullshit.**
+> **We don't steal your data. You steal it from yourself. Then you feed it to your own model until it starts finishing your sentences and questioning your life choices. We just sold you the spoon.**
 
-Every company collects your data to train their models. PurpClaw collects everything they would — every prompt, every correction, every "no, do it this way," every preference — but keeps it on your drive. Your data trains YOUR model on YOUR hardware. Zero cloud. Zero telemetry. The consequences remain entirely your fault.
+Every company collects your data to train their models. PurpClaw collects everything they would — every prompt, every correction, every "no, do it this way," every preference — but keeps it on your drive. Your data trains YOUR model on YOUR hardware. You bought the spoon, mate. What you fed the thing after that is between you and God.
 
 ```
 You use PurpClaw → every interaction captured → personal dataset builds
