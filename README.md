@@ -3,7 +3,7 @@
 > **The AI Workstation OS.**
 > CLI is the shell. Agents are processes. The world model is storage. The event bus is IPC. The swarm is multiprocessing.
 
-78 native tools. 390 skills. 35 deployable agents. 17 providers. 25 services. 7 memory layers. 3 surfaces. Built by one person. Hermes was the runtime — PurpClaw is the system.
+78 native tools. 390 skills. 35 deployable agents. 17 providers. 25 services. 7 memory layers. 3 surfaces. Built by one person.
 
 ---
 
@@ -169,7 +169,7 @@ Any MCP-compatible server becomes a tool. Configure in `.purpclaw/mcp.json`. Too
 
 ## 390 Skills
 
-Built by Eddie Cannon. Hermes loaded them at runtime — PurpClaw is home. 141 with executable code. Portable. Learned once, reused forever.
+Built by Eddie Cannon. Native to PurpClaw. 141 with executable code. Portable. Learned once, reused forever.
 
 | Category | Count | Highlights |
 |---|---|---|
