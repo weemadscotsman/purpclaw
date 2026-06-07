@@ -4020,6 +4020,7 @@ case 'registry': return cmdRegistry(args);
     case 'roster':    return loadCmd('roster').run(args, sharedCtx());
     case 'training':  return cmdTrainingFeedback(args);
     case 'idle':      return cmdIdleEngine(args);
+    case 'vector':    return cmdVectorBench(args);
     default:
       // Unknown command — treat as an inline task for convenience
       // e.g. `purpclaw fix the auth bug` → same as `purpclaw run "fix the auth bug"`
@@ -4153,6 +4154,37 @@ async function cmdIdleEngine(args) {
 
   console.log(col(C.yellow, `\n  Unknown subcommand: ${sub}`));
   console.log(col(C.gray, '  Try: status, trigger\n'));
+}
+
+// ── vector bench ──────────────────────────────────────────────────────────
+async function cmdVectorBench(args) {
+  const sub = (args[0] || 'bench').toLowerCase();
+  
+  if (sub === 'bench' || sub === 'run') {
+    const benchPath = path.join(PURP_DIR, 'bin', 'purpclaw-vector-bench.js');
+    const count = args[1] || '1000';
+    const dim = args[2] || '768';
+    const topK = args[3] || '10';
+    const cmd = ['node', benchPath, count, dim, topK];
+    const child = trackedSpawn(cmd[0], cmd.slice(1), { tag: 'vector-bench', stdio: 'inherit', timeoutMs: 120000 });
+    child.on('exit', code => { if (code !== 0) console.log(col(C.red, `\n  ✗ Bench exited with code ${code}\n`)); });
+    return;
+  }
+
+  if (sub === 'status') {
+    const VECTOR = require(path.join(PURP_DIR, 'lib', 'vector'));
+    const s = VECTOR.status();
+    console.log('');
+    console.log('  🦀  VECTOR PROVIDER STATUS');
+    console.log('  ══════════════════════════');
+    console.log(`  Default:    ${s.defaultProvider}`);
+    console.log(`  FAISS:      ${s.faiss?.ready ? col(C.green, '● ONLINE') : col(C.yellow, '○ no index')} (${s.faiss?.indexed || 0} indexed, ${s.faiss?.tombstones || 0} tombstoned)`);
+    console.log(`  TurboVec:   ${col(C.yellow, '◌ PARKED — requires AVX2 CPU')}`);
+    console.log('');
+    return;
+  }
+
+  console.log(col(C.yellow, `\n  Unknown subcommand: ${sub}\n  Try: bench, status\n`));
 }
 
 // ── bars ─────────────────────────────────────────────────────────────────────
