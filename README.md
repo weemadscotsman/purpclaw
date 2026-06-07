@@ -379,6 +379,49 @@ The pipeline exists. It's hungry. Run the stack, let agents work, feed the buffe
 
 ---
 
+## Personal Model Growth
+
+> **We don't take your data. We help you feed it to your own AI until it becomes a statistically significant version of your bullshit.**
+
+Every company collects your data to train their models. PurpClaw collects everything they would — every prompt, every correction, every "no, do it this way," every preference — but keeps it on your drive. Your data trains YOUR model on YOUR hardware. Zero cloud. Zero telemetry. The consequences remain entirely your fault.
+
+```
+You use PurpClaw → every interaction captured → personal dataset builds
+      ↓
+purpclaw lora train --personal --merge → your model now knows your preferences
+      ↓
+Next session: it uses TypeScript because you corrected it last time.
+It uses pnpm because you told it to. It deploys to staging first.
+It starts finishing your thoughts. We recommend not thinking anything embarrassing.
+```
+
+**What gets captured** (`lib/user-feedback.js`):
+- Corrections — you reject agent output, provide better version
+- Preferences — "always use dark theme," "prefer pnpm over npm"
+- Edits — you change what the agent wrote
+- Workflows — repeated multi-step patterns
+
+**Commands:**
+```bash
+purpclaw training feedback status     # see how many corrections captured
+purpclaw lora status                  # personal data alongside general data
+purpclaw lora train --personal        # train on YOUR corrections
+purpclaw lora train --personal --merge  # train + merge into active model
+purpclaw training feedback off        # disable capture (PURPCLAW_FEEDBACK_OFF=1)
+purpclaw training feedback reset      # wipe all personal data
+```
+
+**The training:**
+- Corrections → `user: (what agent did wrong)` / `assistant: (what you wanted)`
+- Preferences → `system: user prefers X` / `user: acknowledge`
+- Runs the same QLoRA pipeline as the general ratchet
+- Personal adapter saved separately, can be merged with general or kept independent
+- Minimum 3 examples to train. No maximum. Feed it until it sounds like you.
+
+No company spies on you. You spy on yourself, then weaponize it.
+
+---
+
 ## Mochi Companion
 
 A persistent digital pet. 18 species (duck, goose, blob, cat, dragon, octopus, owl, penguin, turtle, snail, ghost, axolotl, capybara, cactus, robot, rabbit, mushroom, chonk). 3 animation frames per species. 6 eye expressions (· ✦ × ◉ @ °). 8 hats (crown, tophat, propeller, halo, wizard, beanie, tinyduck). Lives in `lib/mochi-sprites.js` (421 lines). Shared across CLI, TUI, and WebUI via `/api/mochi`. State persisted to `agent_work/mochi.json`. Feed Mochi in the browser, the terminal sprite gets happy.

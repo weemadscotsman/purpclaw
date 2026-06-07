@@ -1771,25 +1771,41 @@ async function cmdLora(args) {
   const sub = (args[0] || 'help').toLowerCase();
   const path_mod = require('path');
 
+  // ── Parse flags ──────────────────────────────────────────────────────
+  const flags = { personal: false, merge: false };
+  const cleanArgs = args.filter(a => {
+    if (a === '--personal') { flags.personal = true; return false; }
+    if (a === '--merge') { flags.merge = true; return false; }
+    return true;
+  });
+
   console.log('');
-  console.log(`  \x1b[1m\x1b[35m🧠  PURPCLAW LORA\x1b[0m  \x1b[90m· LoRA fine-tuning pipeline\x1b[0m`);
+  if (flags.personal) {
+    console.log(`  \\x1b[1m\\x1b[35m🧠  PURPCLAW LORA — PERSONAL PASS\\x1b[0m  \\x1b[90m· training on YOUR corrections\\x1b[0m`);
+  } else {
+    console.log(`  \\x1b[1m\\x1b[35m🧠  PURPCLAW LORA\\x1b[0m  \\x1b[90m· LoRA fine-tuning pipeline\\x1b[0m`);
+  }
   console.log('');
 
   if (sub === 'help' || sub === '--help' || sub === '-h') {
-    console.log(`  \x1b[36musage:\x1b[0m`);
+    console.log(`  \\x1b[36musage:\\x1b[0m`);
     console.log(`    purpclaw lora status`);
     console.log(`    purpclaw lora train [options]`);
+    console.log(`    purpclaw lora train --personal [options]     train on YOUR corrections`);
+    console.log(`    purpclaw lora train --personal --merge        train + merge into active model`);
     console.log('');
-    console.log(`  \x1b[36mtrain options:\x1b[0m`);
-    console.log(`    --base HF_MODEL       base model (default: Qwen/Qwen2.5-1.5B-Instruct)`);
-    console.log(`    --epochs N            training epochs (default: 1)`);
-    console.log(`    --batch-size N        per-device batch size (default: 4)`);
-    console.log(`    --min-examples N      minimum training examples (default: 10)`);
-    console.log(`    --quant NAME          GGUF quant (default: q4_k_m)`);
-    console.log(`    --ollama-name NAME    output model name (default: purpclaw-quill)`);
-    console.log(`    --skip-export         train only, no merge/gguf/ollama`);
-    console.log(`    --skip-merge          skip merge step`);
-    console.log(`    --dry-run             show plan, don't train`);
+    console.log(`  \\x1b[36mtrain options:\\x1b[0m`);
+    console.log(`    --personal             use personal feedback data (corrections/prefs)`);
+    console.log(`    --merge                merge LoRA into base model after training`);
+    console.log(`    --base HF_MODEL        base model (default: Qwen/Qwen2.5-1.5B-Instruct)`);
+    console.log(`    --epochs N             training epochs (default: 1)`);
+    console.log(`    --batch-size N         per-device batch size (default: 4)`);
+    console.log(`    --min-examples N       minimum training examples (default: 10)`);
+    console.log(`    --quant NAME           GGUF quant (default: q4_k_m)`);
+    console.log(`    --ollama-name NAME     output model name (default: purpclaw-quill)`);
+    console.log(`    --skip-export          train only, no merge/gguf/ollama`);
+    console.log(`    --skip-merge           skip merge step`);
+    console.log(`    --dry-run              show plan, don't train`);
     console.log('');
     return;
   }
@@ -1804,29 +1820,89 @@ async function cmdLora(args) {
 
     const examples = fs.existsSync(rawDir) ?
       fs.readdirSync(rawDir).filter(f => f.endsWith('.ndjson'))
-        .reduce((s, f) => s + fs.readFileSync(require('path').join(rawDir, f), 'utf-8').split('\n').filter(Boolean).length, 0)
+        .reduce((s, f) => s + fs.readFileSync(require('path').join(rawDir, f), 'utf-8').split('\\n').filter(Boolean).length, 0)
       : 0;
 
-    console.log(`  \x1b[36mtraining dir:\x1b[0m    ${trainDir}`);
-    console.log(`  \x1b[36mraw examples:\x1b[0m    ${examples} \x1b[90m(across .ndjson files in raw/)\x1b[0m`);
-    console.log(`  \x1b[36madapters:\x1b[0m        ${fs.existsSync(adapters) ? fs.readdirSync(adapters).length + ' dirs' : 'none'}`);
-    console.log(`  \x1b[36mmerged:\x1b[0m          ${fs.existsSync(merged) ? fs.readdirSync(merged).length + ' dirs' : 'none'}`);
-    console.log(`  \x1b[36mgguf:\x1b[0m            ${fs.existsSync(gguf) ? fs.readdirSync(gguf).filter(f => f.endsWith('.gguf')).length + ' files' : 'none'}`);
+    console.log(`  \\x1b[36mtraining dir:\\x1b[0m    ${trainDir}`);
+    console.log(`  \\x1b[36mraw examples:\\x1b[0m    ${examples} \\x1b[90m(across .ndjson files in raw/)\\x1b[0m`);
+    console.log(`  \\x1b[36madapters:\\x1b[0m        ${fs.existsSync(adapters) ? fs.readdirSync(adapters).length + ' dirs' : 'none'}`);
+    console.log(`  \\x1b[36mmerged:\\x1b[0m          ${fs.existsSync(merged) ? fs.readdirSync(merged).length + ' dirs' : 'none'}`);
+    console.log(`  \\x1b[36mgguf:\\x1b[0m            ${fs.existsSync(gguf) ? fs.readdirSync(gguf).filter(f => f.endsWith('.gguf')).length + ' files' : 'none'}`);
     console.log('');
-    if (examples < 10) {
-      console.log(`  \x1b[33m⚠\x1b[0m  need at least 10 examples to train. let the runtime accumulate trajectories.`);
+
+    // ── Personal training data ──────────────────────────────────────
+    let personalStats;
+    try { personalStats = require(path.join(PURP_DIR, 'lib', 'training', 'personal-dataset')).stats(); }
+    catch { personalStats = { corrections: 0, preferences: 0, edits: 0, readyForTraining: false }; }
+
+    const personalTotal = personalStats.corrections + personalStats.preferences + personalStats.edits;
+    console.log(`  \\x1b[36mpersonal data:\\x1b[0m   ${personalTotal} examples (${personalStats.corrections} corrections, ${personalStats.preferences} preferences, ${personalStats.edits} edits)`);
+    if (personalTotal >= 10) {
+      console.log(`  \\x1b[32m✓\\x1b[0m  personal data ready. run: \\x1b[36mpurpclaw lora train --personal\\x1b[0m`);
+    } else if (personalTotal > 0) {
+      console.log(`  \\x1b[33m⟳\\x1b[0m  collecting personal data... (${personalTotal}/10, need ${10-personalTotal} more)`);
     } else {
-      console.log(`  \x1b[32m✓\x1b[0m  ready to train. run: \x1b[36mpurpclaw lora train\x1b[0m`);
+      console.log(`  \\x1b[90m○\\x1b[0m  no personal data yet. use PurpClaw normally — corrections auto-capture`);
+    }
+    console.log('');
+    if (examples < 10 && personalTotal < 10) {
+      console.log(`  \\x1b[33m⚠\\x1b[0m  need at least 10 examples to train (general or personal). let the runtime accumulate.`);
     }
     console.log('');
     return;
   }
 
   if (sub === 'train') {
+    // ── Personal training pass ──────────────────────────────────────
+    if (flags.personal) {
+      const pd = require(path.join(PURP_DIR, 'lib', 'training', 'personal-dataset'));
+      const exported = pd.exportToFile('chatml');
+      if (!exported.ready) {
+        console.log(`  \\x1b[33m⚠\\x1b[0m  ${exported.reason}`);
+        console.log(`  \\x1b[90mUse PurpClaw normally — every correction auto-captures to ${pd.FEEDBACK_DIR}\\x1b[0m`);
+        console.log('');
+        return;
+      }
+      console.log(`  \\x1b[36mpersonal dataset:\\x1b[0m ${exported.count} examples → ${exported.path}`);
+      console.log('');
+
+      // Write a personal-specific training script wrapper
+      const personalScript = path.join(PURP_DIR, 'scripts', 'lora-train-personal.py');
+      // Use the existing lora-train.py with --dataset pointing to personal data
+      const scriptPath = path.join(__dirname, '..', 'scripts', 'lora-train.py');
+      const py = process.env.PYTHON_BIN || 'C:/Users/Admin/AppData/Local/Programs/Python/Python311/python.exe';
+      const cmdArgs = [
+        py, scriptPath,
+        '--personal-dataset', exported.path,
+        ...(flags.merge ? ['--merge'] : []),
+        ...cleanArgs.slice(1),
+      ];
+      console.log(`  \\x1b[36mstarting personal training:\\x1b[0m  ${cmdArgs.join(' ')}\\n`);
+      const child = trackedSpawn(cmdArgs[0], cmdArgs.slice(1), {
+        tag: 'lora-train-personal',
+        timeoutMs: 30 * 60_000,
+        stdio: 'inherit',
+        cwd: process.cwd(),
+        env: { ...process.env, PURPCLAW_TRAINING_MODE: 'personal', PURPCLAW_PERSONAL_DATASET: exported.path },
+      });
+      child.on('exit', code => {
+        console.log('');
+        if (code === 0) {
+          console.log(`  \\x1b[32m✓\\x1b[0m  Personal LoRA training complete.`);
+          console.log(`  \\x1b[90mYour model now knows your preferences. Every correction made it smarter.\\x1b[0m`);
+        } else {
+          console.log(`  \\x1b[31m✗\\x1b[0m  personal training exited with code ${code}`);
+        }
+        console.log('');
+      });
+      return;
+    }
+
+    // ── General training pass ───────────────────────────────────────
     const scriptPath = path.join(__dirname, '..', 'scripts', 'lora-train.py');
     const py = process.env.PYTHON_BIN || 'C:/Users/Admin/AppData/Local/Programs/Python/Python311/python.exe';
-    const cmd = [py, scriptPath, ...args.slice(1)];
-    console.log(`  \x1b[36mstarting:\x1b[0m  ${cmd.join(' ')}\n`);
+    const cmd = [py, scriptPath, ...cleanArgs.slice(1)];
+    console.log(`  \\x1b[36mstarting:\\x1b[0m  ${cmd.join(' ')}\\n`);
     const child = trackedSpawn(cmd[0], cmd.slice(1), { 
       tag: 'lora-train',
       timeoutMs: 30 * 60_000,  // 30 min for LoRA training
@@ -1836,10 +1912,10 @@ async function cmdLora(args) {
     child.on('exit', code => {
       console.log('');
       if (code === 0) {
-        console.log(`  \x1b[32m✓\x1b[0m  LoRA pipeline complete.`);
-        console.log(`  \x1b[90mnext:\x1b[0m  pm2 restart purpclaw-api  \x1b[90m— to pick up the new LLM_MODEL\x1b[0m`);
+        console.log(`  \\x1b[32m✓\\x1b[0m  LoRA pipeline complete.`);
+        console.log(`  \\x1b[90mnext:\\x1b[0m  pm2 restart purpclaw-api  \\x1b[90m— to pick up the new LLM_MODEL\\x1b[0m`);
       } else {
-        console.log(`  \x1b[31m✗\x1b[0m  pipeline exited with code ${code}`);
+        console.log(`  \\x1b[31m✗\\x1b[0m  pipeline exited with code ${code}`);
       }
       console.log('');
     });
@@ -3942,6 +4018,7 @@ case 'registry': return cmdRegistry(args);
     case 'heal':
     case 'recover':   return loadCmd('heal').run(args, sharedCtx());
     case 'roster':    return loadCmd('roster').run(args, sharedCtx());
+    case 'training':  return cmdTrainingFeedback(args);
     default:
       // Unknown command — treat as an inline task for convenience
       // e.g. `purpclaw fix the auth bug` → same as `purpclaw run "fix the auth bug"`
@@ -3957,6 +4034,76 @@ case 'registry': return cmdRegistry(args);
     return sb.wrap(dispatch);
   }
   return dispatch();
+}
+
+// ── training feedback — personal model growth ─────────────────────────────
+async function cmdTrainingFeedback(args) {
+  const sub = (args[0] || 'status').toLowerCase();
+  const FB = require(path.join(PURP_DIR, 'lib', 'user-feedback'));
+
+  if (sub === 'status') {
+    const s = FB.status();
+    console.log('');
+    console.log('  🧠  PERSONAL MODEL GROWTH');
+    console.log('  ═════════════════════════');
+    console.log(`  Status:      ${s.enabled ? col(C.green, '● ACTIVE') : col(C.yellow, '○ OFF')}`);
+    console.log(`  Session:     ${s.sessionId.substring(0, 8)}...`);
+    console.log(`  Captures:    ${s.stats.total} total`);
+    console.log(`  Corrections: ${s.stats.corrections} (need ≥10 for training)`);
+    console.log(`  Preferences: ${s.stats.preferences}`);
+    console.log(`  Directory:   ${s.feedbackDir}`);
+    console.log('');
+    if (s.recentFiles.length > 0) {
+      console.log('  Recent capture files:');
+      for (const f of s.recentFiles) console.log(`    ${f.file} — ${f.lines} records, ${(f.size/1024).toFixed(1)}KB`);
+      console.log('');
+    }
+    console.log(`  ${col(C.cyan, s.trainingHint)}`);
+    // ── Personal dataset readiness ─────────────────────────────────
+    try {
+      const pd = require(path.join(PURP_DIR, 'lib', 'training', 'personal-dataset'));
+      const pstats = pd.stats();
+      console.log(`  ${col(C.magenta, 'Personal data:')} ${pstats.corrections} corrections, ${pstats.preferences} preferences, ${pstats.edits} edits`);
+    } catch {}
+    console.log('');
+    console.log(col(C.gray, '  purpclaw training feedback reset    clear all data'));
+    console.log(col(C.gray, '  purpclaw training feedback export    export for fine-tuning'));
+    console.log(col(C.gray, '  purpclaw training feedback off       disable capture'));
+    console.log('');
+    return;
+  }
+
+  if (sub === 'reset') {
+    const r = FB.reset();
+    console.log(col(C.green, `\n  ✓ Feedback data cleared. New session: ${r.sessionId.substring(0, 8)}...\n`));
+    return;
+  }
+
+  if (sub === 'export') {
+    const format = args[1] || 'chatml';
+    const data = FB.exportTrainingData(format);
+    const outPath = path.join(FB.FEEDBACK_DIR, `personal-training-${format}.json`);
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    fs.writeFileSync(outPath, JSON.stringify(data, null, 2), 'utf8');
+    console.log(col(C.green, `\n  ✓ Exported ${data.length} training examples to ${outPath}`));
+    console.log(col(C.gray, `  Format: ${format}  |  Ready for: purpclaw lora train --dataset ${outPath}\n`));
+    return;
+  }
+
+  if (sub === 'off') {
+    process.env.PURPCLAW_FEEDBACK_OFF = '1';
+    console.log(col(C.yellow, '\n  ○ Personal model growth DISABLED. Set PURPCLAW_FEEDBACK_OFF=0 to re-enable.\n'));
+    return;
+  }
+
+  if (sub === 'on') {
+    delete process.env.PURPCLAW_FEEDBACK_OFF;
+    console.log(col(C.green, '\n  ● Personal model growth ENABLED. All interactions will be captured locally.\n'));
+    return;
+  }
+
+  console.log(col(C.yellow, `\n  Unknown subcommand: ${sub}`));
+  console.log(col(C.gray, '  Try: status, reset, export, on, off\n'));
 }
 
 // ── bars ─────────────────────────────────────────────────────────────────────
