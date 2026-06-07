@@ -4019,6 +4019,7 @@ case 'registry': return cmdRegistry(args);
     case 'recover':   return loadCmd('heal').run(args, sharedCtx());
     case 'roster':    return loadCmd('roster').run(args, sharedCtx());
     case 'training':  return cmdTrainingFeedback(args);
+    case 'idle':      return cmdIdleEngine(args);
     default:
       // Unknown command — treat as an inline task for convenience
       // e.g. `purpclaw fix the auth bug` → same as `purpclaw run "fix the auth bug"`
@@ -4104,6 +4105,54 @@ async function cmdTrainingFeedback(args) {
 
   console.log(col(C.yellow, `\n  Unknown subcommand: ${sub}`));
   console.log(col(C.gray, '  Try: status, reset, export, on, off\n'));
+}
+
+// ── idle engine — the beast that wakes when you stop typing ──────────────
+async function cmdIdleEngine(args) {
+  const sub = (args[0] || 'status').toLowerCase();
+
+  if (sub === 'trigger' || sub === 'run') {
+    const IE = require(path.join(PURP_DIR, 'lib', 'idle-engine'));
+    console.log(col(C.cyan, '\n  🦀  Forcing idle optimization cycle...\n'));
+    const results = await IE.forceTrigger();
+    console.log('');
+    console.log('  Results:');
+    for (const [phase, r] of Object.entries(results.phases || {})) {
+      const icon = r.ok ? col(C.green, '✓') : col(C.yellow, '○');
+      console.log(`    ${icon} ${phase}: ${r.count ? r.count + ' examples' : r.reason || r.error || 'done'}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'status') {
+    let IE;
+    try { IE = require(path.join(PURP_DIR, 'lib', 'idle-engine')); } catch { IE = null; }
+    if (!IE) { console.log(col(C.yellow, '\n  Idle engine not available.\n')); return; }
+
+    const s = IE.status();
+    console.log('');
+    console.log('  🦀  IDLE ENGINE — the beast that wakes when you stop typing');
+    console.log('  ════════════════════════════════════════════════════════');
+    console.log(`  Status:        ${s.active ? col(C.green, '● USER ACTIVE') : col(C.magenta, '◌ IDLE — beast watching')}`);
+    console.log(`  Sessions:      ${s.sessionCount}`);
+    console.log(`  Idle cycles:   ${s.idleCycles}`);
+    console.log(`  Last activity: ${s.lastActivityAt || 'never'}`);
+    console.log(`  Current phase: ${s.currentPhase || 'none'}`);
+    console.log(`  Idle delay:    ${s.idleDelayMs / 1000}s`);
+    console.log(`  Auto-train:    ${s.autoTrainEnabled ? col(C.green, 'ON') : col(C.yellow, 'OFF')} (min ${s.minNewForTrain} new examples)`);
+    console.log('');
+    console.log(`  Personal data: ${s.personalStats.corrections} corrections, ${s.personalStats.preferences} preferences`);
+    console.log(`  Ready to train: ${s.readyForAutoTrain ? col(C.green, '✓ YES') : col(C.yellow, `○ need ${s.minNewForTrain - (s.personalStats.corrections + s.personalStats.preferences + s.personalStats.edits)} more`)}`);
+    console.log('');
+    console.log(col(C.gray, '  purpclaw idle trigger    force optimization cycle now'));
+    console.log(col(C.gray, '  The engine fires automatically 30s after each session ends'));
+    console.log('');
+    return;
+  }
+
+  console.log(col(C.yellow, `\n  Unknown subcommand: ${sub}`));
+  console.log(col(C.gray, '  Try: status, trigger\n'));
 }
 
 // ── bars ─────────────────────────────────────────────────────────────────────
