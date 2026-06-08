@@ -985,6 +985,51 @@ async function cmdAudit(args) {
 }
 
 
+// ── embeddings ───────────────────────────────────────────────
+// Hosted vector embeddings via NVIDIA NIM (bge-m3, 1024-dim, free).
+async function cmdEmbeddings(args) {
+  const emb = require('../lib/embeddings');
+  const sub = args[0] || 'health';
+
+  if (sub === 'health') {
+    const h = await emb.health();
+    if (h.ok) {
+      console.log(`\n  ✓ Embeddings healthy`);
+      console.log(`    Model:    ${h.model}`);
+      console.log(`    Dim:      ${h.dim}`);
+      console.log(`    Endpoint: ${h.baseUrl}\n`);
+    } else {
+      console.log(`\n  ✗ Embeddings unavailable: ${h.reason}\n`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'embed') {
+    const text = args.slice(1).join(' ');
+    if (!text) {
+      console.log('\n  usage: purpclaw embeddings embed <text>\n');
+      process.exit(1);
+    }
+    try {
+      const v = await emb.embed(text, { inputType: 'query' });
+      const dim = v[0].length;
+      const head = v[0].slice(0, 5).map(x => x.toFixed(4)).join(', ');
+      const tail = v[0].slice(-5).map(x => x.toFixed(4)).join(', ');
+      console.log(`\n  ${dim}-dim vector for "${text.substring(0, 40)}${text.length > 40 ? '...' : ''}"`);
+      console.log(`  [${head}, ..., ${tail}]\n`);
+    } catch (e) {
+      console.log(`\n  ✗ ${e.message}\n`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  console.log('\n  purpclaw embeddings health    check bge-m3 connectivity');
+  console.log('  purpclaw embeddings embed <text>   embed text to 1024-dim vector\n');
+}
+
+
 // ── whoami ─────────────────────────────────────────────────
 // Self-introspection: polls live systems and describes itself.
 async function cmdWhoami(args) {
@@ -2948,6 +2993,21 @@ async function cmdDoctor(args) {
   add('service_registry.js', fs.existsSync(path.join(PURP_DIR, 'service_registry.js')), 'single service map');
   add('.env', fs.existsSync(path.join(PURP_DIR, '.env')), 'local keys/config');
 
+  // ── NVIDIA NIM probe (if --nim flag) ─────────────────────────
+  if (args.includes('--nim') || args.includes('--embeddings')) {
+    try {
+      const emb = require(path.join(PURP_DIR, 'lib', 'embeddings.js'));
+      const h = await emb.health();
+      if (h.ok) {
+        add('NVIDIA NIM bge-m3', true, `${h.model} · ${h.dim}-dim · ${h.baseUrl}`);
+      } else {
+        add('NVIDIA NIM bge-m3', false, h.reason || 'unreachable');
+      }
+    } catch (e) {
+      add('NVIDIA NIM bge-m3', false, e.message);
+    }
+  }
+
   try {
     const py = execSync('py -3.11 -c "import sys; print(sys.version.split()[0])"', { cwd: PURP_DIR, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] }).trim();
     add('Python 3.11', true, py);
@@ -4067,7 +4127,7 @@ async function main() {
     case 'chat':      return cmdChat(args);
     case 'run':       return cmdRun(args);
     case 'status':    return cmdStatus();
-    case 'doctor':    return cmdDoctor();
+    case 'doctor':    return cmdDoctor(args);
     case 'approve':   return cmdApprove(args);
     case 'reject':    return cmdReject(args);
     case 'jobs':      return cmdJobs(args);
@@ -4118,6 +4178,8 @@ case 'registry': return cmdRegistry(args);
     case 'release':    return cmdRelease(args);
     case 'health':     return cmdHealth(args);
     case 'identity':   return loadCmd('identity').run(args, sharedCtx());
+    case 'embeddings': return cmdEmbeddings(args);
+    case 'embed':      return cmdEmbeddings(['embed', ...args]);
     // ── Resurrected commands (lib/commands/) ──────────────────────────────
     case 'bughunt':    return loadCmd('bughunt').run(args, sharedCtx());
     case 'ctx-viz':
