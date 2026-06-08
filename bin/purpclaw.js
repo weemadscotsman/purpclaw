@@ -959,6 +959,22 @@ console.log(`  ${col(C.green, '✔')}  Pool service online`);
 }
 
 
+// ── health ───────────────────────────────────────────────────
+// Compact scorecard: tool count, services, vault, spend, memory, providers, deps, skills, updates.
+async function cmdHealth(args) {
+  const { run, formatText } = require('../lib/doctor');
+  const opts = { verbose: args.includes('--verbose') || args.includes('-v') };
+  if (args.includes('--json')) {
+    const r = await run(opts);
+    console.log(JSON.stringify(r, null, 2));
+    process.exit(r.score.fail > 0 ? 1 : 0);
+  }
+  const r = await run(opts);
+  console.log(formatText(r, opts.verbose));
+  process.exit(r.score.fail > 0 ? 1 : 0);
+}
+
+
 
 // ── resume ─────────────────────────────────────────────────────────────────────
 // Resume a previous session from agent_work/sessions/
@@ -3980,6 +3996,9 @@ case 'registry': return cmdRegistry(args);
     case 'show':
     case 'stack':
     case 'status':     return cmdStatus(args);
+    case 'doctor':     return cmdDoctor(args);
+    case 'health':     return cmdHealth(args);
+    case 'identity':   return loadCmd('identity').run(args, sharedCtx());
     // ── Resurrected commands (lib/commands/) ──────────────────────────────
     case 'bughunt':    return loadCmd('bughunt').run(args, sharedCtx());
     case 'ctx-viz':
