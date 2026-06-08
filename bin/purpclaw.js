@@ -985,6 +985,93 @@ async function cmdAudit(args) {
 }
 
 
+// ── release ────────────────────────────────────────────────
+//   purpclaw release keygen     — generate Ed25519 keypair
+//   purpclaw release sign <m>   — sign a manifest
+//   purpclaw release verify <m> — verify a manifest signature
+async function cmdRelease(args) {
+  const C = { cyan: '\x1b[36m', green: '\x1b[32m', yellow: '\x1b[33m', red: '\x1b[31m', gray: '\x1b[90m', white: '\x1b[97m', bold: '\x1b[1m', magenta: '\x1b[35m' };
+  const col = (c, s) => s;
+  const sub = (args[0] || 'status').toLowerCase();
+  const rest = args.slice(1);
+  const rs = require('../lib/release-sign');
+
+  if (sub === 'keygen') {
+    const kp = rs.generateAndStoreKeypair();
+    const pubB64 = kp.publicKeyDer.toString('base64');
+    console.log(`\n  ${col(C.green, '✓')} Ed25519 keypair generated`);
+    console.log(`  ${col(C.gray, 'Private:')} ${rs.KEYS_DIR}\\private.pem`);
+    console.log(`  ${col(C.gray, 'Public:')}  ${rs.KEYS_DIR}\\public.pem`);
+    console.log(`\n  ${col(C.yellow, 'Public key (DER, base64):')}`);
+    console.log(`  ${pubB64}`);
+    console.log(`\n  ${col(C.gray, 'Update signed-manifest.js PUBLIC_KEY_PEM with this value.')}\n`);
+    return;
+  }
+
+  if (sub === 'sign') {
+    const manifestPath = rest[0];
+    if (!manifestPath || !fs.existsSync(manifestPath)) {
+      console.log(`\n  ${col(C.yellow, 'usage:')} purpclaw release sign <manifest.json>\n`);
+      return;
+    }
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const result = rs.signManifest(manifest);
+    manifest.signature = result.signature;
+    manifest.publicKey = result.publicKey;
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+    console.log(`\n  ${col(C.green, '✓')} Signed ${manifestPath}`);
+    console.log(`  ${col(C.gray, 'Signature:')} ${result.signature.substring(0, 40)}...\n`);
+    return;
+  }
+
+  if (sub === 'verify') {
+    const manifestPath = rest[0];
+    if (!manifestPath || !fs.existsSync(manifestPath)) {
+      console.log(`\n  ${col(C.yellow, 'usage:')} purpclaw release verify <manifest.json>\n`);
+      return;
+    }
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const sig = manifest.signature;
+    if (!sig) {
+      console.log(`\n  ${col(C.red, '✗')} No signature in manifest\n`);
+      return;
+    }
+    // Strip signature and embedded publicKey before verifying so we get a
+    // true test of the stored key against the manifest body.
+    const toVerify = { ...manifest };
+    delete toVerify.signature;
+    delete toVerify.publicKey;
+    if (rs.verifyManifest(toVerify, sig)) {
+      console.log(`\n  ${col(C.green, '✓')} Valid signature\n`);
+    } else {
+      // Show more detail
+      const kp = rs.loadKeypair();
+      if (!kp) {
+        console.log(`\n  ${col(C.red, '✗')} No keypair found — run ${col(C.cyan, 'purpclaw release keygen')} first\n`);
+      } else {
+        console.log(`\n  ${col(C.red, '✗')} Invalid signature (stored key does not match signing key)\n`);
+      }
+    }
+    return;
+  }
+
+  // Show key status
+  const kp = rs.loadKeypair();
+  console.log(`\n  ${col(C.cyan, '🔐 RELEASE SIGNING')}\n`);
+  if (kp) {
+    console.log(`  ${col(C.green, '✓')} Keypair present`);
+    console.log(`  ${col(C.gray, '  Private:')} ${rs.KEYS_DIR}\\private.pem`);
+    console.log(`  ${col(C.gray, '  Public:')}  ${rs.KEYS_DIR}\\public.pem`);
+  } else {
+    console.log(`  ${col(C.yellow, '⚠')} No keypair found — run ${col(C.cyan, 'purpclaw release keygen')}\n`);
+  }
+  console.log(`  ${col(C.cyan, 'purpclaw release keygen')}          generate Ed25519 keypair`);
+  console.log(`  ${col(C.cyan, 'purpclaw release sign <file>')}     sign a manifest`);
+  console.log(`  ${col(C.cyan, 'purpclaw release verify <file>')}   verify a manifest signature`);
+  console.log('');
+}
+
+
 // ── resume ─────────────────────────────────────────────────────────────────────
 // Resume a previous session from agent_work/sessions/
 async function cmdResume(args) {
@@ -4007,6 +4094,7 @@ case 'registry': return cmdRegistry(args);
     case 'status':     return cmdStatus(args);
     case 'doctor':     return cmdDoctor(args);
     case 'audit':      return cmdAudit(args);
+    case 'release':    return cmdRelease(args);
     case 'health':     return cmdHealth(args);
     case 'identity':   return loadCmd('identity').run(args, sharedCtx());
     // ── Resurrected commands (lib/commands/) ──────────────────────────────
