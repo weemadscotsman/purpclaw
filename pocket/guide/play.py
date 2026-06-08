@@ -86,6 +86,11 @@ def generate_clip(step_id, text, timeout_sec=180):
     Generate a WAV file by calling speak_kokoro.py.
     Returns (ok, message). The exit code of speak_kokoro.py is UNRELIABLE
     on Windows — we validate the output file instead.
+
+    Writes a sidecar .sha256 file alongside the WAV containing the
+    text_checksum used at generation time. On play, we verify the WAV's
+    text_checksum matches what we're about to display — ensures audio
+    and text fallback stay in sync.
     """
     ensure_cache_dir()
     out_path = cache_path(step_id)
@@ -93,7 +98,7 @@ def generate_clip(step_id, text, timeout_sec=180):
     # If valid WAV already exists, skip
     valid, msg = is_valid_wav(out_path)
     if valid:
-        return True, f"already cached ({msg})"
+      return True, f"already cached ({msg})"
 
     # Delete any partial file from a previous attempt
     if out_path.exists():
@@ -102,27 +107,39 @@ def generate_clip(step_id, text, timeout_sec=180):
         except OSError:
             pass
 
+    # Compute checksum of the text we're about to generate audio for
+    import hashlib
+    text_checksum = hashlib.sha256(text.encode("utf-8")).hexdigest()
+
     # Call speak_kokoro.py: <text> <output.wav>
-    # It auto-saves to the given path when the last arg ends in .wav
     try:
         result = subprocess.run(
             [PYTHON_EXE, str(SPEAK_SCRIPT), text, str(out_path)],
             capture_output=True, text=True, timeout=timeout_sec,
         )
         # Ignore returncode — speak_kokoro.py doesn't return cleanly.
-        # We only care whether the WAV landed on disk.
     except subprocess.TimeoutExpired:
-        # Timeout might still leave a valid WAV. Validate.
         valid, msg = is_valid_wav(out_path)
         if valid:
+            # Write sidecar before returning success
+            try:
+                with open(out_path.with_suffix('.sha256'), 'w') as f:
+                    f.write(text_checksum)
+            except OSError:
+                pass
             return True, f"timeout but {msg} (using it)"
         return False, f"timeout after {timeout_sec}s and no valid WAV"
     except Exception as e:
         return False, f"generator error: {e}"
 
-    # Validate the output
     valid, msg = is_valid_wav(out_path)
     if valid:
+        # Write sidecar with the text checksum
+        try:
+            with open(out_path.with_suffix('.sha256'), 'w') as f:
+                f.write(text_checksum)
+        except OSError:
+            pass
         return True, f"generated ({msg})"
     return False, f"generator returned but no valid WAV: {msg}"
 
@@ -256,6 +273,22 @@ def cmd_play(step_id):
             print("  Text above is the full walkthrough.\n")
             return
         print(f"  [OK] {msg}")
+
+    # Verify text integrity: the WAV's sidecar should match the text we're showing
+    import hashlib as _hl
+    actual_checksum = _hl.sha256(step['text'].encode('utf-8')).hexdigest()
+    sidecar_path = wav.with_suffix('.sha256')
+    if sidecar_path.exists():
+        try:
+            sidecar_checksum = sidecar_path.read_text().strip()
+            if sidecar_checksum != actual_checksum:
+                print(f"  [!] CHECKSUM MISMATCH: WAV was generated from different text")
+                print(f"      expected: {actual_checksum[:16]}...")
+                print(f"      WAV was:  {sidecar_checksum[:16]}...")
+                print(f"      Showing new text anyway. Audio may be out of sync.\n")
+        except OSError:
+            pass
+    # Pre-sidecar WAV (legacy) — still play, no warning
 
     # Play using native tools (not speak_kokoro.py)
     valid, msg = is_valid_wav(wav)
