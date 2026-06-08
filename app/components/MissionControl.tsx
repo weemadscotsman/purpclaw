@@ -18,8 +18,9 @@ import { Onboarding, ONBOARD_KEY } from './Onboarding';
 import { LiveSystemMap } from './LiveSystemMap';
 import { SamplerPanel } from './SamplerPanel';
 import { AbliteratorPanel } from './AbliteratorPanel';
+import BridgePanel from './BridgePanel';
 
-type TabId = 'overview' | 'evolution' | 'graph' | 'agents' | 'tower' | 'swarm' | 'harness' | 'pipeline' | 'timeline' | 'gatekeeper' | 'cognitive' | 'command' | 'logs' | 'mochi' | 'sampler' | 'dream' | 'abliterator';
+type TabId = 'overview' | 'evolution' | 'graph' | 'agents' | 'tower' | 'swarm' | 'harness' | 'pipeline' | 'timeline' | 'gatekeeper' | 'cognitive' | 'command' | 'logs' | 'mochi' | 'sampler' | 'dream' | 'abliterator' | 'bridge';
 
 interface Tab {
   id: TabId;
@@ -43,6 +44,7 @@ const TABS: Tab[] = [
   { id: 'dream', label: 'Dream Swarm', icon: 'DR', stage: 'observe', purpose: 'Live altered-states WebGL swarm telemetry visualizer.' },
   { id: 'gatekeeper', label: 'Risk Gate', icon: 'GK', stage: 'control', purpose: 'Check safety gates, approvals, and blocked risky operations.' },
   { id: 'abliterator', label: 'Abliterator', icon: 'AB', stage: 'control', purpose: 'OBLITERATUS refusal weight excision and red-team sandbox.' },
+  { id: 'bridge', label: 'Dual AI Bridge', icon: 'BB', stage: 'control', purpose: 'Two AIs in parallel panes — debate, critique, merge, or A→B handoff. Single shared engine.' },
   { id: 'cognitive', label: 'Cognitive Mesh', icon: 'CG', stage: 'control', purpose: 'Use memory, rules, diagnostics, and reasoning lenses.' },
   { id: 'evolution', label: 'Self-Evolution', icon: 'EV', stage: 'control', purpose: 'Track the human-steers, harness-builds, loop-improves learning cycle.' },
   { id: 'graph', label: 'System Map', icon: 'SM', stage: 'control', purpose: 'Map system relationships across services, agents, workflows, and events.' },
@@ -90,6 +92,7 @@ const TAB_CODES: Record<TabId, string> = {
   sampler: 'SP',
   dream: 'DR',
   abliterator: 'AB',
+  bridge: 'BB',
 };
 
 type CommandMode = 'chat' | 'api' | 'kernel' | 'orchestrate' | 'tower' | 'research' | 'groupchat';
@@ -597,6 +600,11 @@ function tabPreviewData(tab: TabId, data: MissionData): { label: string; value: 
       { label: 'Excisions', value: 'active', ok: true },
       { label: 'Safety Mode', value: 'aligned', ok: true },
     ];
+    case 'bridge': return [
+      { label: 'Engine', value: 'one-brain', ok: true },
+      { label: 'Providers', value: '5 wired', ok: true },
+      { label: 'Modes', value: '7 (turn/send/debate/critique/merge/auto/stop)', ok: true },
+    ];
     default: return [{ label: tab, value: 'see panel', ok: true }];
   }
 }
@@ -934,6 +942,7 @@ function PanelContent({ tab, data, iframeRef }: { tab: TabId; data: MissionData;
       case 'mochi': return <MochiNarrator data={data} />;
       case 'dream': return <DreamControlPanel iframeRef={iframeRef || { current: null }} />;
       case 'abliterator': return <AbliteratorPanel />;
+      case 'bridge': return <BridgePanel />;
       default: return <OverviewPanel data={data} />;
     }
   })();
