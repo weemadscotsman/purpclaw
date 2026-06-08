@@ -985,6 +985,25 @@ async function cmdAudit(args) {
 }
 
 
+// ── whoami ─────────────────────────────────────────────────
+// Self-introspection: polls live systems and describes itself.
+async function cmdWhoami(args) {
+  const { whoami, formatText } = require('../lib/whoami');
+  const opts = {};
+  if (args.includes('--short') || args.includes('-s')) opts.short = true;
+  if (args.includes('--json')) opts.json = true;
+  const self = await whoami(opts);
+  if (opts.json) {
+    console.log(JSON.stringify(self, null, 2));
+  } else if (opts.short) {
+    console.log(`${self.name} v${self.version} — ${self.tagline}.`);
+    console.log(`  ${self.surfaces.cli.command}  ·  ${self.motto}`);
+  } else {
+    console.log(formatText(self));
+  }
+}
+
+
 // ── release ────────────────────────────────────────────────
 //   purpclaw release keygen     — generate Ed25519 keypair
 //   purpclaw release sign <m>   — sign a manifest
@@ -4094,6 +4113,8 @@ case 'registry': return cmdRegistry(args);
     case 'status':     return cmdStatus(args);
     case 'doctor':     return cmdDoctor(args);
     case 'audit':      return cmdAudit(args);
+    case 'whoami':
+    case 'about':      return cmdWhoami(args);
     case 'release':    return cmdRelease(args);
     case 'health':     return cmdHealth(args);
     case 'identity':   return loadCmd('identity').run(args, sharedCtx());
