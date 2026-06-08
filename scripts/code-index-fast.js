@@ -63,7 +63,7 @@ const vectors = [];
 const symbols = [];
 
 for (const f of files) {
-  let src;
+  let src = null;
   try { src = fs.readFileSync(f.path, 'utf-8'); } catch { continue; }
   const ext = path.extname(f.path).toLowerCase();
   const lines = src.split('\n');

@@ -972,7 +972,7 @@ async function spawnAgent(intent, target, workflow = null) {
   const agents = AGENT_BY_INTENT[intent] || [intent];
 
   // Context-aware retry: use the agent suggested by selfHealer.getRetryAgent()
-  let agentName;
+  let agentName = null;
   if (workflow?._retryAgent && agents.includes(workflow._retryAgent)) {
     agentName = workflow._retryAgent;
     log(`[SCORE] Retry override: using ${agentName} for ${intent}`);

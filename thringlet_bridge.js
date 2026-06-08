@@ -129,7 +129,7 @@ const server = http.createServer(async (req, res) => {
 
   // ── Bond a new Thringlet ──────────────────────────────────────────────────
   if (pathname === '/thringlets/bond' && req.method === 'POST') {
-    let body;
+    let body = null;
     try { body = await readBody(req); } catch { return send(res, 400, { error: 'invalid_json' }); }
     const archetypeId = String(body?.archetypeId || '').trim();
     if (!archetypeId) return send(res, 400, { error: 'archetypeId required' });
@@ -151,7 +151,7 @@ const server = http.createServer(async (req, res) => {
     const sub = idMatch[2];
 
     if (sub === 'interact' && req.method === 'POST') {
-      let body;
+      let body = null;
       try { body = await readBody(req); } catch { return send(res, 400, { error: 'invalid_json' }); }
       const kind = String(body?.kind || '').toLowerCase();
       if (!VALID_INTERACTIONS.has(kind)) {

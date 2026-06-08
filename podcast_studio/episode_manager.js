@@ -109,7 +109,7 @@ function startServer() {
  * Start a new episode
  */
 function startEpisode(topic = null) {
-  let selectedTopic;
+  let selectedTopic = null;
 
   if (topic) {
     topicPicker.injectTopic(topic, 'USER_INJECTED');

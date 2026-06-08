@@ -178,7 +178,7 @@ function scanFile(filePath, report) {
   const ext = path.extname(filePath).toLowerCase();
   if (!['.js', '.ts', '.jsx', '.tsx', '.json'].includes(ext)) return;
 
-  let content;
+  let content = null;
   try {
     content = fs.readFileSync(filePath, 'utf8');
   } catch (e) {
@@ -190,7 +190,7 @@ function scanFile(filePath, report) {
   // Run all checks
   for (const [category, checks] of Object.entries(CHECKS)) {
     for (const check of checks) {
-      let match;
+      let match = null;
       const regex = new RegExp(check.pattern.source, check.pattern.flags);
       while ((match = regex.exec(content)) !== null) {
         const lineNum = content.substring(0, match.index).split('\n').length;

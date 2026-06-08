@@ -801,7 +801,7 @@ async function coordinateMission(missionId, task, options = {}) {
               ].filter(Boolean).join('\n\n');
 
               // 2. Agent Execution: live tower dispatch only.
-              let spawnResult;
+              let spawnResult = null;
               if (executionMode === 'live') {
                 mission.metrics.towerCalls++;
                 spawnResult = await towerRequest('POST', '/api/spawn/await', {

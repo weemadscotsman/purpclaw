@@ -177,7 +177,7 @@ function checkOrchHealth(cb) {
 function parseTurns(history) {
   const turns = [];
   const regex = /### \[([^\]]+)\] ([^\n]+)\n([\s\S]*?)\n---\n/g;
-  let match;
+  let match = null;
   while ((match = regex.exec(history)) !== null) {
     turns.push({ timestamp: match[1], role: match[2], content: match[3] });
   }

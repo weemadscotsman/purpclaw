@@ -339,7 +339,7 @@ function subscribeSSE(port, pathname, onEvent, onError) {
 // ── PM2 wrapper ───────────────────────────────────────────────────────────────
 function pm2(args, opts = {}) {
   return new Promise((resolve, reject) => {
-    let command, finalArgs;
+    let command = null, finalArgs = null;
     if (process.env.PM2_BIN) {
       command   = process.env.PM2_BIN;
       finalArgs = args;
@@ -1513,7 +1513,7 @@ async function cmdRun(args) {
   console.log(`  ${col(C.gray, 'Task:')} ${task}\n`);
 
   // Subscribe to SSE stream BEFORE sending the task so we catch the first events
-  let streamReq;
+  let streamReq = null;
   const streamId = `cli-${Date.now()}`;
   let resolved = false;
 
@@ -2007,7 +2007,7 @@ async function cmdLora(args) {
     console.log('');
 
     // ── Personal training data ──────────────────────────────────────
-    let personalStats;
+    let personalStats = null;
     try { personalStats = require(path.join(PURP_DIR, 'lib', 'training', 'personal-dataset')).stats(); }
     catch { personalStats = { corrections: 0, preferences: 0, edits: 0, readyForTraining: false }; }
 
@@ -2104,7 +2104,7 @@ async function cmdLora(args) {
 async function cmdForge(args) {
   console.log(`\n  ${col(C.magenta + C.bold, '🦞 PERSONA FORGE — Soul Draw & Agent Creation')}\n`);
 
-  let forgeLib;
+  let forgeLib = null;
   try {
     forgeLib = require(path.join(PURP_DIR, 'lib', 'persona-forge.js'));
   } catch (e) {
@@ -2114,7 +2114,7 @@ async function cmdForge(args) {
 
   // Draw soul from gacha
   console.log(col(C.gray, '  Drawing soul from gacha (8,000,000 combinations)...\n'));
-  let soul;
+  let soul = null;
   try {
     soul = forgeLib.drawSoul();
   } catch (e) {
@@ -2154,7 +2154,7 @@ async function cmdForge(args) {
 
   // Forge the agent
   console.log(col(C.gray, `  Forging ${agentName}...\n`));
-  let result;
+  let result = null;
   try {
     result = forgeLib.forge(agentName, soul);
   } catch (e) {
@@ -3051,7 +3051,7 @@ async function cmdDoctor(args) {
     const pm2Online = pm2Info && pm2Info.status === 'online';
 
     // Detect split-brain conditions
-    let detail;
+    let detail = null;
     if (online && pm2Available && pm2Name && !pm2Online) {
       detail = `online :${service.healthPort}  ⚠ ORPHAN (not under PM2)`;
       orphans.push({ name: service.name, port: service.healthPort, pm2: pm2Name });
@@ -4328,7 +4328,7 @@ async function cmdIdleEngine(args) {
   }
 
   if (sub === 'status') {
-    let IE;
+    let IE = null;
     try { IE = require(path.join(PURP_DIR, 'lib', 'idle-engine')); } catch { IE = null; }
     if (!IE) { console.log(col(C.yellow, '\n  Idle engine not available.\n')); return; }
 
@@ -4565,7 +4565,7 @@ async function cmdModel(args) {
     console.log(`  Swarm:        ${col(C.cyan, info.swarm.provider).padEnd(20)} ${col(C.green, info.swarm.model)}`);
     console.log('');
     // Read model_registry.json for job routing
-    let registry;
+    let registry = null;
     try {
       registry = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'model_registry.json'), 'utf8'));
     } catch { registry = null; }

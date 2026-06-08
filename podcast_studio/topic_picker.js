@@ -80,7 +80,7 @@ function agentProposeTopic(agentId) {
   const category = pickCategory();
 
   // Agent-specific topic bias based on personality
-  let topic;
+  let topic = null;
   if (agentId === 'goose') {
     topic = TOPIC_POOLS.CHAOS[Math.floor(Math.random() * TOPIC_POOLS.CHAOS.length)];
   } else if (agentId === 'hermes') {

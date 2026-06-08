@@ -116,7 +116,7 @@ function sendToWorker(workerId, continuationMessage) {
   const workerStateFile = path.join(PURP_DIR, 'swarm_workers', `worker_${workerId}_state.json`);
   if (!fs.existsSync(workerStateFile)) return { success: false, error: 'Worker state not found' };
 
-  let workerState;
+  let workerState = null;
   try {
     workerState = JSON.parse(fs.readFileSync(workerStateFile, 'utf8'));
   } catch {

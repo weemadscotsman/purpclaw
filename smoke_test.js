@@ -73,7 +73,7 @@ async function checkService(svc) {
   log(`Checking ${svc.name} (${svc.type})...`);
   
   try {
-    let result;
+    let result = null;
     if (svc.type === 'http') {
       result = await checkHttp(svc.port, svc.url.replace(`http://localhost:${svc.port}`, ''));
     } else if (svc.type === 'tcp') {

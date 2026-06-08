@@ -121,7 +121,7 @@ function readBody(req) {
 // ── Route handlers ────────────────────────────────────────────────────────────
 
 async function handleRun(req, res) {
-  let body;
+  let body = null;
   try { body = await readBody(req); }
   catch { return send(res, 400, { error: 'invalid_json' }); }
 

@@ -349,7 +349,7 @@ async function composerContextHandler(req, res) {
 //   done   → {reply, model, providerStatus, kernelJobId?}
 //   error  → {error}
 async function handleChatStream(req, res) {
-  let body;
+  let body = null;
   try { body = await parseBody(req); }
   catch (e) {
     sseStart(res);
@@ -429,7 +429,7 @@ async function handleChatStream(req, res) {
 //   done     → {ok, agents: [...], synthesis: {content, model}}
 //   error    → {error, agentId?}
 async function handleChatSwarm(req, res) {
-  let body;
+  let body = null;
   try { body = await parseBody(req); }
   catch (e) {
     sseStart(res);
@@ -908,7 +908,7 @@ async function executeTool(name, args) {
   ebCalledReq.write(ebCalledPayload);
   ebCalledReq.end();
 
-  let result;
+  let result = null;
   if (loadedSkills[name]) {
     try {
       const res = await loadedSkills[name](args, { ps, psScript, cmd, ok, execAsync, config: { PURP_DIR, SKILLS_DIR } });
@@ -1578,7 +1578,7 @@ if ($hwnd -ne [IntPtr]::Zero) {
     case 'browser_get_content': {
       try {
         const page = await getBrowserPage();
-        let text;
+        let text = null;
         if (args.selector) text = await page.locator(args.selector).first().textContent({ timeout: 5000 });
         else text = await page.locator('body').textContent({ timeout: 5000 });
         const maxLen = args.max_length || 3000;
@@ -1620,7 +1620,7 @@ if ($hwnd -ne [IntPtr]::Zero) {
       try {
         const ctx = await getBrowserContext();
         const pages = ctx.pages();
-        let target;
+        let target = null;
         if (args.index !== undefined && args.index < pages.length) target = pages[args.index];
         else if (args.title) target = pages.find(p => p.url().includes(args.title) || true);
         if (target) { await target.close(); return ok('Tab closed'); }
@@ -2053,7 +2053,7 @@ public class Audio {
       try {
         const mgr = args.manager.toLowerCase();
         const pkg = san(args.packages);
-        let cmdStr;
+        let cmdStr = null;
         if (mgr === 'pip') cmdStr = `pip install ${pkg} --quiet`;
         else if (mgr === 'npm') cmdStr = `npm install ${pkg}`;
         else if (mgr === 'choco') cmdStr = `choco install ${pkg} -y`;
@@ -2293,7 +2293,7 @@ function connectWS() {
   ws.on('message', async (data) => {
     try {
       const raw = data.toString();
-      let parsed;
+      let parsed = null;
       try { parsed = JSON.parse(raw); } catch (_) { parsed = {}; }
 
       // Handle MCP JSON-RPC protocol messages
@@ -2415,7 +2415,7 @@ function startLocalTcpServer() {
     let buffer = '';
     socket.on('data', async (data) => {
       buffer += data.toString();
-      let newline;
+      let newline = null;
       while ((newline = buffer.indexOf('\n')) !== -1) {
         const line = buffer.slice(0, newline).trim();
         buffer = buffer.slice(newline + 1);

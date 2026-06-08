@@ -18,7 +18,7 @@ const COMPANION_SWARM_PATH = path.join(PURP_DIR, 'companion_swarm.js');
 const CONTROL_API_URL = 'http://localhost:7780';
 
 // Load companion swarm
-let companionSwarm;
+let companionSwarm = null;
 try {
   companionSwarm = require(COMPANION_SWARM_PATH);
 } catch(e) {
@@ -423,7 +423,7 @@ async function runScheduler(options = {}) {
     return;
   }
 
-  let watchInterval;
+  let watchInterval = null;
   // Execute tasks
   if (daemon) {
     console.log('[SCHEDULER] 🔄 Running in DAEMON mode - watching for new tasks');

@@ -19,7 +19,7 @@ const cleanupJobIds = new Set();
 
 function request(method, rawUrl, body) {
   return new Promise((resolve) => {
-    let target;
+    let target = null;
     try {
       target = new URL(rawUrl);
     } catch {
