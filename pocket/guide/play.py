@@ -122,7 +122,20 @@ def cmd_play(step_id):
         return
     step = scripts["scripts"][step_id]
     print(f"\n  ▶ {step['title']}\n")
-    play_clip(step_id)
+
+    # Always show the text — it's the fallback when audio fails
+    print(f"  {'-' * 60}")
+    text = step["text"]
+    # Wrap to ~70 chars
+    import textwrap
+    for line in textwrap.wrap(text, width=70):
+        print(f"  {line}")
+    print(f"  {'-' * 60}\n")
+
+    # Try to play audio (best-effort)
+    played = play_clip(step_id)
+    if not played:
+        print(f"  {col(C.yellow, '⚠ Audio playback failed — text above is the full walkthrough')}\n")
 
 
 def cmd_all():
