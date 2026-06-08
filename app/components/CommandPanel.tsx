@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import type { MissionData } from '../hooks/useMissionData';
 import { ComposerInput } from './composer';
+import ToolCallBadge from './ToolCallBadge';
 
 // ── Mochi Narrator ────────────────────────────────────────────────────────────
 
@@ -567,6 +568,9 @@ interface Msg {
   planState?: 'pending' | 'approved' | 'rejected' | 'executing' | 'done';
   planGoal?: string;
   planStepResults?: { step: PlanStep; ok: boolean; summary: string }[];
+  // Tool calls performed by the agent while producing this reply.
+  // Rendered as animated ToolCallBadges in the chat bubble.
+  toolCalls?: { tool: string; args?: any; status: 'running' | 'success' | 'failure'; result?: string; error?: string; durationMs?: number }[];
 }
 
 interface PlanStep {
@@ -1537,13 +1541,38 @@ export function CommandPanel({ data }: { data: MissionData }) {
         fullReply += data.content || '';
         model = data.model || model;
         updateMsg(msgId, { content: fullReply, meta: `streaming · ${model}`, pending: true });
+      } else if (ev === 'tool-call') {
+        // Animate a new tool badge in
+        const tc = {
+          tool: data.tool,
+          args: data.args,
+          status: 'running' as const,
+        };
+        const existing = (messages.find(m => m.id === msgId)?.toolCalls) || [];
+        updateMsg(msgId, { toolCalls: [...existing, tc] });
+      } else if (ev === 'tool-result') {
+        // Mark the last running call as success/failure
+        const current = messages.find(m => m.id === msgId)?.toolCalls || [];
+        const updated = current.map((c, i) => i === current.length - 1
+          ? { ...c, status: data.ok ? 'success' as const : 'failure' as const, result: data.content, error: data.error, durationMs: data.durationMs }
+          : c);
+        updateMsg(msgId, { toolCalls: updated });
       } else if (ev === 'done') {
         const reply = (data && data.reply) || fullReply;
+        const toolCalls = (data && data.tool_calls) || [];
         updateMsg(msgId, {
           content: reply,
           model: (data && data.model) || model || 'Quill',
           meta: [data?.providerStatus, data?.model].filter(Boolean).join(' · '),
           pending: false,
+          toolCalls: toolCalls.length > 0
+            ? toolCalls.map((tc: any) => ({
+                tool: tc.tool,
+                args: tc.args,
+                status: 'success' as const,
+                result: tc.content,
+              }))
+            : undefined,
         });
       } else if (ev === 'error') {
         updateMsg(msgId, { content: 'error: ' + (data?.error || 'unknown'), meta: 'stream error', pending: false });
@@ -2082,6 +2111,26 @@ export function CommandPanel({ data }: { data: MissionData }) {
                         {msg.model
                           ? <span className="font-bold tracking-wide text-cyan-200/90">{msg.model}</span>
                           : msg.route && <span className={C[ROUTES.find(r=>r.id===msg.route)!.color].text}>{ROUTES.find(r=>r.id===msg.route)!.label}</span>}
+                      </div>
+                    )}
+
+                    {/* Tool calls — animated badges for every tool/function the
+                        agent invoked while producing this reply. Each badge
+                        runs its shine + pulse animation while 'running',
+                        then settles green (success) or red (failure). */}
+                    {msg.toolCalls && msg.toolCalls.length > 0 && (
+                      <div className="mb-2 flex flex-wrap gap-1.5" data-tool-strip>
+                        {msg.toolCalls.map((tc, i) => (
+                          <ToolCallBadge
+                            key={i}
+                            tool={tc.tool}
+                            args={tc.args}
+                            status={tc.status}
+                            result={tc.result}
+                            error={tc.error}
+                            durationMs={tc.durationMs}
+                          />
+                        ))}
                       </div>
                     )}
                     {msg.pending ? (
