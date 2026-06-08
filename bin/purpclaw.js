@@ -976,6 +976,15 @@ async function cmdHealth(args) {
 
 
 
+// ── audit deep ──────────────────────────────────────────────
+async function cmdAudit(args) {
+  const { runFast, runFull } = require('../lib/deep-audit');
+  const isFast = args.includes('--fast') || args.includes('-f');
+  const result = isFast ? await runFast() : await runFull();
+  process.exit(result.fail > 0 ? 1 : 0);
+}
+
+
 // ── resume ─────────────────────────────────────────────────────────────────────
 // Resume a previous session from agent_work/sessions/
 async function cmdResume(args) {
@@ -2817,7 +2826,7 @@ async function cmdVoice(args) {
 }
 
 // ── doctor ───────────────────────────────────────────────────────────────────
-async function cmdDoctor() {
+async function cmdDoctor(args) {
   const registry = require(path.join(PURP_DIR, 'service_registry.js'));
   const screenLook = require(path.join(PURP_DIR, 'lib', 'screen-look.js'));
 
@@ -3997,6 +4006,7 @@ case 'registry': return cmdRegistry(args);
     case 'stack':
     case 'status':     return cmdStatus(args);
     case 'doctor':     return cmdDoctor(args);
+    case 'audit':      return cmdAudit(args);
     case 'health':     return cmdHealth(args);
     case 'identity':   return loadCmd('identity').run(args, sharedCtx());
     // ── Resurrected commands (lib/commands/) ──────────────────────────────
