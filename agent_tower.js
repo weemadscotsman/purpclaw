@@ -148,7 +148,7 @@ async function spawnAgent(agentName, task, options = {}) {
   fs.writeFileSync(taskFile, `[${new Date().toISOString()}] TASK:\n${task}\n\nAGENT: ${agentName}\nDIVISION: ${agentInfo.division}\nROLE: ${agentInfo.role}\n`, 'utf8');
 
   // Build the agent prompt - prefer companion_swarm's personality-loaded version
-  let prompt;
+  let prompt = `You are ${agentInfo.name}, a ${agentInfo.role} agent in the ${agentInfo.division} division.`;
   if (companionSwarm && companionSwarm.buildAgentPrompt) {
     prompt = companionSwarm.buildAgentPrompt(agentName.toLowerCase(), task, {
       emoji: agentInfo.emoji,
@@ -203,7 +203,9 @@ async function spawnAgent(agentName, task, options = {}) {
   
   // Use the real tool-calling brain (same as ask/chat) if available.
   // Falls back to one-shot llmComplete for backwards compat.
-  let result;
+  // All result variables initialized to non-undefined defaults.
+  // In JavaScript, `let x;` is `let x = undefined;` — that's a bug waiting to happen.
+  let result = { content: '(empty response — no agent output captured)', toolCalls: [] };
   let toolCalls = [];
   let totalTokens = 0;
 
