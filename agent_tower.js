@@ -12,6 +12,11 @@ const fs = require('fs');
 const http = require('http');
 const LLM = require('./lib/llm-provider');
 const { complete: llmComplete } = LLM;
+// Real tool-calling brain: the same agent-loop that powers ask/chat
+let agentLoopTools = null;
+try {
+  agentLoopTools = require('./lib/agent-loop');
+} catch {}
 
 // Environment Constants
 const PURP_DIR = __dirname;
@@ -196,19 +201,61 @@ async function spawnAgent(agentName, task, options = {}) {
   
   console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} executing via ${providerName}/${modelName}...`);
   
-  try {
-    const result = await llmComplete(
-      `${agentPrompt}\n\nTASK: ${task}`,
-      { 
-        maxTokens: 4096,
-        temperature: 0.7,
-        provider: options.provider || undefined,
-        model: options.model || undefined,
-      },
-      agentInfo.role || undefined
-    );
-    
-    const output = result || '(empty response)';
+  // Use the real tool-calling brain (same as ask/chat) if available.
+  // Falls back to one-shot llmComplete for backwards compat.
+  let result;
+  let toolCalls = [];
+  let totalTokens = 0;
+
+  if (agentLoopTools) {
+    const { runAgent, AGENT_TOOLS } = agentLoopTools;
+    const fullPrompt = `${agentPrompt}\n\nTASK: ${task}`;
+    const agentState = { toolCalls: [] };
+
+    try {
+      for await (const ev of runAgent({
+        prompt: fullPrompt,
+        opts: { maxTokens: 4096, temperature: 0.7, tools: AGENT_TOOLS },
+      })) {
+        if (ev.type === 'token') {
+          // Accumulate streaming output
+        } else if (ev.type === 'tool-exec' && ev.name) {
+          agentState.toolCalls.push({ name: ev.name, args: ev.args, result: ev.result });
+        } else if (ev.type === 'turn-done') {
+          // Collect tool results
+        }
+      }
+
+      result = {
+        content: agentState.toolCalls.map(tc => 
+          `[${tc.name}] ${JSON.stringify(tc.args).substring(0, 100)} → ${String(tc.result).substring(0, 200)}`
+        ).join('\n') || 'Task completed.',
+        toolCalls: agentState.toolCalls,
+      };
+      totalTokens = agentState.toolCalls.length;
+      console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} completed (${agentState.toolCalls.length} tool calls)`);
+    } catch (e) {
+      console.log(`[TOWER] Agent-loop fell back to one-shot: ${e.message}`);
+      result = await llmComplete(
+        `${agentPrompt}\n\nTASK: ${task}`,
+        { maxTokens: 4096, temperature: 0.7 }
+      );
+      if (typeof result === 'string') result = { content: result };
+    }
+  } else {
+    try {
+      const raw = await llmComplete(
+        `${agentPrompt}\n\nTASK: ${task}`,
+        { maxTokens: 4096, temperature: 0.7 }
+      );
+      result = typeof raw === 'string' ? { content: raw } : raw;
+    } catch (e) {
+      result = { error: e.message };
+    }
+  }
+  
+  const output = typeof result === 'string' ? result :
+    result?.content || result?.output || result?.text || result?.error || '(empty response)';
     fs.appendFileSync(logFile, `[${new Date().toISOString()}] LLM RESPONSE:\n${output}\n`);
     broadcast({ type: 'agent_output', agentId, agentName, emoji: agentInfo.emoji, output, timestamp: new Date().toISOString() });
     broadcast({ type: 'agent_complete', agentId, agentName, emoji: agentInfo.emoji, code: 0, output, timestamp: new Date().toISOString(), provider: providerName, model: modelName });
@@ -216,15 +263,6 @@ async function spawnAgent(agentName, task, options = {}) {
     activeAgent.status = 'completed';
     activeAgent.result = output;
     console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} completed via ${providerName}/${modelName} (${agentId})`);
-  } catch (err) {
-    console.error(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} LLM error: ${err.message}`);
-    const errorMsg = `[${providerName}] Error: ${err.message}`;
-    fs.appendFileSync(logFile, `[${new Date().toISOString()}] ERROR: ${errorMsg}\n`);
-    broadcast({ type: 'agent_error', agentId, agentName, emoji: agentInfo.emoji, output: errorMsg, timestamp: new Date().toISOString() });
-    broadcast({ type: 'agent_complete', agentId, agentName, emoji: agentInfo.emoji, code: 1, output: errorMsg, timestamp: new Date().toISOString() });
-    activeAgent.status = 'error';
-    activeAgent.result = null;
-  }
 
   // Notify EventBus
   try {
