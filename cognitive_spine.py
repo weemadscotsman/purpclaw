@@ -210,6 +210,12 @@ class SpineHandler(BaseHTTPRequestHandler):
                 return self.send_json({"fact": f"{fact.predicate}({','.join(str(t) for t in fact.terms)})", "id": fact.id})
             except ValueError as exc:
                 return self.send_json({"error": str(exc)}, 400)
+        if path == "/rules/retract":
+            try:
+                success = STATE.rules.retract_fact(req.get("predicate", ""), req.get("terms", []))
+                return self.send_json({"ok": success})
+            except Exception as exc:
+                return self.send_json({"error": str(exc)}, 400)
         if path == "/rules/query":
             try:
                 return self.send_json({"results": STATE.rules.query_str(req.get("query", ""))})

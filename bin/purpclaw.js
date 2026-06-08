@@ -4002,6 +4002,7 @@ case 'registry': return cmdRegistry(args);
         case 'claudecode':return loadCmd('claudecode').run([command, ...args], sharedCtx());
     case 'gc':
     case 'cleanup':   return loadCmd('gc').run(args, sharedCtx());
+    case 'pocket':    return loadCmd('pocket').run(args, sharedCtx());
     case 'architecture':
     case 'arch':
     case 'concepts':  return loadCmd('architecture').run(args, sharedCtx());
@@ -4132,6 +4133,7 @@ async function cmdIdleEngine(args) {
     if (!IE) { console.log(col(C.yellow, '\n  Idle engine not available.\n')); return; }
 
     const s = IE.status();
+    const ag = s.agRatio;
     console.log('');
     console.log('  🦀  IDLE ENGINE — the beast that wakes when you stop typing');
     console.log('  ════════════════════════════════════════════════════════');
@@ -4142,6 +4144,11 @@ async function cmdIdleEngine(args) {
     console.log(`  Current phase: ${s.currentPhase || 'none'}`);
     console.log(`  Idle delay:    ${s.idleDelayMs / 1000}s`);
     console.log(`  Auto-train:    ${s.autoTrainEnabled ? col(C.green, 'ON') : col(C.yellow, 'OFF')} (min ${s.minNewForTrain} new examples)`);
+    console.log('');
+    console.log(`  🏗️👹 A/G RATIO:  ${ag.architect} Architect / ${ag.goblin} Goblin = ${col(ag.ratio >= 1 ? C.green : C.yellow, ag.ratio)}`);
+    console.log(`  Contained:     ${ag.contained}  |  Escaped: ${ag.escaped}`);
+    console.log(`  Threat Level:  ${ag.threatLevel === 'Stable' ? col(C.green, ag.threatLevel) : ag.threatLevel === 'Manageable' ? col(C.yellow, ag.threatLevel) : col(C.red, ag.threatLevel)}`);
+    console.log(`  Verdict:       ${ag.verdict}`);
     console.log('');
     console.log(`  Personal data: ${s.personalStats.corrections} corrections, ${s.personalStats.preferences} preferences`);
     console.log(`  Ready to train: ${s.readyForAutoTrain ? col(C.green, '✓ YES') : col(C.yellow, `○ need ${s.minNewForTrain - (s.personalStats.corrections + s.personalStats.preferences + s.personalStats.edits)} more`)}`);
@@ -4387,6 +4394,8 @@ async function cmdModel(args) {
   console.log('');
 };
 function readlineQuestion(query, defaultVal) {
+  // stub
+}
 main().catch(e => {
   if (TAINT_MODE) {
     console.error(col(C.magenta, `\n  ✗ ${taintError(e.message)}\n`));

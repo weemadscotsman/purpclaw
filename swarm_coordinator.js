@@ -781,11 +781,23 @@ async function coordinateMission(missionId, task, options = {}) {
                 ''
               ].filter(Boolean).join('\n');
 
+              // Recall memories relevant to the subtask
+              let subtaskMemoryContext = '';
+              if (memoryClient) {
+                try {
+                  const query = `${subtask.domain} ${subtask.text}`.substring(0, 200);
+                  const recallResult = await memoryClient.recall(query, { limit: 4 });
+                  subtaskMemoryContext = recallResult?.formatted || '';
+                } catch (memErr) {
+                  log(missionId, `[SWARM_MEMORY] Recall error for ${subtask.agent}: ${memErr.message}`);
+                }
+              }
+
               const fullTaskDesc = [
                 `TASK SLICE: ${subtask.text}`,
                 constraintBlock,
                 handoffContext ? handoffContext : null,
-                options.memoryContext ? `## Swarm Memory context:\n${options.memoryContext}` : null
+                subtaskMemoryContext ? subtaskMemoryContext : (options.memoryContext ? `## Swarm Memory context:\n${options.memoryContext}` : null)
               ].filter(Boolean).join('\n\n');
 
               // 2. Agent Execution: live tower dispatch only.
@@ -830,6 +842,8 @@ async function coordinateMission(missionId, task, options = {}) {
                   cogClient.assertFact('completed_task', [subtask.agent, missionId, cogIntent], 'swarm-coordinator').catch(() => {});
                   cogClient.assertFact('successful_agent', [subtask.agent, subtask.domain || cogIntent], 'swarm-coordinator').catch(() => {});
                   cogClient.reportEvent({ type: 'swarm.subtask.completed', missionId, agent: subtask.agent, domain: subtask.domain, durationMs: subtask.durationMs }).catch(() => {});
+                  cogClient.updateModalState(subtask.agent, { prop: `capable_of_${subtask.domain || cogIntent}`, value: true }).catch(() => {});
+                  cogClient.updateModalState(subtask.agent, { prop: `knows_success_for_${subtask.agent}`, value: true }).catch(() => {});
                 }
 
                 // Explicit write to ensure handoff matches
@@ -884,6 +898,7 @@ async function coordinateMission(missionId, task, options = {}) {
                 if (cogClient) {
                   cogClient.assertFact('failed_task', [subtask.agent, missionId, subtask.domain || 'swarm'], 'swarm-coordinator').catch(() => {});
                   cogClient.reportEvent({ type: 'swarm.subtask.failed', missionId, agent: subtask.agent, domain: subtask.domain, error: subtask.error }).catch(() => {});
+                  cogClient.updateModalState(subtask.agent, { prop: `capable_of_${subtask.domain || 'swarm'}`, value: false, mode: 'belief' }).catch(() => {});
                 }
                 break;
               }

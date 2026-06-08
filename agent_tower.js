@@ -189,7 +189,7 @@ async function spawnAgent(agentName, task, options = {}) {
   });
 
   // Execute agent via llm-provider.js — single gateway, no Kimi/stub fallback
-  const agentPrompt = buildAgentPrompt(agentName, task);
+  const agentPrompt = prompt;
   const providerInfo = LLM.getProviderInfo();
   const providerName = providerInfo?.main?.provider || 'unknown';
   const modelName = providerInfo?.main?.model || 'unknown';
