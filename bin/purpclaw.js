@@ -4531,14 +4531,14 @@ async function cmdModel(args) {
   console.log(`    ${col(C.cyan, 'purpclaw model')}                       this help`);
   console.log('');
 };
-function readlineQuestion(query, defaultVal) {
-  // stub
+
+if (require.main === module) {
+  main().catch(e => {
+    if (TAINT_MODE) {
+      console.error(col(C.magenta, `\n  ✗ ${taintError(e.message)}\n`));
+    } else {
+      console.error(col(C.red, `\n  ✗ Unhandled error: ${e.message}\n`));
+    }
+    process.exit(1);
+  });
 }
-main().catch(e => {
-  if (TAINT_MODE) {
-    console.error(col(C.magenta, `\n  ✗ ${taintError(e.message)}\n`));
-  } else {
-    console.error(col(C.red, `\n  ✗ Unhandled error: ${e.message}\n`));
-  }
-  process.exit(1);
-});

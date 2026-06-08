@@ -3324,56 +3324,39 @@ const server = http.createServer(async (req, res) => {
         const { message, spawnAgents = true } = body;
         if (!message) return sendJson(res, 400, { error: 'message required' });
 
-        console.log(`[CHAT] User: ${message.substring(0, 100)}`);
+        // Use the real agent-loop (same tool-calling brain as CLI ask and SSE chat).
+        // This kills the keyword if-ladder that was routing to one-shot tower calls.
+        const { runAgent } = require('./lib/agent-loop');
+        let fullReply = '';
+        let modelName = '';
+        let toolCalls = [];
+        const errors = [];
 
-        const responses = [];
-
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          const ballPayload = JSON.stringify({ type: 'chat', text: message, timestamp: new Date().toISOString() });
-          ws.send(ballPayload);
-          responses.push({ source: 'ball', status: 'forwarded' });
-          console.log(`[CHAT] -> Ball: ${message.substring(0, 50)}...`);
-        }
-
-        if (spawnAgents) {
-          const matchedAgents = [];
-          const lowerMsg = message.toLowerCase();
-
-          if (lowerMsg.includes('code') || lowerMsg.includes('build') || lowerMsg.includes('implement')) {
-            matchedAgents.push('robot', 'bee', 'dragon');
-          }
-          if (lowerMsg.includes('security') || lowerMsg.includes('scan') || lowerMsg.includes('audit')) {
-            matchedAgents.push('ghost', 'owl', 'guardian');
-          }
-          if (lowerMsg.includes('data') || lowerMsg.includes('analyze') || lowerMsg.includes('research')) {
-            matchedAgents.push('duck', 'spider', 'scientist');
-          }
-          if (lowerMsg.includes('test') || lowerMsg.includes('qa') || lowerMsg.includes('review')) {
-            matchedAgents.push('cactus', 'turtle', 'ghost');
-          }
-          if (lowerMsg.includes('manage') || lowerMsg.includes('coordinate') || lowerMsg.includes('plan')) {
-            matchedAgents.push('wolf', 'penguin', 'owl');
-          }
-
-          const spawned = [];
-          for (const agentName of matchedAgents.slice(0, 3)) {
-            const result = await AgentTower.spawnAgent(agentName, `Task from chat: ${message.substring(0, 50)}`, {});
-            if (result.success) {
-              spawned.push(result.agent.id);
-            }
-          }
-          if (spawned.length > 0) {
-            responses.push({ source: 'swarm', spawned: spawned.length, agents: spawned });
+        for await (const ev of runAgent({
+          prompt: message,
+          opts: { maxTokens: 2048, temperature: 0.7 },
+        })) {
+          if (ev.type === 'token') {
+            fullReply += ev.content;
+            modelName = ev.model || modelName;
+          } else if (ev.type === 'tool-call') {
+            toolCalls.push({ tool: ev.tool, args: ev.args });
+          } else if (ev.type === 'tool-result') {
+            // collected implicitly
+          } else if (ev.type === 'error') {
+            errors.push(ev.error);
+          } else if (ev.type === 'done') {
+            break;
           }
         }
-
-        broadcast({ type: 'chat_message', message, timestamp: new Date().toISOString() });
 
         return sendJson(res, 200, {
           ok: true,
-          message,
-          responses,
-          note: 'Ball AI is processing your message. Check SSE stream for responses.'
+          reply: fullReply,
+          model: modelName,
+          tool_calls: toolCalls,
+          errors: errors.length > 0 ? errors : undefined,
+          turns: toolCalls.length > 0 ? 'multi-turn' : 'single',
         });
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
