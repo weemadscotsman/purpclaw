@@ -4,6 +4,17 @@ Curated record of meaningful changes. Append at the bottom; never rewrite histor
 
 ---
 
+## v0.1.7 (2026-06-08)
+
+- **Portable Identity**: export/import/diff identity.json (profile, style, memory, providers, budget, agents, skills, routing, preferences)
+- **`purpclaw health`**: compact scorecard across 9 subsystems (tools, services, vault, spend, memory, providers, deps, skills, updates)
+- **Skill missing-dep detection**: `requires: [package]` in SKILL.md → degraded tools return install guidance instead of crashing
+- **Audio guide checksum sidecar**: WAV-generated-at SHA-256 tracked alongside clip; tamper detection on play
+- **README rewrite**: positioning, comparison table, architecture, truth-telling
+- **Version bump**: 0.1.6 → 0.1.7
+
+---
+
 ## 2026-06-05 — Composer V1 Ship + Streaming + LoRA Pipeline
 
 ### Big moves
