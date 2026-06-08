@@ -367,18 +367,35 @@ async function handleChatStream(req, res) {
   sseEvent(res, 'phase', { phase: 'thinking' });
 
   try {
-    const llm = require('./lib/llm-provider');
+    // Use the real agent-loop (tool-calling brain) instead of raw llm.streamChat.
+    // This unifies all three surfaces: CLI ask, WebUI, TUI, and all gateways
+    // (Discord, Telegram, email) hit the same agentic engine.
+    const { runAgent } = require('./lib/agent-loop');
     let fullReply = '';
     let modelName = '';
-    for await (const chunk of llm.streamChat([
-      { role: 'user', content: message },
-    ], { temperature: 0.7, maxTokens: 2048 })) {
-      if (chunk.content) {
-        fullReply += chunk.content;
-        modelName = chunk.model || modelName;
-        sseEvent(res, 'token', { content: chunk.content, model: chunk.model });
-      } else if (chunk.done) {
+    let toolCallsUsed = 0;
+
+    for await (const ev of runAgent({
+      prompt: message,
+      opts: { maxTokens: 2048, temperature: 0.7 },
+    })) {
+      if (ev.type === 'token') {
+        fullReply += ev.content;
+        modelName = ev.model || modelName;
+        sseEvent(res, 'token', { content: ev.content, model: ev.model });
+      } else if (ev.type === 'tool-call') {
+        toolCallsUsed++;
+        sseEvent(res, 'tool-call', { tool: ev.tool, args: ev.args });
+      } else if (ev.type === 'tool-result') {
+        sseEvent(res, 'tool-result', {
+          tool: ev.tool,
+          ok: ev.ok,
+          content: (ev.content || ev.error || '').substring(0, 500),
+        });
+      } else if (ev.type === 'done') {
         break;
+      } else if (ev.type === 'error') {
+        throw new Error(ev.error);
       }
     }
     sseEvent(res, 'phase', { phase: 'done' });
@@ -386,6 +403,7 @@ async function handleChatStream(req, res) {
       reply: fullReply,
       model: modelName,
       providerStatus: 'answered',
+      toolCalls: toolCallsUsed,
       source,
     });
     return res.end();
