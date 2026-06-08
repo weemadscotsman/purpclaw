@@ -125,21 +125,22 @@ console.log('======================================\n');
 
     // 9. Parallel agent calls — SpendGate blocks correctly
     // Use a fresh gate in a fresh dir to avoid state pollution from other tests
-    const sgDir = path.join(TEST_DIR, 'sg-9');
-    fs.mkdirSync(sgDir, { recursive: true });
-    process.env.POCKET_DIR = sgDir;
-    const sg = new SpendGate();
-    sg.configure({ dailyTokenCap: 500, perRequestCap: 100, maxRequestsPerMinute: 1000 });
-    sg.reset();
-    let allowedCount = 0;
-    for (let i = 0; i < 20; i++) {
-      const r = sg.check({ agent: 'par-test', provider: 'ollama', estimatedTokens: 100 });
-      if (r.allow) {
-        allowedCount++;
-        sg.record('par-test', 'ollama', 50, 50);
+    (async () => {
+      const sgDir = path.join(TEST_DIR, 'sg-9');
+      fs.mkdirSync(sgDir, { recursive: true });
+      process.env.POCKET_DIR = sgDir;
+      const sg = new SpendGate();
+      sg.configure({ dailyTokenCap: 500, perRequestCap: 100, maxRequestsPerMinute: 1000 });
+      let allowedCount = 0;
+      for (let i = 0; i < 20; i++) {
+        const r = await sg.check({ agent: 'par-test', provider: 'ollama', estimatedTokens: 100 });
+        if (r.allow) {
+          allowedCount++;
+          await sg.record('par-test', 'ollama', 50, 50, null, { reserved: r.estimatedTokens });
+        }
       }
-    }
-    test('9. SpendGate blocks correctly under parallel', allowedCount === 5, `got ${allowedCount} allowed`);
+      test('9. SpendGate blocks correctly under parallel', allowedCount === 5, `got ${allowedCount} allowed`);
+    })();
 
     // 10. Audio missing — text fallback works
     const audioJson = path.join(__dirname, '..', 'pocket', 'guide', 'audio-scripts.json');
@@ -150,7 +151,9 @@ console.log('======================================\n');
     console.log('======================================\n');
 
     // Cleanup
-    try { fs.rmSync(TEST_DIR, { recursive: true, force: true }); } catch {}
+    setTimeout(() => {
+      try { fs.rmSync(TEST_DIR, { recursive: true, force: true }); } catch {}
+    }, 100);
 
     if (fail > 0) process.exit(1);
   });
