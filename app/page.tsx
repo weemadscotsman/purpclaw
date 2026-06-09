@@ -270,7 +270,7 @@ export default function MissionControl() {
     const glow = status === 'online' || status === 'healthy' || status === 'working' ? 'rgba(52,211,153,0.5)' :
                  status === 'degraded' ? 'rgba(251,191,36,0.4)' : 'rgba(248,113,113,0.4)';
     return (
-      <div className={`${size} rounded-full`} style={{ backgroundColor: color, boxShadow: `0 0 8px ${glow}` }} />
+      <div className={`${size} rounded-none`} style={{ backgroundColor: color, boxShadow: `0 0 8px ${glow}` }} />
     );
   };
 
@@ -289,8 +289,8 @@ export default function MissionControl() {
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2">
             <div className="relative">
-              <div className="w-2 h-2 rounded-full bg-emerald-400" style={{ boxShadow: '0 0 12px rgba(52,211,153,0.6)' }} />
-              <div className="absolute inset-0 rounded-full animate-ping opacity-50 bg-emerald-400" />
+              <div className="w-2 h-2 rounded-none bg-emerald-400" style={{ boxShadow: '0 0 12px rgba(52,211,153,0.6)' }} />
+              <div className="absolute inset-0 rounded-none animate-ping opacity-50 bg-emerald-400" />
             </div>
             <span className="text-sm font-bold tracking-[0.25em] text-white/90">PURPCLAW</span>
           </div>
@@ -319,15 +319,24 @@ export default function MissionControl() {
           </div>
           <div className="w-px h-4 bg-white/10" />
           <div className="flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-full ${towerConnected ? 'bg-cyan-400 animate-pulse' : 'bg-amber-400'}`} />
+            <div className={`w-1.5 h-1.5 rounded-none ${towerConnected ? 'bg-cyan-400 animate-pulse' : 'bg-amber-400'}`} />
             <span className="text-[10px] text-white/40 tracking-widest">{towerConnected ? 'TOWER' : 'TOWER↓'}</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className={`w-1.5 h-1.5 rounded-full ${eventBusConnected ? 'bg-cyan-400 animate-pulse' : 'bg-amber-400'}`} />
+            <div className={`w-1.5 h-1.5 rounded-none ${eventBusConnected ? 'bg-cyan-400 animate-pulse' : 'bg-amber-400'}`} />
             <span className="text-[10px] text-white/40 tracking-widest">{eventBusConnected ? 'BUS' : 'BUS↓'}</span>
           </div>
           <div className="w-px h-4 bg-white/10" />
           <span className="text-[10px] text-white/20">{localTime}</span>
+          <a
+            href="/ui"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] text-white/40 hover:text-cyan-400 tracking-widest transition-colors border border-white/10 hover:border-cyan-500/30 px-2 py-0.5"
+            title="Switch to Agent Tower UI (3D skyscraper + panels)"
+          >
+            ⇄ AGENT TOWER
+          </a>
         </div>
       </header>
 
@@ -356,7 +365,7 @@ export default function MissionControl() {
             <span className="text-[10px] text-white/20">{filteredAgents.length}</span>
           </div>
 
-          <div className="flex-1 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col">
+          <div className="flex-1 rounded-none border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col">
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
               {filteredAgents.map(agent => {
                 const live = mergedActiveAgents.find(a => a.name === agent.name);
@@ -365,7 +374,7 @@ export default function MissionControl() {
                   <button
                     key={agent.name}
                     onClick={() => setSelectedAgent(live || agent)}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/[0.03] transition-all group text-left"
+                    className="w-full flex items-center gap-3 px-3 py-2 rounded-none hover:bg-white/[0.03] transition-all group text-left"
                   >
                     <span className="text-base">{agent.emoji}</span>
                     <div className="flex-1 min-w-0">
@@ -386,26 +395,26 @@ export default function MissionControl() {
         <div className="col-span-6 flex flex-col gap-3 h-full overflow-hidden">
           {/* Metrics Bar */}
           <div className="grid grid-cols-4 gap-3">
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
+            <div className="rounded-none border border-white/5 bg-white/[0.02] p-3">
               <div className="text-[9px] uppercase tracking-wider text-white/30 mb-1">Events/sec</div>
               <div className="text-xl font-light text-cyan-400">{metrics.eventsPerSec.toFixed(1)}</div>
             </div>
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
+            <div className="rounded-none border border-white/5 bg-white/[0.02] p-3">
               <div className="text-[9px] uppercase tracking-wider text-white/30 mb-1">Active Agents</div>
               <div className="text-xl font-light text-purple-400">{mergedActiveAgents.length}</div>
             </div>
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
+            <div className="rounded-none border border-white/5 bg-white/[0.02] p-3">
               <div className="text-[9px] uppercase tracking-wider text-white/30 mb-1">Subscribers</div>
               <div className="text-xl font-light text-amber-400">{totalSubscribers}</div>
             </div>
-            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
+            <div className="rounded-none border border-white/5 bg-white/[0.02] p-3">
               <div className="text-[9px] uppercase tracking-wider text-white/30 mb-1">Heap Memory</div>
               <div className="text-xl font-light text-emerald-400">{metrics.memory}</div>
             </div>
           </div>
 
           {/* Active Operations */}
-          <div className="flex-1 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col min-h-0">
+          <div className="flex-1 rounded-none border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col min-h-0">
             <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between">
               <h2 className="text-[10px] uppercase tracking-[0.25em] text-white/30">Active Operations</h2>
               <span className="text-[10px] text-white/20">{mergedActiveAgents.length} running</span>
@@ -419,12 +428,12 @@ export default function MissionControl() {
               ) : (
                 <div className="grid grid-cols-2 gap-2">
                   {mergedActiveAgents.map(agent => (
-                    <div key={agent.id} className="rounded-lg border border-white/5 bg-white/[0.02] p-3 hover:border-white/10 transition-all">
+                    <div key={agent.id} className="rounded-none border border-white/5 bg-white/[0.02] p-3 hover:border-white/10 transition-all">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{agent.emoji}</span>
                           <span className="text-sm font-medium text-white/90">{agent.name}</span>
-                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-white/40">{agent.division}</span>
+                          <span className="text-[9px] px-1.5 py-0.5 rounded-none bg-white/5 text-white/40">{agent.division}</span>
                         </div>
                         {statusDot(agent.status)}
                       </div>
@@ -441,7 +450,7 @@ export default function MissionControl() {
           </div>
 
           {/* Live Output Stream */}
-          <div className="h-56 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col min-h-0">
+          <div className="h-56 rounded-none border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col min-h-0">
             <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between">
               <h2 className="text-[10px] uppercase tracking-[0.25em] text-white/30">Live Agent Output</h2>
               <span className="text-[10px] text-white/20">{liveOutputs.length} streams</span>
@@ -454,7 +463,7 @@ export default function MissionControl() {
                 </div>
               ) : (
                 liveOutputs.map(live => (
-                  <div key={live.agentId} className={`rounded-lg border p-2 transition-all ${live.status === 'error' ? 'border-rose-500/20 bg-rose-500/5' : live.status === 'completed' ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-cyan-500/20 bg-cyan-500/5'}`}>
+                  <div key={live.agentId} className={`rounded-none border p-2 transition-all ${live.status === 'error' ? 'border-rose-500/20 bg-rose-500/5' : live.status === 'completed' ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-cyan-500/20 bg-cyan-500/5'}`}>
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm">{live.emoji}</span>
@@ -462,7 +471,7 @@ export default function MissionControl() {
                         <span className="text-[9px] text-white/30">{live.division}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        {live.status === 'working' && <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />}
+                        {live.status === 'working' && <div className="w-1.5 h-1.5 rounded-none bg-cyan-400 animate-pulse" />}
                         <span className={`text-[9px] uppercase ${live.status === 'error' ? 'text-rose-400' : live.status === 'completed' ? 'text-emerald-400' : 'text-cyan-400'}`}>{live.status}</span>
                       </div>
                     </div>
@@ -476,7 +485,7 @@ export default function MissionControl() {
           </div>
 
           {/* Service Health */}
-          <div className="h-40 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col">
+          <div className="h-40 rounded-none border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col">
             <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between">
               <h2 className="text-[10px] uppercase tracking-[0.25em] text-white/30">System Services</h2>
               <span className="text-[10px] text-white/20">{healthyCount}/{services.length} healthy</span>
@@ -484,7 +493,7 @@ export default function MissionControl() {
             <div className="flex-1 overflow-y-auto p-2">
               <div className="grid grid-cols-2 gap-2">
                 {services.map(svc => (
-                  <div key={svc.name} className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/[0.02] hover:bg-white/[0.03] transition-all">
+                  <div key={svc.name} className="flex items-center gap-3 px-3 py-2 rounded-none bg-white/[0.02] hover:bg-white/[0.03] transition-all">
                     {statusDot(svc.status)}
                     <div className="flex-1 min-w-0">
                       <div className="text-xs text-white/70 truncate">{svc.name}</div>
@@ -493,7 +502,7 @@ export default function MissionControl() {
                     {svc.latency !== undefined && (
                       <div className="text-[10px] text-white/30 w-12 text-right">{svc.latency}ms</div>
                     )}
-                    <div className="text-[9px] font-medium uppercase px-1.5 py-0.5 rounded"
+                    <div className="text-[9px] font-medium uppercase px-1.5 py-0.5 rounded-none"
                       style={{
                         color: svc.status === 'online' ? '#34d399' : svc.status === 'degraded' ? '#fbbf24' : '#f87171',
                         backgroundColor: svc.status === 'online' ? 'rgba(52,211,153,0.1)' : svc.status === 'degraded' ? 'rgba(251,191,36,0.1)' : 'rgba(248,113,113,0.1)',
@@ -508,7 +517,7 @@ export default function MissionControl() {
           </div>
 
           {/* Command Input */}
-          <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
+          <div className="rounded-none border border-white/5 bg-white/[0.02] p-3">
             <div className="flex items-center gap-3">
               <span className="text-emerald-400 font-bold">{'>'}</span>
               <input
@@ -521,7 +530,7 @@ export default function MissionControl() {
               />
               <button
                 onClick={sendCommand}
-                className="px-4 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
+                className="px-4 py-1.5 rounded-none text-[10px] font-bold uppercase tracking-wider bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-all"
               >
                 Send
               </button>
@@ -532,7 +541,7 @@ export default function MissionControl() {
         {/* RIGHT COLUMN: Chorus + Logs */}
         <div className="col-span-3 flex flex-col gap-3 h-full overflow-hidden">
           {/* Chorus Feed */}
-          <div className="flex-1 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col min-h-0">
+          <div className="flex-1 rounded-none border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col min-h-0">
             <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between">
               <h2 className="text-[10px] uppercase tracking-[0.25em] text-white/30">Companion Chorus</h2>
               <span className="text-[10px] text-white/20">{chorus.length}</span>
@@ -545,7 +554,7 @@ export default function MissionControl() {
                 </div>
               ) : (
                 chorus.map(line => (
-                  <div key={line.id} className="rounded-lg border border-white/5 bg-white/[0.02] p-2">
+                  <div key={line.id} className="rounded-none border border-white/5 bg-white/[0.02] p-2">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm">{line.emoji}</span>
                       <span className="text-[10px] font-medium text-white/60">{line.companion}</span>
@@ -559,7 +568,7 @@ export default function MissionControl() {
           </div>
 
           {/* Event Log */}
-          <div className="flex-1 rounded-xl border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col min-h-0">
+          <div className="flex-1 rounded-none border border-white/5 bg-white/[0.01] overflow-hidden flex flex-col min-h-0">
             <div className="px-4 py-2 border-b border-white/5 flex items-center justify-between">
               <h2 className="text-[10px] uppercase tracking-[0.25em] text-white/30">Event Stream</h2>
               <span className="text-[10px] text-white/20">{logs.length}</span>
@@ -579,7 +588,7 @@ export default function MissionControl() {
                   };
                   const color = typeColors[log.level] || '#6b7280';
                   return (
-                    <div key={log.id} className="flex items-start gap-2 px-2 py-1 rounded hover:bg-white/[0.02]">
+                    <div key={log.id} className="flex items-start gap-2 px-2 py-1 rounded-none hover:bg-white/[0.02]">
                       <span className="text-[9px] text-white/20 font-mono shrink-0 w-14">{log.timestamp}</span>
                       <span className="text-[9px] font-medium uppercase tracking-wider shrink-0 w-12" style={{ color }}>{log.level}</span>
                       <span className="text-[9px] text-white/30 shrink-0 w-16 truncate">{log.source}</span>

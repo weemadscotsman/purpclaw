@@ -8,8 +8,24 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* ── UI toggle back to v8.3.0 inline Mission Control ── */
+    .ui-toggle {
+      position: fixed; top: 8px; right: 8px; z-index: 99999;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      padding: 4px 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+    }
+    .ui-toggle:hover { color: #67e8f9; border-color: rgba(103,232,249,0.4); }
+  </style>
 </head>
 <body>
+  <a class="ui-toggle" href="/" title="Switch to v8.3.0 inline Mission Control">⇄ MISSION CTRL</a>
   <div id="root"></div>
 
   <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>

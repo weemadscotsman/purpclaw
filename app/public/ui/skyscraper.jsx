@@ -891,7 +891,7 @@ function FloorRoom({ floor, division, agents, showMessages, animate }) {
           transform: 'translate(-50%, -50%) rotateX(60deg) rotateZ(-18deg)',
           background: `radial-gradient(ellipse at center, ${color}15, transparent 70%), rgba(8, 11, 28, 0.7)`,
           border: `1.5px solid ${color}`,
-          borderRadius: 8,
+          borderRadius: 0,
           boxShadow: `0 0 50px ${color}40, inset 0 0 30px ${color}10`,
         }}
       >
@@ -906,7 +906,7 @@ function FloorRoom({ floor, division, agents, showMessages, animate }) {
         <div style={{
           position: 'absolute', left: '50%', top: '50%',
           width: 60, height: 60, transform: 'translate(-50%, -50%)',
-          borderRadius: '50%', border: `2px solid ${color}`,
+          borderRadius: 0, border: `2px solid ${color}`,
           boxShadow: `0 0 20px ${color}`,
           display: 'grid', placeItems: 'center', fontSize: 18, color,
           textShadow: `0 0 10px ${color}`,

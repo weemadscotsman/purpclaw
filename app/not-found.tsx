@@ -10,8 +10,8 @@ export default function NotFound() {
           This panel is not registered in the active control plane.
         </p>
         <Link
-          href="/mission"
-          className="mt-8 inline-flex w-fit rounded border border-fuchsia-400/50 px-4 py-2 text-sm font-semibold text-fuchsia-100 hover:bg-fuchsia-500/15"
+          href="/"
+          className="mt-8 inline-flex w-fit border border-fuchsia-400/50 px-4 py-2 text-sm font-semibold text-fuchsia-100 hover:bg-fuchsia-500/15"
         >
           Return to Mission Control
         </Link>

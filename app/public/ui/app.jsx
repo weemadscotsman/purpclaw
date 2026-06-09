@@ -208,7 +208,7 @@ function DisconnectedBanner() {
       letterSpacing: '0.08em',
       zIndex: 20,
     }}>
-      <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--red)', boxShadow: '0 0 8px var(--red)' }} />
+      <span style={{ width: 8, height: 8, borderRadius: 0, background: 'var(--red)', boxShadow: '0 0 8px var(--red)' }} />
       <span style={{ textTransform: 'uppercase', fontWeight: 600 }}>backend offline</span>
       <span style={{ color: 'var(--text-3)' }}>
         no PURPCLAW services reachable on localhost:7780–7790. start the stack with <span style={{ color: 'var(--cyan)' }}>purpclaw start</span> and refresh.
@@ -387,7 +387,7 @@ function SkyscraperTab({ t, setTweak, zoom, setZoom, pan, setPan, resetView, sel
                     fontFamily: 'var(--font-mono)', fontSize: 10, pointerEvents: 'none',
                   }}>
                     <span style={{
-                      padding: '4px 10px', borderRadius: 999,
+                      padding: '4px 10px', borderRadius: 0,
                       background: `${div.color}15`, border: `1px solid ${div.color}`,
                       color: div.color, textShadow: `0 0 6px ${div.color}`,
                       letterSpacing: '0.16em', textTransform: 'uppercase',
@@ -459,7 +459,7 @@ function SkyscraperTab({ t, setTweak, zoom, setZoom, pan, setPan, resetView, sel
                   <div className="agent-chip-task">{a.task || (a.status === 'idle' ? '· idle, registered' : '· no task')}</div>
                 </div>
                 <span style={{
-                  width: 6, height: 6, borderRadius: '50%',
+                  width: 6, height: 6, borderRadius: 0,
                   background: a.status === 'working' ? 'var(--emerald)'
                           : a.status === 'error' ? 'var(--red)'
                           : a.status === 'completed' ? 'var(--purple)'
@@ -561,7 +561,7 @@ function VentingMachine() {
                   background: 'var(--panel-2)',
                   border: `1px solid ${m.color}40`,
                   borderLeft: `3px solid ${m.color}`,
-                  borderRadius: 8,
+                  borderRadius: 0,
                   display: 'grid',
                   gridTemplateColumns: 'auto 1fr auto',
                   gap: 12,
@@ -573,7 +573,7 @@ function VentingMachine() {
                     fontSize: 24,
                     background: `${m.color}15`,
                     border: `1px solid ${m.color}`,
-                    borderRadius: '50%',
+                    borderRadius: 0,
                     boxShadow: `0 0 12px ${m.color}66`,
                   }}>{a.emoji}</div>
                   <div>
@@ -626,14 +626,14 @@ function SatelliteOffice() {
           const tone = s.status === 'online' ? 'var(--emerald)' : s.status === 'degraded' ? 'var(--amber)' : 'var(--text-3)';
           return (
             <div key={s.key} style={{
-              padding: 14, borderRadius: 8,
+              padding: 14, borderRadius: 0,
               background: 'var(--panel-2)',
               border: `1px solid ${s.status === 'online' ? tone : 'var(--line-soft)'}`,
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               opacity: s.status === 'online' ? 1 : 0.6,
             }}>
               <div className="row" style={{ gap: 14 }}>
-                <span style={{ width: 10, height: 10, borderRadius: '50%', background: tone, boxShadow: `0 0 8px ${tone}` }} />
+                <span style={{ width: 10, height: 10, borderRadius: 0, background: tone, boxShadow: `0 0 8px ${tone}` }} />
                 <div>
                   <div style={{ color: 'var(--text)', fontFamily: 'var(--font-mono)', fontSize: 12 }}>{s.name}</div>
                   <div style={{ color: 'var(--text-3)', fontFamily: 'var(--font-mono)', fontSize: 10, marginTop: 2 }}>
@@ -654,7 +654,7 @@ function SatelliteOffice() {
             </div>
           );
         })}
-        <div style={{ marginTop: 8, padding: 10, background: 'var(--panel-2)', borderRadius: 6, color: 'var(--text-3)', fontFamily: 'var(--font-mono)', fontSize: 10, lineHeight: 1.5 }}>
+        <div style={{ marginTop: 8, padding: 10, background: 'var(--panel-2)', borderRadius: 0, color: 'var(--text-3)', fontFamily: 'var(--font-mono)', fontSize: 10, lineHeight: 1.5 }}>
           satellite services run alongside the core tower. voice handles ball commands; cognitive runs the memory matrix + reasoning loop; pool serves the open knowledge index.
         </div>
       </div>
@@ -809,9 +809,9 @@ function AppInner() {
           color: 'var(--text-mute)', pointerEvents: 'none',
           display: 'flex', alignItems: 'center', gap: 6,
         }}>
-          <span style={{ padding: '2px 6px', border: '1px solid var(--line)', borderRadius: 3, color: 'var(--text-3)' }}>⌘K</span>
+          <span style={{ padding: '2px 6px', border: '1px solid var(--line)', borderRadius: 0, color: 'var(--text-3)' }}>⌘K</span>
           <span>palette</span>
-          <span style={{ marginLeft: 10, padding: '2px 6px', border: '1px solid var(--line)', borderRadius: 3, color: 'var(--text-3)' }}>F</span>
+          <span style={{ marginLeft: 10, padding: '2px 6px', border: '1px solid var(--line)', borderRadius: 0, color: 'var(--text-3)' }}>F</span>
           <span>focus</span>
         </div>
       )}

@@ -20,7 +20,7 @@ function MetricCard({ label, value, sub, accent, big }) {
 function StatusPill({ ok, label, sub }) {
   return (
     <span className="pill mono" style={{ color: ok ? 'var(--emerald)' : 'var(--red)' }}>
-      <span style={{ display: 'inline-block', width: 5, height: 5, borderRadius: '50%', background: 'currentColor', boxShadow: '0 0 6px currentColor', marginRight: 6, verticalAlign: 'middle' }} />
+      <span style={{ display: 'inline-block', width: 5, height: 5, borderRadius: 0, background: 'currentColor', boxShadow: '0 0 6px currentColor', marginRight: 6, verticalAlign: 'middle' }} />
       {label}{sub && <span style={{ marginLeft: 6, color: 'var(--text-3)' }}>{sub}</span>}
     </span>
   );
@@ -132,12 +132,12 @@ function OverviewTab() {
               <div key={svc.key} style={{
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                 padding: '6px 8px', background: 'var(--panel-2)',
-                border: '1px solid var(--line-soft)', borderRadius: 6,
+                border: '1px solid var(--line-soft)', borderRadius: 0,
                 fontFamily: 'var(--font-mono)', fontSize: 10,
                 opacity: svc.status === 'offline' ? 0.55 : 1,
               }}>
                 <div className="row" style={{ minWidth: 0 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: tone, boxShadow: `0 0 6px ${tone}` }} />
+                  <span style={{ width: 6, height: 6, borderRadius: 0, background: tone, boxShadow: `0 0 6px ${tone}` }} />
                   <span style={{ color: 'var(--text-2)' }}>{svc.name}</span>
                 </div>
                 <div className="row muted">
@@ -192,7 +192,7 @@ function OverviewTab() {
               <div style={{
                 aspectRatio: '1 / 1',
                 border: '1px solid var(--line-2)',
-                borderRadius: 12,
+                borderRadius: 0,
                 background: 'radial-gradient(circle, rgba(168, 85, 247, 0.2), transparent)',
                 display: 'grid', placeItems: 'center', fontSize: 48,
                 textShadow: '0 0 20px var(--purple)',
@@ -234,7 +234,7 @@ function WorkflowMiniCard({ wf, dim }) {
       padding: '8px 10px',
       background: 'var(--panel-2)',
       border: `1px solid ${dim ? 'var(--line-soft)' : tone + '40'}`,
-      borderRadius: 6, opacity: dim ? 0.65 : 1,
+      borderRadius: 0, opacity: dim ? 0.65 : 1,
       display: 'grid', gridTemplateColumns: '1fr auto', gap: 8,
     }}>
       <div style={{ minWidth: 0 }}>
@@ -431,7 +431,7 @@ function WorkflowListRow({ wf, selected, onSelect, dim }) {
       padding: '10px 12px',
       background: selected ? `${tone}12` : 'var(--panel-2)',
       border: `1px solid ${selected ? tone : 'var(--line-soft)'}`,
-      borderRadius: 6,
+      borderRadius: 0,
       opacity: dim && !selected ? 0.6 : 1,
       cursor: 'pointer',
       display: 'flex', flexDirection: 'column', gap: 4,
@@ -443,7 +443,7 @@ function WorkflowListRow({ wf, selected, onSelect, dim }) {
       </div>
       <div style={{ color: 'var(--text-2)', fontSize: 11.5, lineHeight: 1.4 }}>{wf.intent || wf.target || '(no intent)'}</div>
       {wf.steps && (
-        <div style={{ marginTop: 4, height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, overflow: 'hidden' }}>
+        <div style={{ marginTop: 4, height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 0, overflow: 'hidden' }}>
           <div style={{
             width: `${(wf.steps.completed / Math.max(wf.steps.total, 1)) * 100}%`,
             height: '100%', background: tone, boxShadow: `0 0 6px ${tone}`,
@@ -463,7 +463,7 @@ function WorkflowTrace({ wf }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       {/* intent header */}
-      <div style={{ padding: 14, background: 'var(--panel-2)', borderRadius: 8, border: '1px solid var(--line)' }}>
+      <div style={{ padding: 14, background: 'var(--panel-2)', borderRadius: 0, border: '1px solid var(--line)' }}>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--text-3)', marginBottom: 6 }}>intent</div>
         <div style={{ color: 'var(--text)', fontSize: 14, lineHeight: 1.5 }}>{wf.intent || wf.target || '(no intent)'}</div>
         {wf.target && wf.target !== wf.intent && (
@@ -474,7 +474,7 @@ function WorkflowTrace({ wf }) {
       {/* delegation summary */}
       {delegation && (
         <div style={{
-          padding: 12, borderRadius: 8,
+          padding: 12, borderRadius: 0,
           background: 'rgba(168, 85, 247, 0.04)',
           border: '1px solid rgba(168, 85, 247, 0.25)',
         }}>
@@ -508,7 +508,7 @@ function WorkflowTrace({ wf }) {
           <div style={{ display: 'grid', gridTemplateColumns: `repeat(${Math.min(plan.length, 6)}, 1fr)`, gap: 6 }}>
             {plan.map(step => (
               <div key={step.order} style={{
-                padding: 8, background: 'var(--panel-2)', border: '1px solid var(--line-soft)', borderRadius: 6,
+                padding: 8, background: 'var(--panel-2)', border: '1px solid var(--line-soft)', borderRadius: 0,
                 fontFamily: 'var(--font-mono)', fontSize: 10,
               }}>
                 <div style={{ color: 'var(--cyan)' }}>{String(step.order).padStart(2, '0')} · {step.stage}</div>
@@ -546,7 +546,7 @@ function WorkflowTrace({ wf }) {
                   background: 'var(--panel-2)',
                   border: '1px solid var(--line-soft)',
                   borderLeft: `3px solid ${stageTone}`,
-                  borderRadius: 6,
+                  borderRadius: 0,
                   fontFamily: 'var(--font-mono)', fontSize: 10,
                 }}>
                   <span style={{ color: 'var(--text-mute)' }}>{formatTs(step.timestamp)}</span>
@@ -565,13 +565,13 @@ function WorkflowTrace({ wf }) {
 
       {/* result */}
       {wf.result && (
-        <div style={{ padding: 12, background: 'rgba(16, 185, 129, 0.06)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 8 }}>
+        <div style={{ padding: 12, background: 'rgba(16, 185, 129, 0.06)', border: '1px solid rgba(16, 185, 129, 0.3)', borderRadius: 0}}>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--emerald)', marginBottom: 6 }}>result</div>
           <div style={{ color: 'var(--text-2)', fontSize: 12, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{wf.result}</div>
         </div>
       )}
       {wf.error && (
-        <div style={{ padding: 12, background: 'rgba(239, 68, 68, 0.06)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 8 }}>
+        <div style={{ padding: 12, background: 'rgba(239, 68, 68, 0.06)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 0}}>
           <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--red)', marginBottom: 6 }}>error</div>
           <div style={{ color: 'var(--text-2)', fontSize: 12, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{wf.error}</div>
         </div>
@@ -635,7 +635,7 @@ function WorkflowFullCard({ wf }) {
   return (
     <div style={{
       border: '1px solid var(--line)',
-      borderRadius: 10,
+      borderRadius: 0,
       padding: 12,
       background: 'var(--panel-2)',
     }}>
@@ -659,7 +659,7 @@ function WorkflowFullCard({ wf }) {
                 padding: '6px 8px',
                 background: `${stTone}12`,
                 border: `1px solid ${stTone}40`,
-                borderRadius: 4,
+                borderRadius: 0,
                 fontFamily: 'var(--font-mono)', fontSize: 10,
                 textAlign: 'center',
               }}>
@@ -705,7 +705,7 @@ function MessagesTab() {
                 background: 'var(--panel-2)',
                 border: '1px solid var(--line-soft)',
                 borderLeft: `2px solid var(--cyan)`,
-                borderRadius: 6,
+                borderRadius: 0,
                 fontFamily: 'var(--font-mono)', fontSize: 10.5,
               }}>
                 <div className="row" style={{ justifyContent: 'space-between', marginBottom: 4 }}>
@@ -740,7 +740,7 @@ function MessagesTab() {
                   background: 'var(--panel-2)',
                   border: '1px solid var(--line-soft)',
                   borderLeft: `2px solid ${m.color}`,
-                  borderRadius: 6,
+                  borderRadius: 0,
                   fontFamily: 'var(--font-mono)', fontSize: 10,
                 }}>
                   <span>{a.emoji}</span>
@@ -793,7 +793,7 @@ function GatekeeperTab() {
             return (
               <div key={a.id || i} style={{
                 border: `1px solid ${tone}`,
-                borderRadius: 10,
+                borderRadius: 0,
                 padding: 14,
                 background: tone === 'var(--red)' ? 'rgba(239, 68, 68, 0.04)' : tone === 'var(--amber)' ? 'rgba(251, 191, 36, 0.04)' : 'rgba(16, 185, 129, 0.04)',
               }}>
@@ -811,14 +811,14 @@ function GatekeeperTab() {
                   <button
                     onClick={() => approveAmendment(a.id, 'approve')}
                     style={{
-                      flex: 1, padding: '8px 14px', borderRadius: 6,
+                      flex: 1, padding: '8px 14px', borderRadius: 0,
                       background: 'rgba(16, 185, 129, 0.12)', border: '1px solid var(--emerald)',
                       color: 'var(--emerald)', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.08em',
                     }}>APPROVE</button>
                   <button
                     onClick={() => approveAmendment(a.id, 'reject')}
                     style={{
-                      flex: 1, padding: '8px 14px', borderRadius: 6,
+                      flex: 1, padding: '8px 14px', borderRadius: 0,
                       background: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--red)',
                       color: 'var(--red)', fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.08em',
                     }}>REJECT</button>
@@ -844,7 +844,7 @@ function GatekeeperTab() {
                 padding: '8px 10px',
                 background: 'var(--panel-2)',
                 border: '1px solid var(--line-soft)',
-                borderRadius: 6,
+                borderRadius: 0,
                 display: 'grid', gridTemplateColumns: '1fr auto auto',
                 gap: 10, alignItems: 'center',
                 fontFamily: 'var(--font-mono)', fontSize: 10,
@@ -913,7 +913,7 @@ function PoolTab() {
                 padding: '8px 12px',
                 background: 'var(--panel-2)',
                 border: '1px solid var(--line-soft)',
-                borderRadius: 6,
+                borderRadius: 0,
                 display: 'grid', gridTemplateColumns: '90px 1fr 1fr', gap: 10,
                 fontFamily: 'var(--font-mono)', fontSize: 10.5,
               }}>
@@ -936,7 +936,7 @@ function PoolTab() {
           {!stats ? <EmptyState icon="◉" title="no stats" hint="pool /stats endpoint not responding." />
             : Object.entries(stats).slice(0, 8).map(([k, v]) => (
               <div key={k} style={{
-                padding: 12, borderRadius: 8,
+                padding: 12, borderRadius: 0,
                 background: 'var(--panel-2)', border: '1px solid var(--line-soft)',
               }}>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--text-3)' }}>{k}</div>
@@ -1017,7 +1017,7 @@ function CognitiveTab() {
           {!state ? <EmptyState icon="⌬" title="no state" hint="cognitive /state endpoint not responding." />
             : (
               <pre style={{
-                margin: 0, padding: 14, background: 'var(--panel-2)', borderRadius: 8,
+                margin: 0, padding: 14, background: 'var(--panel-2)', borderRadius: 0,
                 fontFamily: 'var(--font-mono)', fontSize: 10, color: 'var(--text-2)',
                 whiteSpace: 'pre-wrap', wordBreak: 'break-all',
                 maxHeight: 460, overflow: 'auto',
@@ -1063,7 +1063,7 @@ function EventsTab() {
           <div className="row" style={{ gap: 4 }}>
             {['all', 'ok', 'info', 'warn', 'err'].map(f => (
               <button key={f} onClick={() => setFilter(f)} style={{
-                padding: '4px 10px', borderRadius: 4,
+                padding: '4px 10px', borderRadius: 0,
                 background: filter === f ? 'rgba(34, 211, 238, 0.15)' : 'var(--panel-2)',
                 border: `1px solid ${filter === f ? 'var(--cyan)' : 'var(--line-soft)'}`,
                 color: filter === f ? 'var(--cyan)' : 'var(--text-3)',
@@ -1073,7 +1073,7 @@ function EventsTab() {
             <span style={{ width: 1, height: 16, background: 'var(--line)' }} />
             {['all', 'api', 'tower', 'bus', 'orch'].map(s => (
               <button key={s} onClick={() => setSrc(s)} style={{
-                padding: '4px 10px', borderRadius: 4,
+                padding: '4px 10px', borderRadius: 0,
                 background: src === s ? 'rgba(168, 85, 247, 0.15)' : 'var(--panel-2)',
                 border: `1px solid ${src === s ? 'var(--purple)' : 'var(--line-soft)'}`,
                 color: src === s ? 'var(--purple)' : 'var(--text-3)',
@@ -1124,7 +1124,7 @@ function MochiTab() {
                 display: 'grid', placeItems: 'center',
                 fontSize: 96,
                 border: '1px solid var(--line-2)',
-                borderRadius: 20,
+                borderRadius: 0,
                 background: 'radial-gradient(circle, rgba(168, 85, 247, 0.2), transparent 70%)',
                 position: 'relative',
               }}>
@@ -1157,7 +1157,7 @@ function MochiTab() {
                   <MetricCard label="interactions" value={m.interactions ?? 0} accent="var(--amber)" />
                   <MetricCard label="mood" value={m.mood || 'curious'} accent="var(--pink)" />
                 </div>
-                <div style={{ marginTop: 8, padding: 12, background: 'var(--panel-2)', borderRadius: 8, fontFamily: 'var(--font-mono)', fontSize: 10, lineHeight: 1.6 }}>
+                <div style={{ marginTop: 8, padding: 12, background: 'var(--panel-2)', borderRadius: 0, fontFamily: 'var(--font-mono)', fontSize: 10, lineHeight: 1.6 }}>
                   <KV k="eye" v={m.eye || '—'} />
                   <KV k="hat" v={m.hat || '—'} />
                   <KV k="tone" v={m.tone || '—'} />

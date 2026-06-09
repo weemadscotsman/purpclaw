@@ -186,7 +186,7 @@ function StaleIndicator() {
   if (!stale) return null;
   return (
     <div className="stale-tag" title="mission data hasn't refreshed in >10s — backend may be slow">
-      <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--amber)', boxShadow: '0 0 6px var(--amber)' }} />
+      <span style={{ width: 5, height: 5, borderRadius: 0, background: 'var(--amber)', boxShadow: '0 0 6px var(--amber)' }} />
       STALE
     </div>
   );
@@ -318,7 +318,7 @@ function ServiceMeshEnhanced() {
               padding: '8px 10px',
               background: 'var(--panel-2)',
               border: '1px solid var(--line-soft)',
-              borderRadius: 6,
+              borderRadius: 0,
               fontFamily: 'var(--font-mono)',
               fontSize: 10,
               opacity: svc.status === 'offline' ? 0.6 : 1,
@@ -326,7 +326,7 @@ function ServiceMeshEnhanced() {
             }}>
               <div style={{ minWidth: 0 }}>
                 <div className="row" style={{ marginBottom: 3 }}>
-                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: tone, boxShadow: `0 0 6px ${tone}` }} />
+                  <span style={{ width: 5, height: 5, borderRadius: 0, background: tone, boxShadow: `0 0 6px ${tone}` }} />
                   <span style={{ color: 'var(--text-2)' }}>{svc.name}</span>
                   <span style={{ color: 'var(--text-mute)', fontSize: 9 }}>:{svc.port}</span>
                 </div>
