@@ -4,14 +4,10 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   // Fix: explicitly set root to resolve multiple lockfiles warning
   outputFileTracingRoot: __dirname,
-  // app/page.tsx (v8.3.0 inline Mission Control) was archived on 2026-06-09;
-  // canonical Mission Control lives at /mission/harness. Send / and any
-  // old routes there.
-  async redirects() {
-    return [
-      { source: '/', destination: '/mission/harness', permanent: false },
-    ];
-  },
+  // app/page.tsx IS the real Mission Control (v8.3.0 inline) — has the
+  // Mochi menu top+bottom, Asher the dragon, service row, departments
+  // section, chat composer. The /mission megapanel is a secondary view.
+  // /mission routes are kept for power users; / loads the canonical UI.
   eslint: {
     ignoreDuringBuilds: true,
   },
