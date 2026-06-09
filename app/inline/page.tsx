@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
-import DivisionActivityPanel from './components/DivisionActivityPanel';
-import { useAgentEvents } from './hooks/useAgentEvents';
+import DivisionActivityPanel from '../components/DivisionActivityPanel';
+import { useAgentEvents } from '../hooks/useAgentEvents';
 
 // ============ TYPES ============
 interface ServiceHealth {
@@ -329,11 +329,9 @@ export default function MissionControl() {
           <div className="w-px h-4 bg-white/10" />
           <span className="text-[10px] text-white/20">{localTime}</span>
           <a
-            href="/ui"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/"
             className="text-[10px] text-white/40 hover:text-cyan-400 tracking-widest transition-colors border border-white/10 hover:border-cyan-500/30 px-2 py-0.5"
-            title="Switch to Agent Tower UI (3D skyscraper + panels)"
+            title="Switch to Agent Tower UI (3D skyscraper + panels) — root /"
           >
             ⇄ AGENT TOWER
           </a>
