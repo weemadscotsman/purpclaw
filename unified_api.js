@@ -27,6 +27,12 @@ const AgentTower = require('./agent_tower.js');
 // ── LLM provider for unified backend access ──
 const LLM = require('./lib/llm-provider');
 
+// ── Memory client (cognitive spine on :7880 via memory_matrix_v2.py) ──
+// Routes all memory tool calls + /api/memory to the real matrix instead of
+// the legacy samantha_memory.json file. Soft dependency — fails silent.
+let memory = null;
+try { memory = require('./lib/memory-client'); } catch (e) { console.error('[MEM] client load failed:', e.message); }
+
 // ========== DIGITAL SHAMAN LAYER ==========
 let shaman = null;
 let shamanEvaluator = null;
@@ -201,6 +207,10 @@ function sseStart(res) {
     'Cache-Control': 'no-cache, no-transform',
     'Connection': 'keep-alive',
     'X-Accel-Buffering': 'no',
+    // CORS so the UI on :3030 (or any localhost port) can stream from :7780
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Accept, Authorization',
   });
   if (res.flushHeaders) res.flushHeaders();
 }
@@ -399,8 +409,19 @@ async function handleChatStream(req, res) {
       }
     }
     sseEvent(res, 'phase', { phase: 'done' });
+    // Strip inline tool-call markup (DSML / JSON {"tool":...}) the same way
+    // the JSON /api/chat path does, so the final `done.reply` is clean for
+    // the UI to render as message text. Tool calls themselves are surfaced
+    // via the structured `toolCalls` field and earlier `tool-call` events.
+    const cleanedReply = fullReply
+      .replace(/\{\s*"tool"\s*:\s*"[^"]+"\s*,\s*"args"\s*:\s*\{[\s\S]*?\}\s*\}/g, '')
+      .replace(/<[^>]*?DSML[^>]*?>[\s\S]*<\/[^>]*?DSML[^>]*?>/g, '')
+      .replace(/<\/?[^>]*?DSML[^>]*?>/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
     sseEvent(res, 'done', {
-      reply: fullReply,
+      reply: cleanedReply,
+      rawReply: fullReply,
       model: modelName,
       providerStatus: 'answered',
       toolCalls: toolCallsUsed,
@@ -1737,14 +1758,38 @@ if ($hwnd -ne [IntPtr]::Zero) {
     }
 
     case 'memory': {
-      const mem = loadMemory();
-      switch (args.action) {
-        case 'remember': mem.facts.push({ c: args.content, t: new Date().toISOString() }); saveMemory(mem); return ok(`Remembered (${mem.facts.length} total): ${args.content}`);
-        case 'recall': { const q = (args.content || '').toLowerCase(); const m = mem.facts.filter(f => f.c.toLowerCase().includes(q)); return ok(m.length ? m.map(x => `* ${x.c}`).join('\n') : 'No matches'); }
-        case 'forget': { const b = mem.facts.length; mem.facts = mem.facts.filter(f => !f.c.toLowerCase().includes((args.content || '').toLowerCase())); saveMemory(mem); return ok(`Forgot ${b - mem.facts.length}`); }
-        case 'list': return ok(mem.facts.length ? mem.facts.map(f => `* ${f.c}`).join('\n') : 'No memories');
-        default: return ok('Actions: remember, recall, forget, list');
-      }
+      // ── Routes to cognitive spine via lib/memory-client ──
+      try {
+        if (!memory) return ok('Memory client unavailable');
+        const isUp = await memory.isOnline();
+        if (!isUp) return ok('Memory matrix offline (port 7880)');
+        switch (args.action) {
+          case 'remember': {
+            const memId = await memory.ingest(String(args.content || ''), {
+              source: 'tool:memory', importance: 0.6, valence: 0.1, type: 'text'
+            });
+            return ok(memId ? `Remembered (id ${memId}): ${args.content}` : `Failed to remember: ${args.content}`);
+          }
+          case 'recall': {
+            const q = String(args.content || '');
+            const { results } = await memory.recall(q, { limit: 10 });
+            if (!results || results.length === 0) return ok(`No memory matches for: ${q}`);
+            const out = results.slice(0, 10).map((m, i) => `${i + 1}. ${(m.content || '').substring(0, 200)}${m.score !== undefined ? ` [${(m.score * 100).toFixed(0)}%]` : ''}`).join('\n');
+            return ok(`Memory matches (${results.length}):\n${out}`);
+          }
+          case 'forget': {
+            // Cognitive spine has no per-item delete. Guide the user.
+            return ok('The cognitive spine does not support per-item deletion. Use recall to find entries, then remember updated context to supersede them.');
+          }
+          case 'list': {
+            const { results } = await memory.recall('', { limit: 50 });
+            if (!results || results.length === 0) return ok('No memories stored yet.');
+            const out = results.slice(0, 50).map((m, i) => `${i + 1}. ${(m.content || '').substring(0, 150)}${m.source ? ` — ${m.source}` : ''}`).join('\n');
+            return ok(`Recent memories (${results.length}):\n${out}`);
+          }
+          default: return ok('Actions: remember, recall, forget, list');
+        }
+      } catch (e) { return ok(`Memory error: ${e.message}`); }
     }
     case 'notification': {
       await psScript(`
@@ -2231,16 +2276,15 @@ if ($data[1].Count -gt 0) {
       } catch (e) { return ok(`Knowledge search error: ${e.message}`); }
     }
     case 'search_memory': {
+      // ── Routes to cognitive spine via lib/memory-client ──
       try {
-        const query = (args.query || '').toLowerCase();
-        const mem = loadMemory();
-        const entries = mem.facts || [];
-        const results = entries.filter(e => 
-          (e.c && e.c.toLowerCase().includes(query)) ||
-          (e.tags && e.tags.some(t => t.toLowerCase().includes(query)))
-        );
-        if (results.length === 0) return ok(`No memory matches for: ${query}`);
-        const out = results.slice(0, 10).map((e, i) => `${i + 1}. ${e.c.substring(0, 200)} (${e.t || 'unknown'})`).join('\n');
+        if (!memory) return ok('Memory client unavailable');
+        const isUp = await memory.isOnline();
+        if (!isUp) return ok('Memory matrix offline (port 7880)');
+        const query = String(args.query || '');
+        const { results } = await memory.recall(query, { limit: 10 });
+        if (!results || results.length === 0) return ok(`No memory matches for: ${query}`);
+        const out = results.slice(0, 10).map((m, i) => `${i + 1}. ${(m.content || '').substring(0, 200)}${m.score !== undefined ? ` [${(m.score * 100).toFixed(0)}%]` : ''}`).join('\n');
         return ok(`Memory matches (${results.length}):\n${out}`);
       } catch (e) { return ok(`Memory search error: ${e.message}`); }
     }
@@ -2739,6 +2783,45 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === '/api/health' && method === 'GET') return sendJson(res, 200, { status: 'healthy', timestamp: new Date().toISOString(), uptime: process.uptime(), memory: process.memoryUsage(), cpu: os.loadavg(), bridgeConnected: bridgeWs && !bridgeWs.destroyed });
+
+    // ── Sessions API ──────────────────────────────────────────────────
+    if (pathname === '/api/sessions' && method === 'GET') {
+      try {
+        const S = require('./lib/session-store');
+        const list = S.listSessions(100);
+        return sendJson(res, 200, { ok: true, sessions: list });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
+    if (pathname === '/api/sessions' && method === 'POST') {
+      try {
+        const S = require('./lib/session-store');
+        const body = await parseBody(req);
+        const session = S.createSession((body && body.title) || 'Untitled', (body && body.provider) || '', (body && body.model) || '');
+        return sendJson(res, 200, { ok: true, session });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
+    if (pathname.startsWith('/api/sessions/') && method === 'GET') {
+      try {
+        const id = pathname.split('/api/sessions/')[1];
+        const S = require('./lib/session-store');
+        const session = S.loadSession(id);
+        if (!session) return sendJson(res, 404, { error: 'session not found' });
+        return sendJson(res, 200, { ok: true, session });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
+    if (pathname.startsWith('/api/sessions/') && method === 'DELETE') {
+      try {
+        const id = pathname.split('/api/sessions/')[1];
+        const S = require('./lib/session-store');
+        const result = S.deleteSession(id);
+        return sendJson(res, 200, { ok: true, ...result });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
+    if (false && pathname === '/api/health-old') return;
     if (pathname === '/api/version' && method === 'GET') return sendJson(res, 200, { name: 'PURPCLAW', version: '7.0', codename: 'The Purple King', protocol: 'TURING v7.0', build: process.env.BUILD_HASH || 'dev' });
     // ── Mochi state bridge (unified pet across terminal + browser) ──────
     if (pathname === '/api/mochi' && method === 'GET') {
@@ -2930,19 +3013,45 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === '/api/memory' && method === 'GET') {
-      let memory = { facts: [], notes: [] };
-      try { if (fs.existsSync(MEMORY_FILE)) memory = JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8')); } catch (e) {}
-      return sendJson(res, 200, memory);
+      // ── Routes to cognitive spine via lib/memory-client ──
+      try {
+        if (!memory) return sendJson(res, 503, { ok: false, error: 'memory client unavailable' });
+        const isUp = await memory.isOnline();
+        if (!isUp) return sendJson(res, 503, { ok: false, error: 'memory matrix offline' });
+        const stats = await memory.stats();
+        const { results } = await memory.recall('', { limit: 50 });
+        return sendJson(res, 200, {
+          ok: true,
+          source: 'cognitive_spine:7880',
+          stats,
+          memories: results || [],
+        });
+      } catch (e) {
+        return sendJson(res, 500, { ok: false, error: e.message });
+      }
     }
 
     if (pathname === '/api/memory' && method === 'POST') {
-      const body = await parseBody(req);
-      let memory = { facts: [], notes: [] };
-      try { if (fs.existsSync(MEMORY_FILE)) memory = JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8')); } catch (e) {}
-      if (body.fact) memory.facts.push({ content: body.fact, timestamp: new Date().toISOString() });
-      if (body.note) memory.notes.push({ content: body.note, timestamp: new Date().toISOString() });
-      fs.writeFileSync(MEMORY_FILE, JSON.stringify(memory, null, 2));
-      return sendJson(res, 200, { ok: true, memory });
+      // ── Routes to cognitive spine via lib/memory-client ──
+      try {
+        const body = await parseBody(req);
+        if (!memory) return sendJson(res, 503, { ok: false, error: 'memory client unavailable' });
+        const isUp = await memory.isOnline();
+        if (!isUp) return sendJson(res, 503, { ok: false, error: 'memory matrix offline' });
+        // Support both old shape {fact, note} and new shape {content, query, action}
+        if (body.query || body.action === 'recall') {
+          const { results } = await memory.recall(String(body.query || ''), { limit: 20 });
+          return sendJson(res, 200, { ok: true, source: 'cognitive_spine:7880', memories: results || [] });
+        }
+        const content = String(body.fact || body.note || body.content || '').trim();
+        if (!content) return sendJson(res, 400, { ok: false, error: 'content required (fact|note|content|query)' });
+        const memId = await memory.ingest(content, {
+          source: 'api:/memory', importance: 0.6, valence: 0.1, type: 'text'
+        });
+        return sendJson(res, 200, { ok: true, source: 'cognitive_spine:7880', memory_id: memId, content });
+      } catch (e) {
+        return sendJson(res, 500, { ok: false, error: e.message });
+      }
     }
 
     if (pathname === '/api/skills' && method === 'GET') {
@@ -3321,7 +3430,7 @@ const server = http.createServer(async (req, res) => {
       }
       try {
         const body = await parseBody(req);
-        const { message, spawnAgents = true } = body;
+        const { message, spawnAgents = true, sessionId } = body;
         if (!message) return sendJson(res, 400, { error: 'message required' });
 
         // Use the real agent-loop (same tool-calling brain as CLI ask and SSE chat).
@@ -3334,7 +3443,7 @@ const server = http.createServer(async (req, res) => {
 
         for await (const ev of runAgent({
           prompt: message,
-          opts: { maxTokens: 2048, temperature: 0.7 },
+          opts: { maxTokens: 2048, temperature: 0.7, sessionId: sessionId },
         })) {
           if (ev.type === 'token') {
             fullReply += ev.content;
@@ -3350,13 +3459,32 @@ const server = http.createServer(async (req, res) => {
           }
         }
 
+        // Strip tool-call markup that the LLM emits inline so the chat reply
+        // stays clean. The frontend renders tool calls as animated ToolCallBadge
+        // components from the structured `tool_calls` array, so the raw text
+        // forms are pure noise here. Strips:
+        //   - JSON:      {"tool": "name", "args": {...}}
+        //   - DSML:      <｜｜DSML｜｜tool_calls>…<｜｜DSML｜｜tool_calls> (nested)
+        //   - Generic:   any <…DSML…> open/close pair, including self-closing
+        // Strategy: greedy match of the outermost DSML block, then a cleanup
+        // pass for any orphaned tags.
+        let cleanedReply = fullReply
+          .replace(/\{\s*"tool"\s*:\s*"[^"]+"\s*,\s*"args"\s*:\s*\{[\s\S]*?\}\s*\}/g, '')
+          // Greedy match: <…DSML…> eats everything up to the LAST </…DSML…>
+          .replace(/<[^>]*?DSML[^>]*?>[\s\S]*<\/[^>]*?DSML[^>]*?>/g, '')
+          // Cleanup: any remaining orphan DSML fragments
+          .replace(/<\/?[^>]*?DSML[^>]*?>/g, '')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+
         return sendJson(res, 200, {
           ok: true,
-          reply: fullReply,
+          reply: cleanedReply,
           model: modelName,
           tool_calls: toolCalls,
           errors: errors.length > 0 ? errors : undefined,
           turns: toolCalls.length > 0 ? 'multi-turn' : 'single',
+          sessionId: sessionId || null,
         });
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
