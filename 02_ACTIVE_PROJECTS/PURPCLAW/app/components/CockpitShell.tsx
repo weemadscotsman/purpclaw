@@ -102,17 +102,27 @@ export function CockpitShell({ children, title = 'One Mission / Many Lenses' }: 
 
   const load = useCallback(async () => {
     try {
-      // Fetch mission data + real host telemetry together so the footer
-      // CPU/RAM/RSS stats show real numbers instead of N/A.
-      const [missionRes, hostRes] = await Promise.all([
+      // Fetch mission data + real host telemetry + service health together so
+      // the footer (CPU/RAM/RSS + HEALTH/SERVICES) shows real numbers, not N/A.
+      // /api/mission-data has no livePorts/services array, so the footer's
+      // HEALTH/SERVICES were always N/A — /api/services carries that.
+      const [missionRes, hostRes, svcRes] = await Promise.all([
         fetch('/api/mission-data', { cache: 'no-store' }),
         fetch('/api/host-telemetry', { cache: 'no-store' }).catch(() => null),
+        fetch('/api/services', { cache: 'no-store' }).catch(() => null),
       ]);
       if (missionRes.ok) {
         const md = await missionRes.json();
         let host = null;
         try { if (hostRes && hostRes.ok) host = await hostRes.json(); } catch { /* host optional */ }
-        setData({ ...md, hostTelemetry: host || md.hostTelemetry || null });
+        let livePorts = md.livePorts;
+        try {
+          if (svcRes && svcRes.ok) {
+            const sj = await svcRes.json();
+            if (Array.isArray(sj.services)) livePorts = sj.services.map((s: { id?: string; ok?: boolean }) => ({ id: s.id, ok: !!s.ok }));
+          }
+        } catch { /* services optional */ }
+        setData({ ...md, hostTelemetry: host || md.hostTelemetry || null, livePorts });
       }
     } catch { /* keep last */ }
   }, []);
