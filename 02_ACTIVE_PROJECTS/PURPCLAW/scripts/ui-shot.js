@@ -28,7 +28,18 @@ const fs = require('fs');
     console.log('nav-warn: ' + e.message);
   }
   await page.waitForTimeout(7000); // let client render + data load
-  await page.screenshot({ path: out, timeout: 25000, fullPage: false }).catch(e => console.log('shot-warn: ' + e.message));
+  // Freeze animations so the screenshot can grab a stable frame. The heavy
+  // rAF/canvas loops (three.js backgrounds) peg the CPU and make screenshot()
+  // time out. Kill rAF + CSS animation/transition, then capture.
+  await page.addStyleTag({ content: '*,*::before,*::after{animation:none!important;transition:none!important;animation-duration:0s!important}' }).catch(() => {});
+  await page.evaluate(() => {
+    try {
+      window.requestAnimationFrame = () => 0;
+      window.cancelAnimationFrame = () => {};
+    } catch (e) {}
+  }).catch(() => {});
+  await page.waitForTimeout(600);
+  await page.screenshot({ path: out, timeout: 25000, fullPage: false, animations: 'disabled' }).catch(e => console.log('shot-warn: ' + e.message));
   console.log('SAVED ' + out);
   await browser.close();
 })().catch(e => { console.error('ERR ' + (e.stack || e.message)); process.exit(1); });
