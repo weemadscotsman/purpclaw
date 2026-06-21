@@ -11,6 +11,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CockpitShell } from '../../components/CockpitShell';
 
+// The harness service port — referenced in the status line but was never
+// defined, which threw "HARNESS_PORT is not defined" and crashed the page.
+const HARNESS_PORT = 7798;
+
 function harnessProxy(path: string, soft = true) {
   return `/api/service-proxy?port=7798&path=${encodeURIComponent(path)}${soft ? '&soft=1' : ''}`;
 }
