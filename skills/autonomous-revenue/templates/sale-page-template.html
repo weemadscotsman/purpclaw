@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{PRODUCT_NAME}} — {{TAGLINE}}</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:{{BG_COLOR}};color:#e8eaf0;font-family:{{FONT}};min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.container{max-width:700px;width:100%}
+.card{background:{{CARD_BG}};border:1px solid {{BORDER}};border-radius:12px;padding:40px;text-align:center}
+h1{font-size:2rem;margin-bottom:8px;color:{{ACCENT}};text-shadow:0 0 20px {{ACCENT}}66}
+.tagline{color:#6b7280;margin-bottom:30px;font-size:0.95rem}
+.price{font-size:3.5rem;font-weight:bold;color:{{ACCENT}};margin:20px 0}
+.price span{font-size:1.2rem;color:#6b7280}
+.features{text-align:left;background:{{FEATURE_BG}};border-radius:8px;padding:20px;margin:25px 0}
+.features li{list-style:none;padding:8px 0;color:#9ca3af;font-size:0.9rem}
+.features li::before{content:'✓ ';color:{{ACCENT}};margin-right:8px}
+.pay-btn{background:{{ACCENT}};color:#05060a;border:none;padding:16px 40px;font-size:1.1rem;font-weight:bold;border-radius:8px;cursor:pointer;width:100%;margin:10px 0;text-decoration:none;display:inline-block;transition:all 0.2s}
+.pay-btn:hover{transform:scale(1.03);opacity:0.9}
+.crypto-box{background:{{CRYPTO_BG}};border:1px solid {{ACCENT}}44;border-radius:8px;padding:20px;margin:20px 0}
+.crypto-box h3{color:{{ACCENT}};margin-bottom:10px}
+.addr{background:#05060a;padding:12px;border-radius:6px;font-family:monospace;font-size:0.85rem;word-break:break-all;color:#00cc88;border:1px solid {{ACCENT}}33;margin:10px 0}
+.copy-btn{background:{{ACCENT}};color:#05060a;border:none;padding:8px 20px;font-size:0.85rem;font-weight:bold;border-radius:6px;cursor:pointer}
+.timer{color:#ff6644;font-size:1.4rem;font-weight:bold;margin:10px 0}
+.note{background:#1a1e2e;border-radius:6px;padding:12px;margin:15px 0;font-size:0.8rem;color:#9ca3af}
+.warning{color:#555;font-size:0.75rem;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="card">
+<h1>{{EMOJI}} {{PRODUCT_NAME}}</h1>
+<p class="tagline">{{TAGLINE}}</p>
+
+<div class="old-price" style="color:#555;text-decoration:line-through;font-size:1rem;margin-bottom:5px">{{OLD_PRICE}}</div>
+<div class="price">{{PRICE}} <span>{{PRICE_TYPE}}</span></div>
+<p class="timer">⚡ {{COUNTDOWN_TEXT}}</p>
+
+<div class="features">
+{{FEATURE_LIST}}
+</div>
+
+<a class="pay-btn" href="{{PAYPAL_ME_LINK}}">{{PAY_BUTTON_TEXT}}</a>
+
+<div class="crypto-box">
+<h3>💰 Or Pay with Crypto</h3>
+<p style="color:#888;font-size:0.85rem;margin-bottom:10px">{{CRYPTO_DESCRIPTION}}</p>
+<div class="addr">{{CRYPTO_ADDRESS}}</div>
+<button class="copy-btn" onclick="copy()">📋 COPY ADDRESS</button>
+</div>
+
+<div class="note">
+{{POST_PAYMENT_NOTES}}
+</div>
+
+<p class="warning">{{WARNING}}</p>
+</div>
+</div>
+
+<script>
+function copy(){
+  navigator.clipboard.writeText('{{CRYPTO_ADDRESS_JS}}');
+  document.querySelector('.copy-btn').textContent='✅ COPIED!';
+  setTimeout(()=>document.querySelector('.copy-btn').textContent='📋 COPY ADDRESS',2000);
+}
+</script>
+</body>
+</html>

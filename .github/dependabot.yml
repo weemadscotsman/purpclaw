@@ -1,0 +1,129 @@
+# ════════════════════════════════════════════════════════════════════════════
+#  Dependabot — automated dependency updates with security focus
+# ════════════════════════════════════════════════════════════════════════════
+#  Groups keep PR noise low. Security-only group is silent until vulns land.
+#  We schedule on Mondays so PRs don't pile up over weekends.
+# ════════════════════════════════════════════════════════════════════════════
+
+version: 2
+
+experiments:
+  # Auto-merge grouped patch updates for non-runtime deps.
+  dependency-review: true
+
+updates:
+  # ── npm ───────────────────────────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 8
+    labels:
+      - "dependencies"
+      - "automated"
+    # Group low-noise bumps to keep PR count manageable.
+    groups:
+      # Security patches — highest priority, kept separate so reviewers
+      # can fast-track them.
+      security-patches:
+        applies-to:
+          security-updates-only: true
+        patterns:
+          - "*"
+      # Patch updates for everything else — silent auto-merge eligible.
+      patch-updates:
+        applies-to:
+          version-updates:
+            - "patch"
+        patterns:
+          - "*"
+      # Minor updates grouped by package family — fewer review sessions.
+      react-ecosystem:
+        patterns:
+          - "react*"
+          - "@types/react*"
+          - "react-dom"
+          - "@xyflow/react"
+      nextjs:
+        patterns:
+          - "next"
+          - "@next/*"
+          - "eslint-config-next"
+      build-tooling:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "postcss"
+          - "autoprefixer"
+          - "typescript"
+          - "ts-node"
+          - "eslint"
+          - "tw-animate-css"
+      visualization:
+        patterns:
+          - "d3"
+          - "three"
+          - "recharts"
+          - "react-force-graph-3d"
+      llm-providers:
+        patterns:
+          - "@google/genai"
+          - "gradient-string"
+          - "cli-spinners"
+    # Don't bump these — known version pins.
+    ignore:
+      - dependency-name: "playwright"
+        # Browser tooling — version drift breaks our E2E lane.
+        # Update manually with E2E validation.
+
+  # ── GitHub Actions ────────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    labels:
+      - "dependencies"
+      - "ci"
+      - "automated"
+    groups:
+      action-updates:
+        patterns:
+          - "*"
+    # Pinning major versions of actions to specific SHAs is best practice
+    # but produces noisy diffs — leave at tag-tracked for now.
+
+  # ── pip (Python cognitive services) ────────────────────────────────────────
+  - package-ecosystem: "pip"
+    directory: "/python"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "python"
+      - "automated"
+    groups:
+      python-security:
+        applies-to:
+          security-updates-only: true
+        patterns:
+          - "*"
+      python-patches:
+        applies-to:
+          version-updates:
+            - "patch"
+        patterns:
+          - "*"
+    ignore:
+      # PyTorch ecosystem moves slowly — review manually.
+      - dependency-name: "torch*"
+      - dependency-name: "transformers"

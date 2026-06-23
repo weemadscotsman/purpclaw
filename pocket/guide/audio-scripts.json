@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "voice": "af_heart",
+  "rate": 1.0,
+  "language": "en-US",
+  "engine": "kokoro",
+  "scripts": {
+    "intro": {
+      "title": "Welcome to PurpClaw Pocket OS",
+      "duration_estimate_sec": 25,
+      "text": "Welcome to PurpClaw Pocket OS. This audio guide will walk you through setting up your private AI. It lives entirely on this drive. Nothing leaves your computer unless you tell it to. You can hear any step again at any time. Use the menu to jump to what you need. Take your time. There is no rush."
+    },
+    "step1_detect": {
+      "title": "Step 1: Check Your Machine",
+      "duration_estimate_sec": 30,
+      "text": "Step one. Before anything else, we check what your machine can do. PurpClaw looks at your operating system, your memory, your graphics card, and your internet connection. If you have a modern computer with at least eight gigabytes of RAM, you can run small AI models right here, offline. If you have a graphics card with six gigabytes of VRAM or more, you can do even more. Don't worry if you don't. The guide will tell you what works for your machine."
+    },
+    "step2_mode": {
+      "title": "Step 2: Choose Your Mode",
+      "duration_estimate_sec": 35,
+      "text": "Step two. Pick how PurpClaw will work for you. There are four modes. Offline means everything runs on this machine, no internet needed. Hybrid is the recommended starting point. Local memory and privacy, but uses cloud AI for harder questions. Cloud mode is fastest but your data goes to the provider. Developer mode exposes the full toolkit for people who want to build with PurpClaw. Most people start with hybrid."
+    },
+    "step3_providers": {
+      "title": "Step 3: Set Up Your AI Provider",
+      "duration_estimate_sec": 40,
+      "text": "Step three. If you picked anything except fully offline, you need an AI provider. These are the brains PurpClaw talks to. You can use OpenAI, Anthropic, Google Gemini, DeepSeek, Mistral, Groq, or any OpenAI-compatible endpoint. Each one needs an API key, which is a long secret string you get from their website. The key gets stored in your encrypted vault. We never see it. We never send it anywhere."
+    },
+    "step4_vault": {
+      "title": "Step 4: Set Up Your Vault",
+      "duration_estimate_sec": 30,
+      "text": "Step four. The vault is where your secrets live. It uses strong encryption, the same kind banks use. You will set a master password. Make it long, make it memorable, do not lose it. PurpClaw will give you a recovery key on a piece of paper. Write it down. Put it somewhere safe. If you forget your master password, that recovery key is the only way back in. There is no reset email. There is no support line. There is just that key."
+    },
+    "step5_budget": {
+      "title": "Step 5: Set Your Budget",
+      "duration_estimate_sec": 30,
+      "text": "Step five. AI costs money. Even small requests add up. PurpClaw has a budget guard called SpendGate. You set a daily token limit, a monthly limit, and a per-request cap. When the limit is hit, PurpClaw stops asking. No surprise bills. No rent money going to AI at three AM. Start conservative. You can always raise the limit later when you trust the system."
+    },
+    "step6_telemetry": {
+      "title": "Step 6: Private Telemetry",
+      "duration_estimate_sec": 25,
+      "text": "Step six. PurpClaw can learn how you work, but only if you let it. The telemetry log stays on this drive. It tracks what you ask, what works, what doesn't. It builds a preference profile. It never gets sent anywhere. You can turn it off. You can wipe it. You can export it. It is your data. It stays your data."
+    },
+    "step7_first_chat": {
+      "title": "Step 7: Your First Chat",
+      "duration_estimate_sec": 20,
+      "text": "Step seven. Time to say hello. Open a terminal, or click the dashboard button. Type 'ask' followed by a question. Something simple. Tell it about your day. Ask it to draft an email. Ask it to explain a concept. See how it feels. You can switch providers, swap models, change your mind. That is the whole point of this thing. It bends to you, not the other way around."
+    },
+    "step8_agents": {
+      "title": "Step 8: Meet the Agents",
+      "duration_estimate_sec": 25,
+      "text": "Step eight. PurpClaw has thirty-five agents. They have names like Duck, Goose, Owl, Wolf, and Mantis. They are specialised for different jobs. Duck is research. Goose is chaos. Owl is strategy. You don't need to learn them all. Start with one. See what it does. The more you use them, the more useful they become. Each one has its own budget cap if you want fine control."
+    },
+    "step9_harvest": {
+      "title": "Step 9: Feed the Claw",
+      "duration_estimate_sec": 25,
+      "text": "Step nine. The harvester. This is the fun part. Point PurpClaw at a folder on your drive. It reads documents, code, spreadsheets, PDFs, images with text. It learns your world. When you ask it a question, it knows what you have. Nothing leaves this machine. The harvester is optional. You can use PurpClaw without it. But if you have a pile of stuff to make sense of, this is the tool for it."
+    },
+    "step10_updates": {
+      "title": "Step 10: Keep It Current",
+      "duration_estimate_sec": 20,
+      "text": "Step ten. Updates. PurpClaw can check for new versions when you are online. It verifies signatures. It backs up the old version before installing. If something goes wrong, you can roll back. You can also ignore updates forever. Your drive, your call. There is no forced upgrade. There is no sunset clause. The version you have works as long as you want it to."
+    },
+    "wrap": {
+      "title": "You're Done",
+      "duration_estimate_sec": 30,
+      "text": "That is the tour. You now have a private AI system running on your own hardware. Your keys, your data, your limits. The dashboard is at localhost port three thousand. The command line is one tab away. If you get stuck, every command has a help flag. Type 'purpclaw pocket help' any time. Welcome to the claw. Use it well."
+    }
+  }
+}

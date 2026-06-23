@@ -1,0 +1,10 @@
+{
+  "name": "goop-playground",
+  "version": "0.1.0",
+  "description": "GOOP_PLAYGROUND — PurpClaw API broker. Default-deny gateway between agents and the public internet. Port 7895.",
+  "main": "goop-playground.js",
+  "scripts": {
+    "start": "node goop-playground.js"
+  },
+  "dependencies": {}
+}

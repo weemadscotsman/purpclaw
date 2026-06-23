@@ -1,0 +1,25 @@
+{
+  "music": "C:/Users/Admin/Desktop/PURPCLAW/assets/back-in-black.mp3",
+  "screens": [
+    {
+      "name": "MISSION_CONTROL",
+      "delay": 0,
+      "command": "start cmd /k \"cd /d C:\\Users\\Admin\\Desktop\\PURPCLAW && node command_center.js\""
+    },
+    {
+      "name": "AGENT_TOWER",
+      "delay": 1500,
+      "command": "start cmd /k \"cd /d C:\\Users\\Admin\\Desktop\\purpclaw-boot && node agent_tower.js\""
+    },
+    {
+      "name": "COMPANION_CHORUS",
+      "delay": 3000,
+      "command": "start cmd /k \"cd /d C:\\Users\\Admin\\Desktop\\companion-chorus && npm start\""
+    },
+    {
+      "name": "SYSTEM_STATUS",
+      "delay": 4500,
+      "command": "start cmd /k \"cd /d C:\\Users\\Admin\\Desktop\\PURPCLAW && node system_monitor.js\""
+    }
+  ]
+}

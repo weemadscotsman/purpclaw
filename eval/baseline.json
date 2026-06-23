@@ -1,0 +1,10 @@
+{
+  "_comment": "Replace with actual baseline metrics captured from a healthy run",
+  "captured_at": "2026-01-01T00:00:00Z",
+  "latency_ms": null,
+  "throughput_rps": null,
+  "error_rate": null,
+  "p50_ms": null,
+  "p95_ms": null,
+  "p99_ms": null
+}

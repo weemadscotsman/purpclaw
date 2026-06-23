@@ -1,0 +1,38 @@
+{
+  "name": "navigator",
+  "version": 2,
+  "status": "approved",
+  "description": "Explicit OS navigation - never get lost",
+  "tools": [
+    "list_drives",
+    "list_directory",
+    "get_current_location",
+    "change_directory",
+    "path_exists",
+    "get_path_type",
+    "find_in_directory",
+    "get_known_locations",
+    "get_folder_structure"
+  ],
+  "known_paths": {
+    "desktop": "C:\\Users\\Admin\\Desktop",
+    "home": "C:\\Users\\Admin\\Desktop",
+    "god_folder": "E:\\god folder",
+    "worldview": "E:\\god folder\\02_ACTIVE_PROJECTS\\GOTHAM_3077",
+    "worldview_frontend": "E:\\god folder\\02_ACTIVE_PROJECTS\\GOTHAM_3077\\frontend\\src",
+    "zamp": "E:\\god folder\\ZAMP",
+    "purpclaw": "C:\\Users\\Admin\\Desktop\\PURPCLAW",
+    "documents": "C:\\Users\\Admin\\Documents",
+    "downloads": "C:\\Users\\Admin\\Downloads",
+    "pictures": "C:\\Users\\Admin\\Pictures",
+    "drive_c": "C:\\",
+    "drive_d": "D:\\",
+    "drive_e": "E:\\",
+    "drive_g": "G:\\",
+    "drive_k": "K:\\",
+    "program_files": "C:\\Program Files",
+    "program_files_x86": "C:\\Program Files (x86)",
+    "appdata_local": "C:\\Users\\Admin\\AppData\\Local",
+    "appdata_roaming": "C:\\Users\\Admin\\AppData\\Roaming"
+  }
+}

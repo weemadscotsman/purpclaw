@@ -1,0 +1,14 @@
+--- a/agent_tower.js
++++ b/agent_tower.js
+@@ -157,6 +157,12 @@ async function spawnAgent(agentName, task, options = {}) {
+   // tower runtime
++  // test-auth: 401 on no bearer, 200 on valid bearer
++  return agentState;
++}
++
++function validateTowerRequest(req) {
++  // NEW: check operator token before spawning
++  const auth = checkOperator(req);
++  if (!auth.ok) return auth.response;
+   return agentState;
+ }

@@ -1,0 +1,33 @@
+PURPCLAW GOOP HARVEST
+=====================
+Harvested: 2026-04-20
+Source: E:\claude-code-system\
+
+SCRIPTS (2 files)
+- nanoclaw.js      14KB  - NanoClaw v2 REPL
+- ecc.js            5KB  - ECC selective-install CLI
+
+LIB (22 files)
+- session-manager.js, package-manager.js, agent-compress.js
+- install-executor.js, install-manifests.js, install-state.js
+- orchestration-session.js, tmux-worktree-orchestrator.js
+- And 14 more library files
+
+SKILLS HARVESTED (5)
+- autonomous-agent-harness  - Full autonomous loop, crons, memory
+- agentic-engineering       - Agentic AI patterns
+- continuous-agent-loop      - Loop patterns
+- enterprise-agent-ops      - Enterprise ops
+- nanoclaw-repl            - NanoClaw REPL skill
+
+STEERING FILES (16)
+- coding-style.md, dev-mode.md, research-mode.md
+- patterns.md, git-workflow.md, performance.md
+- security.md, testing.md, typescript-patterns.md
+- And 7 more steering templates
+
+PERSONA FORGE REFERENCES
+- identity-tension.md, boundary-rules.md, naming-system.md
+- avatar-style.md, output-template.md, error-handling.md
+
+TOTAL: Full Claude Code agent engineering stack now in PURPCLAW

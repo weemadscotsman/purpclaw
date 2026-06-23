@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>MenuMochi</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <main class="shell">
+    <header class="topline">
+      <div>
+        <h1>MenuMochi</h1>
+        <p id="subtitle">active-tab guilt companion</p>
+      </div>
+      <button id="soundToggle" class="tiny">SFX ON</button>
+    </header>
+
+    <section class="screen crt">
+      <div id="petSprite" class="pet idle" aria-label="pixel pet"></div>
+      <div id="moodText" class="mood">initialising...</div>
+    </section>
+
+    <section class="stats">
+      <div class="stat"><span>FOOD</span><meter id="hunger" min="0" max="100"></meter></div>
+      <div class="stat"><span>JOY</span><meter id="happiness" min="0" max="100"></meter></div>
+      <div class="stat"><span>CLEAN</span><meter id="cleanliness" min="0" max="100"></meter></div>
+      <div class="stat"><span>REST</span><meter id="energy" min="0" max="100"></meter></div>
+      <div class="stat"><span>BORED</span><meter id="boredom" min="0" max="100"></meter></div>
+      <div class="stat"><span>BOND</span><meter id="bond" min="0" max="100"></meter></div>
+    </section>
+
+    <section class="buttons">
+      <button data-action="feed"><b>A</b> FEED</button>
+      <button data-action="play"><b>B</b> PLAY</button>
+      <button data-action="clean"><b>C</b> CLEAN</button>
+      <button data-action="sleep"><b>D</b> SLEEP</button>
+    </section>
+
+    <section class="settings">
+      <button id="diaryToggle" class="tiny wide">📔 Diary</button>
+      <button id="apologize" class="tiny wide">❤️ Apologise</button>
+      <div id="bondText" class="bondline">Bond: Stranger</div>
+      <div id="diaryPanel" class="diary hidden"></div>
+    </section>
+
+    <section id="gamePanel" class="game hidden">
+      <h2>BYTE CATCHER</h2>
+      <p>Click the falling bytes. Avoid the bugs. Primitive, yes. Effective, disgustingly.</p>
+      <div id="gameArea"></div>
+      <div class="gamebar"><span id="score">Score: 0</span><button id="startGame">Start</button></div>
+    </section>
+
+    <footer class="footer">
+      <span id="levelText">Lvl 1</span>
+      <span id="coinsText">0 coins</span>
+      <button id="resetPet" class="danger">Reset</button>
+    </footer>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

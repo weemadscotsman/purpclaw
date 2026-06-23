@@ -1,0 +1,10 @@
+.next/
+.claude/
+.archive/
+app/_archive/
+app/public/ui/
+lib/thringlets/_vendor-from-pvx/
+no-spaghett/
+puzzle-stream/
+public/
+skills/

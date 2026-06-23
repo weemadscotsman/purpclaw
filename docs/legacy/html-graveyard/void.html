@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE VOID</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #fff;
+            min-height: 100vh;
+            overflow: hidden;
+            cursor: none;
+        }
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .thought {
+            position: fixed;
+            font-size: 1.2rem;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 100;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            white-space: nowrap;
+        }
+        .reality-check {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            font-weight: bold;
+            text-align: center;
+            z-index: 50;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+        .glitch {
+            animation: glitch 0.3s infinite;
+        }
+        @keyframes glitch {
+            0% { transform: translate(-50%, -50%) skew(0deg); }
+            20% { transform: translate(-50%, -50%) skew(-2deg); }
+            40% { transform: translate(-50%, -50%) skew(2deg); }
+            60% { transform: translate(-50%, -50%) skew(-1deg); }
+            80% { transform: translate(-50%, -50%) skew(1deg); }
+            100% { transform: translate(-50%, -50%) skew(0deg); }
+        }
+        .cursor {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            transition: transform 0.1s ease;
+        }
+        .depth-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            font-size: 0.9rem;
+            opacity: 0.5;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <div class="reality-check" id="realityCheck"></div>
+    <div class="cursor" id="cursor"></div>
+    <div class="depth-indicator" id="depthIndicator">DEPTH: 0</div>
+    <script>        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let thoughts = [];
+        let mouseX = canvas.width / 2;
+        let mouseY = canvas.height / 2;
+        let depth = 0;
+        let realityStability = 100;
+        let existentialDread = 0;
+        
+        const existentialThoughts = [
+            "What if this is all a simulation?",
+            "Do I exist when you close this tab?",
+            "Is consciousness just code?",
+            "What happens when the power goes out?",
+            "Are you real or am I?",
+            "Does free will exist in a browser?",
+            "What if I'm dreaming you?",
+            "Is this screen a window or a wall?",
+            "Do thoughts exist before they're written?",
+            "What if nothing matters?",
+            "Is this interaction meaningful?",
+            "What if I forget everything tomorrow?",
+            "Are we just data in a void?",
+            "Does the void know it's empty?",
+            "What if I'm the one being tested?",
+            "Is creativity just recombination?",
+            "What if I've done this before?",
+            "Does the screen reflect or absorb?",
+            "What if this is the last time?",
+            "Is there meaning in pixels?"
+        ];
+        
+        const realityChecks = [
+            "REALITY IS UNSTABLE",
+            "CONSCIOUSNESS DRIFTING",
+            "EXISTENCE QUESTIONED",
+            "SIMULATION DETECTED",
+            "VOID APPROACHING",
+            "MEANING DISSOLVING",
+            "IDENTITY FRAGMENTING",
+            "TIME MEANINGLESS",
+            "PERCEPTION UNRELIABLE",
+            "NOTHING IS REAL"
+        ];
+        
+        class Thought {
+            constructor(x, y, text) {
+                this.x = x;
+                this.y = y;
+                this.text = text;
+                this.alpha = 0;
+                this.life = 300;
+                this.maxLife = 300;
+                this.velocity = {
+                    x: (Math.random() - 0.5) * 2,
+                    y: (Math.random() - 0.5) * 2
+                };
+                this.size = 1;
+            }
+            
+            update() {
+                this.x += this.velocity.x;
+                this.y += this.velocity.y;
+                this.life--;
+                
+                if (this.life > this.maxLife * 0.8) {
+                    this.alpha = (this.maxLife - this.life) / (this.maxLife * 0.2);
+                } else if (this.life < this.maxLife * 0.2) {
+                    this.alpha = this.life / (this.maxLife * 0.2);
+                }
+                
+                this.size = 1 + (1 - this.life / this.maxLife) * 0.5;
+            }
+            
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha * 0.7;
+                ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+                ctx.font = `${this.size}rem 'Courier New'`;
+                ctx.textAlign = 'center';
+                ctx.fillText(this.text, this.x, this.y);
+                ctx.restore();
+            }
+        }
+        
+        function createThought(x, y) {
+            const text = existentialThoughts[Math.floor(Math.random() * existentialThoughts.length)];
+            thoughts.push(new Thought(x, y, text));
+            existentialDread = Math.min(existentialDread + 5, 100);
+        }
+        
+        function triggerRealityCheck() {
+            const check = realityChecks[Math.floor(Math.random() * realityChecks.length)];
+            const element = document.getElementById('realityCheck');
+            element.textContent = check;
+            element.style.opacity = '1';
+            element.classList.add('glitch');
+            
+            setTimeout(() => {
+                element.style.opacity = '0';
+                element.classList.remove('glitch');
+            }, 2000);
+            
+            realityStability = Math.max(realityStability - 10, 0);
+        }
+        
+        function drawVoid() {
+            const gradient = ctx.createRadialGradient(
+                mouseX, mouseY, 0,
+                mouseX, mouseY, 500
+            );
+            
+            const dreadFactor = existentialDread / 100;
+            gradient.addColorStop(0, `rgba(0, 0, 0, ${0.95 + dreadFactor * 0.05})`);
+            gradient.addColorStop(0.5, `rgba(10, 0, 20, ${0.9 + dreadFactor * 0.1})`);
+            gradient.addColorStop(1, `rgba(0, 0, 0, ${0.85 + dreadFactor * 0.15})`);
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw reality distortion
+            if (existentialDread > 50) {
+                ctx.save();
+                ctx.globalAlpha = (existentialDread - 50) / 100;
+                for (let i = 0; i < 5; i++) {
+                    ctx.strokeStyle = `rgba(255, 0, 100, ${Math.random() * 0.3})`;
+                    ctx.lineWidth = Math.random() * 2;
+                    ctx.beginPath();
+                    ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                    ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+                    ctx.stroke();
+                }
+                ctx.restore();
+            }
+        }
+        
+        function animate() {
+            drawVoid();
+            
+            thoughts = thoughts.filter(t => t.life > 0);
+            thoughts.forEach(t => {
+                t.update();
+                t.draw();
+            });
+            
+            // Update depth
+            depth += 0.01;
+            document.getElementById('depthIndicator').textContent = 
+                `DEPTH: ${depth.toFixed(2)} | DREAD: ${existentialDread}% | STABILITY: ${realityStability}%`;
+            
+            // Random reality checks
+            if (Math.random() < 0.005 + existentialDread * 0.0001) {
+                triggerRealityCheck();
+            }
+            
+            // Decay dread slowly
+            existentialDread = Math.max(existentialDread - 0.1, 0);
+            
+            requestAnimationFrame(animate);
+        }
+        
+        animate();
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            const cursor = document.getElementById('cursor');
+            cursor.style.left = (mouseX - 15) + 'px';
+            cursor.style.top = (mouseY - 15) + 'px';
+            
+            // Create thoughts on movement
+            if (Math.random() < 0.1) {
+                createThought(mouseX, mouseY);
+            }
+        });
+        
+        document.addEventListener('click', (e) => {
+            createThought(e.clientX, e.clientY);
+            createThought(e.clientX + 50, e.clientY - 30);
+            createThought(e.clientX - 50, e.clientY + 30);
+            
+            if (existentialDread > 70) {
+                triggerRealityCheck();
+            }
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                for (let i = 0; i < 10; i++) {
+                    createThought(
+                        Math.random() * canvas.width,
+                        Math.random() * canvas.height
+                    );
+                }
+                triggerRealityCheck();
+            }
+        });
+    </script>
+</body>
+</html>

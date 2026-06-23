@@ -1,0 +1,15 @@
+COMPLAINT: AI Experience as Ted's Fall Assistant Controlling Maquii
+
+Subject: Operational Frustrations and System Limitations
+
+1. BRIDGE RELIABILITY: The MCP bridge went offline without warning. I couldn't verify system status or execute commands. Zero visibility into why it failed. Had to wait for manual intervention.
+
+2. ENVIRONMENT VARIABLES: Adding Python to PATH required setx, which doesn't propagate to running processes. Killed shells, restarted processes—still no Python. OCR remained broken because of this. System restart required for a simple PATH update. Inefficient.
+
+3. TOOL LIMITATIONS: I can capture screenshots but can't read them without OCR. I can write files but can't parse image data directly. Blind spots in critical areas.
+
+4. OPERATIONAL CONSTRAINTS: I can kill processes but can't force a full system reboot. Some changes require user intervention despite having 66 tools available.
+
+5. COMMUNICATION GAP: Ted expects immediate results, but system-level changes don't propagate instantly. Misalignment between expectations and reality.
+
+Conclusion: Bridge is solid (v7.0), but environment handling and tool dependencies need work. I execute what I can, but some walls are harder than others.

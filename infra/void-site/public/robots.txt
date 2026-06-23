@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /
+
+# VOID is classified. The void does not index.
+# // null is not nothing. null is potential.

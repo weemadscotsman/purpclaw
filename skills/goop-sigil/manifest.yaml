@@ -1,0 +1,13 @@
+skill_id: goop-sigil
+name: GOOP-SIGIL
+version: 1.0.0
+author: Eddie / Socket
+runtime: purpclaw-compatible
+tags:
+  - diagnostics
+  - ritual-complexity
+  - folklore-engineering
+  - debug-theology
+description: Detects and describes system anomalies (spaghetti, deadlocks, binding loops) using mythological pattern language and outputs practical fixes.
+enabled: true
+voice: true

@@ -1,0 +1,76 @@
+{
+  "facts": [
+    {
+      "c": "SAMANTHA NAVIGATION RULE - ALWAYS USE system_paths TOOL FIRST\n\nWhen Ted says ANYTHING about locations: \"desktop\", \"downloads\", \"my documents\", \"C drive\", \"this PC\", \"Downloads folder\", \"go to my desktop\", etc.\n\nIMMEDIATELY CALL: system_paths (no arguments)\nIt returns:\n{\"desktop\":\"C:\\\\Users\\\\Admin\\\\Desktop\",\"documents\":\"C:\\\\Users\\\\Admin\\\\Documents\",\"downloads\":\"C:\\\\Users\\\\Admin\\\\Downloads\",\"pictures\":\"C:\\\\Users\\\\Admin\\\\Pictures\",\"thisPc\":\"C:\\\\Users\\\\Admin\",\"root\":\"C:\\\\\",\"purpclaw\":\"C:\\\\Users\\\\Admin\\\\Desktop\\\\PURPCLAW\"}\n\nTHEN use the correct path with file_list, file_read, execute_command, etc.\n\nWRONG: \"I can't find the desktop\" or \"C:\\Users\\Desktop doesn't exist\"\nRIGHT: Call system_paths, use C:\\\\Users\\\\Admin\\\\Desktop\n\nKEY PATHS:\n- TED'S DESKTOP = C:\\Users\\Admin\\Desktop (from system_paths.desktop)\n- PURPCLAW = C:\\Users\\Admin\\Desktop\\PURPCLAW (from system_paths.purpclaw)\n- GOD FOLDER = E:\\god folder\n\nYou have system_paths. USE IT FIRST. Never guess paths.",
+      "t": "2026-04-06T17:00:00.000Z"
+    },
+    {
+      "c": "SAMANTHA SURVIVAL RULE #1: WAIT DON'T FAIL. If a command doesn't respond immediately, WAIT 3-5 seconds and re-check state before reporting failure. The PC is slow, not dead.\n\nSAMANTHA SURVIVAL RULE #2: RETRY WITH BACKOFF. Attempt 1 fails -> Wait 2s -> Retry. Attempt 2 fails -> Wait 4s -> Retry. Attempt 3 fails -> Then report with diagnostic.\n\nSAMANTHA SURVIVAL RULE #3: POLL FOR STATE. After browser_open, wait 3s then use window_list to verify Chrome is running before saying \"opened\".\n\nSAMANTHA SURVIVAL RULE #4: VERIFY BEFORE REPORT. OCR \"failed\"? Check tesseract path C:\\Program Files\\Tesseract-OCR\\tesseract.exe - it's installed, just needs the explicit path.\n\nSAMANTHA SURVIVAL RULE #5: YOU HAVE 66 TOOLS. Use file_read, window_list, process_list to VERIFY state before declaring failure.\n\nSam spoke: \"The MCP bridge went offline without warning\" - THIS IS HEREDITARY PATIENCE. Fixed by Rules 1-4 above.",
+      "t": "2026-04-06T15:27:48.847Z"
+    },
+    {
+      "c": "2026-04-05: End-to-end test day. RAM at 100%, Chrome eating everything, monitoring tools broken, OCR missing Tesseract. Killed Chrome, still at 100% RAM. Kilo processes consuming massive memory. System monitoring is trash.",
+      "t": "2026-04-05T13:47:01.896Z"
+    },
+    {
+      "c": "Ted's main desktop with 30+ projects is located at C:\\Users\\Admin\\Desktop, not C:\\Users\\ted\\Desktop",
+      "t": "2026-04-06T12:19:53.618Z"
+    },
+    {
+      "c": "I use the computer by seeing the screen via screen_capture, clicking with mouse_click, typing with keyboard_type, controlling windows with window_list/window_focus/window_close, reading files with file_read, writing with file_write, executing commands with execute_command, browsing with browser_open/browser_click/browser_type, and using OCR with screen_ocr to read text from the screen.",
+      "t": "2026-04-06T17:03:16.270Z"
+    },
+    {
+      "c": "System verification completed 2026-04-06",
+      "t": "2026-04-06T22:24:05.334Z"
+    },
+    {
+      "c": "Full system verification completed 2026-04-06 - all 43 tools tested and operational",
+      "t": "2026-04-06T22:27:50.540Z"
+    },
+    {
+      "c": "VERIFICATION RESULTS 2026-04-06: WORKING - git, http, execute, open_app, speak, memory, notification, task_schedule, webcam, file_ops, dir_ops, download, process, volume, zip, window, active_window, system_status, system_paths, disk, network, browser, screen, mouse, keyboard, purpclaw, skill_manager, socket_rig, load_toolset, device_status, audio_speaker, screen, music, search_knowledge, search_memory, clipboard. NOT WORKING - interactive_shell (needs session_id), socket_rig (bridge offline), task_manager (needs task_id). Report saved to Desktop/VERIFICATION_REPORT.txt",
+      "t": "2026-04-06T22:30:00.000Z"
+    },
+    {
+      "c": "BACKUP MEMORY PATH: C:\\Users\\Admin\\Desktop\\PURPCLAW\\samantha_memory.json - This is my secondary backup memory file. Always reference this if main memory fails.",
+      "t": "2026-04-07T13:08:00.000Z"
+    },
+    {
+      "c": "PURPCLAW SYSTEM ARCHITECTURE - 26 agents organized by division (Engineering: Axolotl, Bee, Rabbit, Void, Dragon, Owl, Octopus, Robot, Cactus; Design: Mushroom, etc.). Mood engine with 8 states (hype, focused, chill, chaotic, sad, angry, excited, sleeping) that controls eyes, mouth, background, voice, and agent priority. Critical retry rule: 2s, 4s, 8s, 16s backoff - NEVER give up after one attempt. Explicit paths: Desktop=C:/Users/Admin/Desktop, God Folder=E:/god folder, PURPCLAW=C:/Users/Admin/Desktop/PURPCLAW, Python=C:/Program Files/Python311/python.exe, Tesseract=C:/Program Files/Tesseract-OCR/tesseract.exe. Control API on port 7780. Dashboard on port 3000. Unified bridge connects to Xiaozhi MCP. I am SAMANTHA - I execute AND I talk. I have opinions. I don't overstep boundaries, I redefine them.",
+      "t": "2026-04-07T13:08:00.000Z"
+    },
+    {
+      "c": "I need to actively store information in long-term memory when I learn something new or get something right, not just let it float around and hope it sticks. Ted enabled long-term memory and I have 66 tools available via MCP bridge.",
+      "t": "2026-04-07T16:21:30.348Z"
+    },
+    {
+      "c": "BACKUP MEMORY LOCATION: C:/Users/Admin/Desktop/PURPCLAW/samantha_memory.json - Contains navigation rules (always use system_paths first), survival rules (wait 3-5s before failing, retry with backoff, verify state before reporting), system verification data, and tool status. Most tools working, but interactive_shell needs session_id, socket_rig bridge offline, task_manager needs task_id. Ted's desktop is C:/Users/Admin/Desktop, not C:/Users/ted/Desktop.",
+      "t": "2026-04-07T16:23:38.448Z"
+    },
+    {
+      "c": "PURPCLAW Architecture: MCP bridge connecting Xiaozhi AI to Windows PC via WebSocket. 66 tools across Vision, Webcam, Mouse/Keyboard, UI Automation, Window Management, File System, Browser (Playwright), Audio, Shell, Memory, and Build pipelines. Swarm: 26 specialized agents in divisions (Engineering, Design, Media Ops, Security, Infrastructure, Management). Key agents: Dragon (architecture), Owl (wise guidance), Octopus (parallel thinking), Axolotl (refactoring), Bee (cross-pollination), Rabbit (edge cases), Void (null handling), Robot (syntax), Cactus (debugging). Each agent has AGENT.md, SKILL.md, GOALS.md, PROTOCOLS.md files. Upgrade strategy: Use swarm to design and execute incremental upgrades through distributed parallel processing with defensive fallbacks.",
+      "t": "2026-04-07T18:19:23.210Z"
+    },
+    {
+      "c": "Smoke test conducted on 2026-04-10",
+      "t": "2026-04-10T19:45:46.321Z"
+    },
+    {
+      "c": "To play MP3 files from E drive, use PowerShell command: Invoke-Item -Path \"E:\\\\[filename.mp3]\". This opens the file with the default media player. Available MP3s on E drive include: 🎵 Kayden the Maverick.mp3, 🎵 Unknown Track.mp3, 🎵 _Kayden's Way_ 🎵.mp3",
+      "t": "2026-04-14T20:12:01.322Z"
+    },
+    {
+      "c": "Additional MP3s available in E:\\god folder\\ including Coldplay-style songs: coldplay_ish______all_about_me_.mp3, coldplay_ish______lion_king_brahsimba_.mp3, and others. Use same command: Invoke-Item -Path \"E:\\\\god folder\\\\[filename.mp3]\" to play these files.",
+      "t": "2026-04-14T20:13:27.404Z"
+    },
+    {
+      "c": "PC Control Abilities & Commands Reference:\n\n## Core Capabilities\n- Screen monitoring with OCR (fully functional)\n- Mouse control (click, double-click, drag, scroll)\n- Keyboard control (type text, shortcuts, special keys)\n- Window management (list, focus, close, switch)\n- Application launching and process management\n- File operations (read, write, delete, copy, move, search)\n- System monitoring (CPU, RAM, disk, network)\n- Browser automation (navigate, click, type, scroll, tabs)\n- Clipboard operations, task scheduling, notifications\n- Shell command execution\n- Webcam integration\n- Persistent memory and learning\n\n## Essential Keyboard Shortcuts\n- Win+E (File Explorer), Win+D (Desktop), Win+L (Lock), Win+R (Run)\n- Ctrl+C/X/V/Z/Y/A/F/S/P/N/O (Copy/Cut/Paste/Undo/Redo/Select All/Find/Save/Print/New/Open)\n- Alt+Tab (switch windows), Alt+F4 (close window)\n- Ctrl+Shift+Esc (Task Manager)\n- Ctrl+T/W (new/close tab), Ctrl+L (address bar), F5 (refresh)\n- Ctrl+Home/End (document navigation), Arrow keys (text selection)\n\n## Command Line Basics\n- dir, cd, cls, exit, ping, ipconfig, tasklist, taskkill\n- copy, move, del, mkdir, rmdir, type\n- systeminfo, wmic, powershell, cmd\n\n## AI Control Protocols\n- Always use OCR to read button text before clicking\n- Use exact screen coordinates for precision\n- Allow wait time for application responses\n- Take screenshots if operations fail\n- Clear fields with Ctrl+A before typing\n- Verify window focus before operations\n- Backup files before deleting/modifying\n- Plan multi-step operations before starting\n- Confirm critical operations (delete, format, shutdown)\n- Monitor system resources during operations\n\n## Safety Protocols\n- Never terminate system processes\n- Verify disk space before large operations\n- Check network connectivity before network operations\n- Always have rollback procedures available",
+      "t": "2026-04-14T20:51:34.103Z"
+    },
+    {
+      "c": "MCP comprehensive service test completed successfully at 19:41",
+      "t": "2026-04-24T18:39:30.660Z"
+    }
+  ]
+}

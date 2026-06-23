@@ -1,0 +1,90 @@
+[
+  {
+    "viewport": {
+      "width": 1536,
+      "height": 710
+    },
+    "before": {
+      "noHorizontalOverflow": true,
+      "scrollWidth": 1536,
+      "clientWidth": 1536,
+      "composerVisible": true,
+      "composerRect": {
+        "x": 82,
+        "y": 518,
+        "width": 992,
+        "height": 40,
+        "bottom": 558
+      },
+      "traceVisible": true,
+      "traceRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1536,
+        "height": 710,
+        "right": 1536
+      },
+      "drawerClosedByDefault": true,
+      "railButtonVisible": true
+    },
+    "after": {
+      "drawerOpened": true,
+      "drawerHasSessions": true,
+      "noHorizontalOverflowAfterOpen": true,
+      "scrollWidth": 1536,
+      "clientWidth": 1536
+    },
+    "errors": [
+      "Failed to load resource: net::ERR_FAILED",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "screenshots": [
+      "E:\\god folder\\02_ACTIVE_PROJECTS\\PURPCLAW\\docs\\generated\\mission-ui-smoke-1536x710.png",
+      "E:\\god folder\\02_ACTIVE_PROJECTS\\PURPCLAW\\docs\\generated\\mission-ui-smoke-1536x710-drawer.png"
+    ]
+  },
+  {
+    "viewport": {
+      "width": 1920,
+      "height": 1080
+    },
+    "before": {
+      "noHorizontalOverflow": true,
+      "scrollWidth": 1920,
+      "clientWidth": 1920,
+      "composerVisible": true,
+      "composerRect": {
+        "x": 82,
+        "y": 807,
+        "width": 1361,
+        "height": 40,
+        "bottom": 847
+      },
+      "traceVisible": true,
+      "traceRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1920,
+        "height": 1080,
+        "right": 1920
+      },
+      "drawerClosedByDefault": true,
+      "railButtonVisible": true
+    },
+    "after": {
+      "drawerOpened": true,
+      "drawerHasSessions": true,
+      "noHorizontalOverflowAfterOpen": true,
+      "scrollWidth": 1920,
+      "clientWidth": 1920
+    },
+    "errors": [
+      "Failed to load resource: net::ERR_FAILED",
+      "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+    ],
+    "screenshots": [
+      "E:\\god folder\\02_ACTIVE_PROJECTS\\PURPCLAW\\docs\\generated\\mission-ui-smoke-1920x1080.png",
+      "E:\\god folder\\02_ACTIVE_PROJECTS\\PURPCLAW\\docs\\generated\\mission-ui-smoke-1920x1080-drawer.png"
+    ]
+  }
+]

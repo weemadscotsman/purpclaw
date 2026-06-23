@@ -1,0 +1,73 @@
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "docs/archive",
+    "archive",
+    ".archive",
+    ".donors",
+    "vendor",
+    "build",
+    "PURPCLAW",
+    "PURPCLAW.zip",
+    "lib/thringlets/_vendor-from-pvx",
+    "companion-chorus",
+    "podcast_studio",
+    "pocket",
+    "skills",
+    "_scratch",
+    "agent_work",
+    ".worktrees",
+    "_FF",
+    "_SW",
+    "STRESS",
+    ".STRESS",
+    "trip_logs",
+    ".trip_logs",
+    "TASKS",
+    "test-patches",
+    "tests",
+    "__tests__",
+    "tests/**/*",
+    "__tests__/**/*",
+    "*.test.ts",
+    "*.test.tsx",
+    "*.spec.ts",
+    "*.spec.tsx",
+    "ablation_probes",
+    "DreamTask",
+    "echo",
+    "harness/captures",
+    "harness/reports",
+    "mochi",
+    "models",
+    "vendor/**/*",
+    "**/__pycache__",
+    "deploy",
+    "scripts"
+  ]
+}

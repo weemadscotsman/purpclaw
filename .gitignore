@@ -1,0 +1,129 @@
+# ════════════════════════════════════════════════════════════════════════════
+#  🌵 CACTUS — Infrastructure .gitignore
+# ════════════════════════════════════════════════════════════════════════════
+#  Lock down secrets, runtime state, and build noise.
+#  Generated 2026-06-22 — Cactus infra audit, lane 1 of 8.
+# ════════════════════════════════════════════════════════════════════════════
+
+# ── Secrets (NEVER commit) ───────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+.env.nvidia
+.env.local
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+credentials/
+.tokens/
+secrets.json
+**/*credentials*
+**/*credential*
+
+# ── VCS / IDE noise ──────────────────────────────────────────────────────────
+.git/
+.gitignore
+.gitattributes
+.github/CODEOWNERS.bak
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Build outputs (rebuilt in CI / locally) ──────────────────────────────────
+node_modules/
+.next/
+.nuxt/
+dist/
+build/
+out/
+*.tsbuildinfo
+.eslintcache
+.cache/
+.parcel-cache/
+.turbo/
+.pnpm-store/
+.npm/
+.yarn/
+.pnp.*
+coverage/
+.nyc_output/
+*.lcov
+
+# ── Logs and runtime state (per-machine) ─────────────────────────────────────
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+tmp/
+temp/
+E:/purp-temp/
+
+# ── Agent runtime state — never baked into images or commits ────────────────
+.omnicode/
+.purpclaw/
+.archive/
+.donors/
+.omnicode/artifacts/
+.purpclaw/vector/
+memory_archive*
+_FF.txt
+_SW.txt
+_FF/  
+_SW/
+_FF.json
+_SW.json
+_FF/
+_SW/
+hi.txt
+out.txt
+build_full.txt
+build_out2.txt
+build_full3.txt
+build_*.txt
+agent_work/
+.no-spaghett/
+.STRESS/
+STRESS/
+_scratch/
+_donors/
+.trip_logs/
+.archived-runs/
+
+# ── Editor / TUI scratch ────────────────────────────────────────────────────
+$null
+
+# ── Python (cognitive services run separately) ──────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.python-version
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── Test artifacts (RABBIT lane) ─────────────────────────────────────────────
+tests/coverage/
+__tests__/coverage/
+.nyc_output/
+
+# ── Local data and uploads ──────────────────────────────────────────────────
+data/
+public/uploads/
+public/user-uploads/
+
+# ── OS / shell scratch ──────────────────────────────────────────────────────
+~*
+.#*

@@ -1,0 +1,19 @@
+skill_id: no-spaghett
+name: No Spaghett Codebase Analyzer
+version: 1.0.0
+author: Eddie / PURPCLAW
+runtime: purpclaw-service
+service:
+  key: no-spaghett
+  port: 7797
+  health: http://127.0.0.1:7797/api/health
+tags:
+  - code-quality
+  - architecture
+  - dependency-graph
+  - refactor
+  - documentation
+  - thringlets
+description: Backend service skill for analyzing local folders or GitHub repos, detecting spaghetti code, producing cleanup docs, projecting Thringlet impact, and requesting AI refactor plans.
+enabled: true
+voice: false

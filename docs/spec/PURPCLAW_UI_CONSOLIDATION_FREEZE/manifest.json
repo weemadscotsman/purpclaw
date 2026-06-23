@@ -1,0 +1,12 @@
+{
+  "created": "2026-06-21T10:46:30.021080+00:00",
+  "pack": "purpclaw_ui_consolidation_freeze_pack",
+  "purpose": "Stop PURPCLAW Mission UI spaghetti by consolidating into one shell, one drawer, one route registry, one terminal, one theme.",
+  "files": [
+    "codex/CODEX_PURPCLAW_UI_CONSOLIDATION_FREEZE.md",
+    "docs/PURPCLAW_TRACE_TERMINAL_CONSOLIDATION.md",
+    "docs/PURPCLAW_UI_AGENT_RULES.md",
+    "docs/PURPCLAW_UI_CANONICAL_LAYOUT.md",
+    "docs/PURPCLAW_UI_DUPLICATE_PURGE_MAP.md"
+  ]
+}

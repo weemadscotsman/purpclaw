@@ -1,0 +1,19 @@
+{
+  "mode": "autonomous",
+  "requireApprovalFor": [
+    "destructive",
+    "dependency-change",
+    "deployment",
+    "secret-change",
+    "self-modification",
+    "external-network",
+    "optional-service-launch"
+  ],
+  "allowWithoutApproval": [
+    "read-only",
+    "diagnostic",
+    "draft",
+    "test"
+  ],
+  "maxAutoQueuedJobs": 1
+}

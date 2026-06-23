@@ -1,0 +1,40 @@
+{
+  "app": {
+    "name": "MenuMochi",
+    "description": "A tiny emotional browser-tab pet that follows you across tabs with animated favicon faces, scrolling tab-title guilt trips, care buttons, diary entries, and Darren nonsense.",
+    "audience": "Chrome/Edge users, Tamagotchi fans, productivity weirdos, browser-extension collectors, ADHD tabs goblins, cute desktop pet fans.",
+    "problem": "Browsers feel dead, tabs are soulless, and people forget to take breaks or enjoy tiny interactions while working.",
+    "differentiator": "cute guilt, gremlin sass, emotional blackmail, tiny companion",
+    "appStoreUrl": "",
+    "category": "browser extension / digital pet",
+    "isMobileApp": false
+  },
+  "imageGen": {
+    "provider": "local",
+    "apiKey": "",
+    "model": "gpt-image-1.5",
+    "basePrompt": "vertical TikTok slideshow image for MenuMochi, cute guilt, gremlin sass, emotional blackmail, tiny companion style, clean readable composition, no text, no logos, no watermarks"
+  },
+  "postiz": {
+    "apiKey": "",
+    "integrationIds": {
+      "tiktok": ""
+    }
+  },
+  "revenuecat": {
+    "enabled": false,
+    "v2SecretKey": "",
+    "projectId": ""
+  },
+  "posting": {
+    "privacyLevel": "SELF_ONLY",
+    "schedule": [
+      "07:30",
+      "16:30",
+      "21:00"
+    ],
+    "crossPost": []
+  },
+  "competitors": "tiktok-marketing/menu_mochi/competitor-research.json",
+  "strategy": "tiktok-marketing/menu_mochi/strategy.json"
+}

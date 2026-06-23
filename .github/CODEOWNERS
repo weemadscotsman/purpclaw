@@ -1,0 +1,76 @@
+# ════════════════════════════════════════════════════════════════════════════
+#  CODEOWNERS — auto-route reviews by file ownership
+# ════════════════════════════════════════════════════════════════════════════
+#  Order matters: later rules override earlier ones. Put broad rules first,
+#  narrow exceptions last.
+#
+#  Format: <pattern>  <owner1>  <owner2>
+#  Use @org/team or @username. For PURPCLAW, the agent divisions ARE the teams.
+# ════════════════════════════════════════════════════════════════════════════
+
+# ── Default: codeowners team must approve everything ────────────────────────
+*                                          @weemadscotsman/purpclaw-maintainers
+
+# ── Infrastructure — CACTUS 🌵 ──────────────────────────────────────────────
+/.github/                                  @weemadscotsman/purpclaw-infrastructure
+/Dockerfile*                               @weemadscotsman/purpclaw-infrastructure
+/docker-compose*                           @weemadscotsman/purpclaw-infrastructure
+/infra/                                    @weemadscotsman/purpclaw-infrastructure
+/deploy/                                   @weemadscotsman/purpclaw-infrastructure
+/scripts/                                  @weemadscotsman/purpclaw-infrastructure
+/install.sh                                @weemadscotsman/purpclaw-infrastructure
+/install.ps1                               @weemadscotsman/purpclaw-infrastructure
+/.dockerignore                             @weemadscotsman/purpclaw-infrastructure
+/ecosystem.config.js                       @weemadscotsman/purpclaw-infrastructure
+/.env.example                              @weemadscotsman/purpclaw-infrastructure
+/config.*                                  @weemadscotsman/purpclaw-infrastructure
+/config/                                   @weemadscotsman/purpclaw-infrastructure
+
+# ── Security domain — GUARDIAN 🛡 ──────────────────────────────────────────
+/SECURITY.md                               @weemadscotsman/purpclaw-security
+/auth/                                     @weemadscotsman/purpclaw-security
+/security/                                 @weemadscotsman/purpclaw-security
+/permissions/                              @weemadscotsman/purpclaw-security
+/tokens/                                   @weemadscotsman/purpclaw-security
+/secrets/                                  @weemadscotsman/purpclaw-security
+/credentials/                              @weemadscotsman/purpclaw-security
+/.env                                      @weemadscotsman/purpclaw-security
+/.env.nvidia                               @weemadscotsman/purpclaw-security
+
+# ── Frontend — MUSHROOM 🍄 ─────────────────────────────────────────────────
+/components/                               @weemadscotsman/purpclaw-frontend
+/app/                                      @weemadscotsman/purpclaw-frontend
+/public/                                   @weemadscotsman/purpclaw-frontend
+*.tsx                                      @weemadscotsman/purpclaw-frontend
+*.jsx                                      @weemadscotsman/purpclaw-frontend
+*.css                                      @weemadscotsman/purpclaw-frontend
+*.scss                                     @weemadscotsman/purpclaw-frontend
+/pages/                                    @weemadscotsman/purpclaw-frontend
+/views/                                    @weemadscotsman/purpclaw-frontend
+/layouts/                                  @weemadscotsman/purpclaw-frontend
+/ui/                                       @weemadscotsman/purpclaw-frontend
+
+# ── Tests — RABBIT 🐇 ──────────────────────────────────────────────────────
+*.test.*                                   @weemadscotsman/purpclaw-tests
+*.spec.*                                   @weemadscotsman/purpclaw-tests
+/__tests__/                                @weemadscotsman/purpclaw-tests
+/tests/                                    @weemadscotsman/purpclaw-tests
+/test-patches/                             @weemadscotsman/purpclaw-tests
+/e2e/                                      @weemadscotsman/purpclaw-tests
+/fixtures/                                 @weemadscotsman/purpclaw-tests
+
+# ── Perf / queue / cache — CHONK 🦏 ────────────────────────────────────────
+/worker/                                   @weemadscotsman/purpclaw-perf
+/cache/                                    @weemadscotsman/purpclaw-perf
+/queue/                                    @weemadscotsman/purpclaw-perf
+/perf/                                     @weemadscotsman/purpclaw-perf
+/benchmark/                                @weemadscotsman/purpclaw-perf
+
+# ── Observability — HAWK 🦅 ────────────────────────────────────────────────
+/logs/                                     @weemadscotsman/purpclaw-ops
+*.log                                      @weemadscotsman/purpclaw-ops
+
+# ── Doc files — anyone can approve, but require a maintainer ───────────────
+*.md                                       @weemadscotsman/purpclaw-maintainers
+/README.md                                 @weemadscotsman/purpclaw-maintainers
+/CHANGELOG.md                              @weemadscotsman/purpclaw-maintainers

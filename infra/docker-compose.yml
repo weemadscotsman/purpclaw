@@ -1,0 +1,80 @@
+# ============================================================
+# VOID // docker-compose.yml
+# Static site + optional API. The void scales horizontally.
+# ============================================================
+
+version: "3.9"
+
+x-void-common: &void-common
+  restart: unless-stopped
+  networks:
+    - void-net
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  # ---- VOID showcase site ------------------------------------------
+  web:
+    <<: *void-common
+    build:
+      context: ./void-site
+      dockerfile: Dockerfile
+    image: void-site:latest
+    container_name: void-web
+    ports:
+      - "${VOID_WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_started
+        required: false
+    environment:
+      - VOID_ENV=${VOID_ENV:-production}
+      - VOID_BUILD=${VOID_BUILD:-manual}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    deploy:
+      replicas: ${VOID_WEB_REPLICAS:-1}
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+        reservations:
+          cpus: "0.1"
+          memory: 32M
+    profiles: ["full", "web-only"]
+
+  # ---- API (optional, runs only with `docker compose --profile full`) -
+  api:
+    <<: *void-common
+    image: void-api:latest
+    container_name: void-api
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - VOID_SKILLS_PATH=/data/skills.json
+    volumes:
+      - void-data:/data:ro
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+    profiles: ["full"]
+
+networks:
+  void-net:
+    driver: bridge
+    name: void-net
+
+volumes:
+  void-data:
+    name: void-data

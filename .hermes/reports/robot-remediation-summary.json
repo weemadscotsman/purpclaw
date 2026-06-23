@@ -1,0 +1,105 @@
+{
+  "agent": "robot",
+  "division": "engineering",
+  "mission": "file path; line number; remediation advice",
+  "date": "2026-07-02",
+  "scope": "app/api/**/route.ts mutating endpoints lacking checkOperator()/checkRateLimit()",
+  "out_of_scope": "Guardian owns /auth/i, /security/i, /permissions?\//i, /tokens?\//i, /secrets?\//i, /credentials/i",
+  "findings": [
+    {
+      "id": "F-01",
+      "severity": "HIGH",
+      "file": "app/api/playwright/route.ts",
+      "lines": "57-120",
+      "issue": "Unauthenticated browser RCE/SSRF via navigate/execute actions",
+      "remediation": "Add checkOperator() + checkRateLimit('playwright', 20) at top of POST; allowlist navigate URLs"
+    },
+    {
+      "id": "F-02",
+      "severity": "HIGH",
+      "file": "app/api/upload/route.ts",
+      "lines": "41-73",
+      "issue": "Unauthenticated 50MB arbitrary file write to agent_work/uploads/",
+      "remediation": "Add checkOperator() + checkRateLimit('upload', 30); add binary extension blocklist (.exe, .bat, .ps1, .scr, .vbs)"
+    },
+    {
+      "id": "F-03",
+      "severity": "HIGH",
+      "file": "app/api/whoami/route.ts",
+      "lines": "18-34",
+      "issue": "Cookie spoofing — any LAN caller can set purpclaw_operator=Ted and claim 'founder' role for 1 year",
+      "remediation": "Add checkOperator() to POST; drop maxAge to 86400; add httpOnly, sameSite=lax, secure"
+    },
+    {
+      "id": "F-04",
+      "severity": "MEDIUM",
+      "file": "app/api/providers/route.ts",
+      "lines": "65-77",
+      "issue": "Lane config mutation with no operator auth — cost amplification via provider swap",
+      "remediation": "Add checkOperator() + checkRateLimit('providers', 10); validate provider against sentinel.listKnownProviders()"
+    },
+    {
+      "id": "F-05",
+      "severity": "MEDIUM",
+      "file": "app/api/models/route.ts",
+      "lines": "42-53",
+      "issue": "smokeTest makes real provider calls with no operator auth — cost amplification",
+      "remediation": "Add checkOperator() + checkRateLimit('models-smoke', 10); confirm SpendGate 402 path in sentinel"
+    },
+    {
+      "id": "F-06",
+      "severity": "MEDIUM",
+      "file": "app/api/sessions/route.ts + app/api/sessions/[id]/route.ts",
+      "lines": "sessions/route.ts POST 22-35; [id]/route.ts GET 17-23, PATCH 25-33, DELETE 35-39",
+      "issue": "Session tampering — any caller can read/overwrite/delete any session by ID; no per-operator scoping",
+      "remediation": "Add checkOperator() to all 4 handlers; scope session IDs per operator cookie; add checkRateLimit('sessions', 60) to POST"
+    },
+    {
+      "id": "F-07",
+      "severity": "LOW",
+      "file": "app/api/trace/recent/route.ts",
+      "lines": "15-21",
+      "issue": "Trace injection — any caller can inject arbitrary trace events with arbitrary source/action/status",
+      "remediation": "Add checkOperator() + checkRateLimit('trace-write', 30); allowlist fields {route, action, status, detail, source}"
+    },
+    {
+      "id": "F-08",
+      "severity": "LOW",
+      "file": "app/api/sampler/route.ts",
+      "lines": "13",
+      "issue": "eval('require') — code smell, not a vulnerability (literal string, no user input)",
+      "remediation": "Replace with createRequire(import.meta.url) or configure webpack externals"
+    },
+    {
+      "id": "F-09",
+      "severity": "INFO",
+      "file": "app/api/discover/route.ts",
+      "lines": "67-76",
+      "issue": "Read-only intent search, no auth — acceptable for local-first; gate POST only if exposed beyond 127.0.0.1",
+      "remediation": "No action required under current threat model"
+    }
+  ],
+  "routes_confirmed_gated": [
+    "app/api/settings/route.ts POST L75",
+    "app/api/preprompt/route.ts POST L29",
+    "app/api/personality/route.ts POST L106",
+    "app/api/ollama/route.ts POST L121",
+    "app/api/governance/policy/route.ts POST L19",
+    "app/api/kernel/jobs/route.ts POST L24",
+    "app/api/orchestrate/route.ts POST L22",
+    "app/api/llm/plan/route.ts POST L21",
+    "app/api/research/group/route.ts POST L13",
+    "app/api/computer-use/route.ts POST L41",
+    "app/api/voice-command/route.ts POST L21",
+    "app/api/voice/chat/route.ts POST L72",
+    "app/api/internal/check/route.ts GET/POST L36"
+  ],
+  "quality_gate": "PASS with 7 remediation tickets open",
+  "patch_order": ["F-03", "F-01", "F-02", "F-06", "F-04", "F-05", "F-07", "F-08"],
+  "post_patch_verification": [
+    "npm run build",
+    "pm2 restart purpclaw-nextjs --update-env",
+    "node bin/purpclaw.js doctor",
+    "node bin/purpclaw.js bughunt"
+  ]
+}

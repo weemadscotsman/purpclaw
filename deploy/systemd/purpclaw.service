@@ -1,0 +1,84 @@
+# ════════════════════════════════════════════════════════════════════════════
+#  🕳️ VOID — Hardened systemd unit (bare-metal / VM deploys)
+#  ════════════════════════════════════════════════════════════════════════════
+#  Install:  sudo cp deploy/systemd/purpclaw.service /etc/systemd/system/
+#            sudo systemctl daemon-reload
+#            sudo systemctl enable --now purpclaw
+# ════════════════════════════════════════════════════════════════════════════
+
+[Unit]
+Description=PURPCLAW multi-agent runtime
+Documentation=https://github.com/weemadscotsman/purpclaw
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=purpclaw
+Group=purpclaw
+WorkingDirectory=/opt/purpclaw
+
+# ── Environment ──────────────────────────────────────────────────────────────
+EnvironmentFile=/etc/purpclaw/purpclaw.env
+Environment=NODE_ENV=production
+Environment=NODE_OPTIONS=--enable-source-maps --max-old-space-size=512
+ExecStart=/usr/bin/node /opt/purpclaw/start_purpclaw.js
+ExecReload=/bin/kill -HUP $MAINPID
+
+# ── Restart policy ───────────────────────────────────────────────────────────
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+KillMode=mixed
+KillSignal=SIGTERM
+
+# ── Hardening sandbox (★ the meat ★) ─────────────────────────────────────────
+# Filesystem: root immutable, only specific paths writable
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectHostname=true
+ProtectProc=invisible
+
+# Mount writable dirs explicitly
+ReadWritePaths=/var/lib/purpclaw /var/log/purpclaw
+
+# Networking: no raw sockets, no promiscuous mode
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+RestrictNamespaces=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+
+# Privilege escalation: completely blocked
+NoNewPrivileges=true
+LockPersonality=true
+MemoryDenyWriteExecute=true   # JIT must be off — disable if you need it
+
+# Capabilities: drop ALL by default
+CapabilityBoundingSet=
+AmbientCapabilities=
+
+# Resource limits (overridable in /etc/systemd/system.conf.d/)
+LimitNOFILE=65536
+LimitNPROC=512
+TasksMax=256
+MemoryMax=1G
+CPUQuota=150%
+
+# ── Logging ──────────────────────────────────────────────────────────────────
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=purpclaw
+
+# ── Security review metadata ─────────────────────────────────────────────────
+# Run: systemd-analyze security purpclaw
+# Target: overall exposure level ≤ 3 (LOW)
+
+[Install]
+WantedBy=multi-user.target

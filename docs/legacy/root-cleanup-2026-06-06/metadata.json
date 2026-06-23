@@ -1,0 +1,5 @@
+{
+  "name": "PURPCLAW Local Agent Swarm Orchestrator",
+  "description": "A framework and dashboard for coordinating multiple local AI agents (Gemini, Claude, DeepSeek, etc.) via terminal multiplexing. Now themed as PURPCLAW.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,25 @@
+{
+  "_comment": "PURPCLAW Model Registry — job-to-provider routing rules",
+  "version": 1,
+  "defaults": {
+    "provider": "{{LLM_PROVIDER}}",
+    "model": "{{LLM_MODEL}}"
+  },
+  "fallback": {
+    "provider": "ollama",
+    "model": "qwen2.5:3b"
+  },
+  "routing": {
+    "chat":        { "provider": "{{LLM_PROVIDER}}", "model": "{{LLM_MODEL}}", "note": "fast chat — MiniMax (chat-facing orchestrator)" },
+    "code":        { "provider": "nvidia",   "model": "minimaxai/minimax-m3",   "note": "code reasoning — MiniMax via NIM (4-key pool)" },
+    "local":       { "provider": "ollama",   "model": "qwen2.5:3b",             "note": "local/offline fallback" },
+    "swarm":       { "provider": "kimi",     "model": "kimi-k2-6",              "note": "swarm agent reasoning — Kimi K2.6 (100-wide fanout)" },
+    "planning":    { "provider": "nvidia",   "model": "deepseek-ai/deepseek-v4-pro", "note": "architecture/planning — DeepSeek V4 Pro via NIM" },
+    "quick":       { "provider": "nvidia",   "model": "deepseek-ai/deepseek-v4-flash", "note": "fast/cheap ops — DeepSeek V4 Flash via NIM" },
+    "review":      { "provider": "glm",      "model": "glm-4.6",                "note": "code review — GLM via Z.AI (different viewpoint)" },
+    "creative":    { "provider": "glm",      "model": "glm-4.6",                "note": "shaman / creative — GLM" },
+    "vision":      { "provider": "gemini",   "model": "gemini-2.5-flash",        "note": "vision and image analysis" },
+    "tts":         { "provider": "kokoro",   "model": "af_heart",                "note": "local voice synthesis" },
+    "video":       { "provider": "moneyprinter", "model": "default",             "note": "MoneyPrinterTurbo on :8080" }
+  }
+}

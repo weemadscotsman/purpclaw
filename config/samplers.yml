@@ -1,0 +1,42 @@
+# PURPCLAW Sampler — live stack metrics (CLI / TUI / Web all read this).
+# Each `sample` is a shell command that prints one value. Edit freely; add your own.
+title: PURPCLAW Live Stack
+
+sparklines:
+  - title: Cognitive brains online
+    rate-ms: 2000
+    sample: node scripts/sample-metric.js cognitive_online
+  - title: Active agents
+    rate-ms: 2000
+    sample: node scripts/sample-metric.js agents_active
+  - title: EventBus events
+    rate-ms: 3000
+    sample: node scripts/sample-metric.js events_total
+
+barcharts:
+  - title: Brain state
+    rate-ms: 4000
+    items:
+      - label: Memory atoms
+        sample: node scripts/sample-metric.js memory_atoms
+      - label: Rules
+        sample: node scripts/sample-metric.js rules_count
+      - label: Facts
+        sample: node scripts/sample-metric.js rules_facts
+      - label: Diag findings
+        sample: node scripts/sample-metric.js diag_findings
+
+gauges:
+  - title: Cognitive spine (of 6)
+    rate-ms: 2000
+    cur:
+      sample: node scripts/sample-metric.js cognitive_online
+    min:
+      sample: echo 0
+    max:
+      sample: echo 6
+
+textboxes:
+  - title: Registered agents
+    rate-ms: 5000
+    sample: node scripts/sample-metric.js agents_registered

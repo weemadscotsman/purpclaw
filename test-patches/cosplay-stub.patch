@@ -1,0 +1,13 @@
+--- a/app/api/api-mega-list/route.ts
++++ b/app/api/api-mega-list/route.ts
+@@ -76,8 +76,9 @@ export async function POST(request: NextRequest) {
+-  return NextResponse.json({
+-    ok: false,
+-    error: 'api-mega-list POST is disabled — use the GOOP broker (see lib/goop-playground)',
+-    policy: 'direct-egress-blocked',
+-  }, { status: 501 });
++  // PATCH: now returns 501 with not implemented
++  return NextResponse.json({
++    ok: false, error: 'not implemented', policy: 'not-wired',
++  }, { status: 501 });
+ }

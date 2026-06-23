@@ -1,0 +1,150 @@
+{
+  "_about": "Maps each API Mega List category to the PurpClaw divisions and agents that should use them. Each category can be primary to one division and shared with others. Agents are the named workers in lib/agent_tower.js.",
+
+  "9_divisions": [
+    "CREATIVE", "ENGINEERING", "INFRASTRUCTURE", "INTELLIGENCE",
+    "MANAGEMENT", "MEDIA_OPS", "OPERATIONS", "SCIENCE", "SECURITY"
+  ],
+
+  "category_assignments": {
+
+    "agents": {
+      "primary_division": "ENGINEERING",
+      "supporting_divisions": ["INTELLIGENCE"],
+      "primary_agents":   ["DRAGON", "SCIENTIST", "WOLF"],
+      "purpose": "Build and integrate agent systems, orchestration frameworks, autonomous workflows"
+    },
+
+    "ai": {
+      "primary_division": "SCIENCE",
+      "supporting_divisions": ["ENGINEERING", "INTELLIGENCE"],
+      "primary_agents":   ["SCIENTIST", "DRAGON", "MUSHROOM", "FOX"],
+      "purpose": "AI/ML models, fine-tuning, training data, inference endpoints, embeddings"
+    },
+
+    "automation": {
+      "primary_division": "OPERATIONS",
+      "supporting_divisions": ["INFRASTRUCTURE"],
+      "primary_agents":   ["SHARK", "MANTIS", "CACTUS", "VOID", "ELEPHANT"],
+      "purpose": "Workflow automation, scheduled jobs, RPA, browser automation, task runners"
+    },
+
+    "business": {
+      "primary_division": "MANAGEMENT",
+      "supporting_divisions": [],
+      "primary_agents":   ["KAREN", "LEMUR", "PENGUIN"],
+      "purpose": "Business operations, contracts, compliance, governance, KPI tracking"
+    },
+
+    "devtools": {
+      "primary_division": "ENGINEERING",
+      "supporting_divisions": ["INFRASTRUCTURE"],
+      "primary_agents":   ["DRAGON", "ROBOT", "TURTLE", "BEE", "CHONK", "CACTUS"],
+      "purpose": "Code review, CI/CD, linters, formatters, testing, deployment, IDE integrations"
+    },
+
+    "ecommerce": {
+      "primary_division": "MEDIA_OPS",
+      "supporting_divisions": ["OPERATIONS"],
+      "primary_agents":   ["DUCK", "GOOSE", "GORILLA", "MANTIS"],
+      "purpose": "Product catalogs, pricing, inventory, checkout, Shopify/Amazon integrations"
+    },
+
+    "integrations": {
+      "primary_division": "ENGINEERING",
+      "supporting_divisions": ["INFRASTRUCTURE"],
+      "primary_agents":   ["DRAGON", "WOLF", "CHONK", "AXOLOTL"],
+      "purpose": "Connectors, sync engines, data pipelines, third-party service bridges"
+    },
+
+    "jobs": {
+      "primary_division": "OPERATIONS",
+      "supporting_divisions": ["MANAGEMENT"],
+      "primary_agents":   ["ELEPHANT", "GORILLA", "MANTIS", "SHARK", "LEMUR"],
+      "purpose": "Job boards, hiring platforms, freelance marketplaces, recruitment scrapers"
+    },
+
+    "leadgen": {
+      "primary_division": "MEDIA_OPS",
+      "supporting_divisions": ["OPERATIONS"],
+      "primary_agents":   ["DUCK", "GOOSE", "ELEPHANT", "GORILLA", "LEMUR"],
+      "purpose": "Lead capture, contact enrichment, email finding, prospecting, list building"
+    },
+
+    "mcp": {
+      "primary_division": "INFRASTRUCTURE",
+      "supporting_divisions": ["ENGINEERING"],
+      "primary_agents":   ["VOID", "DRAGON", "CACTUS", "CHONK"],
+      "purpose": "Model Context Protocol servers, tool registries, agent plumbing"
+    },
+
+    "news": {
+      "primary_division": "MEDIA_OPS",
+      "supporting_divisions": ["INTELLIGENCE"],
+      "primary_agents":   ["DUCK", "GOOSE", "PARROT", "RAVEN", "HAWK"],
+      "purpose": "News aggregation, RSS feeds, content monitoring, journalism scrapers"
+    },
+
+    "oss": {
+      "primary_division": "ENGINEERING",
+      "supporting_divisions": [],
+      "primary_agents":   ["DRAGON", "ROBOT", "TURTLE", "BEE", "MUSHROOM"],
+      "purpose": "Open source project discovery, GitHub/GitLab tools, package managers, license tracking"
+    },
+
+    "other": {
+      "primary_division": "ENGINEERING",
+      "supporting_divisions": ["INFRASTRUCTURE"],
+      "primary_agents":   ["ROBOT", "CHONK", "TURTLE", "CACTUS"],
+      "purpose": "Miscellaneous utilities that don't fit other categories — engineering triage"
+    },
+
+    "realestate": {
+      "primary_division": "OPERATIONS",
+      "supporting_divisions": ["MANAGEMENT"],
+      "primary_agents":   ["GORILLA", "MANTIS", "SHARK", "LEMUR", "KAREN"],
+      "purpose": "Property listings, Zillow/Realtor scrapers, valuations, market analysis"
+    },
+
+    "seo": {
+      "primary_division": "MEDIA_OPS",
+      "supporting_divisions": ["ENGINEERING"],
+      "primary_agents":   ["DUCK", "GOOSE", "PARROT", "ROBOT"],
+      "purpose": "Search ranking, keyword research, backlink analysis, SERP scraping"
+    },
+
+    "social": {
+      "primary_division": "MEDIA_OPS",
+      "supporting_divisions": ["CREATIVE", "OPERATIONS"],
+      "primary_agents":   ["DUCK", "GOOSE", "PARROT", "PHOENIX", "CROW", "ELEPHANT"],
+      "purpose": "Social platform scrapers (Twitter/LinkedIn/Instagram/TikTok), engagement tracking, posting"
+    },
+
+    "travel": {
+      "primary_division": "OPERATIONS",
+      "supporting_divisions": ["MEDIA_OPS"],
+      "primary_agents":   ["ELEPHANT", "MANTIS", "DUCK"],
+      "purpose": "Flight/hotel APIs, booking platforms, trip planning, geo data"
+    },
+
+    "videos": {
+      "primary_division": "CREATIVE",
+      "supporting_divisions": ["MEDIA_OPS"],
+      "primary_agents":   ["PANDA", "PHOENIX", "CROW", "PARROT", "GOOSE"],
+      "purpose": "YouTube/TikTok scrapers, video metadata, transcription, video processing"
+    }
+
+  },
+
+  "summary_by_division": {
+    "CREATIVE":      ["videos", "social"],
+    "ENGINEERING":   ["agents", "ai", "devtools", "integrations", "oss", "other", "mcp"],
+    "INFRASTRUCTURE":["automation", "devtools", "mcp", "other"],
+    "INTELLIGENCE":  ["agents", "ai", "news"],
+    "MANAGEMENT":    ["business", "jobs", "realestate"],
+    "MEDIA_OPS":     ["ecommerce", "leadgen", "news", "seo", "social", "travel", "videos"],
+    "OPERATIONS":    ["automation", "jobs", "realestate", "travel", "social"],
+    "SCIENCE":       ["ai"],
+    "SECURITY":      ["devtools", "oss", "automation", "news", "mcp", "integrations", "other"]
+  }
+}

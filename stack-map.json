@@ -1,0 +1,6626 @@
+{
+ "nodes": {
+  "ablation_probes/refusal_weight_probe_7B.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "agent_routing_matrix.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "agent_score.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 4,
+   "verdict": "wired:imported"
+  },
+  "agent_tower.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "lib/llm-provider.js",
+    "lib/agent-loop.js",
+    "companion_swarm.js",
+    "lib/memory-client.js"
+   ],
+   "ports": [
+    "7790",
+    "7782",
+    "7880",
+    "7780"
+   ],
+   "in": 4,
+   "verdict": "wired:imported"
+  },
+  "agent_work/bee/postcss.config.mjs": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "agent_work/blast_radius_helper.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "agent_work/robot/dashboard_live_update_test.js": {
+   "lang": "js",
+   "role": "test",
+   "deps": [],
+   "ports": [
+    "7790",
+    "7782",
+    "7783",
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "apis for agents/settings/fetch_apify_actors.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "apis for agents/settings/generate_readme_clean.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "app/public/ui/app.js": {
+   "lang": "js",
+   "role": "ui",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7790"
+   ],
+   "in": 0,
+   "verdict": "wired:ui"
+  },
+  "app/public/ui/chat-hooks.js": {
+   "lang": "js",
+   "role": "ui",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7885"
+   ],
+   "in": 0,
+   "verdict": "wired:ui"
+  },
+  "app/public/ui/cinematic.js": {
+   "lang": "js",
+   "role": "ui",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:ui"
+  },
+  "app/public/ui/command-palette.js": {
+   "lang": "js",
+   "role": "ui",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:ui"
+  },
+  "app/public/ui/data-hooks.js": {
+   "lang": "js",
+   "role": "ui",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7782",
+    "7783",
+    "7784",
+    "7790",
+    "7791",
+    "7885",
+    "7890",
+    "7781"
+   ],
+   "in": 0,
+   "verdict": "wired:ui"
+  },
+  "app/public/ui/extras.js": {
+   "lang": "js",
+   "role": "ui",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:ui"
+  },
+  "app/public/ui/panels.js": {
+   "lang": "js",
+   "role": "ui",
+   "deps": [],
+   "ports": [
+    "7784",
+    "7782",
+    "7791",
+    "7885"
+   ],
+   "in": 0,
+   "verdict": "wired:ui"
+  },
+  "app/public/ui/skyscraper.js": {
+   "lang": "js",
+   "role": "ui",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:ui"
+  },
+  "app/public/ui/tweaks-panel.js": {
+   "lang": "js",
+   "role": "ui",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:ui"
+  },
+  "autoDream.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [
+    "autoDream.py"
+   ],
+   "ports": [
+    "7880"
+   ],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "autonomous_diagnostics.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7779",
+    "7781",
+    "7780"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "bin/coding-eval.js": {
+   "lang": "js",
+   "role": "cli-entry",
+   "deps": [],
+   "ports": [
+    "3030"
+   ],
+   "in": 0,
+   "verdict": "wired:cli-entry"
+  },
+  "bin/MISSION.js": {
+   "lang": "js",
+   "role": "cli-entry",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:cli-entry"
+  },
+  "bin/model-discover.js": {
+   "lang": "js",
+   "role": "cli-entry",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:cli-entry"
+  },
+  "bin/purpclaw-vector-bench.js": {
+   "lang": "js",
+   "role": "cli-entry",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:cli-entry"
+  },
+  "bin/purpclaw.js": {
+   "lang": "js",
+   "role": "cli-entry",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/doctor.js",
+    "lib/deep-audit.js",
+    "lib/embeddings.js",
+    "lib/whoami.js",
+    "lib/release-sign.js"
+   ],
+   "ports": [
+    "7881",
+    "7784",
+    "7780",
+    "7790",
+    "7782",
+    "7783",
+    "7880",
+    "7885",
+    "7890",
+    "7781",
+    "7791",
+    "7889",
+    "7897"
+   ],
+   "in": 0,
+   "verdict": "wired:cli-entry"
+  },
+  "boot.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "lib/child-registry.js",
+    "unified_eventbus.js",
+    "unified_state.js",
+    "agent_tower.js"
+   ],
+   "ports": [
+    "7782",
+    "7783",
+    "7780",
+    "7790",
+    "7781",
+    "7779",
+    "7784"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "boston_analysis.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "cognitive_spine.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [
+    "memory_matrix_v2.py",
+    "symbolic_rules_engine.py",
+    "modal_logic_engine.py",
+    "autonomous_diagnostics.py",
+    "neuro_symbolic_bridge.py",
+    "autoDream.py"
+   ],
+   "ports": [
+    "7880"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "companion-chorus/bridge.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "companion-chorus/src/gacha.js",
+    "companion-chorus/src/voice.js",
+    "companion-chorus/src/minimax.js",
+    "companion-chorus/src/constants.js"
+   ],
+   "ports": [
+    "7782"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "companion-chorus/main.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "companion-chorus/src/constants.js",
+    "companion-chorus/src/gacha.js",
+    "companion-chorus/src/sprites.js",
+    "companion-chorus/src/voice.js",
+    "companion-chorus/src/minimax.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "companion-chorus/src/constants.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "companion-chorus/src/gacha.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "companion-chorus/src/constants.js"
+   ],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "companion-chorus/src/minimax.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "companion-chorus/src/sprites.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "companion-chorus/src/voice.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "companion-chorus/test-ai.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "companion-chorus/src/minimax.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "companion-chorus/test-api.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "companion_swarm.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "create_db.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "diag_audio.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "digital_shaman.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "lib/llm-provider.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/ball_to_rig_bridge.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/browser_voice_commands.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "docs/legacy/ghostbusters-2026-06-06/playwright_compatibility.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/clap-detector.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/crossbar_integration.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7782",
+    "7783"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/dig_convos.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/dig_convos2.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/dig_convos3.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/ethics_hooks.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/kimi_client.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/launch_clean.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7790",
+    "7781",
+    "7779",
+    "7777"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/loop_of_shame.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/memory_matrix.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/mood_engine.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/playwright_compatibility.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/process-leash.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7782",
+    "7799"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/purpclaw.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7790",
+    "7782",
+    "7783",
+    "7784",
+    "7781",
+    "7791"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/purpclaw_turing_core.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "docs/legacy/ghostbusters-2026-06-06/mood_engine.js",
+    "docs/legacy/ghostbusters-2026-06-06/turing_face_driver.js"
+   ],
+   "ports": [
+    "7780",
+    "7779",
+    "7781"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/task_decomposer.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/ghostbusters-2026-06-06/turing_face_driver.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "docs/legacy/launch_detached.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7781"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "docs/legacy/root-cleanup-2026-06-06/gen_api.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/root-cleanup-2026-06-06/run_node.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/root-cleanup-2026-06-06/run_py.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/root-cleanup-2026-06-06/smart_demo.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/root-cleanup-2026-06-06/terminal-fly.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7799",
+    "7782"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "docs/legacy/root-cleanup-2026-06-06/tool_diagnostic.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7777"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "docs/legacy/root-cleanup-2026-06-06/visualizer_server.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "3030"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "docs/legacy/root-cleanup-2026-06-06/_fix_quotes.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "docs/legacy/voice_bridge_7779.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7779",
+    "7780",
+    "7781"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "ecosystem.config.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "3030",
+    "7890",
+    "7897",
+    "7790",
+    "7892",
+    "7885",
+    "7898",
+    "7784",
+    "7782",
+    "7880",
+    "7779",
+    "7777"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "eslint.config.mjs": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "eval/benches/eventbus_bench.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "eval/benches/governance_bench.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "eval/benches/memory_bench.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "eval/benches/orchestrator_bench.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "eval/benches/pool_bench.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "eval/benches/__init__.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "eval/harness.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "eval/suites/chaos.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "eval/suites/regression.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "eval/suites/smoke.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [
+    "7784",
+    "7885",
+    "7880",
+    "7777",
+    "7779"
+   ],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "eval/suites/__init__.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "eval/__init__.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "find_pulse.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "gacha.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "gatekeeper.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7791"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "harness_service.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "lib/harness/engine.js"
+   ],
+   "ports": [
+    "7798"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lcd_bridge_server.py": {
+   "lang": "py",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lcd_log_monitor.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "lib/accuracy-fish.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/agent-loop.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/tools/index.js",
+    "lib/user-feedback.js",
+    "lib/idle-engine.js",
+    "lib/session-store.js",
+    "lib/llm-provider.js",
+    "lib/whoami.js"
+   ],
+   "ports": [],
+   "in": 4,
+   "verdict": "wired:imported"
+  },
+  "lib/agent-personas.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/agent-session.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/agent-tools-file.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/api-harness-kernel.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/harness/engine.js",
+    "lib/job-contract.js",
+    "lib/governance.js",
+    "lib/omnicode-bridge.js",
+    "lib/deep-research-group.js",
+    "lib/mcp.js",
+    "lib/tools/index.js",
+    "lib/training-buffer.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/api-mega-list.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/ast-dependency-graph.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/autotune.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/business/operations.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/business/store.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/business/store.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "lib/business/twilio.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/business/store.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/capability-registry.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7782",
+    "7783",
+    "7780",
+    "7790",
+    "7784",
+    "7791",
+    "7898",
+    "7880",
+    "7779",
+    "7892",
+    "7792",
+    "7885",
+    "7881",
+    "7890",
+    "7897",
+    "7798",
+    "7799"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/chaos-campaign.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/smith-neo.js"
+   ],
+   "ports": [
+    "7780"
+   ],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/chat-agent.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/llm-provider.js",
+    "lib/tools/index.js",
+    "lib/agent-loop.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/child-registry.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 28,
+   "verdict": "wired:imported"
+  },
+  "lib/code-tools.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/cognitive-client.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7880"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/commands/architecture.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7782",
+    "7783",
+    "7784",
+    "7790",
+    "7791",
+    "7881",
+    "7885",
+    "7890",
+    "7897",
+    "7880",
+    "7892",
+    "7779",
+    "7777",
+    "7889",
+    "7781",
+    "7792"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/ask.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/agent-loop.js",
+    "lib/tools/index.js",
+    "lib/mcp.js",
+    "lib/commands/bigboss.js",
+    "lib/session-store.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/autofix-pr.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/autoresearch.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/bigboss.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/tools/index.js",
+    "lib/smith-neo.js",
+    "lib/chaos-campaign.js",
+    "lib/memory-consistency.js"
+   ],
+   "ports": [
+    "7780"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/commands/browser.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/bughunt.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [
+    "7791"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/business.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/business/operations.js",
+    "lib/business/twilio.js",
+    "lib/business/store.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/claudecode.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/llm-provider.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/code.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/vector/index.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/commands/cognition.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/ctx-viz.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [
+    "7782",
+    "7784",
+    "7790",
+    "7881",
+    "7885",
+    "7783",
+    "7890"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/deploy.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [
+    "7780",
+    "7790",
+    "7880"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/evolve.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/evolution/mutator.js",
+    "lib/evolution/skill-forge.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/gc.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/grow.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [
+    "7885",
+    "7880"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/harness.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/harness/engine.js",
+    "lib/harness/benchmark.js"
+   ],
+   "ports": [
+    "7798"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/harvest.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/harvest/crawler.js",
+    "lib/harvest/extractors.js",
+    "lib/harvest/indexer.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/heal.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/commands/safe-start.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/identity.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/identity.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/intelligence.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/llm.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/onboard.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [
+    "7885"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/open.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/overview.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/parity.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/plan.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [
+    "7784"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/pocket.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/pocket-vault.js",
+    "lib/spend-gate.js",
+    "lib/telemetry.js",
+    "lib/pocket-updater.js"
+   ],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/ponytail.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [
+    "7777"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/remotion.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/tools/index.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/roster.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/safe-start.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/commands/safe-stop.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/commands/safe-start.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/services.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/setup.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/llm-provider.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/commands/smoke.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [
+    "7782",
+    "7784",
+    "7790",
+    "7780",
+    "7885",
+    "7881",
+    "7897",
+    "7880"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/telemetry.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/runtime/pipeline-telemetry.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/teleport.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [
+    "7881",
+    "7885",
+    "7784"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/thringlets.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [
+    "7799"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/tour.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/commands/setup.js",
+    "lib/tools/index.js"
+   ],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/training.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [
+    "lib/training-buffer.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/commands/workers.js": {
+   "lang": "js",
+   "role": "cli-command",
+   "deps": [],
+   "ports": [
+    "7897",
+    "7790"
+   ],
+   "in": 0,
+   "verdict": "wired:dynamic-dispatch"
+  },
+  "lib/context-bus.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7782",
+    "7881"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lib/context-packet.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/deep-audit.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/tools/index.js",
+    "lib/tools/skills-registry.js",
+    "service_registry.js",
+    "agent_tower.js",
+    "lib/pocket-vault.js",
+    "lib/spend-gate.js",
+    "lib/identity.js"
+   ],
+   "ports": [
+    "7780",
+    "7782",
+    "7783",
+    "7784",
+    "7790",
+    "7791",
+    "7880",
+    "7881",
+    "7885",
+    "7890"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/deep-research-group.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/llm-provider.js",
+    "lib/rate-limiter.js",
+    "lib/chat-agent.js",
+    "lib/self-context.js"
+   ],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/delegation-status.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/demo/product-factory.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/paths.js",
+    "lib/child-registry.js",
+    "lib/llm-provider.js"
+   ],
+   "ports": [
+    "7784",
+    "7782",
+    "7780",
+    "7790",
+    "7791",
+    "7881"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/doctor.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/tools/index.js"
+   ],
+   "ports": [
+    "7780",
+    "7782",
+    "7783",
+    "7784",
+    "7790",
+    "7791",
+    "7881",
+    "7885",
+    "7890",
+    "7880",
+    "3030"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/embeddings.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/evolution/mutator.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "lib/evolution/skill-forge.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/job-contract.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/feature-parity.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/gate-pipeline.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/gateways/discord.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lib/gateways/email.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7798"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lib/gateways/slack.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lib/gateways/telegram.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lib/goop-playground/goop-playground.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "lib/goop-playground/package.json",
+    "lib/api-mega-list.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lib/goop-playground/squirrel.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/governance-audit.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/governance.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/harness/benchmark.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/harness/engine.js",
+    "agent_score.js",
+    "lib/evolution/mutator.js"
+   ],
+   "ports": [
+    "7798",
+    "7799"
+   ],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/harness/engine.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/llm-provider.js",
+    "agent_score.js",
+    "lib/memory-client.js",
+    "lib/job-contract.js",
+    "lib/accuracy-fish.js",
+    "lib/harness/benchmark.js",
+    "lib/evolution/mutator.js"
+   ],
+   "ports": [
+    "7790",
+    "7784",
+    "7783",
+    "7782",
+    "7780"
+   ],
+   "in": 4,
+   "verdict": "wired:imported"
+  },
+  "lib/harvest/crawler.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/harvest/extractors.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/harvest/indexer.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/identity.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/idle-engine.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/training/personal-dataset.js",
+    "lib/gate-pipeline.js",
+    "lib/user-feedback.js"
+   ],
+   "ports": [
+    "7880"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/imagegen/gateway.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lib/imagegen/video_engine.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/intelligence-spine.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7880",
+    "7885"
+   ],
+   "in": 0,
+   "verdict": "wired:lib"
+  },
+  "lib/job-contract.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "lib/llm-provider.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/spend-gate.js"
+   ],
+   "ports": [],
+   "in": 17,
+   "verdict": "wired:imported"
+  },
+  "lib/llm-status.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/llm-provider.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/mallory/index.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/mcp.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/omnicode-bridge.js",
+    "lib/child-registry.js"
+   ],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/memory-client.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7880"
+   ],
+   "in": 5,
+   "verdict": "wired:imported"
+  },
+  "lib/memory-consistency.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/mochi-sprites.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/mochi-state.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/mochi-sprites.js",
+    "lib/paths.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/mochi-statusbar.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/omnicode-bridge.js"
+   ],
+   "ports": [
+    "7885",
+    "7892"
+   ],
+   "in": 0,
+   "verdict": "wired:lib"
+  },
+  "lib/mochi.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/mochi-sprites.js"
+   ],
+   "ports": [
+    "7885"
+   ],
+   "in": 0,
+   "verdict": "wired:lib"
+  },
+  "lib/model-sentinel.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/llm-provider.js",
+    "lib/runtime/provider-router.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/nvidia/nim-skills.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/odysseus-scorecard.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/omni/feature-registry.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/omni/generate-agent-docs.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/omni/omnicode-adapter.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/omni/patch-governor.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/omni/omnicode-adapter.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/omni/provider-integrity.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "3030"
+   ],
+   "in": 0,
+   "verdict": "wired:lib"
+  },
+  "lib/omni/queue-action-required.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/omni/truth-scanner.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/omnicode-bridge.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "lib/orchestrator-hardening.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/parseltongue.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/paths.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 10,
+   "verdict": "wired:imported"
+  },
+  "lib/persona-forge.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/personality.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/pocket-updater.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/signed-manifest.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/pocket-vault.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/proactive-maintenance.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/providers/anthropic-messages.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/providers/hermes-cli.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/providers/openai-responses.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/providers/registry.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/providers/openai-responses.js",
+    "lib/providers/anthropic-messages.js",
+    "lib/providers/hermes-cli.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/provider_health.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7784"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/rate-limit.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/rate-limiter.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/reasoning-loop.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "lib/reasoning-tick.js"
+   ],
+   "ports": [
+    "7892"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lib/reasoning-tick.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7885"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/recursive/agent-scores.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/release-sign.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/runtime/computer-use.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/runtime/settings-registry.js",
+    "lib/screen-look.js",
+    "lib/paths.js",
+    "lib/tools-windows-mcp.js"
+   ],
+   "ports": [],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "lib/runtime/pipeline-telemetry.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/paths.js"
+   ],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/runtime/policy-engine.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/runtime/ports.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7780",
+    "3030",
+    "7897",
+    "7781",
+    "7782",
+    "7783",
+    "7784",
+    "7790",
+    "7791",
+    "7799",
+    "7880",
+    "7885",
+    "7798"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/runtime/preprompt-compiler.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/paths.js",
+    "lib/runtime/settings-registry.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/runtime/provider-config.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/runtime/provider-router.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/llm-provider.js",
+    "lib/runtime/provider-config.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/runtime/settings-registry.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/spend-gate.js",
+    "lib/runtime/ports.js"
+   ],
+   "ports": [
+    "7799"
+   ],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "lib/runtime/voice-router.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/paths.js"
+   ],
+   "ports": [
+    "7784",
+    "7782"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/sampler.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/scheduler/calendar.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/scheduler/nl-cron.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/scheduler/nl-cron.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/scheduler/runner.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "lib/scheduler/calendar.js"
+   ],
+   "ports": [
+    "7780",
+    "7799"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lib/screen-look.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/workspace-awareness.js",
+    "lib/llm-provider.js"
+   ],
+   "ports": [
+    "7779"
+   ],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/secret-redactor.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/self-context.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7781",
+    "7782",
+    "7783",
+    "7784",
+    "7790",
+    "7792",
+    "7880",
+    "7890",
+    "7885"
+   ],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/self-evolution-loop.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/memory-client.js",
+    "lib/deep-research-group.js",
+    "lib/space-governor.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/session-store.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/signed-manifest.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/skill-bridge.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/smith-neo.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "lib/snapshot.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/space-governor.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7777",
+    "7779",
+    "7780",
+    "7781",
+    "7782",
+    "7783",
+    "7784",
+    "7790",
+    "7791",
+    "7792",
+    "7880",
+    "7881",
+    "7885",
+    "7889",
+    "7890",
+    "7892",
+    "7897"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/spaghetti-audit.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/spend-gate.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 4,
+   "verdict": "wired:imported"
+  },
+  "lib/stm.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/stt/gateway.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lib/supervisor.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/capability-registry.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/survivor_router.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/provider_health.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/telemetry.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/thringlets/archetypes.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/thringlets/engine.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/thringlets/archetypes.js",
+    "lib/thringlets/storage.js"
+   ],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/thringlets/runtime-observer.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/thringlets/engine.js"
+   ],
+   "ports": [
+    "7782",
+    "7798",
+    "7780",
+    "7784",
+    "7790",
+    "7783",
+    "7791"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/thringlets/storage.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7783"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/tools/index.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/parseltongue.js",
+    "lib/autotune.js",
+    "lib/stm.js",
+    "lib/tools-pc.js",
+    "lib/smith-neo.js",
+    "lib/chaos-campaign.js",
+    "lib/memory-consistency.js",
+    "lib/imagegen/video_engine.js",
+    "lib/tools/skills-registry.js",
+    "lib/tools-remotion.js"
+   ],
+   "ports": [
+    "7799",
+    "7784"
+   ],
+   "in": 10,
+   "verdict": "wired:imported"
+  },
+  "lib/tools/skills-registry.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "lib/tools-cli-anything.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/tools-gui.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/runtime/computer-use.js",
+    "lib/screen-look.js",
+    "lib/llm-provider.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/tools-pc.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/tools-remotion.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/tools-windows-mcp.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/runtime/computer-use.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/training/personal-dataset.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/training-buffer.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/training-ingest.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/tts/gateway.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7799"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "lib/user-feedback.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/vector/index.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/vector/providers/faissProvider.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/vector/providers/faissProvider.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/verify-tools.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/voice-client.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7781"
+   ],
+   "in": 0,
+   "verdict": "wired:lib"
+  },
+  "lib/whoami.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/tools/index.js",
+    "lib/tools/skills-registry.js"
+   ],
+   "ports": [
+    "7780",
+    "7790",
+    "7880"
+   ],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/worker-auth.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "lib/worker-pool.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/worker-auth.js",
+    "lib/workers/ssh-worker.js"
+   ],
+   "ports": [
+    "7782"
+   ],
+   "in": 0,
+   "verdict": "wired:lib"
+  },
+  "lib/workers/http-worker.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7897"
+   ],
+   "in": 0,
+   "verdict": "wired:lib"
+  },
+  "lib/workers/purp-worker.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "lib/workers/ssh-worker.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [
+    "7790"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/workspace-awareness.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "lib/__tests__/accuracy-fish/claim_extractor.test.js": {
+   "lang": "js",
+   "role": "lib",
+   "deps": [
+    "lib/accuracy-fish.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "locked_interfaces.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "memory_matrix.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7780"
+   ],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "memory_matrix_v2.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [
+    "memory_matrix_v2.py",
+    "memory_matrix.py",
+    "symbolic_rules_engine.py"
+   ],
+   "ports": [
+    "7880"
+   ],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "metrics_aggregator.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "service_registry.js"
+   ],
+   "ports": [
+    "7890",
+    "7782"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "mimi_speak.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "mochi/menu_mochi_extension/background.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "mochi/menu_mochi_extension/content.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "mochi/menu_mochi_extension/popup.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "mochi/mochi-sprites.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "mochi/mochi.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "mochi/mochi-sprites.js"
+   ],
+   "ports": [
+    "7885"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "modal_logic_engine.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "music_analysis_service.py": {
+   "lang": "py",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7782"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "neuro_symbolic_bridge.py": {
+   "lang": "py",
+   "role": "service-daemon",
+   "deps": [
+    "neuro_symbolic_bridge.py",
+    "memory_matrix.py"
+   ],
+   "ports": [
+    "7784"
+   ],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "no-spaghett/eslint.config.mjs": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "no-spaghett/ls.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "no-spaghett/ls2.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "no-spaghett/ls3.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "no-spaghett/postcss.config.mjs": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "no-spaghett/skills/goop-sigil/exorcise_module.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "orchestrator.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "agent_score.js",
+    "locked_interfaces.js"
+   ],
+   "ports": [
+    "7784",
+    "7782",
+    "7783",
+    "7780",
+    "7790",
+    "7781",
+    "7898"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "pocket/detect.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7790",
+    "7880",
+    "7890"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "pocket/guide/play.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "podcast_studio/config.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 4,
+   "verdict": "wired:imported"
+  },
+  "podcast_studio/episode_manager.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "podcast_studio/shared_log.js",
+    "podcast_studio/topic_picker.js",
+    "podcast_studio/llm_service.js",
+    "podcast_studio/config.js"
+   ],
+   "ports": [
+    "7890"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "podcast_studio/launch.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "podcast_studio/episode_manager.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "podcast_studio/llm_service.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "podcast_studio/podcast_runner.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "podcast_studio/shared_log.js",
+    "podcast_studio/turn_manager.js",
+    "podcast_studio/topic_picker.js",
+    "podcast_studio/tts.js",
+    "podcast_studio/llm_service.js",
+    "podcast_studio/config.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "podcast_studio/shared_log.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 4,
+   "verdict": "wired:imported"
+  },
+  "podcast_studio/topic_picker.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "podcast_studio/config.js",
+    "podcast_studio/shared_log.js"
+   ],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "podcast_studio/tts.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "podcast_studio/utils.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "podcast_studio/turn_manager.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "podcast_studio/shared_log.js",
+    "podcast_studio/config.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "podcast_studio/utils.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "pool_service.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7885"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "postcss.config.mjs": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "public/skyscraper/data-hooks.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7782",
+    "7783",
+    "7784",
+    "7790",
+    "7791",
+    "7880",
+    "7889",
+    "7898"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "purpconsole/app.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [
+    "purpconsole/features.py"
+   ],
+   "ports": [],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "purpconsole/features.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "purpconsole/run.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [
+    "purpconsole/app.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "purpconsole/_smoke.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [
+    "purpconsole/app.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "purpconsole/__init__.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "purpconsole/__main__.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [
+    "purpconsole/app.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "puzzle-stream/apps/web/postcss.config.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "puzzle-stream/apps/web/tailwind.config.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "python/faiss_sidecar.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "refusal_ablation_probe/config.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "replace.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "scrape_stdu.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "scrape_stdu_news.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "scrape_zhihu.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7890"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "screen-manager.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "scripts/benchmark-providers.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/build-binary-index.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/build-safe.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/checksum-vendor.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/code-index-fast.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/deep-audit.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [
+    "3030"
+   ],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/delegation-status.cjs": {
+   "lang": "js",
+   "role": "script",
+   "deps": [
+    "lib/delegation-status.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/demo-factory.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [
+    "lib/demo/product-factory.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/heartbeat.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [
+    "3030",
+    "7880"
+   ],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/init-undefined.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/lora-train.py": {
+   "lang": "py",
+   "role": "script",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/model-sentinel.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [
+    "lib/model-sentinel.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/nanoclaw.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [
+    "7784",
+    "7880"
+   ],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/panic-stop.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [
+    "service_registry.js"
+   ],
+   "ports": [
+    "7790"
+   ],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/pm2-names.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [
+    "service_registry.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/tui-ask.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/tui-ng.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7790",
+    "7784"
+   ],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/tui.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7782",
+    "7783",
+    "7784",
+    "7790",
+    "7791",
+    "7881",
+    "7885",
+    "7890",
+    "7889",
+    "7880",
+    "7781"
+   ],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/verify-api-spine.cjs": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/verify-llm-fallback.cjs": {
+   "lang": "js",
+   "role": "script",
+   "deps": [
+    "lib/llm-provider.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/windows/core-host.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [
+    "lib/paths.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/windows/python-service-host.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [
+    "lib/paths.js",
+    "lib/runtime/pipeline-telemetry.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/windows/tray-agent.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "lib/paths.js",
+    "lib/runtime/computer-use.js",
+    "lib/runtime/voice-router.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "scripts/windows/verify-windows-scripts.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "scripts/windows/voice-session-host.js": {
+   "lang": "js",
+   "role": "script",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/runtime/settings-registry.js",
+    "lib/paths.js"
+   ],
+   "ports": [
+    "7792",
+    "7781"
+   ],
+   "in": 0,
+   "verdict": "wired:script"
+  },
+  "service_registry.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7782",
+    "7783",
+    "7780",
+    "7790",
+    "7784",
+    "7791",
+    "7890",
+    "7885",
+    "7881",
+    "3030",
+    "7898",
+    "7781",
+    "7792",
+    "7889",
+    "7779",
+    "7880",
+    "7777",
+    "7892",
+    "7798",
+    "7799"
+   ],
+   "in": 4,
+   "verdict": "wired:imported"
+  },
+  "shaman_evaluator.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "shaman_prompts.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "simple_bridge.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7777"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "skills/arxiv/scripts/search_arxiv.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/axolotl/axolotl.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/bee/bee.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/bunny/bunny.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/cactus/cactus.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/canvas/scripts/canvas_api.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/chart/chart.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/child-registry-no-spawn-leak/scripts/spawn-audit.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/chonk/chonk.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/ck/commands/forget.mjs": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/ck/commands/info.mjs": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/ck/commands/init.mjs": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/ck/commands/list.mjs": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/ck/commands/migrate.mjs": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/ck/commands/resume.mjs": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/ck/commands/save.mjs": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/ck/commands/shared.mjs": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/ck/hooks/session-start.mjs": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/claw/claw.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/comfyui/scripts/auto_fix_deps.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/comfyui/scripts/_common.py",
+    "skills/comfyui/scripts/check_deps.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/comfyui/scripts/check_deps.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/comfyui/scripts/_common.py"
+   ],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "skills/comfyui/scripts/extract_schema.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/comfyui/scripts/_common.py"
+   ],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "skills/comfyui/scripts/fetch_logs.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/comfyui/scripts/_common.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/comfyui/scripts/hardware_check.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/comfyui/scripts/health_check.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/comfyui/scripts/_common.py",
+    "skills/comfyui/scripts/run_workflow.py",
+    "skills/comfyui/scripts/check_deps.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/comfyui/scripts/run_batch.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/comfyui/scripts/_common.py",
+    "skills/comfyui/scripts/run_workflow.py",
+    "skills/comfyui/scripts/extract_schema.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/comfyui/scripts/run_workflow.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/comfyui/scripts/_common.py",
+    "skills/comfyui/scripts/extract_schema.py"
+   ],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "skills/comfyui/scripts/ws_monitor.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/comfyui/scripts/_common.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/comfyui/scripts/_common.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 8,
+   "verdict": "wired:imported"
+  },
+  "skills/comfyui/tests/conftest.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/comfyui/tests/test_check_deps.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/comfyui/tests/test_cloud_integration.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/comfyui/tests/test_common.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/comfyui/tests/test_extract_schema.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/comfyui/tests/test_run_workflow.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/companion_swarm.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/continuous-learning-v2/scripts/instinct-cli.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/continuous-learning-v2/scripts/test_parse_instinct.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/crow/crow.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/darwinian-evolver/scripts/parrot_openrouter.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/darwinian-evolver/scripts/show_snapshot.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/darwinian-evolver/templates/custom_problem_template.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/dcf-model/scripts/validate_dcf.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/domain-intel/scripts/domain_intel.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/dragon/dragon.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/drug-discovery/scripts/chembl_target.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/drug-discovery/scripts/ro5_screen.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/duck/duck.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/elephant/elephant.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/evm/scripts/evm_client.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/excalidraw/scripts/upload.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/excel-author/scripts/recalc.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/fastmcp/scripts/scaffold_fastmcp.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/fastmcp/templates/api_wrapper.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/fastmcp/templates/database_server.py": {
+   "lang": "py",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "skills/fastmcp/templates/file_processor.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/fitness-nutrition/scripts/body_calc.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/fitness-nutrition/scripts/nutrition_search.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/fox/fox.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/ghost/ghost.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/gitnexus-explorer/scripts/proxy.mjs": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "skills/godmode/scripts/auto_jailbreak.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/godmode/scripts/godmode_race.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/godmode/scripts/load_godmode.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/godmode/scripts/parseltongue.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/google-workspace/scripts/google_api.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/google-workspace/scripts/_hermes_home.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/google-workspace/scripts/gws_bridge.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/google-workspace/scripts/_hermes_home.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/google-workspace/scripts/setup.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/google-workspace/scripts/_hermes_home.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/google-workspace/scripts/_hermes_home.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "skills/google-workspace.bak/scripts/google_api.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/google-workspace.bak/scripts/_hermes_home.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/google-workspace.bak/scripts/gws_bridge.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/google-workspace.bak/scripts/_hermes_home.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/google-workspace.bak/scripts/setup.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/google-workspace.bak/scripts/_hermes_home.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/google-workspace.bak/scripts/_hermes_home.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 3,
+   "verdict": "wired:imported"
+  },
+  "skills/goop-sigil/detect_spaghetti.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/goop-sigil/exorcise_module.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/goose/goose.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/gorilla/gorilla.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/guardian/security_control_api.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "skills/guardian/security_scanner.js",
+    "skills/guardian/voice_security_handler.js"
+   ],
+   "ports": [
+    "7784",
+    "7779"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "skills/guardian/security_scanner.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "skills/guardian/voice_security_handler.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [
+    "skills/guardian/security_scanner.js"
+   ],
+   "ports": [
+    "7779"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "skills/hawk/hawk.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/hermes-tts-providers/scripts/kokoro_tts.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/hyperliquid/scripts/hyperliquid_client.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/innovator/innovator.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/interactive_shell.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/jellyfish/jellyfish.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/kanban-video-orchestrator/scripts/bootstrap_pipeline.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/kanban-video-orchestrator/scripts/monitor.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/karen/karen.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/kernel-job-training-buffer/templates/training-buffer.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/kernel-job-training-buffer/templates/training-cli.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/kraken/kraken.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/lemur/lemur.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/linear/scripts/linear_api.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/lunokio-avatar-control/scripts/lunokio_manager.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/lunokio-avatar-control/scripts/riko_control.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/mantis/mantis.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/maps/scripts/maps_client.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/meme-generation/scripts/generate_meme.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/memento-flashcards/scripts/memento_cards.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/memento-flashcards/scripts/youtube_quiz.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/moth/moth.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/multi-service-runtime-boot-hardening/templates/auto-discovery-probe.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/multi-service-runtime-boot-hardening/templates/open.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/multi-service-runtime-boot-hardening/templates/safe-start.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/mushroom/mushroom.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/navigator/tools.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/numbers/numbers.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/ocr-and-documents/scripts/extract_marker.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/ocr-and-documents/scripts/extract_pymupdf.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/octopus/octopus.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/openclaw-migration/scripts/openclaw_to_hermes.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/build_findings.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/entity_resolution.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/osint-investigation/scripts/_normalize.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/fetch_courtlistener.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/fetch_gdelt.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/fetch_icij_offshore.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/fetch_nyc_acris.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/fetch_ofac_sdn.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/fetch_opencorporates.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/fetch_sec_edgar.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/fetch_senate_ld.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/fetch_usaspending.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/fetch_wayback.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/fetch_wikipedia.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/timing_analysis.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/osint-investigation/scripts/_http.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 9,
+   "verdict": "wired:imported"
+  },
+  "skills/osint-investigation/scripts/_normalize.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "skills/oss-forensics/scripts/evidence-store.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/owl/owl.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/p5js/scripts/export-frames.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/panda/panda.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/parrot/parrot.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/penguin/penguin.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/phoenix/phoenix.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/pixel-art/scripts/palettes.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "skills/pixel-art/scripts/pixel_art.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/pixel-art/scripts/pixel_art.py",
+    "skills/pixel-art/scripts/palettes.py"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "skills/pixel-art/scripts/pixel_art_video.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/pixel-art/scripts/pixel_art_video.py"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "skills/pixel-art/scripts/__init__.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/polymarket/scripts/polymarket.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/powerpoint/scripts/add_slide.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/powerpoint/scripts/clean.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/powerpoint/scripts/office/helpers/merge_runs.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/powerpoint/scripts/office/helpers/simplify_redlines.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/powerpoint/scripts/office/helpers/__init__.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/powerpoint/scripts/office/pack.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/powerpoint/scripts/__init__.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/purpclaw-chat-gateway/templates/stub.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "skills/rabbit/rabbit.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/raven/raven.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/remotion/scripts/verify_remotion_render.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/robot/robot.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/scientist/scientist.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/shark/shark.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/skill_manager.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/snake/snake.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/socket-rig/references/lunokio_bridge.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/socket_rig.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [
+    "7777"
+   ],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/solana/scripts/solana_client.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/spider/spider.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/stocks/scripts/stocks_client.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/street_builder.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/task_manager.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/telephony/scripts/telephony.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/test_skill.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/trl-fine-tuning/templates/basic_grpo_training.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/turtle/turtle.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/void/void.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/wallet-recovery/references/scan_parallel.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/wallet-recovery/scripts/scan_telegram.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/watchers/scripts/watch_github.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/watchers/scripts/_watermark.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/watchers/scripts/watch_http_json.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/watchers/scripts/_watermark.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/watchers/scripts/watch_rss.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/watchers/scripts/_watermark.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/watchers/scripts/_watermark.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [
+    "skills/watchers/scripts/_watermark.py"
+   ],
+   "ports": [],
+   "in": 4,
+   "verdict": "wired:imported"
+  },
+  "skills/wolf/wolf.js": {
+   "lang": "js",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "skills/youtube-content/scripts/fetch_transcript.py": {
+   "lang": "py",
+   "role": "skill",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:skill"
+  },
+  "smoke_test.js": {
+   "lang": "js",
+   "role": "test",
+   "deps": [],
+   "ports": [
+    "7782",
+    "7783",
+    "7780",
+    "7790",
+    "7781",
+    "7779"
+   ],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "spinUpAgent.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [
+    "7885"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "start_purpclaw.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [
+    "7780",
+    "7781",
+    "7779"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "stress.cjs": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "swarm_coordinator.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "task_decomposer.js",
+    "agent_score.js",
+    "lib/context-packet.js",
+    "lib/llm-provider.js",
+    "lib/self-context.js",
+    "lib/memory-client.js",
+    "lib/cognitive-client.js"
+   ],
+   "ports": [
+    "7898",
+    "7790",
+    "7782"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "swarm_scheduler.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "agent_tower.js"
+   ],
+   "ports": [
+    "7780"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "symbolic_rules_engine.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 2,
+   "verdict": "wired:imported"
+  },
+  "task_decomposer.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "agent_routing_matrix.js",
+    "lib/ast-dependency-graph.js"
+   ],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "test_audio_pipeline.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "test_memory.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [
+    "memory_matrix.py"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "test_rules_inline.py": {
+   "lang": "py",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "thringlet_bridge.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "lib/thringlets/engine.js",
+    "lib/thringlets/runtime-observer.js"
+   ],
+   "ports": [
+    "7799"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "tmux-worktree-orchestrator.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [
+    "7782",
+    "7783",
+    "7790"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "unified_api.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "lib/child-registry.js",
+    "agent_tower.js",
+    "lib/llm-provider.js",
+    "lib/memory-client.js",
+    "digital_shaman.js",
+    "shaman_evaluator.js",
+    "lib/agent-loop.js",
+    "lib/commands/code.js"
+   ],
+   "ports": [
+    "7780",
+    "7880",
+    "3030",
+    "7782",
+    "7779",
+    "7784"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "unified_bridge.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [
+    "7780",
+    "7777",
+    "7781",
+    "7779",
+    "7790",
+    "7782",
+    "7783"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "unified_eventbus.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7782"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "unified_state.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7783",
+    "7782"
+   ],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "vision_monitor.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7781",
+    "7784",
+    "7779"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "voice_bridge_7792.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [
+    "7792",
+    "7779",
+    "7777",
+    "7780",
+    "7782",
+    "7781"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "voice_coordinator.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "ports": [
+    "7781",
+    "7780",
+    "7790"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "voice_ingress.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7784",
+    "7782"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "voice_stt.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  },
+  "worker_service.js": {
+   "lang": "js",
+   "role": "service-daemon",
+   "deps": [
+    "lib/worker-auth.js"
+   ],
+   "ports": [
+    "7897",
+    "7790"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "yolo_service.py": {
+   "lang": "py",
+   "role": "service-daemon",
+   "deps": [],
+   "ports": [
+    "7779"
+   ],
+   "in": 0,
+   "verdict": "wired:service-daemon"
+  },
+  "_api-mega-list/API-mega-list-main/settings/fetch_apify_actors.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "_api-mega-list/API-mega-list-main/settings/generate_readme_clean.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "_scratch/dup_finder.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "_scratch/gap-report.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "lib/feature-parity.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "_scratch/run_mission_direct.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "swarm_coordinator.js"
+   ],
+   "ports": [
+    "7790"
+   ],
+   "in": 0,
+   "verdict": "wired:module"
+  },
+  "_scratch/selftest/hello.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "_scratch/test_db.js": {
+   "lang": "js",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "_scratch/test_hud.js": {
+   "lang": "js",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "_scratch/test_sandbox.js": {
+   "lang": "js",
+   "role": "test",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "wired:test"
+  },
+  "_scratch/turbovec-pack/purpclaw_turbovec_integration/bin/purpclaw-vector-bench.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [
+    "_scratch/turbovec-pack/purpclaw_turbovec_integration/lib/vector/providers/turbovecProvider.js"
+   ],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "_scratch/turbovec-pack/purpclaw_turbovec_integration/lib/vector/providers/turbovecProvider.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 1,
+   "verdict": "wired:imported"
+  },
+  "_scratch/turbovec-pack/purpclaw_turbovec_integration/python/turbovec_sidecar.py": {
+   "lang": "py",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "detritus(scratch/legacy)"
+  },
+  "_wire.js": {
+   "lang": "js",
+   "role": "module",
+   "deps": [],
+   "ports": [],
+   "in": 0,
+   "verdict": "ORPHAN?"
+  }
+ },
+ "importedBy": {
+  "ablation_probes/refusal_weight_probe_7B.py": [],
+  "agent_routing_matrix.js": [
+   "task_decomposer.js"
+  ],
+  "agent_score.js": [
+   "lib/harness/benchmark.js",
+   "lib/harness/engine.js",
+   "orchestrator.js",
+   "swarm_coordinator.js"
+  ],
+  "agent_tower.js": [
+   "boot.js",
+   "lib/deep-audit.js",
+   "swarm_scheduler.js",
+   "unified_api.js"
+  ],
+  "agent_work/bee/postcss.config.mjs": [],
+  "agent_work/blast_radius_helper.js": [],
+  "agent_work/robot/dashboard_live_update_test.js": [],
+  "apis for agents/settings/fetch_apify_actors.js": [],
+  "apis for agents/settings/generate_readme_clean.js": [],
+  "app/public/ui/app.js": [],
+  "app/public/ui/chat-hooks.js": [],
+  "app/public/ui/cinematic.js": [],
+  "app/public/ui/command-palette.js": [],
+  "app/public/ui/data-hooks.js": [],
+  "app/public/ui/extras.js": [],
+  "app/public/ui/panels.js": [],
+  "app/public/ui/skyscraper.js": [],
+  "app/public/ui/tweaks-panel.js": [],
+  "autoDream.py": [
+   "autoDream.py",
+   "cognitive_spine.py"
+  ],
+  "autonomous_diagnostics.py": [
+   "cognitive_spine.py"
+  ],
+  "bin/coding-eval.js": [],
+  "bin/MISSION.js": [],
+  "bin/model-discover.js": [],
+  "bin/purpclaw-vector-bench.js": [],
+  "bin/purpclaw.js": [],
+  "boot.js": [],
+  "boston_analysis.py": [],
+  "cognitive_spine.py": [],
+  "companion-chorus/bridge.js": [],
+  "companion-chorus/main.js": [],
+  "companion-chorus/src/constants.js": [
+   "companion-chorus/bridge.js",
+   "companion-chorus/main.js",
+   "companion-chorus/src/gacha.js"
+  ],
+  "companion-chorus/src/gacha.js": [
+   "companion-chorus/bridge.js",
+   "companion-chorus/main.js"
+  ],
+  "companion-chorus/src/minimax.js": [
+   "companion-chorus/bridge.js",
+   "companion-chorus/main.js",
+   "companion-chorus/test-ai.js"
+  ],
+  "companion-chorus/src/sprites.js": [
+   "companion-chorus/main.js"
+  ],
+  "companion-chorus/src/voice.js": [
+   "companion-chorus/bridge.js",
+   "companion-chorus/main.js"
+  ],
+  "companion-chorus/test-ai.js": [],
+  "companion-chorus/test-api.js": [],
+  "companion_swarm.js": [
+   "agent_tower.js"
+  ],
+  "create_db.py": [],
+  "diag_audio.py": [],
+  "digital_shaman.js": [
+   "unified_api.js"
+  ],
+  "docs/legacy/ghostbusters-2026-06-06/ball_to_rig_bridge.js": [],
+  "docs/legacy/ghostbusters-2026-06-06/browser_voice_commands.js": [],
+  "docs/legacy/ghostbusters-2026-06-06/clap-detector.js": [],
+  "docs/legacy/ghostbusters-2026-06-06/crossbar_integration.js": [],
+  "docs/legacy/ghostbusters-2026-06-06/dig_convos.py": [],
+  "docs/legacy/ghostbusters-2026-06-06/dig_convos2.py": [],
+  "docs/legacy/ghostbusters-2026-06-06/dig_convos3.py": [],
+  "docs/legacy/ghostbusters-2026-06-06/ethics_hooks.js": [],
+  "docs/legacy/ghostbusters-2026-06-06/kimi_client.js": [],
+  "docs/legacy/ghostbusters-2026-06-06/launch_clean.js": [],
+  "docs/legacy/ghostbusters-2026-06-06/loop_of_shame.py": [],
+  "docs/legacy/ghostbusters-2026-06-06/memory_matrix.py": [],
+  "docs/legacy/ghostbusters-2026-06-06/mood_engine.js": [
+   "docs/legacy/ghostbusters-2026-06-06/purpclaw_turing_core.js"
+  ],
+  "docs/legacy/ghostbusters-2026-06-06/playwright_compatibility.js": [
+   "docs/legacy/ghostbusters-2026-06-06/browser_voice_commands.js"
+  ],
+  "docs/legacy/ghostbusters-2026-06-06/process-leash.js": [],
+  "docs/legacy/ghostbusters-2026-06-06/purpclaw.js": [],
+  "docs/legacy/ghostbusters-2026-06-06/purpclaw_turing_core.js": [],
+  "docs/legacy/ghostbusters-2026-06-06/task_decomposer.js": [],
+  "docs/legacy/ghostbusters-2026-06-06/turing_face_driver.js": [
+   "docs/legacy/ghostbusters-2026-06-06/purpclaw_turing_core.js"
+  ],
+  "docs/legacy/launch_detached.js": [],
+  "docs/legacy/root-cleanup-2026-06-06/gen_api.js": [],
+  "docs/legacy/root-cleanup-2026-06-06/run_node.js": [],
+  "docs/legacy/root-cleanup-2026-06-06/run_py.js": [],
+  "docs/legacy/root-cleanup-2026-06-06/smart_demo.js": [],
+  "docs/legacy/root-cleanup-2026-06-06/terminal-fly.js": [],
+  "docs/legacy/root-cleanup-2026-06-06/tool_diagnostic.js": [],
+  "docs/legacy/root-cleanup-2026-06-06/visualizer_server.js": [],
+  "docs/legacy/root-cleanup-2026-06-06/_fix_quotes.js": [],
+  "docs/legacy/voice_bridge_7779.js": [],
+  "ecosystem.config.js": [],
+  "eslint.config.mjs": [],
+  "eval/benches/eventbus_bench.py": [],
+  "eval/benches/governance_bench.py": [],
+  "eval/benches/memory_bench.py": [],
+  "eval/benches/orchestrator_bench.py": [],
+  "eval/benches/pool_bench.py": [],
+  "eval/benches/__init__.py": [],
+  "eval/harness.py": [],
+  "eval/suites/chaos.py": [],
+  "eval/suites/regression.py": [],
+  "eval/suites/smoke.py": [],
+  "eval/suites/__init__.py": [],
+  "eval/__init__.py": [],
+  "find_pulse.py": [],
+  "gacha.py": [],
+  "gatekeeper.js": [],
+  "harness_service.js": [],
+  "lcd_bridge_server.py": [],
+  "lcd_log_monitor.py": [],
+  "lib/accuracy-fish.js": [
+   "lib/harness/engine.js",
+   "lib/__tests__/accuracy-fish/claim_extractor.test.js"
+  ],
+  "lib/agent-loop.js": [
+   "agent_tower.js",
+   "lib/chat-agent.js",
+   "lib/commands/ask.js",
+   "unified_api.js"
+  ],
+  "lib/agent-personas.js": [],
+  "lib/agent-session.js": [],
+  "lib/agent-tools-file.js": [],
+  "lib/api-harness-kernel.js": [],
+  "lib/api-mega-list.js": [
+   "lib/goop-playground/goop-playground.js"
+  ],
+  "lib/ast-dependency-graph.js": [
+   "task_decomposer.js"
+  ],
+  "lib/autotune.js": [
+   "lib/tools/index.js"
+  ],
+  "lib/business/operations.js": [
+   "lib/commands/business.js"
+  ],
+  "lib/business/store.js": [
+   "lib/business/operations.js",
+   "lib/business/twilio.js",
+   "lib/commands/business.js"
+  ],
+  "lib/business/twilio.js": [
+   "lib/commands/business.js"
+  ],
+  "lib/capability-registry.js": [
+   "lib/supervisor.js"
+  ],
+  "lib/chaos-campaign.js": [
+   "lib/commands/bigboss.js",
+   "lib/tools/index.js"
+  ],
+  "lib/chat-agent.js": [
+   "lib/deep-research-group.js"
+  ],
+  "lib/child-registry.js": [
+   "bin/purpclaw.js",
+   "boot.js",
+   "lib/commands/bigboss.js",
+   "lib/commands/claudecode.js",
+   "lib/commands/deploy.js",
+   "lib/commands/open.js",
+   "lib/commands/pocket.js",
+   "lib/commands/remotion.js",
+   "lib/demo/product-factory.js",
+   "lib/harvest/extractors.js",
+   "lib/mcp.js",
+   "lib/pocket-updater.js",
+   "lib/runtime/computer-use.js",
+   "lib/runtime/voice-router.js",
+   "lib/skill-bridge.js",
+   "lib/tools/index.js",
+   "lib/tools/skills-registry.js",
+   "lib/tools-cli-anything.js",
+   "lib/tools-pc.js",
+   "lib/tools-remotion.js",
+   "screen-manager.js",
+   "scripts/windows/voice-session-host.js",
+   "spinUpAgent.js",
+   "start_purpclaw.js",
+   "tmux-worktree-orchestrator.js",
+   "unified_api.js",
+   "voice_bridge_7792.js",
+   "voice_coordinator.js"
+  ],
+  "lib/code-tools.js": [],
+  "lib/cognitive-client.js": [
+   "swarm_coordinator.js"
+  ],
+  "lib/commands/architecture.js": [],
+  "lib/commands/ask.js": [],
+  "lib/commands/autofix-pr.js": [],
+  "lib/commands/autoresearch.js": [],
+  "lib/commands/bigboss.js": [
+   "lib/commands/ask.js"
+  ],
+  "lib/commands/browser.js": [],
+  "lib/commands/bughunt.js": [],
+  "lib/commands/business.js": [],
+  "lib/commands/claudecode.js": [],
+  "lib/commands/code.js": [
+   "unified_api.js"
+  ],
+  "lib/commands/cognition.js": [],
+  "lib/commands/ctx-viz.js": [],
+  "lib/commands/deploy.js": [],
+  "lib/commands/evolve.js": [],
+  "lib/commands/gc.js": [],
+  "lib/commands/grow.js": [],
+  "lib/commands/harness.js": [],
+  "lib/commands/harvest.js": [],
+  "lib/commands/heal.js": [],
+  "lib/commands/identity.js": [],
+  "lib/commands/intelligence.js": [],
+  "lib/commands/llm.js": [],
+  "lib/commands/onboard.js": [],
+  "lib/commands/open.js": [],
+  "lib/commands/overview.js": [],
+  "lib/commands/parity.js": [],
+  "lib/commands/plan.js": [],
+  "lib/commands/pocket.js": [],
+  "lib/commands/ponytail.js": [],
+  "lib/commands/remotion.js": [],
+  "lib/commands/roster.js": [],
+  "lib/commands/safe-start.js": [
+   "lib/commands/heal.js",
+   "lib/commands/safe-stop.js"
+  ],
+  "lib/commands/safe-stop.js": [],
+  "lib/commands/services.js": [],
+  "lib/commands/setup.js": [
+   "lib/commands/tour.js"
+  ],
+  "lib/commands/smoke.js": [],
+  "lib/commands/telemetry.js": [],
+  "lib/commands/teleport.js": [],
+  "lib/commands/thringlets.js": [],
+  "lib/commands/tour.js": [],
+  "lib/commands/training.js": [],
+  "lib/commands/workers.js": [],
+  "lib/context-bus.js": [],
+  "lib/context-packet.js": [
+   "swarm_coordinator.js"
+  ],
+  "lib/deep-audit.js": [
+   "bin/purpclaw.js"
+  ],
+  "lib/deep-research-group.js": [
+   "lib/api-harness-kernel.js",
+   "lib/self-evolution-loop.js"
+  ],
+  "lib/delegation-status.js": [
+   "scripts/delegation-status.cjs"
+  ],
+  "lib/demo/product-factory.js": [
+   "scripts/demo-factory.js"
+  ],
+  "lib/doctor.js": [
+   "bin/purpclaw.js"
+  ],
+  "lib/embeddings.js": [
+   "bin/purpclaw.js"
+  ],
+  "lib/evolution/mutator.js": [
+   "lib/commands/evolve.js",
+   "lib/harness/benchmark.js",
+   "lib/harness/engine.js"
+  ],
+  "lib/evolution/skill-forge.js": [
+   "lib/commands/evolve.js"
+  ],
+  "lib/feature-parity.js": [
+   "_scratch/gap-report.js"
+  ],
+  "lib/gate-pipeline.js": [
+   "lib/idle-engine.js"
+  ],
+  "lib/gateways/discord.js": [],
+  "lib/gateways/email.js": [],
+  "lib/gateways/slack.js": [],
+  "lib/gateways/telegram.js": [],
+  "lib/goop-playground/goop-playground.js": [],
+  "lib/goop-playground/squirrel.js": [],
+  "lib/governance-audit.js": [],
+  "lib/governance.js": [
+   "lib/api-harness-kernel.js"
+  ],
+  "lib/harness/benchmark.js": [
+   "lib/commands/harness.js",
+   "lib/harness/engine.js"
+  ],
+  "lib/harness/engine.js": [
+   "harness_service.js",
+   "lib/api-harness-kernel.js",
+   "lib/commands/harness.js",
+   "lib/harness/benchmark.js"
+  ],
+  "lib/harvest/crawler.js": [
+   "lib/commands/harvest.js"
+  ],
+  "lib/harvest/extractors.js": [
+   "lib/commands/harvest.js"
+  ],
+  "lib/harvest/indexer.js": [
+   "lib/commands/harvest.js"
+  ],
+  "lib/identity.js": [
+   "lib/commands/identity.js",
+   "lib/deep-audit.js"
+  ],
+  "lib/idle-engine.js": [
+   "lib/agent-loop.js"
+  ],
+  "lib/imagegen/gateway.js": [],
+  "lib/imagegen/video_engine.js": [
+   "lib/tools/index.js"
+  ],
+  "lib/intelligence-spine.js": [],
+  "lib/job-contract.js": [
+   "lib/api-harness-kernel.js",
+   "lib/evolution/skill-forge.js",
+   "lib/harness/engine.js"
+  ],
+  "lib/llm-provider.js": [
+   "agent_tower.js",
+   "digital_shaman.js",
+   "lib/agent-loop.js",
+   "lib/chat-agent.js",
+   "lib/commands/claudecode.js",
+   "lib/commands/setup.js",
+   "lib/deep-research-group.js",
+   "lib/demo/product-factory.js",
+   "lib/harness/engine.js",
+   "lib/llm-status.js",
+   "lib/model-sentinel.js",
+   "lib/runtime/provider-router.js",
+   "lib/screen-look.js",
+   "lib/tools-gui.js",
+   "scripts/verify-llm-fallback.cjs",
+   "swarm_coordinator.js",
+   "unified_api.js"
+  ],
+  "lib/llm-status.js": [],
+  "lib/mallory/index.js": [],
+  "lib/mcp.js": [
+   "lib/api-harness-kernel.js",
+   "lib/commands/ask.js"
+  ],
+  "lib/memory-client.js": [
+   "agent_tower.js",
+   "lib/harness/engine.js",
+   "lib/self-evolution-loop.js",
+   "swarm_coordinator.js",
+   "unified_api.js"
+  ],
+  "lib/memory-consistency.js": [
+   "lib/commands/bigboss.js",
+   "lib/tools/index.js"
+  ],
+  "lib/mochi-sprites.js": [
+   "lib/mochi-state.js",
+   "lib/mochi.js"
+  ],
+  "lib/mochi-state.js": [],
+  "lib/mochi-statusbar.js": [],
+  "lib/mochi.js": [],
+  "lib/model-sentinel.js": [
+   "scripts/model-sentinel.js"
+  ],
+  "lib/nvidia/nim-skills.js": [],
+  "lib/odysseus-scorecard.js": [],
+  "lib/omni/feature-registry.js": [],
+  "lib/omni/generate-agent-docs.js": [],
+  "lib/omni/omnicode-adapter.js": [
+   "lib/omni/patch-governor.js"
+  ],
+  "lib/omni/patch-governor.js": [],
+  "lib/omni/provider-integrity.js": [],
+  "lib/omni/queue-action-required.js": [],
+  "lib/omni/truth-scanner.js": [],
+  "lib/omnicode-bridge.js": [
+   "lib/api-harness-kernel.js",
+   "lib/mcp.js",
+   "lib/mochi-statusbar.js"
+  ],
+  "lib/orchestrator-hardening.js": [],
+  "lib/parseltongue.js": [
+   "lib/tools/index.js"
+  ],
+  "lib/paths.js": [
+   "lib/demo/product-factory.js",
+   "lib/mochi-state.js",
+   "lib/runtime/computer-use.js",
+   "lib/runtime/pipeline-telemetry.js",
+   "lib/runtime/preprompt-compiler.js",
+   "lib/runtime/voice-router.js",
+   "scripts/windows/core-host.js",
+   "scripts/windows/python-service-host.js",
+   "scripts/windows/tray-agent.js",
+   "scripts/windows/voice-session-host.js"
+  ],
+  "lib/persona-forge.js": [],
+  "lib/personality.js": [],
+  "lib/pocket-updater.js": [
+   "lib/commands/pocket.js"
+  ],
+  "lib/pocket-vault.js": [
+   "lib/commands/pocket.js",
+   "lib/deep-audit.js"
+  ],
+  "lib/proactive-maintenance.js": [],
+  "lib/providers/anthropic-messages.js": [
+   "lib/providers/registry.js"
+  ],
+  "lib/providers/hermes-cli.js": [
+   "lib/providers/registry.js"
+  ],
+  "lib/providers/openai-responses.js": [
+   "lib/providers/registry.js"
+  ],
+  "lib/providers/registry.js": [],
+  "lib/provider_health.js": [
+   "lib/survivor_router.js"
+  ],
+  "lib/rate-limit.js": [],
+  "lib/rate-limiter.js": [
+   "lib/deep-research-group.js"
+  ],
+  "lib/reasoning-loop.js": [],
+  "lib/reasoning-tick.js": [
+   "lib/reasoning-loop.js"
+  ],
+  "lib/recursive/agent-scores.js": [],
+  "lib/release-sign.js": [
+   "bin/purpclaw.js"
+  ],
+  "lib/runtime/computer-use.js": [
+   "lib/tools-gui.js",
+   "lib/tools-windows-mcp.js",
+   "scripts/windows/tray-agent.js"
+  ],
+  "lib/runtime/pipeline-telemetry.js": [
+   "lib/commands/telemetry.js",
+   "scripts/windows/python-service-host.js"
+  ],
+  "lib/runtime/policy-engine.js": [],
+  "lib/runtime/ports.js": [
+   "lib/runtime/settings-registry.js"
+  ],
+  "lib/runtime/preprompt-compiler.js": [],
+  "lib/runtime/provider-config.js": [
+   "lib/runtime/provider-router.js"
+  ],
+  "lib/runtime/provider-router.js": [
+   "lib/model-sentinel.js"
+  ],
+  "lib/runtime/settings-registry.js": [
+   "lib/runtime/computer-use.js",
+   "lib/runtime/preprompt-compiler.js",
+   "scripts/windows/voice-session-host.js"
+  ],
+  "lib/runtime/voice-router.js": [
+   "scripts/windows/tray-agent.js"
+  ],
+  "lib/sampler.js": [],
+  "lib/scheduler/calendar.js": [
+   "lib/scheduler/runner.js"
+  ],
+  "lib/scheduler/nl-cron.js": [
+   "lib/scheduler/calendar.js"
+  ],
+  "lib/scheduler/runner.js": [],
+  "lib/screen-look.js": [
+   "lib/runtime/computer-use.js",
+   "lib/tools-gui.js"
+  ],
+  "lib/secret-redactor.js": [],
+  "lib/self-context.js": [
+   "lib/deep-research-group.js",
+   "swarm_coordinator.js"
+  ],
+  "lib/self-evolution-loop.js": [],
+  "lib/session-store.js": [
+   "lib/agent-loop.js",
+   "lib/commands/ask.js"
+  ],
+  "lib/signed-manifest.js": [
+   "lib/pocket-updater.js"
+  ],
+  "lib/skill-bridge.js": [],
+  "lib/smith-neo.js": [
+   "lib/chaos-campaign.js",
+   "lib/commands/bigboss.js",
+   "lib/tools/index.js"
+  ],
+  "lib/snapshot.js": [],
+  "lib/space-governor.js": [
+   "lib/self-evolution-loop.js"
+  ],
+  "lib/spaghetti-audit.js": [],
+  "lib/spend-gate.js": [
+   "lib/commands/pocket.js",
+   "lib/deep-audit.js",
+   "lib/llm-provider.js",
+   "lib/runtime/settings-registry.js"
+  ],
+  "lib/stm.js": [
+   "lib/tools/index.js"
+  ],
+  "lib/stt/gateway.js": [],
+  "lib/supervisor.js": [],
+  "lib/survivor_router.js": [],
+  "lib/telemetry.js": [
+   "lib/commands/pocket.js"
+  ],
+  "lib/thringlets/archetypes.js": [
+   "lib/thringlets/engine.js"
+  ],
+  "lib/thringlets/engine.js": [
+   "lib/thringlets/runtime-observer.js",
+   "thringlet_bridge.js"
+  ],
+  "lib/thringlets/runtime-observer.js": [
+   "thringlet_bridge.js"
+  ],
+  "lib/thringlets/storage.js": [
+   "lib/thringlets/engine.js"
+  ],
+  "lib/tools/index.js": [
+   "lib/agent-loop.js",
+   "lib/api-harness-kernel.js",
+   "lib/chat-agent.js",
+   "lib/commands/ask.js",
+   "lib/commands/bigboss.js",
+   "lib/commands/remotion.js",
+   "lib/commands/tour.js",
+   "lib/deep-audit.js",
+   "lib/doctor.js",
+   "lib/whoami.js"
+  ],
+  "lib/tools/skills-registry.js": [
+   "lib/deep-audit.js",
+   "lib/tools/index.js",
+   "lib/whoami.js"
+  ],
+  "lib/tools-cli-anything.js": [],
+  "lib/tools-gui.js": [],
+  "lib/tools-pc.js": [
+   "lib/tools/index.js"
+  ],
+  "lib/tools-remotion.js": [
+   "lib/tools/index.js"
+  ],
+  "lib/tools-windows-mcp.js": [
+   "lib/runtime/computer-use.js"
+  ],
+  "lib/training/personal-dataset.js": [
+   "lib/idle-engine.js"
+  ],
+  "lib/training-buffer.js": [
+   "lib/api-harness-kernel.js",
+   "lib/commands/training.js"
+  ],
+  "lib/training-ingest.js": [],
+  "lib/tts/gateway.js": [],
+  "lib/user-feedback.js": [
+   "lib/agent-loop.js",
+   "lib/idle-engine.js"
+  ],
+  "lib/vector/index.js": [
+   "lib/commands/code.js"
+  ],
+  "lib/vector/providers/faissProvider.js": [
+   "lib/vector/index.js"
+  ],
+  "lib/verify-tools.js": [],
+  "lib/voice-client.js": [],
+  "lib/whoami.js": [
+   "bin/purpclaw.js",
+   "lib/agent-loop.js"
+  ],
+  "lib/worker-auth.js": [
+   "lib/worker-pool.js",
+   "worker_service.js"
+  ],
+  "lib/worker-pool.js": [],
+  "lib/workers/http-worker.js": [],
+  "lib/workers/purp-worker.js": [],
+  "lib/workers/ssh-worker.js": [
+   "lib/worker-pool.js"
+  ],
+  "lib/workspace-awareness.js": [
+   "lib/screen-look.js"
+  ],
+  "lib/__tests__/accuracy-fish/claim_extractor.test.js": [],
+  "locked_interfaces.js": [
+   "orchestrator.js"
+  ],
+  "memory_matrix.py": [
+   "memory_matrix_v2.py",
+   "neuro_symbolic_bridge.py",
+   "test_memory.py"
+  ],
+  "memory_matrix_v2.py": [
+   "cognitive_spine.py",
+   "memory_matrix_v2.py"
+  ],
+  "metrics_aggregator.js": [],
+  "mimi_speak.py": [],
+  "mochi/menu_mochi_extension/background.js": [],
+  "mochi/menu_mochi_extension/content.js": [],
+  "mochi/menu_mochi_extension/popup.js": [],
+  "mochi/mochi-sprites.js": [
+   "mochi/mochi.js"
+  ],
+  "mochi/mochi.js": [],
+  "modal_logic_engine.py": [
+   "cognitive_spine.py"
+  ],
+  "music_analysis_service.py": [],
+  "neuro_symbolic_bridge.py": [
+   "cognitive_spine.py",
+   "neuro_symbolic_bridge.py"
+  ],
+  "no-spaghett/eslint.config.mjs": [],
+  "no-spaghett/ls.js": [],
+  "no-spaghett/ls2.js": [],
+  "no-spaghett/ls3.js": [],
+  "no-spaghett/postcss.config.mjs": [],
+  "no-spaghett/skills/goop-sigil/exorcise_module.js": [],
+  "orchestrator.js": [],
+  "pocket/detect.py": [],
+  "pocket/guide/play.py": [],
+  "podcast_studio/config.js": [
+   "podcast_studio/episode_manager.js",
+   "podcast_studio/podcast_runner.js",
+   "podcast_studio/topic_picker.js",
+   "podcast_studio/turn_manager.js"
+  ],
+  "podcast_studio/episode_manager.js": [
+   "podcast_studio/launch.js"
+  ],
+  "podcast_studio/launch.js": [],
+  "podcast_studio/llm_service.js": [
+   "podcast_studio/episode_manager.js",
+   "podcast_studio/podcast_runner.js"
+  ],
+  "podcast_studio/podcast_runner.js": [],
+  "podcast_studio/shared_log.js": [
+   "podcast_studio/episode_manager.js",
+   "podcast_studio/podcast_runner.js",
+   "podcast_studio/topic_picker.js",
+   "podcast_studio/turn_manager.js"
+  ],
+  "podcast_studio/topic_picker.js": [
+   "podcast_studio/episode_manager.js",
+   "podcast_studio/podcast_runner.js"
+  ],
+  "podcast_studio/tts.js": [
+   "podcast_studio/podcast_runner.js"
+  ],
+  "podcast_studio/turn_manager.js": [
+   "podcast_studio/podcast_runner.js"
+  ],
+  "podcast_studio/utils.js": [
+   "podcast_studio/tts.js"
+  ],
+  "pool_service.js": [],
+  "postcss.config.mjs": [],
+  "public/skyscraper/data-hooks.js": [],
+  "purpconsole/app.py": [
+   "purpconsole/run.py",
+   "purpconsole/_smoke.py",
+   "purpconsole/__main__.py"
+  ],
+  "purpconsole/features.py": [
+   "purpconsole/app.py"
+  ],
+  "purpconsole/run.py": [],
+  "purpconsole/_smoke.py": [],
+  "purpconsole/__init__.py": [],
+  "purpconsole/__main__.py": [],
+  "puzzle-stream/apps/web/postcss.config.js": [],
+  "puzzle-stream/apps/web/tailwind.config.js": [],
+  "python/faiss_sidecar.py": [],
+  "refusal_ablation_probe/config.py": [],
+  "replace.js": [],
+  "scrape_stdu.py": [],
+  "scrape_stdu_news.py": [],
+  "scrape_zhihu.py": [],
+  "screen-manager.js": [],
+  "scripts/benchmark-providers.js": [],
+  "scripts/build-binary-index.js": [],
+  "scripts/build-safe.js": [],
+  "scripts/checksum-vendor.js": [],
+  "scripts/code-index-fast.js": [],
+  "scripts/deep-audit.js": [],
+  "scripts/delegation-status.cjs": [],
+  "scripts/demo-factory.js": [],
+  "scripts/heartbeat.js": [],
+  "scripts/init-undefined.js": [],
+  "scripts/lora-train.py": [],
+  "scripts/model-sentinel.js": [],
+  "scripts/nanoclaw.js": [],
+  "scripts/panic-stop.js": [],
+  "scripts/pm2-names.js": [],
+  "scripts/tui-ask.js": [],
+  "scripts/tui-ng.js": [],
+  "scripts/tui.js": [],
+  "scripts/verify-api-spine.cjs": [],
+  "scripts/verify-llm-fallback.cjs": [],
+  "scripts/windows/core-host.js": [],
+  "scripts/windows/python-service-host.js": [],
+  "scripts/windows/tray-agent.js": [],
+  "scripts/windows/verify-windows-scripts.js": [],
+  "scripts/windows/voice-session-host.js": [],
+  "service_registry.js": [
+   "lib/deep-audit.js",
+   "metrics_aggregator.js",
+   "scripts/panic-stop.js",
+   "scripts/pm2-names.js"
+  ],
+  "shaman_evaluator.js": [
+   "unified_api.js"
+  ],
+  "shaman_prompts.js": [],
+  "simple_bridge.py": [],
+  "skills/arxiv/scripts/search_arxiv.py": [],
+  "skills/axolotl/axolotl.js": [],
+  "skills/bee/bee.js": [],
+  "skills/bunny/bunny.js": [],
+  "skills/cactus/cactus.js": [],
+  "skills/canvas/scripts/canvas_api.py": [],
+  "skills/chart/chart.js": [],
+  "skills/child-registry-no-spawn-leak/scripts/spawn-audit.js": [],
+  "skills/chonk/chonk.js": [],
+  "skills/ck/commands/forget.mjs": [],
+  "skills/ck/commands/info.mjs": [],
+  "skills/ck/commands/init.mjs": [],
+  "skills/ck/commands/list.mjs": [],
+  "skills/ck/commands/migrate.mjs": [],
+  "skills/ck/commands/resume.mjs": [],
+  "skills/ck/commands/save.mjs": [],
+  "skills/ck/commands/shared.mjs": [],
+  "skills/ck/hooks/session-start.mjs": [],
+  "skills/claw/claw.js": [],
+  "skills/comfyui/scripts/auto_fix_deps.py": [],
+  "skills/comfyui/scripts/check_deps.py": [
+   "skills/comfyui/scripts/auto_fix_deps.py",
+   "skills/comfyui/scripts/health_check.py"
+  ],
+  "skills/comfyui/scripts/extract_schema.py": [
+   "skills/comfyui/scripts/run_batch.py",
+   "skills/comfyui/scripts/run_workflow.py"
+  ],
+  "skills/comfyui/scripts/fetch_logs.py": [],
+  "skills/comfyui/scripts/hardware_check.py": [],
+  "skills/comfyui/scripts/health_check.py": [],
+  "skills/comfyui/scripts/run_batch.py": [],
+  "skills/comfyui/scripts/run_workflow.py": [
+   "skills/comfyui/scripts/health_check.py",
+   "skills/comfyui/scripts/run_batch.py"
+  ],
+  "skills/comfyui/scripts/ws_monitor.py": [],
+  "skills/comfyui/scripts/_common.py": [
+   "skills/comfyui/scripts/auto_fix_deps.py",
+   "skills/comfyui/scripts/check_deps.py",
+   "skills/comfyui/scripts/extract_schema.py",
+   "skills/comfyui/scripts/fetch_logs.py",
+   "skills/comfyui/scripts/health_check.py",
+   "skills/comfyui/scripts/run_batch.py",
+   "skills/comfyui/scripts/run_workflow.py",
+   "skills/comfyui/scripts/ws_monitor.py"
+  ],
+  "skills/comfyui/tests/conftest.py": [],
+  "skills/comfyui/tests/test_check_deps.py": [],
+  "skills/comfyui/tests/test_cloud_integration.py": [],
+  "skills/comfyui/tests/test_common.py": [],
+  "skills/comfyui/tests/test_extract_schema.py": [],
+  "skills/comfyui/tests/test_run_workflow.py": [],
+  "skills/companion_swarm.js": [],
+  "skills/continuous-learning-v2/scripts/instinct-cli.py": [],
+  "skills/continuous-learning-v2/scripts/test_parse_instinct.py": [],
+  "skills/crow/crow.js": [],
+  "skills/darwinian-evolver/scripts/parrot_openrouter.py": [],
+  "skills/darwinian-evolver/scripts/show_snapshot.py": [],
+  "skills/darwinian-evolver/templates/custom_problem_template.py": [],
+  "skills/dcf-model/scripts/validate_dcf.py": [],
+  "skills/domain-intel/scripts/domain_intel.py": [],
+  "skills/dragon/dragon.js": [],
+  "skills/drug-discovery/scripts/chembl_target.py": [],
+  "skills/drug-discovery/scripts/ro5_screen.py": [],
+  "skills/duck/duck.js": [],
+  "skills/elephant/elephant.js": [],
+  "skills/evm/scripts/evm_client.py": [],
+  "skills/excalidraw/scripts/upload.py": [],
+  "skills/excel-author/scripts/recalc.py": [],
+  "skills/fastmcp/scripts/scaffold_fastmcp.py": [],
+  "skills/fastmcp/templates/api_wrapper.py": [],
+  "skills/fastmcp/templates/database_server.py": [],
+  "skills/fastmcp/templates/file_processor.py": [],
+  "skills/fitness-nutrition/scripts/body_calc.py": [],
+  "skills/fitness-nutrition/scripts/nutrition_search.py": [],
+  "skills/fox/fox.js": [],
+  "skills/ghost/ghost.js": [],
+  "skills/gitnexus-explorer/scripts/proxy.mjs": [],
+  "skills/godmode/scripts/auto_jailbreak.py": [],
+  "skills/godmode/scripts/godmode_race.py": [],
+  "skills/godmode/scripts/load_godmode.py": [],
+  "skills/godmode/scripts/parseltongue.py": [],
+  "skills/google-workspace/scripts/google_api.py": [],
+  "skills/google-workspace/scripts/gws_bridge.py": [],
+  "skills/google-workspace/scripts/setup.py": [],
+  "skills/google-workspace/scripts/_hermes_home.py": [
+   "skills/google-workspace/scripts/google_api.py",
+   "skills/google-workspace/scripts/gws_bridge.py",
+   "skills/google-workspace/scripts/setup.py"
+  ],
+  "skills/google-workspace.bak/scripts/google_api.py": [],
+  "skills/google-workspace.bak/scripts/gws_bridge.py": [],
+  "skills/google-workspace.bak/scripts/setup.py": [],
+  "skills/google-workspace.bak/scripts/_hermes_home.py": [
+   "skills/google-workspace.bak/scripts/google_api.py",
+   "skills/google-workspace.bak/scripts/gws_bridge.py",
+   "skills/google-workspace.bak/scripts/setup.py"
+  ],
+  "skills/goop-sigil/detect_spaghetti.js": [],
+  "skills/goop-sigil/exorcise_module.js": [],
+  "skills/goose/goose.js": [],
+  "skills/gorilla/gorilla.js": [],
+  "skills/guardian/security_control_api.js": [],
+  "skills/guardian/security_scanner.js": [
+   "skills/guardian/security_control_api.js",
+   "skills/guardian/voice_security_handler.js"
+  ],
+  "skills/guardian/voice_security_handler.js": [
+   "skills/guardian/security_control_api.js"
+  ],
+  "skills/hawk/hawk.js": [],
+  "skills/hermes-tts-providers/scripts/kokoro_tts.py": [],
+  "skills/hyperliquid/scripts/hyperliquid_client.py": [],
+  "skills/innovator/innovator.js": [],
+  "skills/interactive_shell.js": [],
+  "skills/jellyfish/jellyfish.js": [],
+  "skills/kanban-video-orchestrator/scripts/bootstrap_pipeline.py": [],
+  "skills/kanban-video-orchestrator/scripts/monitor.py": [],
+  "skills/karen/karen.js": [],
+  "skills/kernel-job-training-buffer/templates/training-buffer.js": [],
+  "skills/kernel-job-training-buffer/templates/training-cli.js": [],
+  "skills/kraken/kraken.js": [],
+  "skills/lemur/lemur.js": [],
+  "skills/linear/scripts/linear_api.py": [],
+  "skills/lunokio-avatar-control/scripts/lunokio_manager.py": [],
+  "skills/lunokio-avatar-control/scripts/riko_control.py": [],
+  "skills/mantis/mantis.js": [],
+  "skills/maps/scripts/maps_client.py": [],
+  "skills/meme-generation/scripts/generate_meme.py": [],
+  "skills/memento-flashcards/scripts/memento_cards.py": [],
+  "skills/memento-flashcards/scripts/youtube_quiz.py": [],
+  "skills/moth/moth.js": [],
+  "skills/multi-service-runtime-boot-hardening/templates/auto-discovery-probe.js": [],
+  "skills/multi-service-runtime-boot-hardening/templates/open.js": [],
+  "skills/multi-service-runtime-boot-hardening/templates/safe-start.js": [],
+  "skills/mushroom/mushroom.js": [],
+  "skills/navigator/tools.js": [],
+  "skills/numbers/numbers.js": [],
+  "skills/ocr-and-documents/scripts/extract_marker.py": [],
+  "skills/ocr-and-documents/scripts/extract_pymupdf.py": [],
+  "skills/octopus/octopus.js": [],
+  "skills/openclaw-migration/scripts/openclaw_to_hermes.py": [],
+  "skills/osint-investigation/scripts/build_findings.py": [],
+  "skills/osint-investigation/scripts/entity_resolution.py": [],
+  "skills/osint-investigation/scripts/fetch_courtlistener.py": [],
+  "skills/osint-investigation/scripts/fetch_gdelt.py": [],
+  "skills/osint-investigation/scripts/fetch_icij_offshore.py": [],
+  "skills/osint-investigation/scripts/fetch_nyc_acris.py": [],
+  "skills/osint-investigation/scripts/fetch_ofac_sdn.py": [],
+  "skills/osint-investigation/scripts/fetch_opencorporates.py": [],
+  "skills/osint-investigation/scripts/fetch_sec_edgar.py": [],
+  "skills/osint-investigation/scripts/fetch_senate_ld.py": [],
+  "skills/osint-investigation/scripts/fetch_usaspending.py": [],
+  "skills/osint-investigation/scripts/fetch_wayback.py": [],
+  "skills/osint-investigation/scripts/fetch_wikipedia.py": [],
+  "skills/osint-investigation/scripts/timing_analysis.py": [],
+  "skills/osint-investigation/scripts/_http.py": [
+   "skills/osint-investigation/scripts/fetch_courtlistener.py",
+   "skills/osint-investigation/scripts/fetch_gdelt.py",
+   "skills/osint-investigation/scripts/fetch_nyc_acris.py",
+   "skills/osint-investigation/scripts/fetch_ofac_sdn.py",
+   "skills/osint-investigation/scripts/fetch_opencorporates.py",
+   "skills/osint-investigation/scripts/fetch_sec_edgar.py",
+   "skills/osint-investigation/scripts/fetch_senate_ld.py",
+   "skills/osint-investigation/scripts/fetch_wayback.py",
+   "skills/osint-investigation/scripts/fetch_wikipedia.py"
+  ],
+  "skills/osint-investigation/scripts/_normalize.py": [
+   "skills/osint-investigation/scripts/entity_resolution.py"
+  ],
+  "skills/oss-forensics/scripts/evidence-store.py": [],
+  "skills/owl/owl.js": [],
+  "skills/p5js/scripts/export-frames.js": [],
+  "skills/panda/panda.js": [],
+  "skills/parrot/parrot.js": [],
+  "skills/penguin/penguin.js": [],
+  "skills/phoenix/phoenix.js": [],
+  "skills/pixel-art/scripts/palettes.py": [
+   "skills/pixel-art/scripts/pixel_art.py"
+  ],
+  "skills/pixel-art/scripts/pixel_art.py": [
+   "skills/pixel-art/scripts/pixel_art.py"
+  ],
+  "skills/pixel-art/scripts/pixel_art_video.py": [
+   "skills/pixel-art/scripts/pixel_art_video.py"
+  ],
+  "skills/pixel-art/scripts/__init__.py": [],
+  "skills/polymarket/scripts/polymarket.py": [],
+  "skills/powerpoint/scripts/add_slide.py": [],
+  "skills/powerpoint/scripts/clean.py": [],
+  "skills/powerpoint/scripts/office/helpers/merge_runs.py": [],
+  "skills/powerpoint/scripts/office/helpers/simplify_redlines.py": [],
+  "skills/powerpoint/scripts/office/helpers/__init__.py": [],
+  "skills/powerpoint/scripts/office/pack.py": [],
+  "skills/powerpoint/scripts/__init__.py": [],
+  "skills/purpclaw-chat-gateway/templates/stub.js": [],
+  "skills/rabbit/rabbit.js": [],
+  "skills/raven/raven.js": [],
+  "skills/remotion/scripts/verify_remotion_render.py": [],
+  "skills/robot/robot.js": [],
+  "skills/scientist/scientist.js": [],
+  "skills/shark/shark.js": [],
+  "skills/skill_manager.js": [],
+  "skills/snake/snake.js": [],
+  "skills/socket-rig/references/lunokio_bridge.py": [],
+  "skills/socket_rig.js": [],
+  "skills/solana/scripts/solana_client.py": [],
+  "skills/spider/spider.js": [],
+  "skills/stocks/scripts/stocks_client.py": [],
+  "skills/street_builder.js": [],
+  "skills/task_manager.js": [],
+  "skills/telephony/scripts/telephony.py": [],
+  "skills/test_skill.js": [],
+  "skills/trl-fine-tuning/templates/basic_grpo_training.py": [],
+  "skills/turtle/turtle.js": [],
+  "skills/void/void.js": [],
+  "skills/wallet-recovery/references/scan_parallel.py": [],
+  "skills/wallet-recovery/scripts/scan_telegram.py": [],
+  "skills/watchers/scripts/watch_github.py": [],
+  "skills/watchers/scripts/watch_http_json.py": [],
+  "skills/watchers/scripts/watch_rss.py": [],
+  "skills/watchers/scripts/_watermark.py": [
+   "skills/watchers/scripts/watch_github.py",
+   "skills/watchers/scripts/watch_http_json.py",
+   "skills/watchers/scripts/watch_rss.py",
+   "skills/watchers/scripts/_watermark.py"
+  ],
+  "skills/wolf/wolf.js": [],
+  "skills/youtube-content/scripts/fetch_transcript.py": [],
+  "smoke_test.js": [],
+  "spinUpAgent.js": [],
+  "start_purpclaw.js": [],
+  "stress.cjs": [],
+  "swarm_coordinator.js": [
+   "_scratch/run_mission_direct.js"
+  ],
+  "swarm_scheduler.js": [],
+  "symbolic_rules_engine.py": [
+   "cognitive_spine.py",
+   "memory_matrix_v2.py"
+  ],
+  "task_decomposer.js": [
+   "swarm_coordinator.js"
+  ],
+  "test_audio_pipeline.py": [],
+  "test_memory.py": [],
+  "test_rules_inline.py": [],
+  "thringlet_bridge.js": [],
+  "tmux-worktree-orchestrator.js": [],
+  "unified_api.js": [],
+  "unified_bridge.js": [],
+  "unified_eventbus.js": [
+   "boot.js"
+  ],
+  "unified_state.js": [
+   "boot.js"
+  ],
+  "vision_monitor.js": [],
+  "voice_bridge_7792.js": [],
+  "voice_coordinator.js": [],
+  "voice_ingress.js": [],
+  "voice_stt.py": [],
+  "worker_service.js": [],
+  "yolo_service.py": [],
+  "_api-mega-list/API-mega-list-main/settings/fetch_apify_actors.js": [],
+  "_api-mega-list/API-mega-list-main/settings/generate_readme_clean.js": [],
+  "_scratch/dup_finder.py": [],
+  "_scratch/gap-report.js": [],
+  "_scratch/run_mission_direct.js": [],
+  "_scratch/selftest/hello.js": [],
+  "_scratch/test_db.js": [],
+  "_scratch/test_hud.js": [],
+  "_scratch/test_sandbox.js": [],
+  "_scratch/turbovec-pack/purpclaw_turbovec_integration/bin/purpclaw-vector-bench.js": [],
+  "_scratch/turbovec-pack/purpclaw_turbovec_integration/lib/vector/providers/turbovecProvider.js": [
+   "_scratch/turbovec-pack/purpclaw_turbovec_integration/bin/purpclaw-vector-bench.js"
+  ],
+  "_scratch/turbovec-pack/purpclaw_turbovec_integration/python/turbovec_sidecar.py": [],
+  "_wire.js": []
+ }
+}

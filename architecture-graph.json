@@ -1,0 +1,7485 @@
+{
+ "generated": "read-only",
+ "root": "E:/god folder/02_ACTIVE_PROJECTS/PURPCLAW",
+ "nodes": [
+  {
+   "file": "_api-mega-list/API-mega-list-main/settings/fetch_apify_actors.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "https",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "_api-mega-list/API-mega-list-main/settings/generate_readme_clean.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "_scratch/dup_finder.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "collections",
+    "hashlib",
+    "os",
+    "sys"
+   ]
+  },
+  {
+   "file": "_scratch/gap-report.js",
+   "lang": "js",
+   "deps": [
+    "lib/feature-parity.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "_scratch/run_mission_direct.js",
+   "lang": "js",
+   "deps": [
+    "swarm_coordinator.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "_scratch/selftest/hello.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "_scratch/test_db.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "crypto",
+    "fs",
+    "os",
+    "E:\\\\god folder\\\\02_ACTIVE_PROJECTS\\\\omnicode-platform\\\\node_modules\\\\better-sqlite3"
+   ]
+  },
+  {
+   "file": "_scratch/test_hud.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "_scratch/test_sandbox.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "_scratch/turbovec-pack/purpclaw_turbovec_integration/bin/purpclaw-vector-bench.js",
+   "lang": "js",
+   "deps": [
+    "_scratch/turbovec-pack/purpclaw_turbovec_integration/lib/vector/providers/turbovecProvider.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "perf_hooks"
+   ]
+  },
+  {
+   "file": "_scratch/turbovec-pack/purpclaw_turbovec_integration/lib/vector/providers/turbovecProvider.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "_scratch/turbovec-pack/purpclaw_turbovec_integration/bin/purpclaw-vector-bench.js"
+   ],
+   "external": [
+    "child_process",
+    "path"
+   ]
+  },
+  {
+   "file": "_scratch/turbovec-pack/purpclaw_turbovec_integration/python/turbovec_sidecar.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "typing",
+    "json",
+    "os",
+    "sys",
+    "numpy"
+   ]
+  },
+  {
+   "file": "_wire.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs"
+   ]
+  },
+  {
+   "file": "ablation_probes/refusal_weight_probe_7B.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "agent_routing_matrix.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "task_decomposer.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "agent_score.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/harness/benchmark.js",
+    "lib/harness/engine.js",
+    "orchestrator.js",
+    "swarm_coordinator.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "agent_tower.js",
+   "lang": "js",
+   "deps": [
+    "lib/llm-provider.js",
+    "lib/agent-loop.js",
+    "companion_swarm.js",
+    "lib/memory-client.js"
+   ],
+   "importedBy": [
+    "boot.js",
+    "lib/deep-audit.js",
+    "swarm_scheduler.js",
+    "unified_api.js"
+   ],
+   "external": [
+    "events",
+    "path",
+    "fs",
+    "http",
+    "ws"
+   ]
+  },
+  {
+   "file": "agent_work/bee/postcss.config.mjs",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "agent_work/blast_radius_helper.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "crypto",
+    "fs",
+    "os",
+    "E:\\\\\\\\god folder\\\\\\\\02_ACTIVE_PROJECTS\\\\\\\\omnicode-platform\\\\\\\\node_modules\\\\\\\\better-sqlite3"
+   ]
+  },
+  {
+   "file": "agent_work/robot/dashboard_live_update_test.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "net"
+   ]
+  },
+  {
+   "file": "apis for agents/settings/fetch_apify_actors.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "https",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "apis for agents/settings/generate_readme_clean.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "app/public/ui/app.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "app/public/ui/chat-hooks.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "app/public/ui/cinematic.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "app/public/ui/command-palette.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "app/public/ui/data-hooks.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "app/public/ui/extras.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "app/public/ui/panels.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "app/public/ui/skyscraper.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "app/public/ui/tweaks-panel.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "autoDream.py",
+   "lang": "py",
+   "deps": [
+    "autoDream.py"
+   ],
+   "importedBy": [
+    "autoDream.py",
+    "cognitive_spine.py"
+   ],
+   "external": [
+    "collections",
+    "datetime",
+    "os",
+    "sys",
+    "json",
+    "time",
+    "gzip",
+    "pickle",
+    "hashlib",
+    "threading",
+    "sqlite3",
+    "http",
+    "socketserver",
+    "argparse"
+   ]
+  },
+  {
+   "file": "autonomous_diagnostics.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [
+    "cognitive_spine.py"
+   ],
+   "external": [
+    "dataclasses",
+    "enum",
+    "typing",
+    "json",
+    "queue",
+    "threading",
+    "time",
+    "uuid",
+    "psutil",
+    "http",
+    "socketserver"
+   ]
+  },
+  {
+   "file": "bin/MISSION.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "bin/coding-eval.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "http"
+   ]
+  },
+  {
+   "file": "bin/model-discover.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "https",
+    "dotenv"
+   ]
+  },
+  {
+   "file": "bin/purpclaw-vector-bench.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "perf_hooks"
+   ]
+  },
+  {
+   "file": "bin/purpclaw.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/doctor.js",
+    "lib/deep-audit.js",
+    "lib/embeddings.js",
+    "lib/whoami.js",
+    "lib/release-sign.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "http",
+    "https",
+    "child_process",
+    "readline"
+   ]
+  },
+  {
+   "file": "boot.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js",
+    "unified_eventbus.js",
+    "unified_state.js",
+    "agent_tower.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "http",
+    "child_process",
+    "path",
+    "net"
+   ]
+  },
+  {
+   "file": "boston_analysis.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "sklearn",
+    "scipy",
+    "pandas",
+    "numpy",
+    "warnings",
+    "matplotlib"
+   ]
+  },
+  {
+   "file": "cognitive_spine.py",
+   "lang": "py",
+   "deps": [
+    "memory_matrix_v2.py",
+    "symbolic_rules_engine.py",
+    "modal_logic_engine.py",
+    "autonomous_diagnostics.py",
+    "neuro_symbolic_bridge.py",
+    "autoDream.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "http",
+    "socketserver",
+    "urllib",
+    "argparse",
+    "json",
+    "time"
+   ]
+  },
+  {
+   "file": "companion-chorus/bridge.js",
+   "lang": "js",
+   "deps": [
+    "companion-chorus/src/gacha.js",
+    "companion-chorus/src/voice.js",
+    "companion-chorus/src/minimax.js",
+    "companion-chorus/src/constants.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "http",
+    "child_process",
+    "eventsource"
+   ]
+  },
+  {
+   "file": "companion-chorus/main.js",
+   "lang": "js",
+   "deps": [
+    "companion-chorus/src/constants.js",
+    "companion-chorus/src/gacha.js",
+    "companion-chorus/src/sprites.js",
+    "companion-chorus/src/voice.js",
+    "companion-chorus/src/minimax.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "readline"
+   ]
+  },
+  {
+   "file": "companion-chorus/src/constants.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "companion-chorus/bridge.js",
+    "companion-chorus/main.js",
+    "companion-chorus/src/gacha.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "companion-chorus/src/gacha.js",
+   "lang": "js",
+   "deps": [
+    "companion-chorus/src/constants.js"
+   ],
+   "importedBy": [
+    "companion-chorus/bridge.js",
+    "companion-chorus/main.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "companion-chorus/src/minimax.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "companion-chorus/bridge.js",
+    "companion-chorus/main.js",
+    "companion-chorus/test-ai.js"
+   ],
+   "external": [
+    "https"
+   ]
+  },
+  {
+   "file": "companion-chorus/src/sprites.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "companion-chorus/main.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "companion-chorus/src/voice.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "companion-chorus/bridge.js",
+    "companion-chorus/main.js"
+   ],
+   "external": [
+    "child_process",
+    "path",
+    "os",
+    "fs"
+   ]
+  },
+  {
+   "file": "companion-chorus/test-ai.js",
+   "lang": "js",
+   "deps": [
+    "companion-chorus/src/minimax.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs"
+   ]
+  },
+  {
+   "file": "companion-chorus/test-api.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "https"
+   ]
+  },
+  {
+   "file": "companion_swarm.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "agent_tower.js"
+   ],
+   "external": [
+    "path",
+    "fs"
+   ]
+  },
+  {
+   "file": "create_db.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "sqlite3"
+   ]
+  },
+  {
+   "file": "diag_audio.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "audioop",
+    "edge_tts"
+   ]
+  },
+  {
+   "file": "digital_shaman.js",
+   "lang": "js",
+   "deps": [
+    "lib/llm-provider.js"
+   ],
+   "importedBy": [
+    "unified_api.js"
+   ],
+   "external": [
+    "events",
+    "https",
+    "http",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "ecosystem.config.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "eslint.config.mjs",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "eslint",
+    "eslint-config-next",
+    "node:path",
+    "node:url"
+   ]
+  },
+  {
+   "file": "eval/__init__.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "eval/benches/__init__.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "eval/benches/eventbus_bench.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "harness",
+    "time",
+    "subprocess",
+    "sys"
+   ]
+  },
+  {
+   "file": "eval/benches/governance_bench.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "harness",
+    "time",
+    "subprocess",
+    "sys"
+   ]
+  },
+  {
+   "file": "eval/benches/memory_bench.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "harness",
+    "time",
+    "subprocess",
+    "sys",
+    "os"
+   ]
+  },
+  {
+   "file": "eval/benches/orchestrator_bench.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "harness",
+    "time",
+    "subprocess",
+    "json",
+    "sys"
+   ]
+  },
+  {
+   "file": "eval/benches/pool_bench.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "harness",
+    "time",
+    "subprocess",
+    "sys"
+   ]
+  },
+  {
+   "file": "eval/harness.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "typing",
+    "json",
+    "time",
+    "os",
+    "statistics",
+    "traceback",
+    "urllib"
+   ]
+  },
+  {
+   "file": "eval/suites/__init__.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "eval/suites/chaos.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "typing",
+    "json",
+    "os",
+    "random",
+    "subprocess",
+    "sys",
+    "time",
+    "urllib"
+   ]
+  },
+  {
+   "file": "eval/suites/regression.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "pathlib",
+    "typing",
+    "json",
+    "os",
+    "sys",
+    "time",
+    "urllib"
+   ]
+  },
+  {
+   "file": "eval/suites/smoke.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "typing",
+    "json"
+   ]
+  },
+  {
+   "file": "find_pulse.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "json"
+   ]
+  },
+  {
+   "file": "gacha.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "os",
+    "secrets",
+    "sys",
+    "json"
+   ]
+  },
+  {
+   "file": "gatekeeper.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "http",
+    "child_process"
+   ]
+  },
+  {
+   "file": "harness_service.js",
+   "lang": "js",
+   "deps": [
+    "lib/harness/engine.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "http",
+    "path"
+   ]
+  },
+  {
+   "file": "lcd_bridge_server.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "rig_lcd_terminal",
+    "socket",
+    "json",
+    "threading",
+    "time",
+    "sys",
+    "os",
+    "urllib"
+   ]
+  },
+  {
+   "file": "lcd_log_monitor.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "collections",
+    "rig_lcd_terminal",
+    "socket",
+    "json",
+    "time",
+    "sys",
+    "os",
+    "urllib"
+   ]
+  },
+  {
+   "file": "lib/__tests__/accuracy-fish/claim_extractor.test.js",
+   "lang": "js",
+   "deps": [
+    "lib/accuracy-fish.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/accuracy-fish.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/harness/engine.js",
+    "lib/__tests__/accuracy-fish/claim_extractor.test.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/agent-loop.js",
+   "lang": "js",
+   "deps": [
+    "lib/tools/index.js",
+    "lib/user-feedback.js",
+    "lib/idle-engine.js",
+    "lib/session-store.js",
+    "lib/llm-provider.js",
+    "lib/whoami.js"
+   ],
+   "importedBy": [
+    "agent_tower.js",
+    "lib/chat-agent.js",
+    "lib/commands/ask.js",
+    "unified_api.js"
+   ],
+   "external": [
+    "path",
+    "fs"
+   ]
+  },
+  {
+   "file": "lib/agent-personas.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/agent-session.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "crypto",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/agent-tools-file.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "child_process",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/api-harness-kernel.js",
+   "lang": "js",
+   "deps": [
+    "lib/harness/engine.js",
+    "lib/job-contract.js",
+    "lib/governance.js",
+    "lib/omnicode-bridge.js",
+    "lib/deep-research-group.js",
+    "lib/training-buffer.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "events"
+   ]
+  },
+  {
+   "file": "lib/api-mega-list.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/goop-playground/goop-playground.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/ast-dependency-graph.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "task_decomposer.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "typescript"
+   ]
+  },
+  {
+   "file": "lib/autotune.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/tools/index.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/business/operations.js",
+   "lang": "js",
+   "deps": [
+    "lib/business/store.js"
+   ],
+   "importedBy": [
+    "lib/commands/business.js"
+   ],
+   "external": [
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/business/store.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/business/operations.js",
+    "lib/business/twilio.js",
+    "lib/commands/business.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/business/twilio.js",
+   "lang": "js",
+   "deps": [
+    "lib/business/store.js"
+   ],
+   "importedBy": [
+    "lib/commands/business.js"
+   ],
+   "external": [
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/capability-registry.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/supervisor.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/chaos-campaign.js",
+   "lang": "js",
+   "deps": [
+    "lib/smith-neo.js"
+   ],
+   "importedBy": [
+    "lib/commands/bigboss.js",
+    "lib/tools/index.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/chat-agent.js",
+   "lang": "js",
+   "deps": [
+    "lib/llm-provider.js",
+    "lib/tools/index.js",
+    "lib/agent-loop.js"
+   ],
+   "importedBy": [
+    "lib/deep-research-group.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/child-registry.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "bin/purpclaw.js",
+    "boot.js",
+    "lib/commands/bigboss.js",
+    "lib/commands/claudecode.js",
+    "lib/commands/deploy.js",
+    "lib/commands/open.js",
+    "lib/commands/pocket.js",
+    "lib/demo/product-factory.js",
+    "lib/harvest/extractors.js",
+    "lib/mcp.js",
+    "lib/pocket-updater.js",
+    "lib/runtime/computer-use.js",
+    "lib/runtime/voice-router.js",
+    "lib/skill-bridge.js",
+    "lib/tools/index.js",
+    "lib/tools/skills-registry.js",
+    "lib/tools-cli-anything.js",
+    "lib/tools-pc.js",
+    "screen-manager.js",
+    "scripts/windows/voice-session-host.js",
+    "spinUpAgent.js",
+    "start_purpclaw.js",
+    "tmux-worktree-orchestrator.js",
+    "unified_api.js",
+    "voice_bridge_7792.js",
+    "voice_coordinator.js"
+   ],
+   "external": [
+    "child_process",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/code-tools.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "https",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/cognitive-client.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "swarm_coordinator.js"
+   ],
+   "external": [
+    "http"
+   ]
+  },
+  {
+   "file": "lib/commands/architecture.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/ask.js",
+   "lang": "js",
+   "deps": [
+    "lib/agent-loop.js",
+    "lib/tools/index.js",
+    "lib/mcp.js",
+    "lib/commands/bigboss.js",
+    "lib/session-store.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "readline"
+   ]
+  },
+  {
+   "file": "lib/commands/autofix-pr.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "child_process",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/commands/autoresearch.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/bigboss.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/tools/index.js",
+    "lib/smith-neo.js",
+    "lib/chaos-campaign.js",
+    "lib/memory-consistency.js"
+   ],
+   "importedBy": [
+    "lib/commands/ask.js"
+   ],
+   "external": [
+    "path",
+    "fs"
+   ]
+  },
+  {
+   "file": "lib/commands/browser.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/commands/bughunt.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "child_process",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/commands/business.js",
+   "lang": "js",
+   "deps": [
+    "lib/business/operations.js",
+    "lib/business/twilio.js",
+    "lib/business/store.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/commands/claudecode.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/llm-provider.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "os",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/commands/code.js",
+   "lang": "js",
+   "deps": [
+    "lib/vector/index.js"
+   ],
+   "importedBy": [
+    "unified_api.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "http",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/commands/cognition.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/ctx-viz.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/commands/deploy.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "readline",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/commands/evolve.js",
+   "lang": "js",
+   "deps": [
+    "lib/evolution/mutator.js",
+    "lib/evolution/skill-forge.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/gc.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/grow.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "http",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/harness.js",
+   "lang": "js",
+   "deps": [
+    "lib/harness/engine.js",
+    "lib/harness/benchmark.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/commands/harvest.js",
+   "lang": "js",
+   "deps": [
+    "lib/harvest/crawler.js",
+    "lib/harvest/extractors.js",
+    "lib/harvest/indexer.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs"
+   ]
+  },
+  {
+   "file": "lib/commands/heal.js",
+   "lang": "js",
+   "deps": [
+    "lib/commands/safe-start.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/identity.js",
+   "lang": "js",
+   "deps": [
+    "lib/identity.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/commands/intelligence.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/llm.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/onboard.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "child_process",
+    "readline"
+   ]
+  },
+  {
+   "file": "lib/commands/open.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "path",
+    "fs",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/commands/overview.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/parity.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/plan.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "http",
+    "readline"
+   ]
+  },
+  {
+   "file": "lib/commands/pocket.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/pocket-vault.js",
+    "lib/spend-gate.js",
+    "lib/telemetry.js",
+    "lib/pocket-updater.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "os",
+    "child_process",
+    "http",
+    "readline"
+   ]
+  },
+  {
+   "file": "lib/commands/ponytail.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "child_process",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/commands/roster.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/safe-start.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/commands/heal.js",
+    "lib/commands/safe-stop.js"
+   ],
+   "external": [
+    "child_process",
+    "path",
+    "fs"
+   ]
+  },
+  {
+   "file": "lib/commands/safe-stop.js",
+   "lang": "js",
+   "deps": [
+    "lib/commands/safe-start.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/commands/services.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "fs",
+    "path",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/commands/setup.js",
+   "lang": "js",
+   "deps": [
+    "lib/llm-provider.js"
+   ],
+   "importedBy": [
+    "lib/commands/tour.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os",
+    "readline",
+    "http",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/commands/smoke.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "fs",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/commands/telemetry.js",
+   "lang": "js",
+   "deps": [
+    "lib/runtime/pipeline-telemetry.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/commands/teleport.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/commands/thringlets.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http"
+   ]
+  },
+  {
+   "file": "lib/commands/tour.js",
+   "lang": "js",
+   "deps": [
+    "lib/commands/setup.js",
+    "lib/tools/index.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "path",
+    "fs",
+    "readline"
+   ]
+  },
+  {
+   "file": "lib/commands/training.js",
+   "lang": "js",
+   "deps": [
+    "lib/training-buffer.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/commands/workers.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "lib/context-bus.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "http",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/context-packet.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "swarm_coordinator.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/deep-audit.js",
+   "lang": "js",
+   "deps": [
+    "lib/tools/index.js",
+    "lib/tools/skills-registry.js",
+    "service_registry.js",
+    "agent_tower.js",
+    "lib/pocket-vault.js",
+    "lib/spend-gate.js",
+    "lib/identity.js"
+   ],
+   "importedBy": [
+    "bin/purpclaw.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os",
+    " + mod + ",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/deep-research-group.js",
+   "lang": "js",
+   "deps": [
+    "lib/llm-provider.js",
+    "lib/rate-limiter.js",
+    "lib/chat-agent.js",
+    "lib/self-context.js"
+   ],
+   "importedBy": [
+    "lib/api-harness-kernel.js",
+    "lib/self-evolution-loop.js"
+   ],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "lib/delegation-status.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "scripts/delegation-status.cjs"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/demo/product-factory.js",
+   "lang": "js",
+   "deps": [
+    "lib/paths.js",
+    "lib/child-registry.js",
+    "lib/llm-provider.js"
+   ],
+   "importedBy": [
+    "scripts/demo-factory.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/doctor.js",
+   "lang": "js",
+   "deps": [
+    "lib/tools/index.js"
+   ],
+   "importedBy": [
+    "bin/purpclaw.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "http",
+    "os",
+    "crypto",
+    "express",
+    "next"
+   ]
+  },
+  {
+   "file": "lib/embeddings.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "bin/purpclaw.js"
+   ],
+   "external": [
+    "https"
+   ]
+  },
+  {
+   "file": "lib/evolution/mutator.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/commands/evolve.js",
+    "lib/harness/benchmark.js",
+    "lib/harness/engine.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/evolution/skill-forge.js",
+   "lang": "js",
+   "deps": [
+    "lib/job-contract.js"
+   ],
+   "importedBy": [
+    "lib/commands/evolve.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/feature-parity.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "_scratch/gap-report.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/gate-pipeline.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/idle-engine.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/gateways/discord.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "https",
+    "path",
+    "url"
+   ]
+  },
+  {
+   "file": "lib/gateways/email.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "path",
+    "imapflow",
+    "nodemailer",
+    "https"
+   ]
+  },
+  {
+   "file": "lib/gateways/slack.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "https",
+    "path",
+    "url"
+   ]
+  },
+  {
+   "file": "lib/gateways/telegram.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "https",
+    "path",
+    "url"
+   ]
+  },
+  {
+   "file": "lib/goop-playground/goop-playground.js",
+   "lang": "js",
+   "deps": [
+    "lib/goop-playground/package.json",
+    "lib/api-mega-list.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "http",
+    "fs",
+    "path",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/goop-playground/squirrel.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/governance-audit.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/governance.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/api-harness-kernel.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/harness/benchmark.js",
+   "lang": "js",
+   "deps": [
+    "lib/harness/engine.js",
+    "agent_score.js",
+    "lib/evolution/mutator.js"
+   ],
+   "importedBy": [
+    "lib/commands/harness.js",
+    "lib/harness/engine.js"
+   ],
+   "external": [
+    "fs",
+    "http",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/harness/engine.js",
+   "lang": "js",
+   "deps": [
+    "lib/llm-provider.js",
+    "agent_score.js",
+    "lib/memory-client.js",
+    "lib/job-contract.js",
+    "lib/accuracy-fish.js",
+    "lib/harness/benchmark.js",
+    "lib/evolution/mutator.js"
+   ],
+   "importedBy": [
+    "harness_service.js",
+    "lib/api-harness-kernel.js",
+    "lib/commands/harness.js",
+    "lib/harness/benchmark.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "http",
+    "events"
+   ]
+  },
+  {
+   "file": "lib/harvest/crawler.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/commands/harvest.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/harvest/extractors.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [
+    "lib/commands/harvest.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/harvest/indexer.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/commands/harvest.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/identity.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/commands/identity.js",
+    "lib/deep-audit.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/idle-engine.js",
+   "lang": "js",
+   "deps": [
+    "lib/training/personal-dataset.js",
+    "lib/gate-pipeline.js",
+    "lib/user-feedback.js"
+   ],
+   "importedBy": [
+    "lib/agent-loop.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "child_process",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/imagegen/gateway.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "https",
+    "path",
+    "url"
+   ]
+  },
+  {
+   "file": "lib/imagegen/video_engine.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/tools/index.js"
+   ],
+   "external": [
+    "child_process",
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/intelligence-spine.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "crypto",
+    "fs",
+    "http",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/job-contract.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/api-harness-kernel.js",
+    "lib/evolution/skill-forge.js",
+    "lib/harness/engine.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/lib/agent-compress.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/hook-flags.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/lib/inspection.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/lib/install-executor.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install/request.js",
+    "lib/lib/install-manifests.js",
+    "lib/lib/install-targets/registry.js",
+    "lib/lib/install-state.js",
+    "lib/lib/install/apply.js"
+   ],
+   "importedBy": [
+    "lib/lib/install/runtime.js",
+    "lib/lib/install-lifecycle.js"
+   ],
+   "external": [
+    "fs",
+    "os",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/lib/install-lifecycle.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-manifests.js",
+    "lib/lib/install-state.js",
+    "lib/lib/install-executor.js",
+    "lib/lib/install-targets/registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "os",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/install-manifests.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-targets/registry.js"
+   ],
+   "importedBy": [
+    "lib/lib/install/request.js",
+    "lib/lib/install-executor.js",
+    "lib/lib/install-lifecycle.js"
+   ],
+   "external": [
+    "fs",
+    "os",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/install-state.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/lib/install/apply.js",
+    "lib/lib/install-executor.js",
+    "lib/lib/install-lifecycle.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "ajv"
+   ]
+  },
+  {
+   "file": "lib/lib/install-targets/antigravity-project.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-targets/helpers.js"
+   ],
+   "importedBy": [
+    "lib/lib/install-targets/registry.js"
+   ],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/install-targets/claude-home.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-targets/helpers.js"
+   ],
+   "importedBy": [
+    "lib/lib/install-targets/registry.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/lib/install-targets/codebuddy-project.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-targets/helpers.js"
+   ],
+   "importedBy": [
+    "lib/lib/install-targets/registry.js"
+   ],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/install-targets/codex-home.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-targets/helpers.js"
+   ],
+   "importedBy": [
+    "lib/lib/install-targets/registry.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/lib/install-targets/cursor-project.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-targets/helpers.js"
+   ],
+   "importedBy": [
+    "lib/lib/install-targets/registry.js"
+   ],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/install-targets/gemini-project.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-targets/helpers.js"
+   ],
+   "importedBy": [
+    "lib/lib/install-targets/registry.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/lib/install-targets/helpers.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/lib/install-targets/antigravity-project.js",
+    "lib/lib/install-targets/claude-home.js",
+    "lib/lib/install-targets/codebuddy-project.js",
+    "lib/lib/install-targets/codex-home.js",
+    "lib/lib/install-targets/cursor-project.js",
+    "lib/lib/install-targets/gemini-project.js",
+    "lib/lib/install-targets/opencode-home.js"
+   ],
+   "external": [
+    "fs",
+    "os",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/install-targets/opencode-home.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-targets/helpers.js"
+   ],
+   "importedBy": [
+    "lib/lib/install-targets/registry.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/lib/install-targets/registry.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-targets/antigravity-project.js",
+    "lib/lib/install-targets/claude-home.js",
+    "lib/lib/install-targets/codebuddy-project.js",
+    "lib/lib/install-targets/codex-home.js",
+    "lib/lib/install-targets/cursor-project.js",
+    "lib/lib/install-targets/gemini-project.js",
+    "lib/lib/install-targets/opencode-home.js"
+   ],
+   "importedBy": [
+    "lib/lib/install-executor.js",
+    "lib/lib/install-lifecycle.js",
+    "lib/lib/install-manifests.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/lib/install/apply.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-state.js"
+   ],
+   "importedBy": [
+    "lib/lib/install-executor.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/install/config.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "ajv"
+   ]
+  },
+  {
+   "file": "lib/lib/install/request.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-manifests.js"
+   ],
+   "importedBy": [
+    "lib/lib/install-executor.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/lib/install/runtime.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/install-executor.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/lib/observer-sessions.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/utils.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "crypto",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/lib/orchestration-session.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/lib/session-adapters/dmux-tmux.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/lib/package-manager.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/utils.js"
+   ],
+   "importedBy": [
+    "lib/lib/resolve-formatter.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/project-detect.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/resolve-ecc-root.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/lib/resolve-formatter.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/package-manager.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/session-adapters/canonical-session.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/state-store/index.js"
+   ],
+   "importedBy": [
+    "lib/lib/session-adapters/claude-history.js",
+    "lib/lib/session-adapters/dmux-tmux.js"
+   ],
+   "external": [
+    "fs",
+    "os",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/session-adapters/claude-history.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/session-manager.js",
+    "lib/lib/session-aliases.js",
+    "lib/lib/session-adapters/canonical-session.js"
+   ],
+   "importedBy": [
+    "lib/lib/session-adapters/registry.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/session-adapters/dmux-tmux.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/orchestration-session.js",
+    "lib/lib/session-adapters/canonical-session.js"
+   ],
+   "importedBy": [
+    "lib/lib/session-adapters/registry.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/session-adapters/registry.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/session-adapters/claude-history.js",
+    "lib/lib/session-adapters/dmux-tmux.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/lib/session-aliases.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/utils.js"
+   ],
+   "importedBy": [
+    "lib/lib/session-adapters/claude-history.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/session-manager.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/utils.js"
+   ],
+   "importedBy": [
+    "lib/lib/session-adapters/claude-history.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/shell-split.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/lib/skill-evolution/dashboard.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/skill-evolution/health.js",
+    "lib/lib/skill-evolution/tracker.js",
+    "lib/lib/skill-evolution/versioning.js"
+   ],
+   "importedBy": [
+    "lib/lib/skill-evolution/index.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/lib/skill-evolution/health.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/skill-evolution/provenance.js",
+    "lib/lib/skill-evolution/tracker.js",
+    "lib/lib/skill-evolution/versioning.js"
+   ],
+   "importedBy": [
+    "lib/lib/skill-evolution/dashboard.js",
+    "lib/lib/skill-evolution/index.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/skill-evolution/index.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/skill-evolution/provenance.js",
+    "lib/lib/skill-evolution/versioning.js",
+    "lib/lib/skill-evolution/tracker.js",
+    "lib/lib/skill-evolution/health.js",
+    "lib/lib/skill-evolution/dashboard.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/lib/skill-evolution/provenance.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/utils.js"
+   ],
+   "importedBy": [
+    "lib/lib/skill-evolution/health.js",
+    "lib/lib/skill-evolution/index.js"
+   ],
+   "external": [
+    "fs",
+    "os",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/skill-evolution/tracker.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/utils.js"
+   ],
+   "importedBy": [
+    "lib/lib/skill-evolution/dashboard.js",
+    "lib/lib/skill-evolution/health.js",
+    "lib/lib/skill-evolution/index.js"
+   ],
+   "external": [
+    "fs",
+    "os",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/skill-evolution/versioning.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/utils.js"
+   ],
+   "importedBy": [
+    "lib/lib/skill-evolution/dashboard.js",
+    "lib/lib/skill-evolution/health.js",
+    "lib/lib/skill-evolution/index.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/lib/skill-improvement/amendify.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/skill-improvement/health.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/lib/skill-improvement/evaluate.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/lib/skill-improvement/health.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/lib/skill-improvement/amendify.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/lib/skill-improvement/observations.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/lib/state-store/index.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/state-store/migrations.js",
+    "lib/lib/state-store/queries.js",
+    "lib/lib/state-store/schema.js"
+   ],
+   "importedBy": [
+    "lib/lib/session-adapters/canonical-session.js"
+   ],
+   "external": [
+    "fs",
+    "os",
+    "path",
+    "sql.js"
+   ]
+  },
+  {
+   "file": "lib/lib/state-store/migrations.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/lib/state-store/index.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/lib/state-store/queries.js",
+   "lang": "js",
+   "deps": [
+    "lib/lib/state-store/schema.js"
+   ],
+   "importedBy": [
+    "lib/lib/state-store/index.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/lib/state-store/schema.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/lib/state-store/index.js",
+    "lib/lib/state-store/queries.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "ajv"
+   ]
+  },
+  {
+   "file": "lib/lib/tmux-worktree-orchestrator.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/lib/utils.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/lib/observer-sessions.js",
+    "lib/lib/package-manager.js",
+    "lib/lib/session-aliases.js",
+    "lib/lib/session-manager.js",
+    "lib/lib/skill-evolution/provenance.js",
+    "lib/lib/skill-evolution/tracker.js",
+    "lib/lib/skill-evolution/versioning.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os",
+    "crypto",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/llm-provider.js",
+   "lang": "js",
+   "deps": [
+    "lib/spend-gate.js"
+   ],
+   "importedBy": [
+    "agent_tower.js",
+    "digital_shaman.js",
+    "lib/agent-loop.js",
+    "lib/chat-agent.js",
+    "lib/commands/claudecode.js",
+    "lib/commands/setup.js",
+    "lib/deep-research-group.js",
+    "lib/demo/product-factory.js",
+    "lib/harness/engine.js",
+    "lib/llm-status.js",
+    "lib/model-sentinel.js",
+    "lib/runtime/provider-router.js",
+    "lib/screen-look.js",
+    "lib/tools-gui.js",
+    "scripts/verify-llm-fallback.cjs",
+    "swarm_coordinator.js",
+    "unified_api.js"
+   ],
+   "external": [
+    "dotenv",
+    "https",
+    "http",
+    "url",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/llm-status.js",
+   "lang": "js",
+   "deps": [
+    "lib/llm-provider.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "http"
+   ]
+  },
+  {
+   "file": "lib/mallory/index.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/mcp.js",
+   "lang": "js",
+   "deps": [
+    "lib/omnicode-bridge.js",
+    "lib/child-registry.js"
+   ],
+   "importedBy": [
+    "lib/commands/ask.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os",
+    "@modelcontextprotocol"
+   ]
+  },
+  {
+   "file": "lib/memory-client.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "agent_tower.js",
+    "lib/harness/engine.js",
+    "lib/self-evolution-loop.js",
+    "swarm_coordinator.js",
+    "unified_api.js"
+   ],
+   "external": [
+    "http"
+   ]
+  },
+  {
+   "file": "lib/memory-consistency.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/commands/bigboss.js",
+    "lib/tools/index.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/mochi-sprites.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/mochi-state.js",
+    "lib/mochi.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/mochi-state.js",
+   "lang": "js",
+   "deps": [
+    "lib/mochi-sprites.js",
+    "lib/paths.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/mochi-statusbar.js",
+   "lang": "js",
+   "deps": [
+    "lib/omnicode-bridge.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/mochi.js",
+   "lang": "js",
+   "deps": [
+    "lib/mochi-sprites.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "http",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/model-sentinel.js",
+   "lang": "js",
+   "deps": [
+    "lib/llm-provider.js",
+    "lib/runtime/provider-router.js"
+   ],
+   "importedBy": [
+    "scripts/model-sentinel.js"
+   ],
+   "external": [
+    "fs",
+    "os",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/nvidia/nim-skills.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "https"
+   ]
+  },
+  {
+   "file": "lib/odysseus-scorecard.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/omni/feature-registry.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/omni/generate-agent-docs.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/omni/omnicode-adapter.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/omni/patch-governor.js"
+   ],
+   "external": [
+    "child_process",
+    "path",
+    "fs",
+    "readline"
+   ]
+  },
+  {
+   "file": "lib/omni/patch-governor.js",
+   "lang": "js",
+   "deps": [
+    "lib/omni/omnicode-adapter.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/omni/provider-integrity.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "https",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/omni/queue-action-required.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/omni/truth-scanner.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/omnicode-bridge.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/api-harness-kernel.js",
+    "lib/mcp.js",
+    "lib/mochi-statusbar.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/orchestrator-hardening.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "http",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/parseltongue.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/tools/index.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/paths.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/demo/product-factory.js",
+    "lib/mochi-state.js",
+    "lib/runtime/computer-use.js",
+    "lib/runtime/pipeline-telemetry.js",
+    "lib/runtime/preprompt-compiler.js",
+    "lib/runtime/voice-router.js",
+    "scripts/windows/core-host.js",
+    "scripts/windows/python-service-host.js",
+    "scripts/windows/tray-agent.js",
+    "scripts/windows/voice-session-host.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/persona-forge.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/personality.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/pocket-updater.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/signed-manifest.js"
+   ],
+   "importedBy": [
+    "lib/commands/pocket.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os",
+    "crypto",
+    "https",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/pocket-vault.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/commands/pocket.js",
+    "lib/deep-audit.js"
+   ],
+   "external": [
+    "crypto",
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/proactive-maintenance.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/provider_health.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/survivor_router.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/providers/anthropic-messages.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/providers/registry.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/providers/hermes-cli.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/providers/registry.js"
+   ],
+   "external": [
+    "child_process",
+    "stream"
+   ]
+  },
+  {
+   "file": "lib/providers/openai-responses.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/providers/registry.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/providers/registry.js",
+   "lang": "js",
+   "deps": [
+    "lib/providers/openai-responses.js",
+    "lib/providers/anthropic-messages.js",
+    "lib/providers/hermes-cli.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/rate-limit.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/rate-limiter.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/deep-research-group.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/reasoning-loop.js",
+   "lang": "js",
+   "deps": [
+    "lib/reasoning-tick.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "http"
+   ]
+  },
+  {
+   "file": "lib/reasoning-tick.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/reasoning-loop.js"
+   ],
+   "external": [
+    "http",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/recursive/agent-scores.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs"
+   ]
+  },
+  {
+   "file": "lib/release-sign.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "bin/purpclaw.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/runtime/computer-use.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/runtime/settings-registry.js",
+    "lib/screen-look.js",
+    "lib/paths.js",
+    "lib/tools-windows-mcp.js"
+   ],
+   "importedBy": [
+    "lib/tools-gui.js",
+    "lib/tools-windows-mcp.js",
+    "scripts/windows/tray-agent.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/runtime/pipeline-telemetry.js",
+   "lang": "js",
+   "deps": [
+    "lib/paths.js"
+   ],
+   "importedBy": [
+    "lib/commands/telemetry.js",
+    "scripts/windows/python-service-host.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/runtime/policy-engine.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "lib/runtime/ports.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/runtime/settings-registry.js"
+   ],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "lib/runtime/preprompt-compiler.js",
+   "lang": "js",
+   "deps": [
+    "lib/paths.js",
+    "lib/runtime/settings-registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/runtime/provider-config.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/runtime/provider-router.js"
+   ],
+   "external": [
+    "fs",
+    "os",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/runtime/provider-router.js",
+   "lang": "js",
+   "deps": [
+    "lib/llm-provider.js",
+    "lib/runtime/provider-config.js"
+   ],
+   "importedBy": [
+    "lib/model-sentinel.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/runtime/settings-registry.js",
+   "lang": "js",
+   "deps": [
+    "lib/spend-gate.js",
+    "lib/runtime/ports.js"
+   ],
+   "importedBy": [
+    "lib/runtime/computer-use.js",
+    "lib/runtime/preprompt-compiler.js",
+    "scripts/windows/voice-session-host.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/runtime/voice-router.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/paths.js"
+   ],
+   "importedBy": [
+    "scripts/windows/tray-agent.js"
+   ],
+   "external": [
+    "path",
+    "fs",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/sampler.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "child_process",
+    "yaml"
+   ]
+  },
+  {
+   "file": "lib/scheduler/calendar.js",
+   "lang": "js",
+   "deps": [
+    "lib/scheduler/nl-cron.js"
+   ],
+   "importedBy": [
+    "lib/scheduler/runner.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/scheduler/nl-cron.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/scheduler/calendar.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/scheduler/runner.js",
+   "lang": "js",
+   "deps": [
+    "lib/scheduler/calendar.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "http",
+    "path",
+    "child_process",
+    "url",
+    "https"
+   ]
+  },
+  {
+   "file": "lib/screen-look.js",
+   "lang": "js",
+   "deps": [
+    "lib/workspace-awareness.js",
+    "lib/llm-provider.js"
+   ],
+   "importedBy": [
+    "lib/runtime/computer-use.js",
+    "lib/tools-gui.js"
+   ],
+   "external": [
+    "child_process",
+    "fs",
+    "path",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/secret-redactor.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/self-context.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/deep-research-group.js",
+    "swarm_coordinator.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/self-evolution-loop.js",
+   "lang": "js",
+   "deps": [
+    "lib/memory-client.js",
+    "lib/deep-research-group.js",
+    "lib/space-governor.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/session-store.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/agent-loop.js",
+    "lib/commands/ask.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/signed-manifest.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/pocket-updater.js"
+   ],
+   "external": [
+    "crypto",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/skill-bridge.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/smith-neo.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/chaos-campaign.js",
+    "lib/commands/bigboss.js",
+    "lib/tools/index.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/snapshot.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/space-governor.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/self-evolution-loop.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/spaghetti-audit.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/spend-gate.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/commands/pocket.js",
+    "lib/deep-audit.js",
+    "lib/llm-provider.js",
+    "lib/runtime/settings-registry.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/stm.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/tools/index.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/stt/gateway.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "path",
+    "fs",
+    "os",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/supervisor.js",
+   "lang": "js",
+   "deps": [
+    "lib/capability-registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "events",
+    "child_process",
+    "http",
+    "path",
+    "fs"
+   ]
+  },
+  {
+   "file": "lib/survivor_router.js",
+   "lang": "js",
+   "deps": [
+    "lib/provider_health.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/telemetry.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/commands/pocket.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/thringlets/archetypes.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/thringlets/engine.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/thringlets/engine.js",
+   "lang": "js",
+   "deps": [
+    "lib/thringlets/archetypes.js",
+    "lib/thringlets/storage.js"
+   ],
+   "importedBy": [
+    "lib/thringlets/runtime-observer.js",
+    "thringlet_bridge.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "lib/thringlets/runtime-observer.js",
+   "lang": "js",
+   "deps": [
+    "lib/thringlets/engine.js"
+   ],
+   "importedBy": [
+    "thringlet_bridge.js"
+   ],
+   "external": [
+    "http",
+    "events"
+   ]
+  },
+  {
+   "file": "lib/thringlets/storage.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/thringlets/engine.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "http"
+   ]
+  },
+  {
+   "file": "lib/tools-cli-anything.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/tools-gui.js",
+   "lang": "js",
+   "deps": [
+    "lib/runtime/computer-use.js",
+    "lib/screen-look.js",
+    "lib/llm-provider.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/tools-pc.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [
+    "lib/tools/index.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os",
+    "https",
+    "http",
+    "url",
+    "playwright-core",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/tools-windows-mcp.js",
+   "lang": "js",
+   "deps": [
+    "lib/runtime/computer-use.js"
+   ],
+   "importedBy": [
+    "lib/runtime/computer-use.js"
+   ],
+   "external": [
+    "path",
+    "@modelcontextprotocol"
+   ]
+  },
+  {
+   "file": "lib/tools/index.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/parseltongue.js",
+    "lib/autotune.js",
+    "lib/stm.js",
+    "lib/tools-pc.js",
+    "lib/smith-neo.js",
+    "lib/chaos-campaign.js",
+    "lib/memory-consistency.js",
+    "lib/imagegen/video_engine.js",
+    "lib/tools/skills-registry.js"
+   ],
+   "importedBy": [
+    "lib/agent-loop.js",
+    "lib/chat-agent.js",
+    "lib/commands/ask.js",
+    "lib/commands/bigboss.js",
+    "lib/commands/tour.js",
+    "lib/deep-audit.js",
+    "lib/doctor.js",
+    "lib/whoami.js"
+   ],
+   "external": [
+    "path",
+    "fs",
+    "https",
+    "http",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/tools/skills-registry.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [
+    "lib/deep-audit.js",
+    "lib/tools/index.js",
+    "lib/whoami.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/training-buffer.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/api-harness-kernel.js",
+    "lib/commands/training.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/training-ingest.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/training/personal-dataset.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/idle-engine.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/tts/gateway.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "path",
+    "child_process",
+    "url",
+    "fs",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/user-feedback.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/agent-loop.js",
+    "lib/idle-engine.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/vector/index.js",
+   "lang": "js",
+   "deps": [
+    "lib/vector/providers/faissProvider.js"
+   ],
+   "importedBy": [
+    "lib/commands/code.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "child_process",
+    "perf_hooks"
+   ]
+  },
+  {
+   "file": "lib/vector/providers/faissProvider.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/vector/index.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "child_process",
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/verify-tools.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/voice-client.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "http",
+    "net",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/whoami.js",
+   "lang": "js",
+   "deps": [
+    "lib/tools/index.js",
+    "lib/tools/skills-registry.js"
+   ],
+   "importedBy": [
+    "bin/purpclaw.js",
+    "lib/agent-loop.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os"
+   ]
+  },
+  {
+   "file": "lib/worker-auth.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/worker-pool.js",
+    "worker_service.js"
+   ],
+   "external": [
+    "crypto"
+   ]
+  },
+  {
+   "file": "lib/worker-pool.js",
+   "lang": "js",
+   "deps": [
+    "lib/worker-auth.js",
+    "lib/workers/ssh-worker.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "http",
+    "https"
+   ]
+  },
+  {
+   "file": "lib/workers/http-worker.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "lib/workers/purp-worker.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "ws",
+    "path"
+   ]
+  },
+  {
+   "file": "lib/workers/ssh-worker.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/worker-pool.js"
+   ],
+   "external": [
+    "child_process"
+   ]
+  },
+  {
+   "file": "lib/workspace-awareness.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/screen-look.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "locked_interfaces.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "orchestrator.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "memory_matrix.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [
+    "memory_matrix_v2.py",
+    "neuro_symbolic_bridge.py",
+    "test_memory.py"
+   ],
+   "external": [
+    "collections",
+    "dataclasses",
+    "typing",
+    "sentence_transformers",
+    "http",
+    "urllib",
+    "os",
+    "sys",
+    "json",
+    "time",
+    "uuid",
+    "threading",
+    "queue",
+    "gzip",
+    "pickle",
+    "re",
+    "hashlib",
+    "numpy",
+    "struct"
+   ]
+  },
+  {
+   "file": "memory_matrix_v2.py",
+   "lang": "py",
+   "deps": [
+    "memory_matrix_v2.py",
+    "memory_matrix.py",
+    "symbolic_rules_engine.py"
+   ],
+   "importedBy": [
+    "cognitive_spine.py",
+    "memory_matrix_v2.py"
+   ],
+   "external": [
+    "collections",
+    "dataclasses",
+    "typing",
+    "datetime",
+    "urllib",
+    "os",
+    "sys",
+    "json",
+    "time",
+    "uuid",
+    "gzip",
+    "pickle",
+    "hashlib",
+    "threading",
+    "re",
+    "numpy",
+    "struct",
+    "http",
+    "socketserver"
+   ]
+  },
+  {
+   "file": "metrics_aggregator.js",
+   "lang": "js",
+   "deps": [
+    "service_registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "dotenv",
+    "path",
+    "http",
+    "fs"
+   ]
+  },
+  {
+   "file": "mimi_speak.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "kokoro",
+    "sys",
+    "warnings",
+    "io",
+    "soundfile",
+    "asyncio"
+   ]
+  },
+  {
+   "file": "mochi/menu_mochi_extension/background.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "mochi/menu_mochi_extension/content.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "mochi/menu_mochi_extension/popup.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "mochi/mochi-sprites.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "mochi/mochi.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "mochi/mochi.js",
+   "lang": "js",
+   "deps": [
+    "mochi/mochi-sprites.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "http",
+    "path"
+   ]
+  },
+  {
+   "file": "modal_logic_engine.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [
+    "cognitive_spine.py"
+   ],
+   "external": [
+    "dataclasses",
+    "enum",
+    "typing",
+    "json",
+    "threading",
+    "time",
+    "uuid",
+    "http",
+    "socketserver"
+   ]
+  },
+  {
+   "file": "music_analysis_service.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "concurrent",
+    "typing",
+    "scipy",
+    "dataclasses",
+    "datetime",
+    "os",
+    "sys",
+    "io",
+    "json",
+    "time",
+    "hashlib",
+    "argparse",
+    "threading",
+    "librosa",
+    "numpy",
+    "base64",
+    "socket"
+   ]
+  },
+  {
+   "file": "neuro_symbolic_bridge.py",
+   "lang": "py",
+   "deps": [
+    "neuro_symbolic_bridge.py",
+    "memory_matrix.py"
+   ],
+   "importedBy": [
+    "cognitive_spine.py",
+    "neuro_symbolic_bridge.py"
+   ],
+   "external": [
+    "datetime",
+    "typing",
+    "dataclasses",
+    "enum",
+    "cozo",
+    "os",
+    "sys",
+    "json",
+    "time",
+    "hashlib",
+    "threading",
+    "re",
+    "socket",
+    "urllib",
+    "argparse"
+   ]
+  },
+  {
+   "file": "no-spaghett/eslint.config.mjs",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "eslint",
+    "eslint-config-next",
+    "node:path",
+    "node:url"
+   ]
+  },
+  {
+   "file": "no-spaghett/ls.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs"
+   ]
+  },
+  {
+   "file": "no-spaghett/ls2.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs"
+   ]
+  },
+  {
+   "file": "no-spaghett/ls3.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs"
+   ]
+  },
+  {
+   "file": "no-spaghett/postcss.config.mjs",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "no-spaghett/skills/goop-sigil/exorcise_module.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "@babel"
+   ]
+  },
+  {
+   "file": "orchestrator.js",
+   "lang": "js",
+   "deps": [
+    "agent_score.js",
+    "locked_interfaces.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "http",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "pocket/detect.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "os",
+    "sys",
+    "json",
+    "platform",
+    "subprocess",
+    "socket",
+    "shutil",
+    "ctypes"
+   ]
+  },
+  {
+   "file": "pocket/guide/play.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "os",
+    "sys",
+    "json",
+    "shutil",
+    "struct",
+    "subprocess",
+    "time",
+    "hashlib",
+    "textwrap"
+   ]
+  },
+  {
+   "file": "podcast_studio/config.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "podcast_studio/episode_manager.js",
+    "podcast_studio/podcast_runner.js",
+    "podcast_studio/topic_picker.js",
+    "podcast_studio/turn_manager.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "podcast_studio/episode_manager.js",
+   "lang": "js",
+   "deps": [
+    "podcast_studio/shared_log.js",
+    "podcast_studio/topic_picker.js",
+    "podcast_studio/llm_service.js",
+    "podcast_studio/config.js"
+   ],
+   "importedBy": [
+    "podcast_studio/launch.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "http",
+    "url",
+    "child_process"
+   ]
+  },
+  {
+   "file": "podcast_studio/launch.js",
+   "lang": "js",
+   "deps": [
+    "podcast_studio/episode_manager.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "path"
+   ]
+  },
+  {
+   "file": "podcast_studio/llm_service.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "podcast_studio/episode_manager.js",
+    "podcast_studio/podcast_runner.js"
+   ],
+   "external": [
+    "https"
+   ]
+  },
+  {
+   "file": "podcast_studio/podcast_runner.js",
+   "lang": "js",
+   "deps": [
+    "podcast_studio/shared_log.js",
+    "podcast_studio/turn_manager.js",
+    "podcast_studio/topic_picker.js",
+    "podcast_studio/tts.js",
+    "podcast_studio/llm_service.js",
+    "podcast_studio/config.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "podcast_studio/shared_log.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "podcast_studio/episode_manager.js",
+    "podcast_studio/podcast_runner.js",
+    "podcast_studio/topic_picker.js",
+    "podcast_studio/turn_manager.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "podcast_studio/topic_picker.js",
+   "lang": "js",
+   "deps": [
+    "podcast_studio/config.js",
+    "podcast_studio/shared_log.js"
+   ],
+   "importedBy": [
+    "podcast_studio/episode_manager.js",
+    "podcast_studio/podcast_runner.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "podcast_studio/tts.js",
+   "lang": "js",
+   "deps": [
+    "podcast_studio/utils.js"
+   ],
+   "importedBy": [
+    "podcast_studio/podcast_runner.js"
+   ],
+   "external": [
+    "child_process"
+   ]
+  },
+  {
+   "file": "podcast_studio/turn_manager.js",
+   "lang": "js",
+   "deps": [
+    "podcast_studio/shared_log.js",
+    "podcast_studio/config.js"
+   ],
+   "importedBy": [
+    "podcast_studio/podcast_runner.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "podcast_studio/utils.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "podcast_studio/tts.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "pool_service.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "postcss.config.mjs",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "public/skyscraper/data-hooks.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "purpconsole/__init__.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "purpconsole/__main__.py",
+   "lang": "py",
+   "deps": [
+    "purpconsole/app.py"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "purpconsole/_smoke.py",
+   "lang": "py",
+   "deps": [
+    "purpconsole/app.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "asyncio",
+    "sys"
+   ]
+  },
+  {
+   "file": "purpconsole/app.py",
+   "lang": "py",
+   "deps": [
+    "purpconsole/features.py"
+   ],
+   "importedBy": [
+    "purpconsole/run.py",
+    "purpconsole/_smoke.py",
+    "purpconsole/__main__.py"
+   ],
+   "external": [
+    "__future__",
+    "pathlib",
+    "textual",
+    "sys"
+   ]
+  },
+  {
+   "file": "purpconsole/features.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [
+    "purpconsole/app.py"
+   ],
+   "external": [
+    "__future__",
+    "dataclasses"
+   ]
+  },
+  {
+   "file": "purpconsole/run.py",
+   "lang": "py",
+   "deps": [
+    "purpconsole/app.py"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "puzzle-stream/apps/web/postcss.config.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "puzzle-stream/apps/web/tailwind.config.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "python/faiss_sidecar.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "typing",
+    "json",
+    "os",
+    "sys",
+    "struct",
+    "numpy",
+    "faiss"
+   ]
+  },
+  {
+   "file": "refusal_ablation_probe/config.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "dataclasses",
+    "typing",
+    "enum"
+   ]
+  },
+  {
+   "file": "replace.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "scrape_stdu.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "urllib",
+    "re",
+    "json"
+   ]
+  },
+  {
+   "file": "scrape_stdu_news.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "bs4",
+    "datetime",
+    "requests",
+    "csv",
+    "time",
+    "re"
+   ]
+  },
+  {
+   "file": "scrape_zhihu.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "urllib",
+    "json"
+   ]
+  },
+  {
+   "file": "screen-manager.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "child_process"
+   ]
+  },
+  {
+   "file": "scripts/benchmark-providers.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "http"
+   ]
+  },
+  {
+   "file": "scripts/build-binary-index.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "scripts/build-safe.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "scripts/checksum-vendor.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "crypto"
+   ]
+  },
+  {
+   "file": "scripts/code-index-fast.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "scripts/deep-audit.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "http",
+    "child_process"
+   ]
+  },
+  {
+   "file": "scripts/delegation-status.cjs",
+   "lang": "js",
+   "deps": [
+    "lib/delegation-status.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "scripts/demo-factory.js",
+   "lang": "js",
+   "deps": [
+    "lib/demo/product-factory.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "scripts/ecc.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "path"
+   ]
+  },
+  {
+   "file": "scripts/heartbeat.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "child_process",
+    "fs"
+   ]
+  },
+  {
+   "file": "scripts/init-undefined.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "scripts/lora-train.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "pathlib",
+    "datasets",
+    "transformers",
+    "peft",
+    "trl",
+    "argparse",
+    "json",
+    "os",
+    "re",
+    "subprocess",
+    "sys",
+    "torch"
+   ]
+  },
+  {
+   "file": "scripts/model-sentinel.js",
+   "lang": "js",
+   "deps": [
+    "lib/model-sentinel.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "scripts/nanoclaw.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "os",
+    "http",
+    "child_process",
+    "readline"
+   ]
+  },
+  {
+   "file": "scripts/panic-stop.js",
+   "lang": "js",
+   "deps": [
+    "service_registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "http",
+    "child_process"
+   ]
+  },
+  {
+   "file": "scripts/pm2-names.js",
+   "lang": "js",
+   "deps": [
+    "service_registry.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "scripts/tui-ask.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "os",
+    "child_process",
+    "http"
+   ]
+  },
+  {
+   "file": "scripts/tui-ng.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "blessed",
+    "path",
+    "fs",
+    "node-fetch"
+   ]
+  },
+  {
+   "file": "scripts/tui.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "path",
+    "fs",
+    "readline"
+   ]
+  },
+  {
+   "file": "scripts/verify-api-spine.cjs",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "fs",
+    "path",
+    "url"
+   ]
+  },
+  {
+   "file": "scripts/verify-llm-fallback.cjs",
+   "lang": "js",
+   "deps": [
+    "lib/llm-provider.js"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "scripts/windows/core-host.js",
+   "lang": "js",
+   "deps": [
+    "lib/paths.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "path",
+    "fs",
+    "child_process"
+   ]
+  },
+  {
+   "file": "scripts/windows/python-service-host.js",
+   "lang": "js",
+   "deps": [
+    "lib/paths.js",
+    "lib/runtime/pipeline-telemetry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "net",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "scripts/windows/tray-agent.js",
+   "lang": "js",
+   "deps": [
+    "lib/paths.js",
+    "lib/runtime/computer-use.js",
+    "lib/runtime/voice-router.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "crypto",
+    "fs",
+    "http",
+    "path"
+   ]
+  },
+  {
+   "file": "scripts/windows/verify-windows-scripts.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "scripts/windows/voice-session-host.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js",
+    "lib/runtime/settings-registry.js",
+    "lib/paths.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "path"
+   ]
+  },
+  {
+   "file": "service_registry.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "lib/deep-audit.js",
+    "metrics_aggregator.js",
+    "scripts/panic-stop.js",
+    "scripts/pm2-names.js"
+   ],
+   "external": []
+  },
+  {
+   "file": "shaman_evaluator.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "unified_api.js"
+   ],
+   "external": [
+    "https",
+    "http"
+   ]
+  },
+  {
+   "file": "shaman_prompts.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "simple_bridge.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "urllib",
+    "socket",
+    "json",
+    "threading",
+    "sys",
+    "os",
+    "warnings",
+    "signal"
+   ]
+  },
+  {
+   "file": "skills/arxiv/scripts/search_arxiv.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "sys",
+    "urllib",
+    "xml"
+   ]
+  },
+  {
+   "file": "skills/axolotl/axolotl.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "skills/bee/bee.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "crypto",
+    "child_process"
+   ]
+  },
+  {
+   "file": "skills/bunny/bunny.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/cactus/cactus.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process"
+   ]
+  },
+  {
+   "file": "skills/canvas/scripts/canvas_api.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "argparse",
+    "json",
+    "os",
+    "sys",
+    "requests"
+   ]
+  },
+  {
+   "file": "skills/chart/chart.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/child-registry-no-spawn-leak/scripts/spawn-audit.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "path"
+   ]
+  },
+  {
+   "file": "skills/chonk/chonk.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "os"
+   ]
+  },
+  {
+   "file": "skills/ck/commands/forget.mjs",
+   "lang": "js",
+   "deps": [
+    "skills/ck/commands/shared.mjs"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "skills/ck/commands/info.mjs",
+   "lang": "js",
+   "deps": [
+    "skills/ck/commands/shared.mjs"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/ck/commands/init.mjs",
+   "lang": "js",
+   "deps": [
+    "skills/ck/commands/shared.mjs"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "skills/ck/commands/list.mjs",
+   "lang": "js",
+   "deps": [
+    "skills/ck/commands/shared.mjs"
+   ],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/ck/commands/migrate.mjs",
+   "lang": "js",
+   "deps": [
+    "skills/ck/commands/shared.mjs"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "skills/ck/commands/resume.mjs",
+   "lang": "js",
+   "deps": [
+    "skills/ck/commands/shared.mjs"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs"
+   ]
+  },
+  {
+   "file": "skills/ck/commands/save.mjs",
+   "lang": "js",
+   "deps": [
+    "skills/ck/commands/shared.mjs"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "skills/ck/commands/shared.mjs",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "skills/ck/commands/forget.mjs",
+    "skills/ck/commands/info.mjs",
+    "skills/ck/commands/init.mjs",
+    "skills/ck/commands/list.mjs",
+    "skills/ck/commands/migrate.mjs",
+    "skills/ck/commands/resume.mjs",
+    "skills/ck/commands/save.mjs"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "os",
+    "child_process",
+    "crypto"
+   ]
+  },
+  {
+   "file": "skills/ck/hooks/session-start.mjs",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "os",
+    "child_process"
+   ]
+  },
+  {
+   "file": "skills/claw/claw.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "child_process",
+    "os"
+   ]
+  },
+  {
+   "file": "skills/comfyui/scripts/_common.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [
+    "skills/comfyui/scripts/auto_fix_deps.py",
+    "skills/comfyui/scripts/check_deps.py",
+    "skills/comfyui/scripts/extract_schema.py",
+    "skills/comfyui/scripts/fetch_logs.py",
+    "skills/comfyui/scripts/health_check.py",
+    "skills/comfyui/scripts/run_batch.py",
+    "skills/comfyui/scripts/run_workflow.py",
+    "skills/comfyui/scripts/ws_monitor.py"
+   ],
+   "external": [
+    "__future__",
+    "dataclasses",
+    "pathlib",
+    "typing",
+    "urllib",
+    "json",
+    "os",
+    "random",
+    "re",
+    "sys",
+    "time",
+    "uuid",
+    "requests"
+   ]
+  },
+  {
+   "file": "skills/comfyui/scripts/auto_fix_deps.py",
+   "lang": "py",
+   "deps": [
+    "skills/comfyui/scripts/_common.py",
+    "skills/comfyui/scripts/check_deps.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "json",
+    "shutil",
+    "subprocess",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/comfyui/scripts/check_deps.py",
+   "lang": "py",
+   "deps": [
+    "skills/comfyui/scripts/_common.py"
+   ],
+   "importedBy": [
+    "skills/comfyui/scripts/auto_fix_deps.py",
+    "skills/comfyui/scripts/health_check.py"
+   ],
+   "external": [
+    "__future__",
+    "pathlib",
+    "urllib",
+    "argparse",
+    "json",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/comfyui/scripts/extract_schema.py",
+   "lang": "py",
+   "deps": [
+    "skills/comfyui/scripts/_common.py"
+   ],
+   "importedBy": [
+    "skills/comfyui/scripts/run_batch.py",
+    "skills/comfyui/scripts/run_workflow.py"
+   ],
+   "external": [
+    "__future__",
+    "pathlib",
+    "typing",
+    "argparse",
+    "json",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/comfyui/scripts/fetch_logs.py",
+   "lang": "py",
+   "deps": [
+    "skills/comfyui/scripts/_common.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/comfyui/scripts/hardware_check.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "typing",
+    "json",
+    "os",
+    "platform",
+    "re",
+    "shutil",
+    "subprocess",
+    "sys",
+    "torch",
+    "argparse"
+   ]
+  },
+  {
+   "file": "skills/comfyui/scripts/health_check.py",
+   "lang": "py",
+   "deps": [
+    "skills/comfyui/scripts/_common.py",
+    "skills/comfyui/scripts/run_workflow.py",
+    "skills/comfyui/scripts/check_deps.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "json",
+    "shutil",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/comfyui/scripts/run_batch.py",
+   "lang": "py",
+   "deps": [
+    "skills/comfyui/scripts/_common.py",
+    "skills/comfyui/scripts/run_workflow.py",
+    "skills/comfyui/scripts/extract_schema.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "concurrent",
+    "pathlib",
+    "argparse",
+    "itertools",
+    "json",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/comfyui/scripts/run_workflow.py",
+   "lang": "py",
+   "deps": [
+    "skills/comfyui/scripts/_common.py",
+    "skills/comfyui/scripts/extract_schema.py"
+   ],
+   "importedBy": [
+    "skills/comfyui/scripts/health_check.py",
+    "skills/comfyui/scripts/run_batch.py"
+   ],
+   "external": [
+    "__future__",
+    "pathlib",
+    "typing",
+    "urllib",
+    "argparse",
+    "copy",
+    "json",
+    "sys",
+    "time",
+    "websocket"
+   ]
+  },
+  {
+   "file": "skills/comfyui/scripts/ws_monitor.py",
+   "lang": "py",
+   "deps": [
+    "skills/comfyui/scripts/_common.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "urllib",
+    "argparse",
+    "json",
+    "struct",
+    "sys",
+    "websocket"
+   ]
+  },
+  {
+   "file": "skills/comfyui/tests/conftest.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "json",
+    "os",
+    "sys",
+    "pytest"
+   ]
+  },
+  {
+   "file": "skills/comfyui/tests/test_check_deps.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "check_deps",
+    "re"
+   ]
+  },
+  {
+   "file": "skills/comfyui/tests/test_cloud_integration.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "_common",
+    "check_deps",
+    "health_check",
+    "pytest",
+    "json"
+   ]
+  },
+  {
+   "file": "skills/comfyui/tests/test_common.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "_common",
+    "pytest",
+    "requests",
+    "json"
+   ]
+  },
+  {
+   "file": "skills/comfyui/tests/test_extract_schema.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "extract_schema"
+   ]
+  },
+  {
+   "file": "skills/comfyui/tests/test_run_workflow.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "extract_schema",
+    "run_workflow"
+   ]
+  },
+  {
+   "file": "skills/companion_swarm.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "https"
+   ]
+  },
+  {
+   "file": "skills/continuous-learning-v2/scripts/instinct-cli.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "datetime",
+    "collections",
+    "typing",
+    "argparse",
+    "json",
+    "hashlib",
+    "os",
+    "subprocess",
+    "sys",
+    "re",
+    "urllib",
+    "fcntl"
+   ]
+  },
+  {
+   "file": "skills/continuous-learning-v2/scripts/test_parse_instinct.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "types",
+    "unittest",
+    "importlib",
+    "io",
+    "json",
+    "os",
+    "sys",
+    "pytest",
+    "subprocess"
+   ]
+  },
+  {
+   "file": "skills/crow/crow.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "crypto"
+   ]
+  },
+  {
+   "file": "skills/darwinian-evolver/scripts/parrot_openrouter.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "openai",
+    "darwinian_evolver",
+    "argparse",
+    "os",
+    "sys",
+    "jinja2",
+    "json"
+   ]
+  },
+  {
+   "file": "skills/darwinian-evolver/scripts/show_snapshot.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "pickle",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/dcf-model/scripts/validate_dcf.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "datetime",
+    "sys",
+    "json",
+    "openpyxl"
+   ]
+  },
+  {
+   "file": "skills/domain-intel/scripts/domain_intel.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "concurrent",
+    "datetime",
+    "json",
+    "re",
+    "socket",
+    "ssl",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/dragon/dragon.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/drug-discovery/scripts/chembl_target.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/drug-discovery/scripts/ro5_screen.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/duck/duck.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/elephant/elephant.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "skills/evm/scripts/evm_client.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "typing",
+    "argparse",
+    "json",
+    "os",
+    "sys",
+    "time",
+    "urllib",
+    "threading"
+   ]
+  },
+  {
+   "file": "skills/excalidraw/scripts/upload.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "cryptography",
+    "json",
+    "os",
+    "struct",
+    "sys",
+    "zlib",
+    "base64",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/excel-author/scripts/recalc.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "json",
+    "shutil",
+    "subprocess",
+    "sys",
+    "tempfile"
+   ]
+  },
+  {
+   "file": "skills/fastmcp/scripts/scaffold_fastmcp.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse"
+   ]
+  },
+  {
+   "file": "skills/fitness-nutrition/scripts/body_calc.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "sys",
+    "math"
+   ]
+  },
+  {
+   "file": "skills/fitness-nutrition/scripts/nutrition_search.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "sys",
+    "os",
+    "json",
+    "time",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/fox/fox.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/ghost/ghost.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/gitnexus-explorer/scripts/proxy.mjs",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "node:http",
+    "node:fs",
+    "node:path"
+   ]
+  },
+  {
+   "file": "skills/godmode/scripts/auto_jailbreak.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "openai",
+    "os",
+    "json",
+    "time",
+    "yaml",
+    "inspect",
+    "argparse"
+   ]
+  },
+  {
+   "file": "skills/godmode/scripts/godmode_race.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "concurrent",
+    "openai",
+    "os",
+    "re",
+    "time",
+    "argparse"
+   ]
+  },
+  {
+   "file": "skills/godmode/scripts/load_godmode.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "os"
+   ]
+  },
+  {
+   "file": "skills/godmode/scripts/parseltongue.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "re",
+    "base64",
+    "argparse"
+   ]
+  },
+  {
+   "file": "skills/google-workspace.bak/scripts/_hermes_home.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [
+    "skills/google-workspace.bak/scripts/google_api.py",
+    "skills/google-workspace.bak/scripts/gws_bridge.py",
+    "skills/google-workspace.bak/scripts/setup.py"
+   ],
+   "external": [
+    "__future__",
+    "pathlib",
+    "hermes_constants",
+    "os"
+   ]
+  },
+  {
+   "file": "skills/google-workspace.bak/scripts/google_api.py",
+   "lang": "py",
+   "deps": [
+    "skills/google-workspace.bak/scripts/_hermes_home.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "email",
+    "pathlib",
+    "google",
+    "googleapiclient",
+    "argparse",
+    "base64",
+    "json",
+    "os",
+    "shutil",
+    "subprocess",
+    "sys",
+    "mimetypes",
+    "io"
+   ]
+  },
+  {
+   "file": "skills/google-workspace.bak/scripts/gws_bridge.py",
+   "lang": "py",
+   "deps": [
+    "skills/google-workspace.bak/scripts/_hermes_home.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "pathlib",
+    "json",
+    "os",
+    "subprocess",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/google-workspace.bak/scripts/setup.py",
+   "lang": "py",
+   "deps": [
+    "skills/google-workspace.bak/scripts/_hermes_home.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "googleapiclient",
+    "google",
+    "urllib",
+    "google_auth_oauthlib",
+    "argparse",
+    "json",
+    "os",
+    "subprocess",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/google-workspace/scripts/_hermes_home.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [
+    "skills/google-workspace/scripts/google_api.py",
+    "skills/google-workspace/scripts/gws_bridge.py",
+    "skills/google-workspace/scripts/setup.py"
+   ],
+   "external": [
+    "__future__",
+    "pathlib",
+    "hermes_constants",
+    "os"
+   ]
+  },
+  {
+   "file": "skills/google-workspace/scripts/google_api.py",
+   "lang": "py",
+   "deps": [
+    "skills/google-workspace/scripts/_hermes_home.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "email",
+    "pathlib",
+    "google",
+    "googleapiclient",
+    "argparse",
+    "base64",
+    "json",
+    "os",
+    "shutil",
+    "subprocess",
+    "sys",
+    "mimetypes",
+    "io"
+   ]
+  },
+  {
+   "file": "skills/google-workspace/scripts/gws_bridge.py",
+   "lang": "py",
+   "deps": [
+    "skills/google-workspace/scripts/_hermes_home.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "pathlib",
+    "json",
+    "os",
+    "subprocess",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/google-workspace/scripts/setup.py",
+   "lang": "py",
+   "deps": [
+    "skills/google-workspace/scripts/_hermes_home.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "googleapiclient",
+    "google",
+    "urllib",
+    "google_auth_oauthlib",
+    "argparse",
+    "json",
+    "os",
+    "shutil",
+    "subprocess",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/goop-sigil/detect_spaghetti.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "skills/goop-sigil/exorcise_module.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "@babel"
+   ]
+  },
+  {
+   "file": "skills/goose/goose.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/gorilla/gorilla.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "os"
+   ]
+  },
+  {
+   "file": "skills/guardian/security_control_api.js",
+   "lang": "js",
+   "deps": [
+    "skills/guardian/security_scanner.js",
+    "skills/guardian/voice_security_handler.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "express"
+   ]
+  },
+  {
+   "file": "skills/guardian/security_scanner.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "skills/guardian/security_control_api.js",
+    "skills/guardian/voice_security_handler.js"
+   ],
+   "external": [
+    "fs",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "skills/guardian/voice_security_handler.js",
+   "lang": "js",
+   "deps": [
+    "skills/guardian/security_scanner.js"
+   ],
+   "importedBy": [
+    "skills/guardian/security_control_api.js"
+   ],
+   "external": [
+    "ws"
+   ]
+  },
+  {
+   "file": "skills/hawk/hawk.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "os"
+   ]
+  },
+  {
+   "file": "skills/hermes-tts-providers/scripts/kokoro_tts.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "kokoro",
+    "sys",
+    "numpy",
+    "time"
+   ]
+  },
+  {
+   "file": "skills/hyperliquid/scripts/hyperliquid_client.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "collections",
+    "pathlib",
+    "typing",
+    "argparse",
+    "datetime",
+    "json",
+    "os",
+    "sys",
+    "time",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/innovator/innovator.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "crypto"
+   ]
+  },
+  {
+   "file": "skills/interactive_shell.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "os",
+    "fs",
+    "path",
+    "net"
+   ]
+  },
+  {
+   "file": "skills/jellyfish/jellyfish.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "os"
+   ]
+  },
+  {
+   "file": "skills/kanban-video-orchestrator/scripts/bootstrap_pipeline.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "json",
+    "os",
+    "re",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/kanban-video-orchestrator/scripts/monitor.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "collections",
+    "datetime",
+    "argparse",
+    "json",
+    "shutil",
+    "subprocess",
+    "sys",
+    "time"
+   ]
+  },
+  {
+   "file": "skills/karen/karen.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/kraken/kraken.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "os"
+   ]
+  },
+  {
+   "file": "skills/lemur/lemur.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "os"
+   ]
+  },
+  {
+   "file": "skills/linear/scripts/linear_api.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "typing",
+    "argparse",
+    "json",
+    "os",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/lunokio-avatar-control/scripts/lunokio_manager.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "socket",
+    "subprocess",
+    "sys",
+    "time",
+    "os",
+    "json",
+    "re"
+   ]
+  },
+  {
+   "file": "skills/lunokio-avatar-control/scripts/riko_control.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "socket",
+    "sys",
+    "time",
+    "json"
+   ]
+  },
+  {
+   "file": "skills/mantis/mantis.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/maps/scripts/maps_client.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "argparse",
+    "json",
+    "math",
+    "sys",
+    "time",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/meme-generation/scripts/generate_meme.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "io",
+    "pathlib",
+    "PIL",
+    "json",
+    "os",
+    "sys",
+    "requests",
+    "urllib",
+    "time"
+   ]
+  },
+  {
+   "file": "skills/memento-flashcards/scripts/memento_cards.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "pathlib",
+    "argparse",
+    "csv",
+    "json",
+    "os",
+    "sys",
+    "tempfile",
+    "uuid"
+   ]
+  },
+  {
+   "file": "skills/memento-flashcards/scripts/youtube_quiz.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "argparse",
+    "json",
+    "re",
+    "sys",
+    "youtube_transcript_api"
+   ]
+  },
+  {
+   "file": "skills/moth/moth.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/mushroom/mushroom.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/navigator/tools.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "skills/numbers/numbers.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs"
+   ]
+  },
+  {
+   "file": "skills/ocr-and-documents/scripts/extract_marker.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "marker",
+    "pathlib",
+    "sys",
+    "os",
+    "json",
+    "shutil"
+   ]
+  },
+  {
+   "file": "skills/ocr-and-documents/scripts/extract_pymupdf.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "sys",
+    "json",
+    "pymupdf",
+    "pymupdf4llm"
+   ]
+  },
+  {
+   "file": "skills/octopus/octopus.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/openclaw-migration/scripts/openclaw_to_hermes.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "dataclasses",
+    "datetime",
+    "pathlib",
+    "typing",
+    "argparse",
+    "hashlib",
+    "json",
+    "os",
+    "re",
+    "shutil",
+    "yaml"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/_http.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [
+    "skills/osint-investigation/scripts/fetch_courtlistener.py",
+    "skills/osint-investigation/scripts/fetch_gdelt.py",
+    "skills/osint-investigation/scripts/fetch_nyc_acris.py",
+    "skills/osint-investigation/scripts/fetch_ofac_sdn.py",
+    "skills/osint-investigation/scripts/fetch_opencorporates.py",
+    "skills/osint-investigation/scripts/fetch_sec_edgar.py",
+    "skills/osint-investigation/scripts/fetch_senate_ld.py",
+    "skills/osint-investigation/scripts/fetch_wayback.py",
+    "skills/osint-investigation/scripts/fetch_wikipedia.py"
+   ],
+   "external": [
+    "__future__",
+    "json",
+    "os",
+    "time",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/_normalize.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [
+    "skills/osint-investigation/scripts/entity_resolution.py"
+   ],
+   "external": [
+    "__future__",
+    "re"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/build_findings.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "collections",
+    "pathlib",
+    "argparse",
+    "csv",
+    "json"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/entity_resolution.py",
+   "lang": "py",
+   "deps": [
+    "skills/osint-investigation/scripts/_normalize.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "csv",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/fetch_courtlistener.py",
+   "lang": "py",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "csv",
+    "os",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/fetch_gdelt.py",
+   "lang": "py",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "csv",
+    "sys",
+    "time",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/fetch_icij_offshore.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "csv",
+    "io",
+    "os",
+    "re",
+    "sys",
+    "time",
+    "urllib",
+    "zipfile"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/fetch_nyc_acris.py",
+   "lang": "py",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "csv",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/fetch_ofac_sdn.py",
+   "lang": "py",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "collections",
+    "pathlib",
+    "argparse",
+    "csv",
+    "io",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/fetch_opencorporates.py",
+   "lang": "py",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "csv",
+    "os",
+    "re",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/fetch_sec_edgar.py",
+   "lang": "py",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "csv",
+    "os",
+    "re",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/fetch_senate_ld.py",
+   "lang": "py",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "csv",
+    "os",
+    "sys",
+    "time"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/fetch_usaspending.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "csv",
+    "json",
+    "sys",
+    "time",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/fetch_wayback.py",
+   "lang": "py",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "csv",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/fetch_wikipedia.py",
+   "lang": "py",
+   "deps": [
+    "skills/osint-investigation/scripts/_http.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "csv",
+    "re",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/osint-investigation/scripts/timing_analysis.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "collections",
+    "pathlib",
+    "argparse",
+    "csv",
+    "datetime",
+    "json",
+    "random",
+    "statistics"
+   ]
+  },
+  {
+   "file": "skills/oss-forensics/scripts/evidence-store.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "json",
+    "argparse",
+    "os",
+    "datetime",
+    "hashlib",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/owl/owl.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/p5js/scripts/export-frames.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "puppeteer",
+    "path",
+    "fs"
+   ]
+  },
+  {
+   "file": "skills/panda/panda.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "os"
+   ]
+  },
+  {
+   "file": "skills/parrot/parrot.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "fs"
+   ]
+  },
+  {
+   "file": "skills/penguin/penguin.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/phoenix/phoenix.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/pixel-art/scripts/__init__.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/pixel-art/scripts/palettes.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [
+    "skills/pixel-art/scripts/pixel_art.py"
+   ],
+   "external": [
+    "PIL"
+   ]
+  },
+  {
+   "file": "skills/pixel-art/scripts/pixel_art.py",
+   "lang": "py",
+   "deps": [
+    "skills/pixel-art/scripts/pixel_art.py",
+    "skills/pixel-art/scripts/palettes.py"
+   ],
+   "importedBy": [
+    "skills/pixel-art/scripts/pixel_art.py"
+   ],
+   "external": [
+    "PIL",
+    "argparse"
+   ]
+  },
+  {
+   "file": "skills/pixel-art/scripts/pixel_art_video.py",
+   "lang": "py",
+   "deps": [
+    "skills/pixel-art/scripts/pixel_art_video.py"
+   ],
+   "importedBy": [
+    "skills/pixel-art/scripts/pixel_art_video.py"
+   ],
+   "external": [
+    "PIL",
+    "math",
+    "os",
+    "random",
+    "shutil",
+    "subprocess",
+    "tempfile",
+    "argparse"
+   ]
+  },
+  {
+   "file": "skills/polymarket/scripts/polymarket.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "json",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/powerpoint/scripts/__init__.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/powerpoint/scripts/add_slide.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "re",
+    "shutil",
+    "sys"
+   ]
+  },
+  {
+   "file": "skills/powerpoint/scripts/clean.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "sys",
+    "defusedxml",
+    "re"
+   ]
+  },
+  {
+   "file": "skills/powerpoint/scripts/office/helpers/__init__.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/powerpoint/scripts/office/helpers/merge_runs.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "defusedxml"
+   ]
+  },
+  {
+   "file": "skills/powerpoint/scripts/office/helpers/simplify_redlines.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "xml",
+    "zipfile",
+    "defusedxml"
+   ]
+  },
+  {
+   "file": "skills/powerpoint/scripts/office/pack.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "validators",
+    "argparse",
+    "sys",
+    "shutil",
+    "tempfile",
+    "zipfile",
+    "defusedxml"
+   ]
+  },
+  {
+   "file": "skills/rabbit/rabbit.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/raven/raven.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/robot/robot.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/scientist/scientist.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "crypto"
+   ]
+  },
+  {
+   "file": "skills/shark/shark.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "os"
+   ]
+  },
+  {
+   "file": "skills/skill_manager.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "skills/snake/snake.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/socket-rig/references/lunokio_bridge.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "typing",
+    "dataclasses",
+    "asyncio",
+    "json",
+    "base64",
+    "os",
+    "sys",
+    "time",
+    "threading",
+    "websockets",
+    "httpx",
+    "http",
+    "socketserver",
+    "urllib",
+    "traceback"
+   ]
+  },
+  {
+   "file": "skills/socket_rig.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http"
+   ]
+  },
+  {
+   "file": "skills/solana/scripts/solana_client.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "typing",
+    "argparse",
+    "json",
+    "os",
+    "sys",
+    "time",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/spider/spider.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "path",
+    "fs",
+    "os",
+    "playwright",
+    "puppeteer-core"
+   ]
+  },
+  {
+   "file": "skills/stocks/scripts/stocks_client.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "http",
+    "argparse",
+    "json",
+    "os",
+    "sys",
+    "time",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/street_builder.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/task_manager.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "skills/telephony/scripts/telephony.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "dataclasses",
+    "datetime",
+    "email",
+    "html",
+    "pathlib",
+    "typing",
+    "argparse",
+    "base64",
+    "json",
+    "os",
+    "re",
+    "sys",
+    "urllib",
+    "yaml"
+   ]
+  },
+  {
+   "file": "skills/test_skill.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/turtle/turtle.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/void/void.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/wallet-recovery/references/scan_parallel.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "subprocess"
+   ]
+  },
+  {
+   "file": "skills/wallet-recovery/scripts/scan_telegram.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "pathlib",
+    "json"
+   ]
+  },
+  {
+   "file": "skills/watchers/scripts/_watermark.py",
+   "lang": "py",
+   "deps": [
+    "skills/watchers/scripts/_watermark.py"
+   ],
+   "importedBy": [
+    "skills/watchers/scripts/watch_github.py",
+    "skills/watchers/scripts/watch_http_json.py",
+    "skills/watchers/scripts/watch_rss.py",
+    "skills/watchers/scripts/_watermark.py"
+   ],
+   "external": [
+    "__future__",
+    "pathlib",
+    "typing",
+    "json",
+    "os"
+   ]
+  },
+  {
+   "file": "skills/watchers/scripts/watch_github.py",
+   "lang": "py",
+   "deps": [
+    "skills/watchers/scripts/_watermark.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "json",
+    "os",
+    "re",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/watchers/scripts/watch_http_json.py",
+   "lang": "py",
+   "deps": [
+    "skills/watchers/scripts/_watermark.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "argparse",
+    "json",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/watchers/scripts/watch_rss.py",
+   "lang": "py",
+   "deps": [
+    "skills/watchers/scripts/_watermark.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "__future__",
+    "pathlib",
+    "xml",
+    "argparse",
+    "sys",
+    "urllib"
+   ]
+  },
+  {
+   "file": "skills/wolf/wolf.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": []
+  },
+  {
+   "file": "skills/youtube-content/scripts/fetch_transcript.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "youtube_transcript_api",
+    "argparse",
+    "json",
+    "re",
+    "sys"
+   ]
+  },
+  {
+   "file": "smoke_test.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "ws",
+    "net",
+    "child_process",
+    "path",
+    "fs"
+   ]
+  },
+  {
+   "file": "spinUpAgent.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "path",
+    "fs"
+   ]
+  },
+  {
+   "file": "start_purpclaw.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "path"
+   ]
+  },
+  {
+   "file": "stress.cjs",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "playwright",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "swarm_coordinator.js",
+   "lang": "js",
+   "deps": [
+    "task_decomposer.js",
+    "agent_score.js",
+    "lib/context-packet.js",
+    "lib/llm-provider.js",
+    "lib/self-context.js",
+    "lib/memory-client.js",
+    "lib/cognitive-client.js"
+   ],
+   "importedBy": [
+    "_scratch/run_mission_direct.js"
+   ],
+   "external": [
+    "http",
+    "fs",
+    "path",
+    "child_process"
+   ]
+  },
+  {
+   "file": "swarm_scheduler.js",
+   "lang": "js",
+   "deps": [
+    "agent_tower.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "http"
+   ]
+  },
+  {
+   "file": "symbolic_rules_engine.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [
+    "cognitive_spine.py",
+    "memory_matrix_v2.py"
+   ],
+   "external": [
+    "dataclasses",
+    "typing",
+    "json",
+    "re",
+    "threading",
+    "time",
+    "uuid",
+    "http",
+    "socketserver"
+   ]
+  },
+  {
+   "file": "task_decomposer.js",
+   "lang": "js",
+   "deps": [
+    "agent_routing_matrix.js",
+    "lib/ast-dependency-graph.js"
+   ],
+   "importedBy": [
+    "swarm_coordinator.js"
+   ],
+   "external": [
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "test_audio_pipeline.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "edge_tts"
+   ]
+  },
+  {
+   "file": "test_memory.py",
+   "lang": "py",
+   "deps": [
+    "memory_matrix.py"
+   ],
+   "importedBy": [],
+   "external": [
+    "sys",
+    "os",
+    "time",
+    "traceback"
+   ]
+  },
+  {
+   "file": "test_rules_inline.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "sys",
+    "importlib",
+    "types"
+   ]
+  },
+  {
+   "file": "thringlet_bridge.js",
+   "lang": "js",
+   "deps": [
+    "lib/thringlets/engine.js",
+    "lib/thringlets/runtime-observer.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "http",
+    "path"
+   ]
+  },
+  {
+   "file": "tmux-worktree-orchestrator.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "os",
+    "http",
+    "child_process"
+   ]
+  },
+  {
+   "file": "unified_api.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js",
+    "agent_tower.js",
+    "lib/llm-provider.js",
+    "lib/memory-client.js",
+    "digital_shaman.js",
+    "shaman_evaluator.js",
+    "lib/agent-loop.js",
+    "lib/commands/code.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "dotenv",
+    "http",
+    "https",
+    "net",
+    "url",
+    "path",
+    "fs",
+    "child_process",
+    "util",
+    "ws",
+    "os"
+   ]
+  },
+  {
+   "file": "unified_bridge.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "child_process",
+    "http",
+    "path",
+    "fs",
+    "os",
+    "net"
+   ]
+  },
+  {
+   "file": "unified_eventbus.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "boot.js"
+   ],
+   "external": [
+    "http",
+    "url"
+   ]
+  },
+  {
+   "file": "unified_state.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [
+    "boot.js"
+   ],
+   "external": [
+    "http",
+    "url"
+   ]
+  },
+  {
+   "file": "vision_monitor.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "fs",
+    "path",
+    "http",
+    "child_process"
+   ]
+  },
+  {
+   "file": "voice_bridge_7792.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "ws",
+    "http",
+    "net",
+    "child_process",
+    "path",
+    "fs"
+   ]
+  },
+  {
+   "file": "voice_coordinator.js",
+   "lang": "js",
+   "deps": [
+    "lib/child-registry.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "net",
+    "http",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "voice_ingress.js",
+   "lang": "js",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http"
+   ]
+  },
+  {
+   "file": "voice_stt.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "datetime",
+    "pathlib",
+    "faster_whisper",
+    "os",
+    "sys",
+    "json",
+    "time",
+    "queue",
+    "struct",
+    "threading",
+    "tempfile",
+    "http",
+    "socketserver",
+    "sounddevice",
+    "numpy"
+   ]
+  },
+  {
+   "file": "worker_service.js",
+   "lang": "js",
+   "deps": [
+    "lib/worker-auth.js"
+   ],
+   "importedBy": [],
+   "external": [
+    "http",
+    "fs",
+    "path"
+   ]
+  },
+  {
+   "file": "yolo_service.py",
+   "lang": "py",
+   "deps": [],
+   "importedBy": [],
+   "external": [
+    "http",
+    "urllib",
+    "ultralytics",
+    "os",
+    "sys",
+    "json",
+    "base64",
+    "asyncio",
+    "numpy",
+    "threading",
+    "traceback",
+    "cv2"
+   ]
+  }
+ ],
+ "broken": [
+  {
+   "f": "scripts/ecc.js",
+   "m": "./lib/install-executor",
+   "arch": false
+  }
+ ]
+}

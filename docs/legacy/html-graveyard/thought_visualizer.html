@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PURPCLAW AI Thoughts Visualizer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        #canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-panel {
+            background: rgba(20, 20, 30, 0.9);
+            border: 1px solid rgba(138, 43, 226, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .control-panel h3 {
+            color: #b366ff;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #6b2fa0, #8a2be2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #8a2be2, #9932cc);
+            transform: scale(1.05);
+        }
+
+        .btn.active {
+            background: linear-gradient(135deg, #ff2d95, #ff00ff);
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .speed-control input {
+            width: 100px;
+            accent-color: #8a2be2;
+        }
+
+        .agent-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .agent-toggle {
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 2px solid;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            opacity: 0.5;
+        }
+
+        .agent-toggle.active {
+            opacity: 1;
+        }
+
+        .agent-toggle.dragon {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .agent-toggle.dragon.active {
+            background: rgba(255, 68, 68, 0.3);
+        }
+
+        .agent-toggle.ghost {
+            border-color: #00ffff;
+            color: #00ffff;
+        }
+
+        .agent-toggle.ghost.active {
+            background: rgba(0, 255, 255, 0.3);
+        }
+
+        .agent-toggle.owl {
+            border-color: #aa66ff;
+            color: #aa66ff;
+        }
+
+        .agent-toggle.owl.active {
+            background: rgba(170, 102, 255, 0.3);
+        }
+
+        .agent-toggle.bee {
+            border-color: #ffdd00;
+            color: #ffdd00;
+        }
+
+        .agent-toggle.bee.active {
+            background: rgba(255, 221, 0, 0.3);
+        }
+
+        .agent-toggle.unknown {
+            border-color: #888;
+            color: #888;
+        }
+
+        .agent-toggle.unknown.active {
+            background: rgba(136, 136, 136, 0.3);
+        }
+
+        .history-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 350px;
+            max-height: calc(100vh - 40px);
+            background: rgba(20, 20, 30, 0.95);
+            border: 1px solid rgba(138, 43, 226, 0.5);
+            border-radius: 12px;
+            z-index: 100;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-header {
+            padding: 15px;
+            background: rgba(138, 43, 226, 0.2);
+            border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .history-header h3 {
+            color: #b366ff;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-header .thought-count {
+            color: #888;
+            font-size: 12px;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .history-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(30, 30, 40, 0.8);
+            border-radius: 8px;
+            border-left: 3px solid;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .history-item:hover {
+            background: rgba(50, 50, 60, 0.8);
+            transform: translateX(5px);
+        }
+
+        .history-item .agent-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 5px;
+        }
+
+        .history-item .timestamp {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .history-item .thought-text {
+            font-size: 12px;
+            color: #ccc;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .tooltip {
+            position: fixed;
+            background: rgba(20, 20, 30, 0.95);
+            border: 1px solid rgba(138, 43, 226, 0.7);
+            border-radius: 8px;
+            padding: 12px;
+            max-width: 300px;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            box-shadow: 0 0 20px rgba(138, 43, 226, 0.3);
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        .tooltip .agent {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .tooltip .time {
+            font-size: 10px;
+            color: #888;
+            margin-bottom: 5px;
+        }
+
+        .tooltip .content {
+            font-size: 13px;
+            color: #fff;
+            line-height: 1.5;
+        }
+
+        .stats {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(20, 20, 30, 0.9);
+            border: 1px solid rgba(138, 43, 226, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 100;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #b366ff;
+        }
+
+        .stat-label {
+            font-size: 10px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(20, 20, 30, 0.9);
+            border: 1px solid rgba(138, 43, 226, 0.5);
+            border-radius: 20px;
+            padding: 8px 15px;
+            z-index: 100;
+        }
+
+        .connection-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff4444;
+            animation: pulse 1.5s infinite;
+        }
+
+        .connection-dot.connected {
+            background: #00ff88;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .pattern-indicator {
+            position: fixed;
+            bottom: 80px;
+            left: 20px;
+            background: rgba(20, 20, 30, 0.9);
+            border: 1px solid rgba(138, 43, 226, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+            z-index: 100;
+            max-width: 250px;
+        }
+
+        .pattern-indicator h4 {
+            color: #b366ff;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .pattern-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .pattern-tag {
+            font-size: 10px;
+            padding: 4px 8px;
+            background: rgba(138, 43, 226, 0.3);
+            border-radius: 10px;
+            color: #ccc;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <div class="controls">
+        <div class="control-panel">
+            <button class="btn" id="pauseBtn">Pause</button>
+        </div>
+
+        <div class="control-panel">
+            <h3>Animation Speed</h3>
+            <div class="speed-control">
+                <input type="range" id="speedSlider" min="0.1" max="3" step="0.1" value="1">
+                <span id="speedValue">1.0x</span>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <h3>Agent Filters</h3>
+            <div class="agent-filters">
+                <div class="agent-toggle dragon active" data-agent="Dragon">Dragon</div>
+                <div class="agent-toggle ghost active" data-agent="Ghost">Ghost</div>
+                <div class="agent-toggle owl active" data-agent="Owl">Owl</div>
+                <div class="agent-toggle bee active" data-agent="Bee">Bee</div>
+                <div class="agent-toggle unknown active" data-agent="Unknown">Unknown</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-panel">
+        <div class="history-header">
+            <h3>
+                Thought History
+                <span class="thought-count" id="thoughtCount">0 thoughts</span>
+            </h3>
+        </div>
+        <div class="history-list" id="historyList"></div>
+    </div>
+
+    <div class="tooltip" id="tooltip">
+        <div class="agent" id="tooltipAgent"></div>
+        <div class="time" id="tooltipTime"></div>
+        <div class="content" id="tooltipContent"></div>
+    </div>
+
+    <div class="stats">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-value" id="particleCount">0</div>
+                <div class="stat-label">Active Particles</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="connectionCount">0</div>
+                <div class="stat-label">Connections</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="fpsCounter">60</div>
+                <div class="stat-label">FPS</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="thoughtsPerMin">0</div>
+                <div class="stat-label">Thoughts/min</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="connection-status">
+        <div class="connection-dot" id="connectionDot"></div>
+        <span id="connectionText">Disconnected</span>
+    </div>
+
+    <div class="pattern-indicator">
+        <h4>Detected Patterns</h4>
+        <div class="pattern-list" id="patternList">
+            <span class="pattern-tag">Waiting for data...</span>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
+
+        const agentColors = {
+            Dragon: { primary: '#ff4444', secondary: '#ff8888', glow: 'rgba(255, 68, 68, 0.5)' },
+            Ghost: { primary: '#00ffff', secondary: '#88ffff', glow: 'rgba(0, 255, 255, 0.5)' },
+            Owl: { primary: '#aa66ff', secondary: '#cc99ff', glow: 'rgba(170, 102, 255, 0.5)' },
+            Bee: { primary: '#ffdd00', secondary: '#ffee66', glow: 'rgba(255, 221, 0, 0.5)' },
+            Unknown: { primary: '#888888', secondary: '#aaaaaa', glow: 'rgba(136, 136, 136, 0.5)' }
+        };
+
+        const agentShapes = {
+            Dragon: 3,
+            Ghost: 0,
+            Owl: 4,
+            Bee: 6,
+            Unknown: 1
+        };
+
+        let particles = [];
+        let connections = [];
+        let thoughts = [];
+        let patterns = [];
+        let isPaused = false;
+        let animationSpeed = 1;
+        let agentFilters = {
+            Dragon: true,
+            Ghost: true,
+            Owl: true,
+            Bee: true,
+            Unknown: true
+        };
+        let mouseX = 0;
+        let mouseY = 0;
+        let hoveredParticle = null;
+        let thoughtsThisMinute = 0;
+        let lastMinuteCheck = Date.now();
+        let thoughtsPerMinute = 0;
+        let eventSource = null;
+        let lastFrameTime = performance.now();
+        let frameCount = 0;
+        let fps = 60;
+
+        class Particle {
+            constructor(thought) {
+                this.id = thought.id || Math.random().toString(36).substring(2, 11);
+                this.agent = thought.agent || 'Unknown';
+                this.content = thought.message || thought.content || '';
+                this.timestamp = thought.timestamp ? new Date(thought.timestamp) : new Date();
+                this.importance = thought.importance || 1;
+                this.processingTime = thought.processingTime || 1000;
+
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.size = 5 + this.importance * 10;
+                this.trail = [];
+                this.maxTrailLength = Math.min(50, Math.floor(this.processingTime / 50));
+
+                this.pulsePhase = Math.random() * Math.PI * 2;
+                this.pulseIntensity = 1;
+                this.age = 0;
+                this.maxAge = 5000 + this.processingTime;
+                this.opacity = 1;
+
+                this.connections = [];
+                this.relatedThoughts = [];
+
+                this.colors = agentColors[this.agent] || agentColors.Unknown;
+                this.shape = agentShapes[this.agent] !== undefined ? agentShapes[this.agent] : 1;
+
+                this.generateRelatedThoughts();
+            }
+
+            generateRelatedThoughts() {
+                const sameAgent = thoughts.filter(t =>
+                    t.agent === this.agent &&
+                    t.id !== this.id &&
+                    Math.abs(new Date(t.timestamp) - this.timestamp) < 30000
+                );
+                this.relatedThoughts = sameAgent.slice(0, 3);
+            }
+
+            update(deltaTime) {
+                const dt = deltaTime * animationSpeed;
+
+                this.pulsePhase += dt * 0.005;
+                this.pulseIntensity = 0.8 + Math.sin(this.pulsePhase) * 0.2;
+
+                this.x += this.vx * dt * 0.05;
+                this.y += this.vy * dt * 0.05;
+
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                this.x = Math.max(0, Math.min(width, this.x));
+                this.y = Math.max(0, Math.min(height, this.y));
+
+                this.trail.unshift({ x: this.x, y: this.y, opacity: 1 });
+                if (this.trail.length > this.maxTrailLength) {
+                    this.trail.pop();
+                }
+
+                this.trail.forEach((point, i) => {
+                    point.opacity = 1 - (i / this.maxTrailLength);
+                });
+
+                this.age += dt;
+                if (this.age > this.maxAge * 0.7) {
+                    this.opacity = 1 - ((this.age - this.maxAge * 0.7) / (this.maxAge * 0.3));
+                }
+
+                if (this.age > this.maxAge) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            draw(ctx) {
+                if (!agentFilters[this.agent]) return;
+
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+
+                for (let i = 0; i < this.trail.length - 1; i++) {
+                    const point = this.trail[i];
+                    const nextPoint = this.trail[i + 1];
+                    const alpha = point.opacity * 0.5 * this.opacity;
+
+                    const gradient = ctx.createLinearGradient(point.x, point.y, nextPoint.x, nextPoint.y);
+                    gradient.addColorStop(0, this.hexToRgba(this.colors.primary, alpha));
+                    gradient.addColorStop(1, this.hexToRgba(this.colors.secondary, alpha * 0.3));
+
+                    ctx.beginPath();
+                    ctx.moveTo(point.x, point.y);
+                    ctx.lineTo(nextPoint.x, nextPoint.y);
+                    ctx.strokeStyle = gradient;
+                    ctx.lineWidth = this.size * point.opacity * 0.3;
+                    ctx.lineCap = 'round';
+                    ctx.stroke();
+                }
+
+                const glowSize = this.size * 2 * this.pulseIntensity;
+                const gradient = ctx.createRadialGradient(
+                    this.x, this.y, 0,
+                    this.x, this.y, glowSize
+                );
+                gradient.addColorStop(0, this.colors.glow);
+                gradient.addColorStop(1, 'transparent');
+
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, glowSize, 0, Math.PI * 2);
+                ctx.fill();
+
+                this.drawShape(ctx, this.x, this.y, this.size * this.pulseIntensity);
+
+                ctx.restore();
+            }
+
+            drawShape(ctx, x, y, size) {
+                ctx.fillStyle = this.colors.primary;
+                ctx.strokeStyle = this.colors.secondary;
+                ctx.lineWidth = 2;
+
+                switch (this.shape) {
+                    case 0:
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                    case 1:
+                        ctx.beginPath();
+                        ctx.moveTo(x, y - size);
+                        ctx.lineTo(x + size, y + size);
+                        ctx.lineTo(x - size, y + size);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                    case 2:
+                        ctx.beginPath();
+                        ctx.arc(x, y - size * 0.3, size * 0.7, Math.PI, 0);
+                        ctx.lineTo(x + size, y + size * 0.5);
+                        ctx.lineTo(x - size, y + size * 0.5);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                    case 3:
+                        ctx.beginPath();
+                        ctx.moveTo(x, y - size);
+                        ctx.lineTo(x + size * 0.8, y);
+                        ctx.lineTo(x + size * 0.5, y + size);
+                        ctx.lineTo(x - size * 0.5, y + size);
+                        ctx.lineTo(x - size * 0.8, y);
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                    case 4:
+                        ctx.beginPath();
+                        for (let i = 0; i < 6; i++) {
+                            const angle = (i * Math.PI / 3) - Math.PI / 2;
+                            const px = x + Math.cos(angle) * size;
+                            const py = y + Math.sin(angle) * size;
+                            if (i === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                    case 5:
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.arc(x, y, size * 0.5, 0, Math.PI * 2);
+                        ctx.fillStyle = this.colors.secondary;
+                        ctx.fill();
+                        break;
+                    case 6:
+                        ctx.beginPath();
+                        for (let i = 0; i < 5; i++) {
+                            const angle = (i * 4 * Math.PI / 5) - Math.PI / 2;
+                            const px = x + Math.cos(angle) * size;
+                            const py = y + Math.sin(angle) * size;
+                            if (i === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        }
+                        ctx.closePath();
+                        ctx.fill();
+                        ctx.stroke();
+                        break;
+                    default:
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                }
+            }
+
+            hexToRgba(hex, alpha) {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+
+            containsPoint(px, py) {
+                const dx = px - this.x;
+                const dy = py - this.y;
+                return Math.sqrt(dx * dx + dy * dy) < this.size * 2;
+            }
+        }
+
+        class Connection {
+            constructor(particle1, particle2) {
+                this.p1 = particle1;
+                this.p2 = particle2;
+                this.opacity = 0.5;
+                this.age = 0;
+                this.maxAge = 2000;
+            }
+
+            update(deltaTime) {
+                const dt = deltaTime * animationSpeed;
+                this.age += dt;
+
+                if (this.p1.age > this.p1.maxAge || this.p2.age > this.p2.maxAge) {
+                    return false;
+                }
+
+                if (this.age > this.maxAge) {
+                    return false;
+                }
+
+                this.opacity = 0.5 * (1 - this.age / this.maxAge);
+                return true;
+            }
+
+            draw(ctx) {
+                if (!agentFilters[this.p1.agent] || !agentFilters[this.p2.agent]) return;
+
+                const gradient = ctx.createLinearGradient(this.p1.x, this.p1.y, this.p2.x, this.p2.y);
+                gradient.addColorStop(0, this.hexToRgba(this.p1.colors.primary, this.opacity * this.p1.opacity));
+                gradient.addColorStop(1, this.hexToRgba(this.p2.colors.primary, this.opacity * this.p2.opacity));
+
+                ctx.beginPath();
+                ctx.moveTo(this.p1.x, this.p1.y);
+                ctx.lineTo(this.p2.x, this.p2.y);
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                const midX = (this.p1.x + this.p2.x) / 2;
+                const midY = (this.p1.y + this.p2.y) / 2;
+
+                ctx.beginPath();
+                ctx.arc(midX, midY, 3, 0, Math.PI * 2);
+                ctx.fillStyle = this.hexToRgba('#ffffff', this.opacity * 0.5);
+                ctx.fill();
+            }
+
+            hexToRgba(hex, alpha) {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            }
+        }
+
+        function connectParticles() {
+            connections = [];
+            const maxDistance = 200;
+
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const p1 = particles[i];
+                    const p2 = particles[j];
+
+                    if (!agentFilters[p1.agent] || !agentFilters[p2.agent]) continue;
+
+                    const dx = p2.x - p1.x;
+                    const dy = p2.y - p1.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+
+                    if (distance < maxDistance) {
+                        if (p1.agent === p2.agent || p1.relatedThoughts.includes(p2)) {
+                            connections.push(new Connection(p1, p2));
+                        }
+                    }
+                }
+            }
+        }
+
+        function addThought(thought) {
+            thought.id = thought.id || Math.random().toString(36).substring(2, 11);
+            thought.timestamp = thought.timestamp || new Date().toISOString();
+            thought.importance = thought.importance || 1;
+            thought.processingTime = thought.processingTime || 1000;
+
+            thoughts.unshift(thought);
+            if (thoughts.length > 100) thoughts.pop();
+
+            const particle = new Particle(thought);
+            particles.push(particle);
+
+            particles.forEach(p => {
+                if (p.relatedThoughts.includes(thought)) {
+                    connections.push(new Connection(p, particle));
+                }
+            });
+
+            thoughtsThisMinute++;
+            updatePatternDetection(thought);
+            updateHistoryPanel();
+        }
+
+        function updatePatternDetection(newThought) {
+            const keywords = {
+                'search': ['search', 'find', 'lookup', 'query'],
+                'file': ['file', 'read', 'write', 'open', 'save'],
+                'execute': ['execute', 'run', 'start', 'launch'],
+                'analyze': ['analyze', 'parse', 'process', 'review'],
+                'create': ['create', 'generate', 'make', 'build'],
+                'learn': ['learn', 'train', 'model', 'predict'],
+                'memory': ['memory', 'remember', 'store', 'cache']
+            };
+
+            const content = (newThought.message || newThought.content || '').toLowerCase();
+
+            Object.entries(keywords).forEach(([pattern, words]) => {
+                if (words.some(word => content.includes(word))) {
+                    if (!patterns.includes(pattern)) {
+                        patterns.push(pattern);
+                        if (patterns.length > 5) patterns.shift();
+                    }
+                }
+            });
+
+            document.getElementById('patternList').innerHTML = patterns.length > 0
+                ? patterns.map(p => `<span class="pattern-tag">${p}</span>`).join('')
+                : '<span class="pattern-tag">No patterns detected</span>';
+        }
+
+        function updateHistoryPanel() {
+            const historyList = document.getElementById('historyList');
+            const historyItems = thoughts.slice(0, 50);
+
+            historyList.innerHTML = historyItems.map(thought => {
+                const agent = thought.agent || 'Unknown';
+                const colors = agentColors[agent] || agentColors.Unknown;
+                const time = new Date(thought.timestamp).toLocaleTimeString();
+                const content = thought.message || thought.content || 'No content';
+
+                return `
+                    <div class="history-item" data-id="${thought.id}" style="border-color: ${colors.primary}">
+                        <span class="agent-badge" style="background: ${colors.glow}; color: ${colors.primary}">${agent}</span>
+                        <div class="timestamp">${time}</div>
+                        <div class="thought-text">${escapeHtml(content)}</div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('thoughtCount').textContent = `${thoughts.length} thoughts`;
+
+            document.querySelectorAll('.history-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const id = item.dataset.id;
+                    const particle = particles.find(p => p.id === id);
+                    if (particle) {
+                        mouseX = particle.x;
+                        mouseY = particle.y;
+                        showTooltip(particle);
+                    }
+                });
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showTooltip(particle) {
+            const tooltip = document.getElementById('tooltip');
+            const agentBadge = document.getElementById('tooltipAgent');
+            const timeEl = document.getElementById('tooltipTime');
+            const contentEl = document.getElementById('tooltipContent');
+
+            const colors = particle.colors;
+            agentBadge.textContent = particle.agent;
+            agentBadge.style.background = colors.glow;
+            agentBadge.style.color = colors.primary;
+
+            timeEl.textContent = particle.timestamp.toLocaleString();
+            contentEl.textContent = particle.content;
+
+            tooltip.style.left = (mouseX + 20) + 'px';
+            tooltip.style.top = (mouseY + 20) + 'px';
+            tooltip.classList.add('visible');
+        }
+
+        function hideTooltip() {
+            document.getElementById('tooltip').classList.remove('visible');
+        }
+
+        function connectSSE() {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            updateConnectionStatus(false);
+
+            try {
+                eventSource = new EventSource('http://localhost:7780/api/logs');
+
+                eventSource.onopen = () => {
+                    updateConnectionStatus(true);
+                };
+
+                eventSource.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        if (data) {
+                            processLogData(data);
+                        }
+                    } catch (e) {
+                        console.log('Raw log data:', event.data);
+                        processLogData(event.data);
+                    }
+                };
+
+                eventSource.onerror = () => {
+                    updateConnectionStatus(false);
+                    setTimeout(connectSSE, 5000);
+                };
+            } catch (e) {
+                console.log('SSE not available, using demo mode');
+                startDemoMode();
+            }
+        }
+
+        function processLogData(data) {
+            if (typeof data === 'string') {
+                try {
+                    data = JSON.parse(data);
+                } catch (e) {
+                    data = { message: data, agent: detectAgent(data), timestamp: new Date().toISOString() };
+                }
+            }
+
+            if (data.event && data.data) {
+                try {
+                    data = JSON.parse(data.data);
+                } catch (e) {
+                    data = { message: data.data, agent: detectAgent(data.data), timestamp: new Date().toISOString() };
+                }
+            }
+
+            if (!data.agent) {
+                data.agent = detectAgent(data.message || data.content || '');
+            }
+
+            if (data.message || data.content) {
+                addThought(data);
+            }
+        }
+
+        function detectAgent(text) {
+            const textLower = (text || '').toLowerCase();
+
+            if (textLower.includes('dragon')) return 'Dragon';
+            if (textLower.includes('ghost')) return 'Ghost';
+            if (textLower.includes('owl')) return 'Owl';
+            if (textLower.includes('bee')) return 'Bee';
+
+            const agents = ['Dragon', 'Ghost', 'Owl', 'Bee'];
+            for (const agent of agents) {
+                if (Math.random() < 0.1) return agent;
+            }
+
+            return 'Unknown';
+        }
+
+        function updateConnectionStatus(connected) {
+            const dot = document.getElementById('connectionDot');
+            const text = document.getElementById('connectionText');
+
+            if (connected) {
+                dot.classList.add('connected');
+                text.textContent = 'Connected';
+            } else {
+                dot.classList.remove('connected');
+                text.textContent = 'Disconnected';
+            }
+        }
+
+        function startDemoMode() {
+            const demoAgents = ['Dragon', 'Ghost', 'Owl', 'Bee'];
+            const demoMessages = [
+                'Analyzing neural pathways for pattern recognition',
+                'Processing sensory input from environment',
+                'Evaluating decision trees for optimal outcomes',
+                'Synthesizing knowledge from distributed nodes',
+                'Mapping semantic relationships in concept space',
+                'Generating predictive models from historical data',
+                'Optimizing attention mechanisms for focus',
+                'Establishing connection pathways between memories',
+                'Computing gradient descent for learning',
+                'Refining probabilistic inference networks'
+            ];
+
+            setInterval(() => {
+                if (!isPaused) {
+                    const thought = {
+                        agent: demoAgents[Math.floor(Math.random() * demoAgents.length)],
+                        message: demoMessages[Math.floor(Math.random() * demoMessages.length)],
+                        timestamp: new Date().toISOString(),
+                        importance: Math.random() * 0.8 + 0.2,
+                        processingTime: Math.random() * 2000 + 500
+                    };
+                    addThought(thought);
+                }
+            }, 2000);
+        }
+
+        function animate(currentTime) {
+            if (!lastFrameTime) lastFrameTime = currentTime;
+            const deltaTime = Math.min(currentTime - lastFrameTime, 100);
+            lastFrameTime = currentTime;
+
+            frameCount++;
+            if (frameCount % 30 === 0) {
+                fps = Math.round(1000 / deltaTime);
+                document.getElementById('fpsCounter').textContent = fps;
+            }
+
+            if (Date.now() - lastMinuteCheck >= 60000) {
+                thoughtsPerMinute = thoughtsThisMinute;
+                thoughtsThisMinute = 0;
+                lastMinuteCheck = Date.now();
+                document.getElementById('thoughtsPerMin').textContent = thoughtsPerMinute;
+            }
+
+            ctx.fillStyle = 'rgba(10, 10, 10, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            if (!isPaused) {
+                particles = particles.filter(p => p.update(deltaTime));
+                connections = connections.filter(c => c.update(deltaTime));
+
+                if (frameCount % 60 === 0) {
+                    connectParticles();
+                }
+
+                hoveredParticle = null;
+                for (const particle of particles) {
+                    if (particle.containsPoint(mouseX, mouseY)) {
+                        hoveredParticle = particle;
+                        break;
+                    }
+                }
+
+                if (hoveredParticle) {
+                    showTooltip(hoveredParticle);
+                } else {
+                    hideTooltip();
+                }
+            }
+
+            connections.forEach(c => c.draw(ctx));
+            particles.forEach(p => p.draw(ctx));
+
+            document.getElementById('particleCount').textContent = particles.length;
+            document.getElementById('connectionCount').textContent = connections.length;
+
+            requestAnimationFrame(animate);
+        }
+
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            isPaused = !isPaused;
+            const btn = document.getElementById('pauseBtn');
+            btn.textContent = isPaused ? 'Resume' : 'Pause';
+            btn.classList.toggle('active', isPaused);
+        });
+
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            animationSpeed = parseFloat(e.target.value);
+            document.getElementById('speedValue').textContent = animationSpeed.toFixed(1) + 'x';
+        });
+
+        document.querySelectorAll('.agent-toggle').forEach(toggle => {
+            toggle.addEventListener('click', () => {
+                const agent = toggle.dataset.agent;
+                toggle.classList.toggle('active');
+                agentFilters[agent] = toggle.classList.contains('active');
+            });
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
+
+        connectSSE();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>
