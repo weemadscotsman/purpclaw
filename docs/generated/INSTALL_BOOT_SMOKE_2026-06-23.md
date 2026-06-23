@@ -57,10 +57,12 @@ Clean first-boot testing exposed a real install issue: `safe-start --core` could
 
 ## Existing PM2 Caveat
 
-If a machine already has PURPCLAW services registered in the default PM2 home, a fresh clone can appear to "skip" service starts because PM2 is still pointing at the old working directory. For a true clean install smoke test, either:
+If a machine already has PURPCLAW services registered in the default PM2 home, a fresh clone can appear to "skip" service starts because PM2 is still pointing at the old working directory. If those old services are still running, the default ports will also be occupied.
 
-- use an isolated `PM2_HOME`, or
-- stop/delete old `purpclaw-*` PM2 services before booting the new clone.
+For a true clean install smoke test:
+
+- use an isolated `PM2_HOME` so PM2 state belongs to the test clone, and
+- stop/delete any already-running `purpclaw-*` services first so the ports are free.
 
 The final smoke used an isolated PM2 home to prove the GitHub checkout can install and boot on its own.
 
