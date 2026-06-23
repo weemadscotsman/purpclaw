@@ -3066,6 +3066,36 @@ const server = http.createServer(async (req, res) => {
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
 
+    // ── /api/output/* — the Output Vault (durable artifacts, linked to jobs) ──
+    if (pathname === '/api/output/list' && method === 'GET') {
+      try {
+        const vault = require('./lib/output-vault');
+        const filter = {};
+        for (const k of ['project', 'lane', 'type', 'status', 'job_id']) { const v = parsedUrl.searchParams.get(k); if (v) filter[k] = v; }
+        return sendJson(res, 200, { artifacts: vault.list(filter, parseInt(parsedUrl.searchParams.get('limit') || '200')), stats: vault.stats() });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname === '/api/output/register' && method === 'POST') {
+      try { const body = await parseBody(req); return sendJson(res, 200, { ok: true, artifact: require('./lib/output-vault').register(body) }); }
+      catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname === '/api/output/approve' && method === 'POST') {
+      try { const body = await parseBody(req); const a = require('./lib/output-vault').approve(body.artifact_id || body.id, body.by); return a ? sendJson(res, 200, { ok: true, artifact: a }) : sendJson(res, 404, { error: 'not found' }); }
+      catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname === '/api/output/archive' && method === 'POST') {
+      try { const body = await parseBody(req); const a = require('./lib/output-vault').archive(body.artifact_id || body.id); return a ? sendJson(res, 200, { ok: true, artifact: a }) : sendJson(res, 404, { error: 'not found' }); }
+      catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname.startsWith('/api/output/by-job/') && method === 'GET') {
+      try { return sendJson(res, 200, { artifacts: require('./lib/output-vault').byJob(decodeURIComponent(pathname.split('/api/output/by-job/')[1] || '')) }); }
+      catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname.startsWith('/api/output/') && method === 'GET') {
+      try { const a = require('./lib/output-vault').get(decodeURIComponent(pathname.split('/api/output/')[1] || '')); return a ? sendJson(res, 200, a) : sendJson(res, 404, { error: 'not found' }); }
+      catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
     // ── /api/pipeline/* — the unified pipeline spine (call/stop/log/health) ──
     if (pathname === '/api/pipeline/jobs' && method === 'GET') {
       try {
