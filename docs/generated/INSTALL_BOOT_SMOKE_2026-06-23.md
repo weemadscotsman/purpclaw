@@ -3,31 +3,40 @@
 ## Target
 
 - Repository: `https://github.com/weemadscotsman/purpclaw.git`
-- Fresh clone path: `E:\god folder\02_ACTIVE_PROJECTS\PURPCLAW_INSTALL_TEST_20260623`
-- Cloned branch: `master`
-- Clone head: `45841c0 Sync latest E-drive PURPCLAW source`
+- Final fresh clone path: `E:\god folder\02_ACTIVE_PROJECTS\PURPCLAW_ONELINER_FINAL_20260623`
+- Isolated PM2 home: `E:\purpclaw_pm2_final_20260623`
+- Cloned branch: `main`
+- Clone head: `15c5be7 Sync latest install boot and spine routes`
 
 ## Commands Tested
 
 ```powershell
-git clone https://github.com/weemadscotsman/purpclaw.git E:\god folder\02_ACTIVE_PROJECTS\PURPCLAW_INSTALL_TEST_20260623
-cd E:\god folder\02_ACTIVE_PROJECTS\PURPCLAW_INSTALL_TEST_20260623
+$env:PM2_HOME='E:\purpclaw_pm2_final_20260623'
+git clone https://github.com/weemadscotsman/purpclaw.git 'E:\god folder\02_ACTIVE_PROJECTS\PURPCLAW_ONELINER_FINAL_20260623'
+cd 'E:\god folder\02_ACTIVE_PROJECTS\PURPCLAW_ONELINER_FINAL_20260623'
+npm install -g pm2
 npm install
 npm run build
-node bin\purpclaw.js help
-node bin\purpclaw.js doctor
-node bin\purpclaw.js safe-start --core --force --stabilise=5000
+node bin\purpclaw.js safe-start --core
 ```
 
 ## Result
 
 - Fresh clone succeeded.
+- Clone head matched the published GitHub head: `15c5be7`.
+- `npm install -g pm2` succeeded.
 - `npm install` succeeded.
 - `npm run build` succeeded.
-- `node bin\purpclaw.js help` succeeded.
-- `node bin\purpclaw.js doctor` ran.
-- `safe-start --core --force` started 14/14 core services.
-- PM2 ownership check confirmed every core service had `pm_cwd` set to the fresh clone path.
+- `safe-start --core` started 14/14 core services.
+- PM2 ownership check confirmed every core service had `pm_cwd` set to the final fresh clone path.
+- Every started service was `online`.
+- Every started service had `restart_time: 0`.
+
+## First-Install PM2 Fix
+
+Clean first-boot testing exposed a real install issue: `safe-start --core` could fail before any PM2 daemon existed because the command tried to read PM2 state before waking the daemon.
+
+`lib/commands/safe-start.js` now runs `pm2 ping` before retrying PM2 state reads. This makes first-install boot deterministic instead of requiring the user to manually run `pm2 ping`.
 
 ## Core Services Started From Fresh Clone
 
@@ -46,6 +55,15 @@ node bin\purpclaw.js safe-start --core --force --stabilise=5000
 - `purpclaw-coordinator`
 - `purpclaw-harness`
 
+## Existing PM2 Caveat
+
+If a machine already has PURPCLAW services registered in the default PM2 home, a fresh clone can appear to "skip" service starts because PM2 is still pointing at the old working directory. For a true clean install smoke test, either:
+
+- use an isolated `PM2_HOME`, or
+- stop/delete old `purpclaw-*` PM2 services before booting the new clone.
+
+The final smoke used an isolated PM2 home to prove the GitHub checkout can install and boot on its own.
+
 ## Warnings / Follow-Ups
 
 - Public npm registry still reports `purpclaw@0.1.4`; GitHub is the canonical v0.2.0 install source until npm is republished.
@@ -57,5 +75,5 @@ node bin\purpclaw.js safe-start --core --force --stabilise=5000
 ## Tested One-Liner
 
 ```powershell
-git clone https://github.com/weemadscotsman/purpclaw.git; cd purpclaw; npm install -g pm2; npm install; npm run build; node bin\purpclaw.js safe-start --core
+$env:PM2_HOME='E:\purpclaw_pm2_final_20260623'; git clone https://github.com/weemadscotsman/purpclaw.git 'E:\god folder\02_ACTIVE_PROJECTS\PURPCLAW_ONELINER_FINAL_20260623'; cd 'E:\god folder\02_ACTIVE_PROJECTS\PURPCLAW_ONELINER_FINAL_20260623'; npm install -g pm2; npm install; npm run build; node bin\purpclaw.js safe-start --core
 ```
