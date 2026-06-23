@@ -13,7 +13,7 @@ PURPCLAW repository.
 
 - Export path: `E:\god folder\02_ACTIVE_PROJECTS\PURPCLAW_GITHUB_EXPORT_20260623`
 - Initial export commit: `3895b26 Initial PURPCLAW source export`
-- Current export head after fixes: `f2635d7 Fix frameworks page build`
+- Current export head after fixes: `9154290 Record publish validation`
 - Branch: `main`
 - Git pack size: `14.42 MiB`
 - Exported files: `3403`
@@ -47,28 +47,21 @@ be treated as exposed and rotated before publishing publicly.
 - `weemadscotsman/zamp` exists, public, admin access available through connector.
 - `weemadscotsman/purpclaw` exists, public, admin access available through connector.
 
-## Blocker
+## Remote Publish Result
 
 GitHub CLI (`gh`) is not installed on this machine, and the available GitHub
-connector does not expose repository delete/create operations. Remote deletion
-or full repository replacement is therefore blocked until one of these happens:
+connector does not expose repository delete/create operations.
 
-- install and authenticate `gh`, then run the publish flow from the export repo;
-- manually delete/recreate or empty the target GitHub repo;
-- provide another authenticated GitHub remote method.
+However, normal Git push authentication was available. The clean export was
+pushed to:
 
-## Recommended Next Command Path
+- `weemadscotsman/purpclaw` branch `main`
+- `weemadscotsman/purpclaw` branch `master`
 
-After confirming the target repo and installing/authenticating `gh`:
+The old `master` branch content was replaced with the clean export using an
+explicit `--force-with-lease` against the previously observed remote commit.
 
-```powershell
-cd "E:\god folder\02_ACTIVE_PROJECTS\PURPCLAW_GITHUB_EXPORT_20260623"
-git remote add origin https://github.com/weemadscotsman/purpclaw.git
-git push -u origin main --force-with-lease
-```
-
-Only use `--force-with-lease` after confirming the existing remote history can
-be replaced.
+Remote `main` and `master` now point at the same PURPCLAW source snapshot.
 
 ## Validation
 
