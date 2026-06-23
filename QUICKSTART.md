@@ -1,16 +1,17 @@
 # PURPCLAW — Quick Start
 
-**PURPCLAW** is a terminal-first AI operating system — 17 LLM providers, 110+ tools, 152 agent directories, a 7-layer memory architecture, and a self-improving training ratchet. One command to install. One command to boot.
+**PURPCLAW** is a terminal-first AI operating system — provider routing, agents, tools, memory, a 7-layer cognitive spine, and a self-improving training ratchet. One command to install. One command to boot.
 
 ---
 
 ## One-Line Install
 
-```bash
-npm install -g purpclaw
+```powershell
+git clone https://github.com/weemadscotsman/purpclaw.git; cd purpclaw; npm install -g pm2; npm install; npm run build; node bin\purpclaw.js safe-start --core
 ```
 
-That's it. Already published to npm as `purpclaw` v0.1.0.
+This GitHub path is the tested canonical install for v0.2.0. The npm registry
+package is older and should not be used until it is republished at v0.2.0 or newer.
 
 ---
 
@@ -23,7 +24,7 @@ purpclaw setup --wizard
 Walks through:
 1. **Pick your LLM provider** — Anthropic, OpenAI, DeepSeek, MiniMax, Kimi, Groq, OpenRouter, Ollama (local), Gemini, GitHub Models, Codex, Atomic Chat, or any OpenAI-compatible endpoint
 2. **Paste your API key** — stored locally in `~/.purpclaw/.env`
-3. **Boot the swarm** — PM2 starts core services, WebUI comes online at `:3000`
+3. **Boot the core** — PM2 starts core services, WebUI comes online at `127.0.0.1:3030`
 
 ---
 
@@ -31,8 +32,9 @@ Walks through:
 
 ```bash
 # Boot and shutdown
-purpclaw start              Boot the full 25-service stack
+purpclaw start              Boot the bounded default stack
 purpclaw safe-start         Boot one service at a time (Windows-safe)
+purpclaw safe-start --core  Boot the tested core baseline
 purpclaw safe-start --dark  Wake the cognitive cluster (memory, rules, modal, etc.)
 purpclaw stop               Shut down gracefully
 purpclaw status             Live dashboard
@@ -53,7 +55,7 @@ purpclaw training status      Check training buffer stats
 purpclaw ratchet run          Run Karpathy self-improvement cycle
 
 # Diagnostics
-purpclaw doctor               Health check (all 25 services)
+purpclaw doctor               Health check for registered services
 purpclaw heal                  Auto-recover from common failures
 purpclaw spaghetti audit       Code health scores
 purpclaw logs [service]        Stream service logs
@@ -114,8 +116,8 @@ Wake with `purpclaw safe-start --dark` or boot `cognitive_spine.py` directly:
 
 - **CLI**: `purpclaw` — the terminal front door
 - **TUI**: `purpclaw tui` — full-screen terminal UI with Mochi sprites, slash commands, streaming
-- **WebUI**: `http://localhost:3000` — Mission Control dashboard
-- **WebUI Mission**: `http://localhost:3000/mission` — Full MissionControl with 17 tabs
+- **WebUI**: `http://localhost:3030` — Mission Control dashboard
+- **WebUI Mission**: `http://localhost:3030/mission` — Mission Control cockpit
 
 ---
 
@@ -129,7 +131,7 @@ PURPCLAW/
   agent_tower.js           Agent spawning
   boot.js                  Unified boot sequence
   cognitive_spine.py       Single cognitive surface (memory+rules+modal+neuro+diagnostics+autodream)
-  ecosystem.config.js      PM2 service definitions (25 services)
+  ecosystem.config.js      PM2 service definitions
   lib/child-registry.js    Spawn tracker — no more cmd-window cascade
   lib/llm-provider.js      17-provider abstraction
   lib/training-buffer.js   Agent work → training data
@@ -157,9 +159,9 @@ See `docs/RECOVERY.md` for common failure patterns and fixes.
 
 **What's the minimum to run?**
 
-`npm install -g purpclaw` then `purpclaw ask "hello"` — the CLI auto-starts what it needs.
+Use the GitHub one-liner above, then run `node bin\purpclaw.js ask "hello"`.
 
-**Do I need all 25 services?**
+**Do I need every service?**
 
 No. 9 core services handle most workflows. The cognitive cluster is optional. The media services (vision, voice, yolo) need hardware.
 
@@ -177,4 +179,4 @@ Fixed. All spawns now go through `lib/child-registry.js` — zero `detached: tru
 
 ---
 
-*Built by Eddie Cannon (weemadscotsman). Ship date: 2026-06-06. v0.1.0.*
+*Built by Eddie Cannon (weemadscotsman). Current canonical GitHub release: v0.2.0.*

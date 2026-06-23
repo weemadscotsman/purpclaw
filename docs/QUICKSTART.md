@@ -1,6 +1,6 @@
 # PURPCLAW — Quick Start
 
-**PURPCLAW v0.2.0** is a terminal-first AI operating system — 7-8 LLM providers, 459 tools (82 real + 377 Hermes skill wrappers), 73 agents, a 7-layer memory architecture, a self-improving training ratchet, and a **pulse** self-heartbeat that lets the stack talk back without prompting. One command to install. One command to boot.
+**PURPCLAW v0.2.0** is a terminal-first AI operating system — provider routing, agents, tools, memory, a 7-layer cognitive spine, a self-improving training ratchet, and a **pulse** self-heartbeat that lets the stack talk back without prompting. One command to install. One command to boot.
 
 > Counts are live. Run `purpclaw chat` then ask "what is the stack status?" to see the truth.
 
@@ -8,11 +8,12 @@
 
 ## One-Line Install
 
-```bash
-npm install -g purpclaw
+```powershell
+git clone https://github.com/weemadscotsman/purpclaw.git; cd purpclaw; npm install -g pm2; npm install; npm run build; node bin\purpclaw.js safe-start --core
 ```
 
-That's it. Already published to npm as `purpclaw` v0.1.0.
+This GitHub path is the tested canonical install for v0.2.0. The npm registry
+package is older and should not be used until it is republished at v0.2.0 or newer.
 
 ---
 
@@ -33,8 +34,9 @@ Walks through:
 
 ```bash
 # Boot and shutdown
-purpclaw start              Boot the full 25-service stack
+purpclaw start              Boot the bounded default stack
 purpclaw safe-start         Boot one service at a time (Windows-safe)
+purpclaw safe-start --core  Boot the tested core baseline
 purpclaw safe-start --dark  Wake the cognitive cluster (memory, rules, modal, etc.)
 purpclaw stop               Shut down gracefully
 purpclaw status             Live dashboard
@@ -55,7 +57,7 @@ purpclaw training status      Check training buffer stats
 purpclaw ratchet run          Run Karpathy self-improvement cycle
 
 # Diagnostics
-purpclaw doctor               Health check (all 25 services)
+purpclaw doctor               Health check for registered services
 purpclaw heal                  Auto-recover from common failures
 purpclaw spaghetti audit       Code health scores
 purpclaw logs [service]        Stream service logs
@@ -131,7 +133,7 @@ PURPCLAW/
   agent_tower.js           Agent spawning
   boot.js                  Unified boot sequence
   cognitive_spine.py       Single cognitive surface (memory+rules+modal+neuro+diagnostics+autodream)
-  ecosystem.config.js      PM2 service definitions (25 services)
+  ecosystem.config.js      PM2 service definitions
   lib/child-registry.js    Spawn tracker — no more cmd-window cascade
   lib/llm-provider.js      17-provider abstraction
   lib/training-buffer.js   Agent work → training data
@@ -159,9 +161,9 @@ See `docs/RECOVERY.md` for common failure patterns and fixes.
 
 **What's the minimum to run?**
 
-`npm install -g purpclaw` then `purpclaw ask "hello"` — the CLI auto-starts what it needs.
+Use the GitHub one-liner above, then run `node bin\purpclaw.js ask "hello"`.
 
-**Do I need all 25 services?**
+**Do I need every service?**
 
 No. 9 core services handle most workflows. The cognitive cluster is optional. The media services (vision, voice, yolo) need hardware.
 
@@ -179,4 +181,4 @@ Fixed. All spawns now go through `lib/child-registry.js` — zero `detached: tru
 
 ---
 
-*Built by Eddie Cannon (weemadscotsman). Ship date: 2026-06-06. v0.1.0.*
+*Built by Eddie Cannon (weemadscotsman). Current canonical GitHub release: v0.2.0.*

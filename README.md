@@ -6,10 +6,12 @@ Run agents, tools, memory, models, voice, vision, and provider routing from your
 
 **Your box. Your data. Your AI.**
 
+```powershell
+git clone https://github.com/weemadscotsman/purpclaw.git; cd purpclaw; npm install -g pm2; npm install; npm run build; node bin\purpclaw.js safe-start --core
 ```
-npm install -g purpclaw
-purpclaw help
-```
+
+The npm registry package is not the canonical install source until `purpclaw`
+is published there at v0.2.0 or newer.
 
 [GitHub](https://github.com/weemadscotsman/purpclaw) · [Report an Issue](https://github.com/weemadscotsman/purpclaw/issues)
 
@@ -83,7 +85,10 @@ Every claim in this README is verifiable by running `purpclaw doctor`. If a numb
 ```
 git clone https://github.com/weemadscotsman/purpclaw.git
 cd purpclaw
+npm install -g pm2
 npm install
+npm run build
+node bin/purpclaw.js safe-start --core
 node bin/purpclaw.js doctor
 node bin/purpclaw.js help
 ```

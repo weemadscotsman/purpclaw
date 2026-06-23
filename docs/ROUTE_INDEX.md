@@ -27,6 +27,7 @@ This is the route map for the Next.js cockpit in `app/`.
 | `/providers` | `app/providers/page.tsx` | Provider UI |
 | `/settings` | `app/settings/page.tsx` | Settings UI |
 | `/skyscraper` | `app/skyscraper/page.tsx` | Skyscraper UI |
+| `/spine` | `app/spine/page.tsx` | Control-plane truth board for pipeline, proof ledger, and output vault |
 | `/swarm` | `app/swarm/page.tsx` | Swarm UI |
 | `/system-map` | `app/system-map/page.tsx` | Live system map and 3D stack |
 | `/ui` | `app/ui/route.ts` | UI route adapter |
@@ -82,9 +83,12 @@ Archived pages under `app/_archive/` are not active navigation targets.
 | `/api/omni/status` | GET | OMNI combined status |
 | `/api/omnicode/status` | GET | OmniCode bridge status adapter |
 | `/api/orchestrate` | GET, POST | Orchestration route, mutating POST is operator-gated |
+| `/api/output` | GET, POST | Output vault proxy for artifacts and approval/archive/register actions |
 | `/api/personality` | GET, POST | Personality settings, mutating POST is operator-gated |
+| `/api/pipeline` | GET, POST | Pipeline spine proxy for live health, jobs, and start/stop controls |
 | `/api/playwright` | GET, POST | Playwright route |
 | `/api/preprompt` | GET, POST | Preprompt read/write, mutating POST is operator-gated |
+| `/api/proof` | GET | Proof ledger proxy for evidence rows and truth stats |
 | `/api/providers` | GET, POST | Provider list/config |
 | `/api/registry` | GET | Registry view |
 | `/api/research/group` | GET, POST | Group research route |

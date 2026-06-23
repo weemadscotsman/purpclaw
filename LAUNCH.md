@@ -3,13 +3,13 @@
 
 ## X Post (Release)
 ```
-PurpClaw v0.1.0 is live.
+PurpClaw v0.2.0 is live on GitHub.
 
 54 tools. 17 providers. 152 agents. MCP native. Self-improving.
 
 Terminal-first AI operating system.
 
-npm install -g purpclaw
+git clone https://github.com/weemadscotsman/purpclaw.git; cd purpclaw; npm install -g pm2; npm install; npm run build; node bin\purpclaw.js safe-start --core
 github.com/weemadscotsman/purpclaw
 ```
 
@@ -28,7 +28,7 @@ github.com/weemadscotsman/purpclaw
 
 ## LinkedIn (Partner-friendly)
 ```
-We shipped PurpClaw v0.1.0 – an open-source, terminal-first AI agent system.
+We shipped PurpClaw v0.2.0 – an open-source, terminal-first AI agent system.
 
 Capabilities:
 - 17 LLM providers (OpenAI, Anthropic, Gemini, Ollama, GitHub Models, etc.)
