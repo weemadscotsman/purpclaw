@@ -256,6 +256,30 @@ function validateChange(change) {
 
   console.log(`[GATEKEEPER] Result: ${report.riskLevel} risk, ${report.issues.length} issues, merge: ${report.canMerge}`);
 
+  // ── Pipeline spine: every gate decision is a job + proof row, visible on the
+  // board. PASS → green/complete. BLOCK → purple/quarantined with the exact
+  // blocking reason. No mutation passes the bouncer without leaving evidence. ──
+  try {
+    const reg = require('./lib/pipeline-registry');
+    const rl = String(report.riskLevel || 'low').toLowerCase();
+    const risk = rl.includes('crit') ? 'critical' : rl.includes('high') ? 'high' : rl.includes('med') ? 'medium' : 'low';
+    const blocked = report.canMerge === false;
+    const job = reg.start({
+      pipeline: 'gate.review', project: 'PURPCLAW', lane: 'BASI Watchdog', trigger: 'gatekeeper', risk,
+      inputs: { change: String(change.message || change.id || 'change').slice(0, 160), files: (change.files || []).length },
+    });
+    if (job && job.job_id) {
+      // The verdict IS the output (a gate produces a decision, not a file) — record
+      // it so a clean pass classifies green, not a false black-hole.
+      reg.output(job.job_id, `verdict:${blocked ? 'BLOCK' : 'PASS'} risk=${report.riskLevel} issues=${report.issues.length}`, { kind: 'gate-verdict' });
+      reg.finish(job.job_id, {
+        status: blocked ? 'quarantined' : 'complete',
+        claim: blocked ? `BLOCKED: ${report.blockedReason}` : `gate passed (${report.riskLevel} risk, ${report.issues.length} issues)`,
+        proof: { ran: 'gatekeeper.validateChange', result: blocked ? 'fail' : 'pass', detail: blocked ? String(report.blockedReason || 'blocked') : `${report.issues.length} issues @ ${report.riskLevel}` },
+      });
+    }
+  } catch (_) { /* spine optional */ }
+
   return report;
 }
 

@@ -44,6 +44,15 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
+# Windows console is cp1252 by default — printing Unicode (→, emoji) raises
+# UnicodeEncodeError and crashed training with exit 1. Force UTF-8 on the
+# streams so any unicode in logs/training output is safe. (2026-06-23)
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 TRAIN_DIR  = Path(os.environ.get("PURPCLAW_TRAINING_DIR", "E:/training"))
 RAW_DIR    = TRAIN_DIR / "raw"
 ADAPTERS   = TRAIN_DIR / "adapters"

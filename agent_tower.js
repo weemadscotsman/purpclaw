@@ -41,11 +41,11 @@ const DIVISIONS = {
   INTELLIGENCE: { id: 'intel', color: '#E74C3C', tier: 3, agents: ['spider', 'raven', 'ghost'] },
   ENGINEERING: { id: 'eng', color: '#3498DB', tier: 1, agents: ['dragon', 'robot', 'mushroom', 'chonk', 'turtle', 'axolotl', 'wolf', 'bee'] },
   SECURITY: { id: 'sec', color: '#27AE60', tier: 2, agents: ['octopus', 'owl', 'rabbit', 'snake', 'bunny', 'guardian'] },
-  INFRASTRUCTURE: { id: 'infra', color: '#F39C12', tier: 1, agents: ['cactus', 'void', 'raven'] },
+  INFRASTRUCTURE: { id: 'infra', color: '#F39C12', tier: 1, agents: ['cactus', 'void'] },
   MEDIA_OPS: { id: 'media', color: '#9B59B6', tier: 2, agents: ['duck', 'goose', 'parrot'] },
   MANAGEMENT: { id: 'mgmt', color: '#1ABC9C', tier: 3, agents: ['penguin', 'karen', 'lemur'] },
-  SCIENCE: { id: 'science', color: '#00BCD4', tier: 2, agents: ['scientist', 'axolotl'] },
-  CREATIVE: { id: 'creative', color: '#E91E63', tier: 2, agents: ['phoenix', 'parrot', 'crow'] },
+  SCIENCE: { id: 'science', color: '#00BCD4', tier: 2, agents: ['scientist'] },
+  CREATIVE: { id: 'creative', color: '#E91E63', tier: 2, agents: ['phoenix', 'crow'] },
   OPERATIONS: { id: 'ops', color: '#FF5722', tier: 2, agents: ['mantis', 'shark', 'gorilla'] }
 };
 
