@@ -15,6 +15,7 @@ This is the route map for the Next.js cockpit in `app/`.
 | `/cockpit` | `app/cockpit/page.tsx` | Cockpit view |
 | `/dash` | `app/dash/page.tsx` | Dashboard view |
 | `/evolution` | `app/evolution/page.tsx` | Self-evolution controls |
+| `/frameworks` | `app/frameworks/page.tsx` | AI agent framework landscape and pattern atlas |
 | `/inline` | `app/inline/page.tsx` | Inline UI |
 | `/memory` | `app/memory/page.tsx` | Memory recall and weave UI |
 | `/mission` | `app/mission/page.tsx` | Main Mission Control cockpit |
