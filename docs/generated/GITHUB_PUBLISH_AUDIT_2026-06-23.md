@@ -12,7 +12,8 @@ PURPCLAW repository.
 ## Export Candidate
 
 - Export path: `E:\god folder\02_ACTIVE_PROJECTS\PURPCLAW_GITHUB_EXPORT_20260623`
-- Export commit: `3895b26 Initial PURPCLAW source export`
+- Initial export commit: `3895b26 Initial PURPCLAW source export`
+- Current export head after fixes: `f2635d7 Fix frameworks page build`
 - Branch: `main`
 - Git pack size: `14.42 MiB`
 - Exported files: `3403`
@@ -68,3 +69,9 @@ git push -u origin main --force-with-lease
 
 Only use `--force-with-lease` after confirming the existing remote history can
 be replaced.
+
+## Validation
+
+- `npm run docs:check` passed: 73 API routes, 21 page routes, 26 registry services.
+- `npm run build` passed.
+- Remaining build warning: `lib/system-manifest.js` uses dynamic require through `app/api/registry/route.ts`.
