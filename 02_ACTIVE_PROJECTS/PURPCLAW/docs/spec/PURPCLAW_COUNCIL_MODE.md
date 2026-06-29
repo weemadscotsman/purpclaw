@@ -100,14 +100,97 @@ The conversation is part of the algorithm. The decision packet is the artifact, 
 - Podcast Studio may remain as the visual/running substrate, but governance sessions must be named Council sessions.
 - UI changes must obey the PURPCLAW UI consolidation freeze before touching pages, components, themes, or routes.
 
-## First Runtime Step
+## Runtime Step 1
 
-Add `purpclaw council "<question>" --json` as a wrapper that:
+`purpclaw council "<question>" --json` is the first callable Council layer. It is terminal-first and read-only:
 
 - reads `purpclaw weather --json`
 - reads `purpclaw next --json`
-- appends a council session to `podcast_studio/shared_log.json`
+- reads git status as external stimulus
+- reads recent `podcast_studio/shared_log.json` / episode memory as callback context
 - returns a decision packet without executing Hermes by default
+- does not run TTS
+- does not publish to Telegram
+- does not touch the dashboard
+- does not write Studio memory yet
+
+This keeps the first runtime slice boring and reliable while preserving the Studio as the later voice/dashboard interface.
+
+## Dynamic Summons
+
+Council Mode is not a fixed cast. It is a committee summons:
+
+1. Oracle receives the question.
+2. The summons layer classifies the meeting type.
+3. A chair is selected from the domain, not always Oracle.
+4. Relevant seats are invited from `registry/council-profiles.json`.
+5. Subscribed specialists may interrupt when their trigger appears.
+6. The meeting produces a decision, actions, and a next command.
+7. The meeting dissolves.
+
+Example chair rules:
+
+- Engineering: Hermes chairs.
+- Funding: Finance chairs.
+- Creative: Lore chairs.
+- Security incident: Smith chairs.
+- Operations/weather: Weatherman chairs.
+- Game development: Game Director chairs.
+- Oracle observes and escalates only when ownership is unclear or consensus fails.
+
+The point is not eighty agents talking. It is eighty agents available, five to eight summoned, then back to work.
+
+## Agent Profiles
+
+Every Council-capable agent should have a profile:
+
+```json
+{
+  "id": "hermes",
+  "skills": ["architecture", "coding", "debugging", "systems"],
+  "personality": {
+    "humour": 40,
+    "confidence": 90,
+    "curiosity": 80,
+    "patience": 95
+  },
+  "attendance": ["engineering", "architecture", "incident"],
+  "subscriptions": ["architecture", "provider", "runtime"],
+  "relationships": {
+    "goose": "friendly_rivalry",
+    "smith": "professional_respect",
+    "oracle": "reports_to"
+  }
+}
+```
+
+The current registry is `registry/council-profiles.json`.
+
+## Interrupts
+
+Meetings are alive. Attendance can change when a trigger appears:
+
+- Weatherman can enter on provider latency, build health, drift, or incident.
+- Finance can enter on spend, budget, subscription, grant, or pricing.
+- Smith can enter on risk, security, failure, or edge cases.
+- Memory can enter when a prior decision or repeated argument matters.
+- Goose can enter when the meeting is getting too ceremonial. This is not always productive, but it is often useful.
+
+## Drift Prevention
+
+Long Council sessions must not become closed loops. The Council should periodically receive external stimuli:
+
+- git diff/status
+- bug reports
+- user feature requests
+- build telemetry
+- provider outages
+- latest commit
+- Weatherman report
+- SpendGate report
+- selected external discussion only when explicitly requested
+
+The goal is ambient cognition with fresh evidence, not a self-reinforcing room.
 
 ## Registered Workflows
 

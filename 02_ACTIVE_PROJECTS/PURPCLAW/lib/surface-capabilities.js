@@ -148,7 +148,7 @@ const CAPABILITIES = [
     reason: 'Promote podcast_studio from an entertainment loop into a read-only reasoning chamber pattern: Oracle chairs, Weatherman reports, specialists debate, Smith attacks, Neo verifies, Memory records, and Hermes executes approved plans.',
     category: 'execute',
     setup: ['podcast_studio shared log', 'workflow registry', 'Oracle and Weatherman reports'],
-    cli: ['purpclaw workflow runtime.council', 'purpclaw action podcast-studio "decision topic" --dry-run'],
+    cli: ['purpclaw council "Should we consolidate the UI?"', 'purpclaw council "Should we consolidate the UI?" --json', 'purpclaw workflow runtime.council'],
     tui: ['dashboard Actions tab'],
     web: { route: '/mission', mode: 'Council', api: '/api/action?capability=podcast-studio' },
   },

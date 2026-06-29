@@ -9,6 +9,10 @@ The first BMad-organ transplant is implemented as a read-only Oracle next-step/w
 
 Podcast Studio has been treated as a real subsystem, not a toy. Its agent config now includes permanent worldview fields so Goose/Hermes/OpenClaude disagree from stable values rather than one-off scripted banter. The LLM prompt path, turn manager context, Telegram runner, and Python fallback runner now feed those worldviews into conversation.
 
+`purpclaw council "<question>"` now exists as the first terminal-first Council runtime slice. It is read-only and does not launch TTS, Telegram, dashboard, or Studio processes. It composes Weatherman, workflow/next-step state, git status, and recent Studio memory into a Council session with Oracle, Weatherman, Hermes, Goose, OpenClaude, Smith, Neo, and a decision/next command.
+
+Council is now dynamic rather than fixed-cast. `registry/council-profiles.json` defines meeting types, chairs, skills, attendance tags, subscriptions, personalities, relationships, interrupt priorities, and default lines. `purpclaw council` classifies the question, selects a domain chair, summons 5-8 relevant seats, allows subscribed interrupts, emits actions, and dissolves the meeting.
+
 PURPCLAW now has a canonical generated agent registry at `agents/AGENT_REGISTRY.json`, with a human index at `agents/AGENTS_INDEX.md`. The live distinct roster is 85 agents:
 
 - 41 persona agents from `agents/*.md`
@@ -77,6 +81,26 @@ Runtime consumers now use `lib/agent-registry.js` instead of directly assuming `
 - Updated `podcast_studio/run_episode.py` with matching worldview fields and prompt guidance.
 - Updated `podcast_studio/README.md` with worldview/Council Mode semantics.
 - Removed hardcoded Podcast Studio MiniMax and Telegram secrets from the active Studio JS/Python paths; they now read from environment variables.
+- Added `lib/commands/council.js` for `purpclaw council "<question>" [--json]`.
+- Wired `bin/purpclaw.js` with `council` and `decide` dispatch plus help entry.
+- Updated `lib/surface-capabilities.js` so `council-mode` points at the real terminal command.
+- Updated `docs/spec/PURPCLAW_COUNCIL_MODE.md` to mark Runtime Step 1 as callable and document drift-prevention stimuli.
+- Added `registry/council-profiles.json` with 20 Council-capable profiles and meeting types:
+  - engineering chaired by Hermes
+  - funding chaired by Finance
+  - creative chaired by Lore
+  - security chaired by Smith
+  - operations chaired by Weatherman
+  - game chaired by Game Director
+- Updated `lib/commands/council.js` so attendance is query-like instead of fixed:
+  - classify question tags
+  - pick workflow
+  - classify meeting type
+  - select chair
+  - invite default and scored specialists
+  - allow interrupts from subscribed specialists
+  - keep meetings bounded to the configured attendee cap
+  - emit per-agent actions
 
 ## Decisions
 - Do not collapse persona agents and swarm agents into one runtime format yet. They serve different roles: persona prompts are dispatchable specialist behavior, while swarm profiles are the animal workforce metadata.
@@ -86,12 +110,15 @@ Runtime consumers now use `lib/agent-registry.js` instead of directly assuming `
 - The source sweep records docs, translations, vendor/archive, and runtime output as audit evidence, but only runtime/persona/profile/tower/routing/division sources contribute to the 85-agent roster.
 - `node_modules`, `.git`, and `.next` are skipped by the source sweep to avoid dependency/generated noise and pathological scan cost.
 - The workflow registry is a planning catalog, not the active orchestrator workflow ledger. Keep `purpclaw workflow` singular for catalog lookups and `purpclaw workflows` plural for active/recent live workflows.
-- Council Mode is documented and surfaced as a capability, but the real `purpclaw council` runner is not implemented yet. For now it points at the existing Podcast Studio action path and workflow catalog entry.
+- Council Mode is documented, surfaced as a capability, and callable through the terminal-first `purpclaw council` runner. It is not yet wired to Studio TTS/Telegram/dashboard.
 - The next-step engine is intentionally read-only. It recommends commands but does not execute Hermes, mutate artifacts, or write decisions.
 - Keep the product vibe as Podcast Studio, but treat its governance use internally as Council Chamber/Council Mode. Do not rename the visible studio unless the UI/product layer explicitly asks for it.
 - Podcast Studio visible identity should remain intact. Council Chamber is the internal governance model; the same runtime can host funny personality episodes or decision episodes depending on topic.
 - Functional banter is part of the reasoning engine when it exposes a worldview, critiques a blind spot, or forces another agent to justify itself. Do not strip personality out while making Council Mode more useful.
 - Studio runtime credentials are now expected via `MINIMAX_API_KEY`, optional `MINIMAX_MODEL`, `PODCAST_TELEGRAM_BOT_TOKEN` or `TELEGRAM_BOT_TOKEN`, and `PODCAST_TELEGRAM_CHAT_ID` or `TELEGRAM_CHAT_ID`.
+- The first Council runner intentionally injects external stimuli to prevent echo-chamber drift: Weatherman, workflow next-step state, git status, and Studio memory.
+- Oracle is no longer always the meeting chair. Oracle observes/escalates unless the meeting has no better domain chair.
+- Goose may interrupt architecture/ceremony meetings, but the command keeps attendance bounded by replacing the weakest nonessential attendee when full.
 
 ## Validation
 - `node --check scripts\sync-agents.js`
@@ -143,6 +170,34 @@ Runtime consumers now use `lib/agent-registry.js` instead of directly assuming `
   - passed; 22 capabilities checked, validation ok
 - `node bin\purpclaw.js help | Select-String -Pattern "purpclaw next|purpclaw workflow"`
   - passed; both help entries are visible
+- `node --check lib\commands\council.js`
+- `node --check bin\purpclaw.js`
+- `node --check lib\surface-capabilities.js`
+- `node bin\purpclaw.js council "Should we consolidate the UI?" --json`
+  - passed; returns schema `purpclaw.council-session.v1`
+  - routes UI questions to `council.ui-consolidation`
+  - returns next command `purpclaw workflow council.ui-consolidation`
+  - reports `execution.tts=false`, `execution.telegram=false`, `execution.dashboard=false`, `execution.writes_memory=false`
+- `node bin\purpclaw.js council "Should Oracle become the default router?"`
+  - passed; prints terminal Council turns and decision
+- `node bin\purpclaw.js capabilities --verify --json`
+  - passed after Council command metadata update
+- `node bin\purpclaw.js help | Select-String -Pattern "purpclaw council"`
+  - passed
+- `node -e "const p=require('./registry/council-profiles.json'); console.log(p.schema); console.log(p.profiles.length); console.log(Object.keys(p.meeting_types).join(','));"`
+  - schema `purpclaw.council-profiles.v1`
+  - 20 profiles
+  - meeting types: engineering, funding, creative, security, operations, game
+- `node bin\purpclaw.js council "Should we rewrite the provider router?" --json`
+  - passed; meeting `engineering`, chair `hermes`, 8 attendees: hermes, oracle, smith, weatherman, architect, neo, memory, goose
+- `node bin\purpclaw.js council "Should we apply for grant funding?" --json`
+  - passed; meeting `funding`, chair `finance`, 7 attendees: finance, oracle, analytics, grant-writer, brand, marketing, memory
+- `node bin\purpclaw.js council "The game needs better audio and QA" --json`
+  - passed; meeting `game`, chair `game-director`, 8 attendees: game-director, oracle, art, audio, engine, qa, lore, memory
+- `node bin\purpclaw.js council "Provider latency doubled" --json`
+  - passed; meeting `operations`, chair `weatherman`, 8 attendees
+- `node -e "JSON.parse(require('fs').readFileSync('registry/council-profiles.json','utf8')); console.log('council-profiles-ok')"`
+  - passed
 - `node --check podcast_studio\config.js`
 - `node --check podcast_studio\llm_service.js`
 - `node --check podcast_studio\podcast_runner.js`
@@ -162,8 +217,9 @@ Runtime consumers now use `lib/agent-registry.js` instead of directly assuming `
 - If implementing the Oracle + Weatherman workflow, start with phase-aware Oracle output fields and read-only workflow artifact checks. Do not make Oracle or Weatherman mutate files.
 - Wire `purpclaw next` into `lib/oracle.js` report output as the phase/current-work recommendation.
 - Add git status, latest test evidence, and truth snapshot checks to `artifactState()`.
-- Implement `purpclaw council "<question>" --json` as a read-only Podcast Studio/Council wrapper that consumes weather + next-step evidence and emits a decision packet.
-- Before implementing the Council runner, preserve the Studio's existing media pipeline. Council Mode should change subject matter and output artifacts, not replace Podcast Studio.
+- Next Council step: optionally add `--write-memory` to append a Council session artifact to Studio memory. Keep default read-only.
+- Later Council step: bridge the Council decision topic into the existing Podcast Studio TTS/Telegram pipeline without replacing it.
+- Future Council hardening: learn subscriptions and relationships from the canonical 85-agent registry instead of keeping all profile metadata manually curated.
 - Rotate any real MiniMax or Telegram credentials that were previously present in Studio files before using the public or shared repo.
 - Implement export packs only after canonical planning artifact paths are settled.
 - For JS/Python cleanup, next step is a dependency-aware root-file quarantine pass. Do not blindly delete root service files; many are active runtime entrypoints.

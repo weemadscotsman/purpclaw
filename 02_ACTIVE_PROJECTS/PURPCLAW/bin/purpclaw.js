@@ -3859,6 +3859,7 @@ function cmdHelp() {
     ['purpclaw tui',                   '🎛  LIVE cockpit — full-screen TUI dashboard'],
     ['purpclaw next',                  'Oracle next-step engine: phase, missing artifacts, next command'],
     ['purpclaw workflow',              'List planning workflow registry entries'],
+    ['purpclaw council "<question>"',  'Terminal-first Council decision session'],
     ['purpclaw run "<task>"',          'Dispatch + stream agent progress live'],
     ['purpclaw bg "<task>"',           'Background dispatch — fire and forget'],
     ['purpclaw code status',           'Repo/GitHub tools: status, diff, issues, PRs, checks'],
@@ -4341,6 +4342,8 @@ case 'registry': return cmdRegistry(args);
     case 'next':
     case 'helpme':     return loadCmd('next').run(args, sharedCtx());
     case 'workflow':   return loadCmd('workflow').run(args, sharedCtx());
+    case 'council':
+    case 'decide':     return loadCmd('council').run(args, sharedCtx());
     case 'drift':      return loadCmd('drift').run(args, sharedCtx());
     // ── Crew: named agents, one model each (analyst/writer/marketer/coder) ──
     case 'crew':     return loadCmd('crew').run(args, sharedCtx());
