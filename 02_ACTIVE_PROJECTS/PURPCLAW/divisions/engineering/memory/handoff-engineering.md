@@ -1,6 +1,24 @@
 # Engineering Handoff
 
 ## State
+Soul/Studio organisation layer inspection completed on 2026-06-29. The new work is a real canonical subsystem, not a loose prototype:
+
+- `registry/souls.json` is the identity source of truth: `purpclaw.souls.v2`, version `0.3.0`, 95 souls.
+- `registry/soul-interviews.json` matches it with 95 interviews.
+- Studio modes are registry-backed behavioral environments. Runtime now exposes 11 modes after promoting `after_hours` into `registry/studio-modes.json`.
+- Council vote history, reputation, and leaderboard are callable through the CLI.
+- Dynamic council summons remain wired through `purpclaw council`.
+- `registry/timeline.json` and `lib/timeline.js` now provide the first organisational timeline layer.
+- `registry/presence.json` and `lib/presence.js` now provide the first spatial/presence layer.
+- `registry/residue.json` and `lib/residue.js` now provide the first durable artifact/residue layer.
+- `registry/donor-artifacts.json` and `lib/donor-archaeology.js` now provide the first donor/provenance layer for harvested behavioural laws.
+- Donor Archaeology now feeds harvested behavioural laws into the existing Auto-Evolve mutator path instead of creating a second evolution engine.
+- Donor Archaeology now enforces a candidate-to-integrated gate: `behavioural_law`, `integrated_into`, `rejected_mechanics`, validation note, and Timeline event are required.
+- The existing auto-research entrypoint is `lib/commands/autoresearch.js`, which delegates to `E:/training/lib/autoresearch-orchestrator.js`; root CLI aliases are now `purpclaw autoresearch` and `purpclaw auto-research`.
+- Full folder/integration audit completed on 2026-06-29. Artifact: `docs/audit/FOLDER_INTEGRATION_AUDIT_2026-06-29.md`.
+- Current audit verdict: PURPCLAW is not missing systems; the remaining problem is integration truth. Main disconnects are CLI command routing, project phase detection, API/CLI/service crosswalks, root entrypoint classification, quarantine boundaries, and Timeline/Weatherman/Auto-Evolve event integration.
+- Inspection artifact: `docs/audit/SOUL_STUDIO_INSPECTION_2026-06-29.md`.
+
 Batch 1 registry truth reconciliation is implemented for agents. The Oracle + Weatherman operating workflow has also been captured as an architecture spec at `docs/spec/ORACLE_WEATHERMAN_WORKFLOW.md`.
 
 JS/Python source syntax was audited on 2026-06-29. Final result: 485 JavaScript files and 164 Python files checked in owned source scope, with zero syntax failures after two narrow fixes. Audit artifact: `docs/audit/JS_PY_SOURCE_AUDIT_2026-06-29.md`.
@@ -23,6 +41,85 @@ PURPCLAW now has a canonical generated agent registry at `agents/AGENT_REGISTRY.
 Runtime consumers now use `lib/agent-registry.js` instead of directly assuming `agent_profiles.json` is the whole roster.
 
 ## Progress
+- Fixed `purpclaw council` vote subcommand routing so `leaderboard`, `history`, `vote`, `reputation`, `rep`, and `tally` dispatch to `lib/council-vote-engine.js` instead of falling through to decision council mode.
+- Added soul inspection surfaces to `purpclaw souls`:
+  - `purpclaw souls --json`
+  - `purpclaw souls --detail`
+  - `purpclaw souls matrix`
+  - `purpclaw souls summon "<problem>" --json`
+- Added `after_hours` to `registry/studio-modes.json` so file truth matches the mode already injected by `lib/studio.js`.
+- Added `docs/audit/SOUL_STUDIO_INSPECTION_2026-06-29.md`.
+- Added `registry/timeline.json` as the persistent organisational event ledger.
+- Added `lib/timeline.js` with event recording, recent-event views, pattern tracking, and tradition-candidate detection.
+- Added `purpclaw timeline` CLI:
+  - `purpclaw timeline`
+  - `purpclaw timeline recent [n]`
+  - `purpclaw timeline patterns`
+  - `purpclaw timeline backfill --dry-run`
+  - `purpclaw timeline backfill --write`
+  - `purpclaw timeline add "<event>"`
+  - `purpclaw timeline --json`
+- Wired timeline events into:
+  - Studio session start
+  - Studio session end
+  - Director incident injection
+  - council vote casting
+- Seeded the origin event: `Soul interview protocol established: Solid Crew to 21 Seconds to 21 Questions to the Soul Registry`.
+- Added idempotent timeline backfill from existing council votes and Studio session logs.
+- Ran timeline backfill:
+  - first dry-run: 24 candidates, 21 add, 3 skip
+  - write: added 21 historical events
+  - second dry-run: 24 candidates, 0 add, 24 skip
+  - final timeline: 34 events, 14 observed patterns
+- Added `registry/presence.json` with six initial rooms:
+  - Council Chamber
+  - Tea Room
+  - Studio
+  - Archive
+  - War Room
+  - Roof
+- Added `lib/presence.js`, which derives room state from Timeline and Studio world state:
+  - current occupants
+  - recent visitors
+  - atmosphere
+  - objects
+  - traditions
+  - recent events
+- Added `purpclaw presence`, plus aliases `purpclaw rooms` and `purpclaw spaces`.
+- Persisted a derived presence snapshot with `purpclaw presence --write`.
+- Added `registry/residue.json` as the durable artifact layer.
+- Added `lib/residue.js`, deriving artifacts from Timeline, Presence, Studio world state, and Studio session conversations.
+- Added `purpclaw residue`, plus alias `purpclaw artifacts`.
+- Persisted a derived residue snapshot with `purpclaw residue --write`.
+- Initial residue observed:
+  - Tea Room: duck concern tradition, ambient trace, Hermes coffee mug, Goose tea bag, Memory reference marker, Phoenix burn mark, Smith risk note, Hermes open notebook.
+  - Council Chamber: vote notes and provider outage notes.
+  - Studio: build failure marker and provider outage note.
+- Added `registry/donor-artifacts.json` as the donor/provenance registry.
+- Added `lib/donor-archaeology.js`, which records harvested behavioural laws, provenance, rejected mechanics, and integration rationale.
+- Added `purpclaw donor`, with aliases `purpclaw donors`, `purpclaw archaeology`, and `purpclaw loot`.
+- Added heist/calling-card reports:
+  - `purpclaw donor heist <artifact_id>`
+  - `purpclaw donor yoink <artifact_id>`
+- Added donor-to-Auto-Evolve feed:
+  - `purpclaw donor evolve <artifact_id>`
+  - `purpclaw donor feed <artifact_id>`
+- Added donor integration gate:
+  - `purpclaw donor integrate <artifact_id> validation:"..."`
+  - `purpclaw donor promote <artifact_id> validation:"..."`
+  - blocks promotion unless behavioural law, destination, rejected mechanics, validation note, and timeline provenance are present.
+- Added `queueExternalProposal()` to `lib/evolution/mutator.js` so external discovery systems can append governed proposals to `agent_work/evolution/proposed.jsonl`.
+- Queued `ambient_tension_from_environment` into Auto-Evolve as proposal `mut_mqzfx4n6_byc9q4`.
+- Repaired root CLI routing for:
+  - `purpclaw evolve`
+  - `purpclaw autoresearch`
+  - `purpclaw auto-research`
+- Added `docs/audit/FOLDER_INTEGRATION_AUDIT_2026-06-29.md` with a folder-by-folder map, confirmed disconnects, and a six-batch repair plan.
+- Seeded donor artifacts:
+  - Token Wars: competitive conversation with explicit victory conditions.
+  - MLM Hero: environmental tension.
+  - Token Wars: relationship-driven interruptions.
+- Created first heist report from `ambient_tension_from_environment`; it records Scout, Goose, Hermes, Memory, calling card text, rejected mechanics, duck observation, and a Timeline event.
 - Replaced `scripts/sync-agents.js` with a canonical generator that scans:
   - `agents/*.md`
   - `agent_profiles.json`
@@ -103,6 +200,18 @@ Runtime consumers now use `lib/agent-registry.js` instead of directly assuming `
   - emit per-agent actions
 
 ## Decisions
+- Do not create `registry/agent-souls.json` or any parallel identity registry. Extend `registry/souls.json`, `registry/soul-interviews.json`, and their readers.
+- The next useful layer is not more agents. It is persistence and ecology: timeline, shared spaces, world-generated incidents, and relationship/reputation mutation after meetings.
+- The timeline is the ledger, not the reasoning engine. It records and detects repeated behavior; future agents should interpret patterns rather than hardcoding mythology.
+- Presence is a projection of institutional residue, not a chat transcript. Empty rooms should still expose recent visitors, atmosphere, objects, traditions, and recent events.
+- Residue records what remains after interaction. Do not script agent behavior; encode possible artifact classes and let repeated events strengthen them into traditions.
+- Donor Archaeology harvests behavioural laws, not code. Never import a feature until the underlying behavioural law is identified and provenance is recorded.
+- Donor discoveries are a feed into Auto-Evolve governance. They should produce low/medium/high risk proposals and wait for `purpclaw evolve approve <id>` or rejection; do not apply donor ideas directly from scouting.
+- Heist/loot/yoink language is a CLI personality wrapper only. The serious state transition is Donor Archaeology promotion, and it must pass the integration gate.
+- AutoResearch is already present and separate: it optimizes the local training loop under `E:/training`. Do not rebuild it. If donor scouting needs model/experiment research, feed hypotheses into that entrypoint deliberately.
+- Do not move folders yet. First create ownership/crosswalk registries, then move or quarantine only files proven inactive by those registries.
+- `purpclaw next` currently under-detects the repo maturity and reports Discovery because brief/PRD artifacts are missing. Fix workflow artifact detection before trusting it as project state.
+- `registry audit` is clean by current rules but exposes a naming translation gap between PM2 service names, capability keys, surface capability IDs, API routes, and CLI commands. Add a crosswalk instead of forcing all systems to share one key format.
 - Do not collapse persona agents and swarm agents into one runtime format yet. They serve different roles: persona prompts are dispatchable specialist behavior, while swarm profiles are the animal workforce metadata.
 - The canonical registry dedupes by lowercase key/name and preserves all contributing sources in `sources` plus duplicate source types in `also`.
 - `agent_profiles.json` remains a swarm input, not the complete roster.
@@ -121,6 +230,97 @@ Runtime consumers now use `lib/agent-registry.js` instead of directly assuming `
 - Goose may interrupt architecture/ceremony meetings, but the command keeps attendance bounded by replacing the weakest nonessential attendee when full.
 
 ## Validation
+- `node --check bin\purpclaw.js`
+- `node --check lib\soul-registry.js`
+- `node --check lib\soul-interview.js`
+- `node --check lib\council-vote-engine.js`
+- `node --check lib\studio.js`
+- `node --check lib\timeline.js`
+- `node --check lib\presence.js`
+- `node --check lib\residue.js`
+- `node --check lib\donor-archaeology.js`
+- `node --check lib\commands\autoresearch.js`
+- `node --check lib\evolution\mutator.js`
+- Temp-file `Timeline` pattern test:
+  - 3 repeated events
+  - pattern count 3
+  - tradition candidate true
+  - confidence 42
+- `node bin\purpclaw.js timeline --json`
+  - returned schema `purpclaw.timeline.v1`, 1 event after seed.
+- `node bin\purpclaw.js timeline recent 5`
+- `node bin\purpclaw.js timeline patterns`
+- `node bin\purpclaw.js timeline backfill --dry-run`
+- `node bin\purpclaw.js timeline backfill --write`
+- `node bin\purpclaw.js timeline backfill --dry-run`
+  - idempotent after write: 0 add, 24 skip.
+- `node bin\purpclaw.js timeline --json`
+  - returned 34 events and 14 observed patterns after backfill.
+- `node -e "JSON.parse(require('fs').readFileSync('registry/presence.json','utf8')); console.log('presence-json-ok')"`
+- `node bin\purpclaw.js presence tea_room`
+  - Tea Room showed empty occupancy, recent visitors `hermes, goose, maverick, smith, memory, phoenix, neo`, crisis residue, objects, traditions, and recent after-hours events.
+- `node bin\purpclaw.js presence --json`
+  - returned schema `purpclaw.presence.snapshot.v1`, 6 rooms.
+- `node bin\purpclaw.js presence --write`
+- `node -e "JSON.parse(require('fs').readFileSync('registry/residue.json','utf8')); console.log('residue-json-ok')"`
+- `node bin\purpclaw.js residue tea_room`
+  - Tea Room showed 8 artifacts, including `duck concern in the room` as a tradition candidate.
+- `node bin\purpclaw.js residue --json`
+  - returned schema `purpclaw.residue.snapshot.v1`.
+- `node bin\purpclaw.js residue --write`
+- `node -e "JSON.parse(require('fs').readFileSync('registry/donor-artifacts.json','utf8')); console.log('donor-json-ok')"`
+- `node bin\purpclaw.js donor`
+  - returned 3 donor artifacts and doctrine text.
+- `node bin\purpclaw.js donor report "MLM Hero"`
+  - returned environmental tension as recovered/candidate and rejected MLM-specific mechanics.
+- `node bin\purpclaw.js donor --json`
+  - returned schema `purpclaw.donor-artifacts.v1`.
+- `node bin\purpclaw.js donor heist ambient_tension_from_environment`
+  - created a `purpclaw.heist-report.v1` report for Environmental tension.
+- `node bin\purpclaw.js donor --json`
+  - confirmed 1 persisted heist report.
+- `node bin\purpclaw.js donor evolve ambient_tension_from_environment`
+  - queued proposal `mut_mqzfx4n6_byc9q4` through the existing Auto-Evolve mutator queue.
+- `node bin\purpclaw.js donor integrate competitive_conversation_victory_conditions validation:"reviewed"`
+  - correctly failed with `Cannot integrate donor artifact. Missing: rejected_mechanics`.
+- Temp-file DonorArchaeology integration test with stubbed timeline writer:
+  - status became `integrated`
+  - timeline event id was returned
+  - validation note persisted
+- `node bin\purpclaw.js evolve status`
+  - confirmed 1 pending mutator proposal: `LOW append_planner_hint mut_mqzfx4n6_byc9q4`.
+- `node bin\purpclaw.js autoresearch status`
+  - confirmed the AutoResearch wrapper reaches `E:/training` and reports prior optimization results.
+- `node bin\purpclaw.js auto-research queue`
+  - confirmed the alias lists the curated hypothesis queue.
+- `node bin\purpclaw.js feature --verify --json`
+  - passed: 22 surface capabilities checked, no failures.
+- `node bin\purpclaw.js action council-mode --dry-run --json`
+  - passed: Council Mode action resolves to current setup/tooling surface.
+- `node bin\purpclaw.js registry audit --json`
+  - passed by existing audit rules; confirms agents are in sync and registry JSON surfaces load.
+- `node bin\purpclaw.js next --json`
+  - returned `discovery`, which is now recorded as a phase-detection disconnect because active architecture/runtime evidence exists.
+- Parsed all `registry/*.json` files successfully.
+- `node bin\purpclaw.js timeline recent 5`
+  - confirmed `donor.heist_reported` was recorded in Timeline.
+- `node -e "const s=require('./registry/souls.json'); const i=require('./registry/soul-interviews.json'); const m=require('./registry/studio-modes.json'); console.log(s.schema, s.version, Object.keys(s.souls||{}).length); console.log(i.schema, Object.keys(i.interviews||{}).length); console.log(m.schema, Object.keys(m.modes||{}).length)"`
+  - souls `purpclaw.souls.v2 0.3.0 95`
+  - interviews `purpclaw.soul-interviews.v1 95`
+  - studio modes `purpclaw.studio.v1 11`
+- `node bin\purpclaw.js souls --json`
+  - returned 95 souls as a JSON array from the canonical object-keyed registry.
+- `node bin\purpclaw.js souls matrix`
+- `node bin\purpclaw.js souls --detail`
+- `node bin\purpclaw.js souls summon "Should we rewrite the provider router?" --json`
+  - returned 8 summoned members, chair `hermes`.
+- `node bin\purpclaw.js council leaderboard 3`
+- `node bin\purpclaw.js council history 1`
+- `node bin\purpclaw.js council "Should we rewrite the provider router?" --json`
+  - returned schema `purpclaw.council-session.v1`, meeting type `engineering`, chair `hermes`, 8 attendees.
+- `node bin\purpclaw.js studio modes`
+- `node bin\purpclaw.js studio status`
+- `node bin\purpclaw.js studio world`
 - `node --check scripts\sync-agents.js`
 - `node --check lib\agent-registry.js`
 - `node --check lib\system-manifest.js`
@@ -213,6 +413,22 @@ Runtime consumers now use `lib/agent-registry.js` instead of directly assuming `
 - Attempted to read `divisions/engineering/memory/handoff-template.md`; it does not exist, so this handoff follows the existing engineering handoff structure.
 
 ## Open Tasks
+- Add stable synthetic timestamps for legacy Studio sessions that did not record original timestamps.
+- Add donor scouting that reads quarantined donor/reference folders and proposes behavioural laws, then queues them through `purpclaw donor evolve <artifact_id>` for Auto-Evolve governance.
+- Add decay/persistence rules for residue so some artifacts fade and others become traditions.
+- Backfill Presence from older Studio memories once timestamp normalization is done.
+- Add attendance likelihood and behavior modifiers to Presence rooms.
+- Let world state generate incidents automatically. Director mode should force incidents; Weatherman should raise real ones.
+- Add optional `--write-memory` for council sessions. Keep default council runs read-only.
+- Add explicit relationship/reputation mutation rules after votes and meetings, with audit trails.
+- Implement Folder Integration Audit Batch 1:
+  - classify/routify currently unrouted command modules: `business`, `deploy`, `grow`, `harness`, `open`, `plan`, `ponytail`, `telemetry`, `thringlets`.
+  - add or document `registry-audit` alias behavior.
+  - create command dispatch smoke verification.
+- Implement Folder Integration Audit Batch 2:
+  - extend `lib/workflow-registry.js` so `purpclaw next` reads specs, audits, handoffs, TASKS, tests, registries, and Auto-Evolve proposals before choosing phase.
+- Implement Folder Integration Audit Batch 3:
+  - add `registry/runtime-crosswalk.json` and API route ownership map.
 - Decide whether to run `npm run stamp` for the version manifest. I did not stamp automatically.
 - If implementing the Oracle + Weatherman workflow, start with phase-aware Oracle output fields and read-only workflow artifact checks. Do not make Oracle or Weatherman mutate files.
 - Wire `purpclaw next` into `lib/oracle.js` report output as the phase/current-work recommendation.

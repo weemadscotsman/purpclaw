@@ -1215,7 +1215,7 @@ async function cmdResume(args) {
 
   sectionHead('  SESSION RESUME — ' + targetId);
   console.log(col(C.gray, `  ${messages.length} message(s) in this session\n`));
-  
+
   // Show session summary
   const userMsgs = messages.filter(m => m.role === 'user');
   const assistantMsgs = messages.filter(m => m.role === 'assistant');
@@ -1273,7 +1273,7 @@ async function cmdBg(args) {
   // Dispatch background task: write session file + spawn detached
   const BG_DIR = path.join(PURP_DIR, 'agent_work', 'bg-sessions');
   if (!fs.existsSync(BG_DIR)) fs.mkdirSync(BG_DIR, { recursive: true });
-  
+
   const jobId = 'bg-' + Date.now();
   const sessionFile = path.join(BG_DIR, jobId + '.json');
   const meta = {
@@ -1329,7 +1329,7 @@ async function cmdRegistry(args) {
       return;
     }
     const reg = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf8'));
-    
+
     // Show skills
     sectionHead('  SKILLS (' + reg.skills.length + ')');
     for (const s of reg.skills.slice(0, 20)) {
@@ -1340,7 +1340,7 @@ async function cmdRegistry(args) {
       console.log(`  ${tick}  ${col(C.cyan, s.name.padEnd(32))}  ${col(C.gray, s.description.slice(0, 50))} ${size} ${orig}`);
     }
     if (reg.skills.length > 20) console.log(col(C.gray, `  ... and ${reg.skills.length - 20} more. Full list in registry/index.json`));
-    
+
     // Show agents
     sectionHead('  AGENTS (' + reg.agents.length + ')');
     for (const a of reg.agents) {
@@ -1362,18 +1362,18 @@ async function cmdRegistry(args) {
     if (!fs.existsSync(INDEX_FILE)) { console.log(col(C.red, '  Run: purpclaw registry update')); return; }
     const reg = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf8'));
     const qTokens = new Set(rest.toLowerCase().split(/\s+/).filter(Boolean));
-    
+
     function score(item) {
       const text = ((item.description || '') + ' ' + (item.name || '')).toLowerCase();
       let s = 0;
       for (const t of qTokens) { if (text.includes(t)) s++; }
       return s;
     }
-    
+
     const scored = [...reg.skills, ...reg.agents].map(i => ({ ...i, _score: score(i) })).filter(i => i._score > 0).sort((a, b) => b._score - a._score);
-    
+
     if (scored.length === 0) { console.log(col(C.gray, '  Nothing matched. Try different keywords.\n')); return; }
-    
+
     for (const s of scored.slice(0, 15)) {
       const type = s.file.startsWith('skills/') ? col(C.cyan, 'skill') : col(C.yellow, 'agent ');
       console.log(`  [${type}]  ${col(C.white, s.name.padEnd(28))}  ${col(C.gray, s.description.slice(0, 50))}  score: ${s._score}`);
@@ -1387,7 +1387,7 @@ async function cmdRegistry(args) {
     sectionHead('  INSTALLING · ' + name);
     if (!fs.existsSync(INDEX_FILE)) { console.log(col(C.red, '  Run: purpclaw registry update first.\n')); return; }
     const reg = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf8'));
-    
+
     // Find in registry
     const entry = [...reg.skills, ...reg.agents].find(i => i.name === name);
     if (!entry) {
@@ -1395,10 +1395,10 @@ async function cmdRegistry(args) {
       console.log(col(C.gray, '  Run: purpclaw registry browse'));
       return;
     }
-    
+
     const srcDir  = path.join(PURP_DIR, entry.file).replace(/\\/g, '/').replace(/\/[^/]+$/, '');
     const srcFile = path.join(PURP_DIR, entry.file);
-    
+
     if (entry.file.startsWith('skills/')) {
       const destDir = path.join(LOCAL_SKILLS, name);
       if (fs.existsSync(destDir)) {
@@ -1470,7 +1470,7 @@ async function cmdRegistry(args) {
       // Fallback: rebuild inline
       const skills = [];
       const agents = [];
-      
+
       for (const n of fs.readdirSync(path.join(PURP_DIR, 'skills')).filter(d => fs.existsSync(path.join(PURP_DIR, 'skills', d, 'SKILL.md')))) {
         skills.push({ name: n, file: 'skills/' + n + '/SKILL.md' });
       }
@@ -1479,7 +1479,7 @@ async function cmdRegistry(args) {
         const content = fs.readFileSync(path.join(PURP_DIR, 'agents', f), 'utf8');
         agents.push({ name, file: 'agents/' + f, description: (content.split('\n')[0] || '').trim() });
       }
-      
+
       const idx = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf8'));
       idx.skills = skills;
       idx.agents = agents;
@@ -2092,11 +2092,11 @@ async function cmdLora(args) {
     const py = process.env.PYTHON_BIN || 'C:/Users/Admin/AppData/Local/Programs/Python/Python311/python.exe';
     const cmd = [py, scriptPath, ...cleanArgs.slice(1)];
     console.log(`  \\x1b[36mstarting:\\x1b[0m  ${cmd.join(' ')}\\n`);
-    const child = trackedSpawn(cmd[0], cmd.slice(1), { 
+    const child = trackedSpawn(cmd[0], cmd.slice(1), {
       tag: 'lora-train',
       timeoutMs: 30 * 60_000,  // 30 min for LoRA training
-      stdio: 'inherit', 
-      cwd: process.cwd() 
+      stdio: 'inherit',
+      cwd: process.cwd()
     });
     child.on('exit', code => {
       console.log('');
@@ -4339,13 +4339,155 @@ case 'registry': return cmdRegistry(args);
     case 'weatherman': return loadCmd('weather').run(args, sharedCtx());
     case 'oracle':
     case 'forecast':   return loadCmd('oracle').run(args, sharedCtx());
+    case 'souls': {
+      const _args = [...args]; // capture at call time, not closure time
+      return runSouls(_args);
+    }
+    case 'council':
+    case 'decide': {
+      // Route vote subcommands to the vote engine
+      if (['vote', 'history', 'reputation', 'rep', 'leaderboard', 'tally'].includes(args[0])) {
+        const _args = [...args]; // capture at call time, not closure time
+        return runCouncilVotes(_args);
+      }
+      return loadCmd('council').run(args, sharedCtx());
+    }
+    case 'studio': {
+      const Studio = require('../lib/studio');
+      const s = new Studio();
+      // Guard: only handle 'studio' prefix. 'private', 'council' etc have their own cases.
+      if (args[0] !== 'studio') {
+        console.error('Studio case called without studio prefix: ' + JSON.stringify(args));
+        return;
+      }
+      const action = args[1];
+      const sub = args[2];
+      if (action === 'begin' || action === 'start') {
+        // mode is args[2] (studio begin radio) or args[1] (studio radio)
+        const mode = sub ? args[2] : args[1];
+        if (!mode) {
+          console.log('Usage: purpclaw studio begin <mode> [topic]');
+          console.log('Modes:', Object.keys(s.modes).join(', '));
+          return;
+        }
+        const opts = { topic: args.slice(2).join(' ') || null };
+        const sess = s.beginSession(mode, opts);
+        console.log(`\n🎬 Studio session started: ${mode}`);
+        console.log(`Session ID: ${sess.id}`);
+        console.log(`Topic: ${sess.topic || '(none)'}`);
+      } else if (action === 'world' || sub === 'world') {
+        const key = args[1] || args[2];
+        const val = args[2] || args[3];
+        if (!key) {
+          console.log('\n🌍 World state:');
+          for (const [k, v] of Object.entries(s.world.state)) {
+            console.log(`  ${k}: ${JSON.stringify(v)}`);
+          }
+          return;
+        }
+        if (!val) { console.log(`${key}: ${JSON.stringify(s.world.state[key])}`); return; }
+        const delta = {};
+        if (['provider_latency', 'memory_pressure', 'duplicated_ui', 'funding', 'council_mood', 'goose_energy', 'smith_alert_level', 'weatherman_forecast'].includes(key)) delta[key] = val;
+        else if (key === 'build_health') delta[key] = parseInt(val, 10);
+        else if (key === 'provider_name') delta[key] = val === 'null' ? null : val;
+        else if (key === 'release_window_days') delta[key] = parseInt(val, 10);
+        else if (key === 'active_incidents') delta[key] = val.startsWith('+push:') ? val : 'clear';
+        else delta[key] = val;
+        s.updateWorld(delta);
+        console.log(`Updated ${key} → ${JSON.stringify(s.world.state[key])}`);
+      } else if (action === 'inject' || sub === 'inject') {
+        const incidentId = args[1] || args[2];
+        if (!incidentId) {
+          const incidents = require('../lib/studio').DIRECTOR_INCIDENTS;
+          console.log('Available incidents:');
+          Object.entries(incidents).forEach(([id, inc]) => console.log(`  ${id}: ${inc.label} [${inc.severity}]`));
+          return;
+        }
+        try {
+          const incident = s.inject(incidentId);
+          console.log(`\n🚨 Injected: ${incident.label}`);
+          console.log(`Impact: ${incident.impact}  |  Severity: ${incident.severity}`);
+        } catch (e) { console.log(`Unknown incident: ${incidentId}`); }
+      } else if (action === 'status' || sub === 'status') {
+        const st = s.status();
+        console.log(`\n🎬 Studio: mode=${st.mode || 'none'}, turns=${st.turns}`);
+      } else if (action === 'end' || action === 'stop' || sub === 'end' || sub === 'stop') {
+        const summary = s.endSession();
+        if (!summary) { console.log('No active session.'); return; }
+        console.log(`\n🎬 Session ended. ${summary.duration_turns} turns.`);
+        console.log(`🦆 ${summary.duck_observation}`);
+      } else if (action === 'duck' || sub === 'duck') {
+        const duck = s.session ? s.duck() : 'the duck is not in a session. the duck is always watching.';
+        console.log(`🦆 ${duck}`);
+      } else if (action === 'influence' || sub === 'influence') {
+        const board = s.influenceLeaderboard();
+        console.log('\n🏆 Influence Leaderboard:');
+        board.slice(0, 10).forEach((e, i) => console.log(`  ${i + 1}. ${e.emoji} ${e.name} — ${e.tier.symbol} (${e.score}pts) [${e.tier.name}]`));
+      } else if (action === 'speak' || sub === 'speak') {
+        if (!s.session) { console.log('No active session. Run: purpclaw studio begin <mode> [topic]'); return; }
+        const agentId = args[2] || args[3] || '';
+        const text = args.slice(3).join(' ') || args.slice(4).join(' ') || '';
+        if (!agentId || !text) { console.log('Usage: purpclaw studio speak <agent_id> <text>'); return; }
+        const result = s.speak(agentId, text);
+        console.log(result.rendered);
+        if (result.next_speaker) console.log(`\n  → Next: ${result.next_speaker}`);
+      } else if (action === 'look' || sub === 'look') {
+        if (!s.session) { console.log('No active session.'); return; }
+        console.log(s.look());
+      } else if (action === 'modes' || sub === 'modes') {
+        console.log('\n📺 Studio modes:');
+        Object.entries(s.modes).forEach(([id, m]) => console.log(`  ${m.emoji} ${id}: ${m.description}`));
+      } else if (action === 'memories' || sub === 'memories') {
+        const memories = s.getMemories({ limit: 5 });
+        if (!memories.length) { console.log('No meeting memories yet. Run a session first.'); return; }
+        console.log(`\n📋 Meeting Memories (last ${memories.length}):`);
+        memories.forEach(m => console.log(s.formatMemory(m)));
+      } else if (action === 'ambient' || sub === 'ambient') {
+        const result = s.generateAmbientLife();
+        if (result) console.log(result.rendered);
+        else console.log('No ambient scene triggered. Try during a crisis or late at night.');
+      } else if (action === 'traditions' || sub === 'traditions') {
+        const traditions = s.getTraditions();
+        if (!traditions.length) { console.log('No traditions yet.'); return; }
+        traditions.forEach(t => console.log(s.formatTradition(t)));
+      } else if (action === 'private' || sub === 'private') {
+        (function() {
+          var agA = args[2] || 'goose';
+          var agB = args[3] || 'maverick';
+          console.error('[DEBUG private] agA=' + agA + ' agB=' + agB);
+          var topicStr = args.slice(4).join(' ') || undefined;
+          console.error('[DEBUG private] topicStr=' + topicStr);
+          var result = s.generatePrivateConversation(agA, agB, { topic: topicStr });
+          console.log(result.rendered);
+        }());
+      } else if (action === 'conversations' || sub === 'conversations') {
+        const convs = s.getPrivateConversations({ limit: 5 });
+        if (!convs.length) { console.log('No private conversations yet.'); return; }
+        convs.forEach(c => {
+          console.log(`\n  💬 ${c.agents.join(' + ')} — ${c.topic} (${c.timestamp.split('T')[0]})`);
+        });
+      } else {
+        console.log('Usage: purpclaw studio <begin|world|inject|status|end|duck|influence|modes|speak|look|memories|ambient|traditions|private|conversations>');
+      }
+      break;
+    }
     case 'next':
     case 'helpme':     return loadCmd('next').run(args, sharedCtx());
     case 'workflow':   return loadCmd('workflow').run(args, sharedCtx());
-    case 'council':
-    case 'decide':     return loadCmd('council').run(args, sharedCtx());
     case 'drift':      return loadCmd('drift').run(args, sharedCtx());
-    // ── Crew: named agents, one model each (analyst/writer/marketer/coder) ──
+    case 'evolve':     return loadCmd('evolve').run(args, sharedCtx());
+    case 'autoresearch':
+    case 'auto-research': return loadCmd('autoresearch').run(args, sharedCtx());
+    case 'timeline':   return runTimeline(args);
+    case 'presence':
+    case 'rooms':
+    case 'spaces':     return runPresence(args);
+    case 'residue':
+    case 'artifacts':  return runResidue(args);
+    case 'donor':
+    case 'donors':
+    case 'archaeology':
+    case 'loot':       return runDonor(args);
     case 'crew':     return loadCmd('crew').run(args, sharedCtx());
     case 'pipeline': return loadCmd('crew').run(['pipeline', ...args], sharedCtx());
     case '/analyst': case '/writer': case '/marketer': case '/coder': case '/orchestrator': case '/orch':
@@ -4583,7 +4725,7 @@ async function cmdIdleEngine(args) {
 // ── vector bench ──────────────────────────────────────────────────────────
 async function cmdVectorBench(args) {
   const sub = (args[0] || 'bench').toLowerCase();
-  
+
   if (sub === 'bench' || sub === 'run') {
     const benchPath = path.join(PURP_DIR, 'bin', 'purpclaw-vector-bench.js');
     const count = args[1] || '1000';
@@ -4810,6 +4952,447 @@ async function cmdModel(args) {
   console.log(`    ${col(C.cyan, 'purpclaw model')}                       this help`);
   console.log('');
 };
+
+// ── Souls ─────────────────────────────────────────────────────────────────────
+// purpclaw souls                    — list all souls
+// purpclaw souls <id>              — show one soul
+// purpclaw souls summon "<problem>"  — convene a council
+async function runSouls(args) {
+  const { SoulRegistry } = require(path.join(__dirname, '..', 'lib', 'soul-registry'));
+  const sr = new SoulRegistry();
+  const flags = new Set(args.filter(a => a.startsWith('--')));
+  const positional = args.filter(a => !a.startsWith('--'));
+  const wantsJson = flags.has('--json');
+  const wantsDetail = flags.has('--detail') || ['full', 'detail', 'details', 'all'].includes(positional[0]);
+  const wantsMatrix = flags.has('--matrix') || positional[0] === 'matrix';
+  const fullSouls = () => Object.entries(sr.souls).map(([id, soul]) => ({ id, ...soul }));
+  const join = (value) => Array.isArray(value) ? value.join(', ') : (value || '');
+  const firstLine = (value) => Array.isArray(value) ? (value[0] || '') : (value || '');
+  const sortSouls = (souls) => souls.sort((a, b) =>
+    String(a.division || '').localeCompare(String(b.division || '')) ||
+    String(a.id || '').localeCompare(String(b.id || ''))
+  );
+
+  const printDetailed = (s) => {
+    console.log(`\n${s.emoji || ''} ${s.name || s.id} (${s.id}) - ${s.title || s.role || 'Untitled'}`);
+    console.log(`  Division: ${s.division || '(none)'} | Species: ${s.species || '(none)'} | Reports to: ${s.reports_to || '(self)'}`);
+    console.log(`  Role: ${s.role || '(none)'}`);
+    console.log(`  Signature: "${s.signature || ''}"`);
+    console.log(`  Values: ${join(s.values) || '(none recorded)'}`);
+    console.log(`  Wants: ${join(s.wants) || '(none recorded)'}`);
+    if (s.needs) console.log(`  Needs: ${join(s.needs)}`);
+    console.log(`  Fears: ${join(s.fears) || '(none recorded)'}`);
+    console.log(`  Annoyed by: ${join(s.annoyed_by) || '(none recorded)'}`);
+    console.log(`  Friends: ${join(s.friends) || '(none recorded)'}`);
+    console.log(`  Rivals: ${join(s.rivals) || '(none recorded)'}`);
+    console.log(`  Chairs: ${join(s.chairs) || '(none recorded)'}`);
+    console.log(`  Goals: ${join(s.goals) || '(none recorded)'}`);
+    console.log(`  Long-term: ${s.long_term_goal || '(none recorded)'}`);
+    console.log(`  Personal: ${s.personal_goal || '(none recorded)'}`);
+    console.log(`  Dream: ${s.dream || '(none recorded)'}`);
+  };
+
+  if (wantsJson && positional[0] !== 'summon' && positional[0] !== 'council') {
+    console.log(JSON.stringify({ ...sr.meta, souls: fullSouls() }, null, 2));
+    return;
+  }
+
+  if (wantsMatrix) {
+    console.log(`\nPURPCLAW Soul Matrix v${sr.meta.version || '?'} - ${sr.meta.total} souls\n`);
+    for (const s of sortSouls(fullSouls())) {
+      console.log(`${String(s.id).padEnd(24)} ${String(s.title || s.role || '').padEnd(30)} ${String(s.division || '').padEnd(16)} ${firstLine(s.values)}`);
+      console.log(`  wants: ${firstLine(s.wants) || '(none recorded)'}`);
+      console.log(`  goal:  ${s.long_term_goal || s.personal_goal || firstLine(s.goals) || s.dream || '(none recorded)'}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (wantsDetail) {
+    console.log(`\nPURPCLAW Soul Registry v${sr.meta.version || '?'} - ${sr.meta.total} souls`);
+    for (const soul of sortSouls(fullSouls())) printDetailed(soul);
+    console.log(`\nTotal: ${sr.meta.total} souls\n`);
+    return;
+  }
+
+  if (positional[0] === 'summon' || positional[0] === 'council') {
+    const problem = positional.slice(1).join(' ') || 'What should PURPCLAW do?';
+    const result = sr.summon(problem);
+    if (wantsJson) console.log(JSON.stringify(result, null, 2));
+    else console.log(sr.describeCouncil(result));
+  } else if (positional[0]) {
+    const soul = sr.get(positional[0]);
+    if (!soul) {
+      console.error(`Soul not found: ${positional[0]}`);
+      process.exit(1);
+    }
+    console.log(sr.describe(positional[0]));
+  } else {
+    const meta = sr.meta;
+    console.log(`\n🔮 PURPCLAW Soul Registry v${meta.version} — ${meta.total} souls\n`);
+    const byDiv = {};
+    for (const s of sr.list()) {
+      if (!byDiv[s.division]) byDiv[s.division] = [];
+      byDiv[s.division].push(s);
+    }
+    for (const [div, souls] of Object.entries(byDiv).sort()) {
+      console.log(`\n[${div}]`);
+      for (const s of souls) {
+        console.log(`  ${s.emoji} ${s.id.padEnd(25)} ${s.title}`);
+      }
+    }
+    console.log(`\nTotal: ${meta.total} souls\n`);
+    console.log(`  purpclaw souls <id>       — show one soul`);
+    console.log(`  purpclaw souls summon "<problem>" — convene council`);
+  }
+}
+
+// ── Council Votes ────────────────────────────────────────────────────────────
+// purpclaw council vote "<proposal>"              — cast a vote
+// purpclaw council history [n]                    — show recent votes
+// purpclaw council reputation [agent]            — agent rep (leaderboard if no agent)
+// purpclaw council tally "<agent:vote>" ...      — quick tally
+async function runTimeline(args) {
+  const { Timeline } = require(path.join(__dirname, '..', 'lib', 'timeline'));
+  const timeline = new Timeline();
+  const flags = new Set(args.filter(a => a.startsWith('--')));
+  const positional = args.filter(a => !a.startsWith('--'));
+  const sub = positional[0] || 'recent';
+  const wantsJson = flags.has('--json');
+  const wantsWrite = flags.has('--write');
+
+  if (sub === 'add' || sub === 'record') {
+    const title = positional.slice(1).join(' ').trim();
+    if (!title) {
+      console.log('Usage: purpclaw timeline add "<event>"');
+      return;
+    }
+    const event = timeline.record({
+      kind: 'manual.note',
+      source: 'cli',
+      title,
+      summary: title,
+      location: 'Archive',
+      subject: title,
+    });
+    if (wantsJson) console.log(JSON.stringify(event, null, 2));
+    else console.log(`Recorded timeline event: ${event.id}`);
+    return;
+  }
+
+  if (sub === 'backfill') {
+    const result = timeline.backfill({ write: wantsWrite });
+    if (wantsJson) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      console.log(`\nPURPCLAW Timeline Backfill ${wantsWrite ? '(write)' : '(dry-run)'}\n`);
+      console.log(`  Candidates: ${result.candidates}`);
+      console.log(`  Add:        ${result.added}`);
+      console.log(`  Skip:       ${result.skipped}`);
+      if (!wantsWrite) console.log('\nRun with --write to append missing events.');
+    }
+    return;
+  }
+
+  if (sub === 'patterns' || sub === 'traditions') {
+    const limit = parseInt(positional[1], 10) || 20;
+    if (wantsJson) console.log(JSON.stringify(timeline.patterns(limit), null, 2));
+    else console.log(timeline.describePatterns(limit));
+    return;
+  }
+
+  if (sub === 'json' || wantsJson) {
+    console.log(JSON.stringify(timeline.load(), null, 2));
+    return;
+  }
+
+  if (sub === 'help') {
+    console.log('Usage: purpclaw timeline [recent|patterns|add|json] [n]');
+    console.log('  purpclaw timeline');
+    console.log('  purpclaw timeline recent 20');
+    console.log('  purpclaw timeline patterns');
+    console.log('  purpclaw timeline backfill --dry-run');
+    console.log('  purpclaw timeline backfill --write');
+    console.log('  purpclaw timeline add "Hermes joined Engineering"');
+    console.log('  purpclaw timeline --json');
+    return;
+  }
+
+  const limit = sub === 'recent' ? (parseInt(positional[1], 10) || 20) : (parseInt(sub, 10) || 20);
+  console.log(timeline.describeRecent(limit));
+}
+
+async function runPresence(args) {
+  const { Presence } = require(path.join(__dirname, '..', 'lib', 'presence'));
+  const presence = new Presence();
+  const flags = new Set(args.filter(a => a.startsWith('--')));
+  const positional = args.filter(a => !a.startsWith('--'));
+  const wantsJson = flags.has('--json');
+  const shouldWrite = flags.has('--write');
+  const sub = positional[0] || 'list';
+
+  if (sub === 'help') {
+    console.log('Usage: purpclaw presence [room] [--json] [--write]');
+    console.log('  purpclaw presence');
+    console.log('  purpclaw presence tea_room');
+    console.log('  purpclaw presence --json');
+    console.log('  purpclaw presence --write');
+    return;
+  }
+
+  if (wantsJson) {
+    console.log(JSON.stringify(presence.snapshot({ write: shouldWrite }), null, 2));
+    return;
+  }
+
+  if (shouldWrite) presence.snapshot({ write: true });
+  const roomId = sub === 'list' || sub === 'all' ? null : sub;
+  console.log(presence.describe(roomId));
+}
+
+async function runResidue(args) {
+  const { Residue } = require(path.join(__dirname, '..', 'lib', 'residue'));
+  const residue = new Residue();
+  const flags = new Set(args.filter(a => a.startsWith('--')));
+  const positional = args.filter(a => !a.startsWith('--'));
+  const wantsJson = flags.has('--json');
+  const shouldWrite = flags.has('--write');
+  const sub = positional[0] || 'list';
+
+  if (sub === 'help') {
+    console.log('Usage: purpclaw residue [room] [--json] [--write]');
+    console.log('  purpclaw residue');
+    console.log('  purpclaw residue tea_room');
+    console.log('  purpclaw residue --json');
+    console.log('  purpclaw residue --write');
+    return;
+  }
+
+  if (wantsJson) {
+    console.log(JSON.stringify(residue.snapshot({ write: shouldWrite }), null, 2));
+    return;
+  }
+
+  if (shouldWrite) residue.snapshot({ write: true });
+  const roomId = sub === 'list' || sub === 'all' ? null : sub;
+  console.log(residue.describe(roomId));
+}
+
+async function runDonor(args) {
+  const { DonorArchaeology } = require(path.join(__dirname, '..', 'lib', 'donor-archaeology'));
+  const donor = new DonorArchaeology();
+  const flags = new Set(args.filter(a => a.startsWith('--')));
+  const positional = args.filter(a => !a.startsWith('--'));
+  const sub = positional[0] || 'list';
+  const wantsJson = flags.has('--json');
+
+  const valueFor = (name) => {
+    const prefix = `${name}:`;
+    const found = args.find(a => a.startsWith(prefix));
+    return found ? found.slice(prefix.length) : null;
+  };
+
+  if (sub === 'help') {
+    console.log('Usage: purpclaw donor [list|show|report|add] [--json]');
+    console.log('  purpclaw donor');
+    console.log('  purpclaw donor show <id>');
+    console.log('  purpclaw donor report [origin]');
+    console.log('  purpclaw donor add name:"Environmental Tension" origin:"MLM Hero" law:"Rooms react to background risk"');
+    console.log('  purpclaw donor integrate <id> validation:"Validated by tests/review"');
+    return;
+  }
+
+  if (sub === 'show') {
+    const artifact = donor.get(positional[1]);
+    if (!artifact) {
+      console.error(`Donor artifact not found: ${positional[1] || '(missing id)'}`);
+      process.exit(1);
+    }
+    if (wantsJson) console.log(JSON.stringify(artifact, null, 2));
+    else console.log(donor.describe({ origin: artifact.origin }).split('\n\n').filter(block => block.includes(artifact.name)).join('\n\n'));
+    return;
+  }
+
+  if (sub === 'report') {
+    const origin = positional.slice(1).join(' ') || null;
+    if (wantsJson) console.log(JSON.stringify(donor.report(origin), null, 2));
+    else console.log(donor.describeReport(origin));
+    return;
+  }
+
+  if (sub === 'heist' || sub === 'yoink') {
+    const id = positional[1];
+    if (!id) {
+      console.log('Usage: purpclaw donor heist <artifact_id>');
+      return;
+    }
+    const report = donor.heist(id, {
+      scout: valueFor('scout') || 'Scout',
+      thief: valueFor('thief') || 'Goose',
+      integrator: valueFor('integrator') || 'Hermes',
+      historian: valueFor('historian') || 'Memory',
+      status: valueFor('status') || null,
+      calling_card: valueFor('card') || null,
+      duck_observation: valueFor('duck') || null,
+      note: valueFor('note') || null,
+    });
+    if (wantsJson) console.log(JSON.stringify(report, null, 2));
+    else console.log(donor.describeHeist(report));
+    return;
+  }
+
+  if (sub === 'evolve' || sub === 'feed') {
+    const id = positional[1];
+    if (!id) {
+      console.log('Usage: purpclaw donor evolve <artifact_id>');
+      return;
+    }
+    const result = donor.queueEvolution(id);
+    if (wantsJson) console.log(JSON.stringify(result, null, 2));
+    else console.log(donor.describeEvolutionQueued(result));
+    return;
+  }
+
+  if (sub === 'integrate' || sub === 'promote') {
+    const id = positional[1];
+    if (!id) {
+      console.log('Usage: purpclaw donor integrate <artifact_id> validation:"Validated by tests/review"');
+      return;
+    }
+    try {
+      const result = donor.integrate(id, {
+        validation_note: valueFor('validation') || valueFor('validation_note') || valueFor('note'),
+        actor: valueFor('actor') || 'CLI',
+      });
+      if (wantsJson) console.log(JSON.stringify(result, null, 2));
+      else console.log(donor.describeIntegration(result));
+    } catch (e) {
+      console.error(e.message);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'add') {
+    const name = valueFor('name') || positional[1];
+    const origin = valueFor('origin');
+    const law = valueFor('law') || valueFor('behavioural_law');
+    if (!name || !origin || !law) {
+      console.log('Usage: purpclaw donor add name:"Artifact" origin:"Project" law:"Behavioural law"');
+      return;
+    }
+    const artifact = donor.add({
+      name,
+      origin,
+      behavioural_law: law,
+      type: valueFor('type') || 'Behaviour Physics',
+      status: valueFor('status') || 'candidate',
+      value: valueFor('value') || 'unknown',
+      integrated_into: valueFor('into'),
+      rejected: valueFor('rejected'),
+      rejected_mechanics: valueFor('rejected_mechanics'),
+      reason: valueFor('reason') || '',
+      validation_note: valueFor('validation') || valueFor('validation_note') || '',
+      notes: valueFor('notes') || '',
+    });
+    if (wantsJson) console.log(JSON.stringify(artifact, null, 2));
+    else console.log(`Recorded donor artifact: ${artifact.id}`);
+    return;
+  }
+
+  if (sub === 'json' || wantsJson) {
+    console.log(JSON.stringify(donor.load(), null, 2));
+    return;
+  }
+
+  console.log(donor.describe());
+}
+
+async function runCouncilVotes(args) {
+  const voteEngine = require(path.join(__dirname, '..', 'lib', 'council-vote-engine'));
+  const sub = args[0];
+
+  if (sub === 'vote') {
+    // purpclaw council vote "proposal" [chair] [meeting_type] [vote_type]
+    // Each remaining positional is "agent:vote" e.g. hermes:approve smith:reject goose:chaos-pass
+    const proposal = args.slice(1).find(a => !a.includes(':')) || args[1] || 'general question';
+    const chair = args.find(a => a.startsWith('chair:'))?.split(':')[1] || 'hermes';
+    const meetingType = args.find(a => a.startsWith('type:'))?.split(':')[1] || 'engineering';
+    const voteType = args.find(a => a.startsWith('threshold:'))?.split(':')[1] || 'simple_majority';
+
+    // Parse individual votes: agent:approve or agent:reject:reason
+    const voteArgs = args.slice(1).filter(a => a.includes(':') && !a.startsWith('chair:') && !a.startsWith('type:') && !a.startsWith('threshold:'));
+    const votes = {};
+    for (const v of voteArgs) {
+      const parts = v.split(':');
+      const agentId = parts[0];
+      const vote = parts[1] || 'approve';
+      const rationale = parts.slice(2).join(':') || '';
+      votes[agentId] = { vote, rationale };
+    }
+
+    // Ensure chair and required attendees are in the vote
+    const requiredAttendees = Object.keys(votes);
+    const record = voteEngine.castVote({
+      problem: proposal,
+      meeting_type: meetingType,
+      chair,
+      vote_type: voteType,
+      attendees: requiredAttendees,
+      votes,
+      decision: voteEngine.quickTally(votes, voteType).passes ? 'proceed' : 'defer',
+      actions: requiredAttendees.join(', ') + ' to act on outcome',
+    });
+    console.log(voteEngine.describeVote(record));
+
+  } else if (sub === 'history') {
+    const count = parseInt(args[1]) || 10;
+    const { loadVotes } = voteEngine;
+    const votesData = loadVotes();
+    const recent = votesData.votes.slice(-count).reverse();
+    if (recent.length === 0) {
+      console.log('\n  No votes recorded yet. The council has not convened.\n');
+    } else {
+      for (const v of recent) console.log(voteEngine.describeVote(v));
+    }
+
+  } else if (sub === 'reputation' || sub === 'rep') {
+    const agentId = args[1];
+    if (!agentId) {
+      console.log(voteEngine.leaderboard());
+    } else {
+      console.log(voteEngine.agentReputation(agentId));
+    }
+
+  } else if (sub === 'leaderboard') {
+    console.log(voteEngine.leaderboard(parseInt(args[1]) || 10));
+
+  } else if (sub === 'tally') {
+    // quick tally from command line: agent:vote agent:vote ...
+    const voteArgs = args.slice(1).filter(a => a.includes(':'));
+    const votes = {};
+    for (const v of voteArgs) {
+      const parts = v.split(':');
+      votes[parts[0]] = { vote: parts[1] || 'approve', rationale: parts.slice(2).join(':') };
+    }
+    const result = voteEngine.quickTally(votes);
+    console.log('\n  Quick tally:');
+    console.log(`    ✅ Yes:  ${result.yes} (${result.yesPct}%)`);
+    console.log(`    ❌ No:   ${result.no}  |  ⬜ Abstain: ${result.abstain}  |  🚫 Veto: ${result.veto}`);
+    console.log(`    Threshold: ${result.threshold}%  |  Result: ${result.passes ? '✅ PASSES' : '❌ FAILS'}\n`);
+
+  } else {
+    console.log('\n  🗳️  PURPCLAW Big Brother Ballot');
+    console.log('  ' + '─'.repeat(44));
+    console.log('  purpclaw council vote "<proposal>" chair:hermes type:engineering hermes:approve smith:reject');
+    console.log('  purpclaw council history [n]');
+    console.log('  purpclaw council reputation [agent]');
+    console.log('  purpclaw council tally hermes:approve smith:reject neo:abstain goose:chaos-pass');
+    console.log('  purpclaw council leaderboard');
+    console.log('\n  Vote types: approve reject abstain veto defer needs-proof chaos-pass');
+    console.log('  Thresholds: simple_majority super_majority unanimous\n');
+  }
+}
 
 if (require.main === module) {
   main().catch(e => {
