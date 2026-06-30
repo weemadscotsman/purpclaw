@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CockpitShell } from '../components/CockpitShell';
 
 // OMNI-SURGEON Cockpit — Phase Five
 // Operator surface that shows the truth snapshot, feature registry,
@@ -81,7 +80,7 @@ export default function OmniPage() {
   }) || [];
 
   return (
-    <CockpitShell>
+    <>
       <div style={{ padding: 24, color: '#e5e7eb', fontFamily: 'system-ui' }}>
         <h1 style={{ color: '#22d3ee', fontSize: 24, margin: '0 0 16px' }}>
           OMNI-SURGEON Cockpit
@@ -229,7 +228,7 @@ export default function OmniPage() {
           Auto-refresh every 5s. Read <a href="/api/omni/status" style={{ color: '#22d3ee' }}>/api/omni/status</a> for raw JSON.
         </div>
       </div>
-    </CockpitShell>
+    </>
   );
 }
 

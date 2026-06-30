@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { CockpitShell } from '../components/CockpitShell';
 
 type LaneCfg = {
   lane: string; label: string; provider: string; model: string;
@@ -74,7 +73,7 @@ export default function ProvidersPage() {
   const pct = Math.min(100, Math.round((used / cap) * 100));
 
   return (
-    <CockpitShell title="Providers & Models / Routing">
+    <>
       <div style={{ maxWidth: 1040, margin: '0 auto', padding: '8px 4px 40px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h1 style={{ fontSize: 21, color: 'var(--text-primary)', margin: 0 }}>🛰️ Provider Routing — your models, your call</h1>
@@ -159,6 +158,6 @@ export default function ProvidersPage() {
           </div>
         </section>
       </div>
-    </CockpitShell>
+    </>
   );
 }

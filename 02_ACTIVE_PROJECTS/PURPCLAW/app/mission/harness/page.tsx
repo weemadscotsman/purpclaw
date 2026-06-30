@@ -9,7 +9,6 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CockpitShell } from '../../components/CockpitShell';
 
 // The harness service port — referenced in the status line but was never
 // defined, which threw "HARNESS_PORT is not defined" and crashed the page.
@@ -233,7 +232,7 @@ export default function HarnessPage() {
   }, [job]);
 
   return (
-    <CockpitShell title="Execution Harness · Autonomous Missions">
+    <>
     <div style={{ ...pageStyle, minHeight: 0, height: '100%', overflowY: 'auto' }}>
       <header style={headerStyle}>
         <div>
@@ -397,7 +396,7 @@ export default function HarnessPage() {
         </section>
       </div>
     </div>
-    </CockpitShell>
+    </>
   );
 }
 

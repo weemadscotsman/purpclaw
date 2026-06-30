@@ -1,0 +1,21 @@
+import { Html, Head, Main, NextScript } from 'next/document';
+
+/**
+ * Custom Document — minimal HTML scaffold required for Next.js production builds.
+ * Dev mode auto-generates this; prod mode requires it on disk. We keep it
+ * minimal and let the App Router handle the rest.
+ */
+export default function Document() {
+  return (
+    <Html lang="en">
+      <Head>
+        <meta charSet="utf-8" />
+        <meta name="description" content="PURPCLAW Mission Control" />
+      </Head>
+      <body className="antialiased">
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  );
+}

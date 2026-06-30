@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { CockpitShell } from '../components/CockpitShell';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -481,7 +480,7 @@ export default function AwakenPage() {
   const isActive = data?.status === 'active';
 
   return (
-    <CockpitShell><div style={{ minHeight: '100vh', background: '#060610', color: '#c0c0d0', fontFamily: 'system-ui, sans-serif', padding: '0 0 60px 0' }}>
+    <div style={{ minHeight: '100vh', background: '#060610', color: '#c0c0d0', fontFamily: 'system-ui, sans-serif', padding: '0 0 60px 0' }}>
       {/* Top bar */}
       <div style={{ background: '#08080f', borderBottom: '1px solid #111122', padding: '12px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -535,6 +534,5 @@ export default function AwakenPage() {
         </div>
       )}
     </div>
-    </CockpitShell>
   );
 }

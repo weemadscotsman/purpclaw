@@ -13,7 +13,6 @@
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { CockpitShell } from '../components/CockpitShell';
 
 // Real face engine — loaded dynamically for Next.js SSR compat
 type Mochi = {
@@ -260,7 +259,7 @@ export default function MochiPage() {
 
   if (mochi && !mochi.hatched) {
     return (
-      <CockpitShell><main className="mochi-shell">
+      <main className="mochi-shell">
         <h1>MOCHI</h1>
         <p>No companion hatched yet.</p>
         <p style={{ marginTop: 12, fontSize: 12, opacity: 0.8 }}>{mochi.hint}</p>
@@ -269,12 +268,12 @@ export default function MochiPage() {
           h1 { font-size: 32px; letter-spacing: 1px; text-shadow: 2px 2px 0 #ff3df2, -2px 0 0 #38f8ff; }
         `}</style>
       </main>
-    </CockpitShell>
     );
   }
+}
 
   return (
-    <CockpitShell><main className="mochi-shell">
+    <main className="mochi-shell">
       <div className="card">
         <header className="topline">
           <div>
@@ -504,10 +503,9 @@ export default function MochiPage() {
         }
         `}</style>
     </main>
-    </CockpitShell>
-  );
-}
-
+    </main>
+    );
+    }
 // ── Companion Chorus sub-component ────────────────────────────────────────────────
 
 function ChorusPanel() {

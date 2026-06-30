@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { CockpitShell } from '../components/CockpitShell';
+
 import { TraceTerminal } from '../components/TraceTerminal';
 
 type EvolutionStatus = {
@@ -64,7 +64,7 @@ export default function EvolutionPage() {
   ];
 
   return (
-    <CockpitShell title="Self-Evolution">
+    <>
       <div className="min-h-full bg-[#05070c] p-5 text-white">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -141,7 +141,7 @@ export default function EvolutionPage() {
           <SkillsPanel />
         </section>
       </div>
-    </CockpitShell>
+    </>
   );
 }
 
