@@ -364,6 +364,9 @@ export default function MochiPage() {
             {diary.map((line, i) => <div key={i}>{line}</div>)}
           </div>
         </section>
+
+        {/* COMPANION CHORUS — terminal companions from ~/.companion-chorus/companions.json */}
+        <ChorusPanel />
       </div>
 
       <style jsx>{`
@@ -489,8 +492,84 @@ export default function MochiPage() {
         .screen.mood-happy   { box-shadow: inset 0 0 0 5px #306230, 6px 6px 0 #000; filter: saturate(1.2); }
         /* Stat bar smooth transitions */
         .stat-bar { transition: color 200ms ease; }
+
+        /* Chorus panel — compact companion roster */
+        .chorus-panel { margin-top: 16px; border-top: 2px dashed #ff7ab6; padding-top: 12px; }
+        .chorus-title { font-size: 13px; font-weight: bold; letter-spacing: 0.12em; color: #ff7ab6; margin-bottom: 8px; }
+        .chorus-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .companion-chip {
+          display: flex; align-items: center; gap: 5px;
+          padding: 4px 10px; border-radius: 20px; border: 1px solid;
+          font-size: 11px; font-family: 'Courier New', monospace;
+        }
         `}</style>
     </main>
     </CockpitShell>
   );
 }
+
+// ── Companion Chorus sub-component ────────────────────────────────────────────────
+
+function ChorusPanel() {
+  const [roster, setRoster] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/companion-chorus/roster', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.ok) setRoster(d.companions || []); })
+      .catch(() => null)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const RARITY_COLORS: Record<string, string> = {
+    common: '#9ca3af',
+    uncommon: '#34d399',
+    rare: '#60a5fa',
+    epic: '#a855f7',
+    legendary: '#fbbf23',
+  };
+
+  if (loading) return null;
+  if (!roster.length) {
+    return (
+      <div className="chorus-panel">
+        <div className="chorus-title">🐙 COMPANION CHORUS — no companions rolled</div>
+        <div style={{ fontSize: 11, color: '#ff7ab6', fontFamily: 'Courier New' }}>
+          Run <code>node companion-chorus/main.js</code> to hatch companions.
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="chorus-panel">
+      <div className="chorus-title">🐙 COMPANION CHORUS — {roster.length} companions</div>
+      <div className="chorus-grid">
+        {roster.map((c: any, i: number) => {
+          const rarity = c.bones?.rarity || 'common';
+          const species = c.bones?.species || c.defId || '?';
+          const stats = c.bones?.stats || {};
+          const color = RARITY_COLORS[rarity] || '#9ca3af';
+          const emoji = EMOJI_MAP[species] || '🐙';
+          return (
+            <div key={i} className="companion-chip" style={{ borderColor: color, color }}>
+              <span>{emoji}</span>
+              <span>{species}</span>
+              <span style={{ color: '#6b7280', fontSize: 10 }}>
+                {stats.DEBUGGING}/{stats.PATIENCE}/{stats.WISDOM}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+const EMOJI_MAP: Record<string, string> = {
+  duck: '🦆', ghost: '👻', dragon: '🐉', octopus: '🐙', robot: '🤖',
+  mushroom: '🍄', chonk: '💀', owl: '🦉', cactus: '🌵', penguin: '🐧',
+  turtle: '🐢', goose: '🪿', rabbit: '🐇', cat: '🐱', axolotl: '🦎',
+  capybara: '🦫', snail: '🐌', blob: '🫧',
+};
