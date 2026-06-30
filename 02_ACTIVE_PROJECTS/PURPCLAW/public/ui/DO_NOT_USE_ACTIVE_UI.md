@@ -1,14 +1,16 @@
-# DO NOT USE — ACTIVE UI
+DO NOT USE — ARCHIVED DONOR — Pre-React mission UI from before App Router rewrite.
 
-This folder contains old/legacy UI that is **NOT active**.
+Features have been migrated to the canonical Next.js App Router UI at port 3030.
+This directory is kept for archaeological reference only.
 
-- Do not import these components into new App Router pages
-- Do not reference these as the canonical UI
-- These are archived donors/reference only
+Last active: 2026-06-09.
+Classification: LEGACY_UI / DONOR_UI.
 
-For active UI, see:
-- app/components/CockpitShell.tsx — canonical shell
-- app/mission/page.tsx — command room
-- docs/design/CANONICAL_PURPCLAW_UI_MAP_2026-06-30.md
+Best features to migrate (in order):
+1. Cinematic mode (cinematic.jsx) → /mission CinematicPanel
+2. Command palette (command-palette.js) → /mission CommandPalette overlay
+3. Memory richness (memory.jsx) → /memory enriched visualization
 
-Last review: 2026-06-30
+To delete after feature review: YES.
+
+Canonical UI location: http://127.0.0.1:3030/mission
