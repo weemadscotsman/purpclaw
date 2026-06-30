@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ErrorBoundary } from './ErrorBoundary';
 
 type MissionData = {
   api?: { status?: string; uptime?: number; bridgeConnected?: boolean; memory?: { rss: number } };
@@ -106,7 +107,7 @@ export function CockpitShell({ children, title = 'One Mission / Many Lenses' }: 
       // the footer (CPU/RAM/RSS + HEALTH/SERVICES) shows real numbers, not N/A.
       // /api/mission-data has no livePorts/services array, so the footer's
       // HEALTH/SERVICES were always N/A — /api/services carries that.
-      const [missionRes, hostRes, svcRes] = await Promise.all([
+      const [missionRes, hostRes, svcRes] = await Promise.allSettled([
         fetch('/api/mission-data', { cache: 'no-store' }),
         fetch('/api/host-telemetry', { cache: 'no-store' }).catch(() => null),
         fetch('/api/services', { cache: 'no-store' }).catch(() => null),
@@ -129,7 +130,7 @@ export function CockpitShell({ children, title = 'One Mission / Many Lenses' }: 
 
   useEffect(() => {
     load();
-    const i = setInterval(load, 5000);
+    const i = setInterval(load, 15_000);
     return () => clearInterval(i);
   }, [load]);
 
@@ -306,7 +307,9 @@ export function CockpitShell({ children, title = 'One Mission / Many Lenses' }: 
         overflow: 'auto',
         position: 'relative',
       }}>
-        {children}
+        <ErrorBoundary>
+          {children}
+        </ErrorBoundary>
       </main>
 
       {/* =================== BOTTOM STATUS BAR =================== */}

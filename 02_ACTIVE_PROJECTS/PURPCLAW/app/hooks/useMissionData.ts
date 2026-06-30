@@ -411,7 +411,7 @@ export function useMissionData(): MissionData {
       } catch {}
     };
     load();
-    const t = setInterval(load, 4000);
+    const t = setInterval(load, 30_000);
     return () => { cancelled = true; clearInterval(t); };
   }, []);
   const [manifest, setManifest] = useState<MissionData['manifest']>(null);
@@ -447,7 +447,7 @@ export function useMissionData(): MissionData {
       } catch { /* manifest unavailable — header falls back to live counts */ }
     };
     pull();
-    const t = setInterval(pull, 60_000);
+    const t = setInterval(pull, 15_000);
     return () => { alive = false; clearInterval(t); };
   }, []);
 
@@ -516,7 +516,7 @@ export function useMissionData(): MissionData {
       } catch {}
     };
     fetchEvolution();
-    const interval = setInterval(fetchEvolution, 60000);
+    const interval = setInterval(fetchEvolution, 30_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -616,7 +616,7 @@ export function useMissionData(): MissionData {
       } catch {}
     };
     fetchKernelJobs();
-    const interval = setInterval(fetchKernelJobs, 10000);
+    const interval = setInterval(fetchKernelJobs, 15_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -624,7 +624,7 @@ export function useMissionData(): MissionData {
   useEffect(() => {
     const checkServices = async () => {
       const now = Date.now();
-      const results = await Promise.all(
+      const results = await Promise.allSettled(
         SERVICE_CONFIG.map(async (cfg) => {
           const failureCount = serviceFailuresRef.current[cfg.key] || 0;
           const fastRecover = ['voice-coordinator', 'voice-bridge', 'stt'].includes(cfg.key);
@@ -666,12 +666,16 @@ export function useMissionData(): MissionData {
           }
         })
       );
-      setServices(results);
+      setServices(
+        results.map((r: any) =>
+          r.status === 'fulfilled' ? r.value : { ...r.value, status: 'offline' as const }
+        )
+      );
       setFetchedAt(Date.now());
     };
 
     checkServices();
-    const interval = setInterval(checkServices, 10000);
+    const interval = setInterval(checkServices, 15_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -939,7 +943,7 @@ export function useMissionData(): MissionData {
       } catch {}
     };
     fetchAgents();
-    const interval = setInterval(fetchAgents, 10000);
+    const interval = setInterval(fetchAgents, 15_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -956,7 +960,7 @@ export function useMissionData(): MissionData {
       } catch {}
     };
     fetchPipeline();
-    const interval = setInterval(fetchPipeline, 10000);
+    const interval = setInterval(fetchPipeline, 15_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -1016,7 +1020,7 @@ export function useMissionData(): MissionData {
       }
     };
     fetchDiagnostics();
-    const interval = setInterval(fetchDiagnostics, 6000);
+    const interval = setInterval(fetchDiagnostics, 20_000);
     return () => clearInterval(interval);
   }, []);
 
