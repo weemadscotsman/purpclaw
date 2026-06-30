@@ -109,17 +109,17 @@ export function CockpitShell({ children, title = 'One Mission / Many Lenses' }: 
       // HEALTH/SERVICES were always N/A — /api/services carries that.
       const [missionRes, hostRes, svcRes] = await Promise.allSettled([
         fetch('/api/mission-data', { cache: 'no-store' }),
-        fetch('/api/host-telemetry', { cache: 'no-store' }).catch(() => null),
-        fetch('/api/services', { cache: 'no-store' }).catch(() => null),
+        fetch('/api/host-telemetry', { cache: 'no-store' }),
+        fetch('/api/services', { cache: 'no-store' }),
       ]);
-      if (missionRes.ok) {
-        const md = await missionRes.json();
+      if (missionRes.status === 'fulfilled' && missionRes.value.ok) {
+        const md = await missionRes.value.json();
         let host = null;
-        try { if (hostRes && hostRes.ok) host = await hostRes.json(); } catch { /* host optional */ }
+        try { if (hostRes.status === 'fulfilled' && hostRes.value.ok) host = await hostRes.value.json(); } catch { /* host optional */ }
         let livePorts = md.livePorts;
         try {
-          if (svcRes && svcRes.ok) {
-            const sj = await svcRes.json();
+          if (svcRes.status === 'fulfilled' && svcRes.value.ok) {
+            const sj = await svcRes.value.json();
             if (Array.isArray(sj.services)) livePorts = sj.services.map((s: { id?: string; ok?: boolean }) => ({ id: s.id, ok: !!s.ok }));
           }
         } catch { /* services optional */ }
