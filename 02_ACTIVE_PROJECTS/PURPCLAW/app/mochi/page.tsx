@@ -270,7 +270,6 @@ export default function MochiPage() {
       </main>
     );
   }
-}
 
   return (
     <main className="mochi-shell">
@@ -503,10 +502,10 @@ export default function MochiPage() {
         }
         `}</style>
     </main>
-    </main>
-    );
-    }
-// ── Companion Chorus sub-component ────────────────────────────────────────────────
+  );
+}
+
+// ── Companion Chorus sub-component
 
 function ChorusPanel() {
   const [roster, setRoster] = useState<any[]>([]);
