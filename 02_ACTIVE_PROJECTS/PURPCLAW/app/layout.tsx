@@ -18,9 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>
-        <CockpitShell>{children}</CockpitShell>
-      </body>
+      <body><CockpitShell>{children}</CockpitShell></body>
     </html>
   );
 }

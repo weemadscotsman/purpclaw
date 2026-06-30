@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { ErrorBoundary } from './ErrorBoundary';
@@ -16,6 +16,10 @@ type MissionData = {
 
 type RailItem = { id: string; label: string; sub: string; href: string; icon: string };
 type RailGroup = { id: string; label: string; items: RailItem[] };
+
+// Nesting guard: prevents a CockpitShell from rendering chrome inside another.
+// Added 2026-06-30. Context hoisted to module scope to avoid SSR issues.
+const CockpitShellContext = createContext(false);
 
 const RAIL_GROUPS: RailGroup[] = [
   {
@@ -96,17 +100,16 @@ function PwrStat({ label, pct, unit, color }: { label: string; pct: number | nul
 }
 
 export function CockpitShell({ children, title = 'One Mission / Many Lenses' }: { children: ReactNode; title?: string }) {
-  const pathname = usePathname() || '/mission';
+  // ALL hooks at top — Rules of Hooks: never call after a conditional/return.
+  // Nesting guard is deferred to the return so every hook runs on every render.
+  const pathname = usePathname();
+  const alreadyInside = useContext(CockpitShellContext);
   const [data, setData] = useState<MissionData | null>(null);
   const [uptime, setUptime] = useState<string>('—');
   const [now, setNow] = useState<string>('');
 
   const load = useCallback(async () => {
     try {
-      // Fetch mission data + real host telemetry + service health together so
-      // the footer (CPU/RAM/RSS + HEALTH/SERVICES) shows real numbers, not N/A.
-      // /api/mission-data has no livePorts/services array, so the footer's
-      // HEALTH/SERVICES were always N/A — /api/services carries that.
       const [missionRes, hostRes, svcRes] = await Promise.allSettled([
         fetch('/api/mission-data', { cache: 'no-store' }),
         fetch('/api/host-telemetry', { cache: 'no-store' }),
@@ -151,13 +154,25 @@ export function CockpitShell({ children, title = 'One Mission / Many Lenses' }: 
     return () => clearInterval(i);
   }, [data?.api?.uptime, data?.tower?.tower?.uptime]);
 
+  // NESTING GUARD (2026-06-30): if inside another CockpitShell, skip chrome.
+  // Console.warn in dev so developers see the violation immediately.
+  if (alreadyInside) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[PURPCLAW UI] Nested CockpitShell detected — rendering children only (no chrome).');
+    }
+    return <>{children}</>;
+  }
+
   const serviceTotal = data?.livePorts?.length || 0;
   const serviceUp = data?.livePorts?.filter(service => service.ok).length || 0;
   const healthPct = serviceTotal ? Math.round((serviceUp / serviceTotal) * 100) : null;
   const alertCount = Math.max(0, serviceTotal - serviceUp);
   const tokenTotal = data?.llmLedger?.totalTokens;
 
+  // Wrap the chrome in the context provider so inner CockpitShell instances
+  // (nested pages/components) know they are inside and skip their chrome.
   return (
+    <CockpitShellContext.Provider value={true}>
     <div className="cockpit-shell" style={{
       minHeight: '100vh',
       display: 'grid',
@@ -353,5 +368,6 @@ export function CockpitShell({ children, title = 'One Mission / Many Lenses' }: 
         </div>
       </footer>
     </div>
+    </CockpitShellContext.Provider>
   );
 }
