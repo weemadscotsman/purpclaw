@@ -1,6 +1,13 @@
 {
   "name": "purpclaw",
   "version": "0.3.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tools/*"
+  ],
   "description": "Local-first AI organisation runtime with Council Mode, Studio ecology, workflow registry, memory, and governed self-evolution.",
   "keywords": [
     "ai",
@@ -46,6 +53,7 @@
   ],
   "scripts": {
     "dev": "next dev -p 3030 -H 127.0.0.1",
+    "dev:cc": "pnpm --filter @purpclaw/companion-chorus start",
     "build": "next build",
     "start": "next start",
     "cli": "node bin/purpclaw.js",

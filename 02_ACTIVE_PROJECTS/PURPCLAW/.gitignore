@@ -1,0 +1,39 @@
+# Dependencies — only root is managed
+node_modules/
+
+# pnpm workspace store
+.pnpm-store/
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+
+# Environment
+.env
+.env.local
+.env.*.local
+.env.production
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Lockfiles (only root lockfile is canonical)
+# Child package lockfiles are NOT committed for workspace packages
+apps/*/package-lock.json
+packages/*/package-lock.json
+tools/*/package-lock.json
+
+# Build artifacts
+*.tsbuildinfo
+.next/
+.cache/
