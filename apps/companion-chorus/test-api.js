@@ -1,7 +1,12 @@
 // Test MiniMax text API with correct format
 const https = require('https');
 
-const API_KEY = 'sk-cp-VleXrCu8WuN-ErGmQfIikbnCi_Gs8TlSSOOQurt3Mycj7loU2vc94Qf5Mc6WhJcSRZAJ5A23o6p1hrIHshwTIiYZdLGItimbnx2t9zTuEhGLsn8zskFvutc';
+const API_KEY = process.env.MINIMAX_API_KEY || '';
+
+if (!API_KEY) {
+  console.error('Set MINIMAX_API_KEY before running this smoke test.');
+  process.exit(1);
+}
 
 // MiniMax requires bot_setting and reply_constraints
 const body = JSON.stringify({

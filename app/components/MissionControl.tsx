@@ -331,9 +331,9 @@ export function MissionControl({ data }: { data: MissionData }) {
   const openMochiFullView = () => window.open('/mochi', '_blank');
 
   return (
-    <div className="h-screen bg-[#030508] text-white relative overflow-hidden flex flex-col">
+    <div className="h-full min-h-0 bg-[#030508] text-white relative overflow-hidden flex flex-col">
       {/* Visualizer Backdrop */}
-      <div className={`fixed inset-0 z-0 transition-all duration-1000 ${
+      <div className={`absolute inset-0 z-0 transition-all duration-1000 ${
         openDrawer === 'dream'
           ? 'opacity-100 pointer-events-auto scale-100'
           : 'opacity-15 pointer-events-none scale-105 blur-[1px]'
@@ -354,14 +354,13 @@ export function MissionControl({ data }: { data: MissionData }) {
       </div>
 
       {/* Header */}
-      <header className="relative z-10 flex shrink-0 items-center justify-between gap-3 px-3 md:px-4 h-14 border-b border-cyan-500/10 bg-black/50 backdrop-blur-2xl">
+      <header className="relative z-10 flex shrink-0 items-center justify-between gap-3 px-3 md:px-4 h-10 border-b border-cyan-500/10 bg-black/35 backdrop-blur-xl">
         {/* Left --” identity */}
         <div className="flex min-w-0 items-center gap-3 md:gap-4">
-          <PurpClawLogo size="header" />
           <div className="flex min-w-0 items-center gap-3">
-            <span className="hidden 2xl:inline truncate text-xs md:text-sm font-black tracking-[0.22em] md:tracking-[0.3em] text-white/90 font-mono">PURPCLAW</span>
+            <span className="hidden sm:inline truncate text-[10px] font-black tracking-[0.22em] text-white/80 font-mono uppercase">Mission Workspace</span>
             <div className="hidden sm:block w-px h-4 bg-cyan-500/30" />
-            <span className="hidden lg:inline text-[10px] tracking-[0.25em] text-cyan-400/60 font-mono uppercase">One Mission / Many Lenses</span>
+            <span className="hidden lg:inline text-[9px] tracking-[0.22em] text-cyan-400/55 font-mono uppercase">Live command lens</span>
           </div>
           <div className="hidden sm:flex items-center gap-1.5 ml-2">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" style={{ boxShadow: '0 0 8px rgba(34,197,94,0.6)' }} />
@@ -960,10 +959,10 @@ function PanelContent({ tab, data, iframeRef }: { tab: TabId; data: MissionData;
 
   return (
     <div className="grid h-full grid-cols-12 gap-3 p-3 overflow-y-auto">
-      <div className="col-span-12 xl:col-span-8 min-h-[420px] xl:min-h-0 overflow-hidden rounded-2xl border border-white/5 bg-black/15">
+      <div className="col-span-12 xl:col-span-8 min-h-[420px] xl:min-h-0 overflow-hidden">
         {content}
       </div>
-      <div className="col-span-12 xl:col-span-4 min-h-[360px] xl:min-h-0 overflow-hidden rounded-2xl border border-cyan-300/10 bg-black/35">
+      <div className="col-span-12 xl:col-span-4 min-h-[360px] xl:min-h-0 overflow-hidden">
         <TabVisualizer tab={tab} data={data} />
       </div>
     </div>

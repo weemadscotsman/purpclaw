@@ -12,6 +12,7 @@ the code and the canonical docs as the newer source until the old doc is updated
 | File | Use it for |
 |---|---|
 | [CANONICAL_MAP.md](CANONICAL_MAP.md) | One-page map of the current system and source-of-truth rules |
+| [INSTALL.md](INSTALL.md) | Live-code install guide: one-liners, local/hosted providers, safe-start, launch profiles, ports, USD guardrails |
 | [WHERE_THINGS_GO.md](WHERE_THINGS_GO.md) | Folder placement rules: what belongs where |
 | [ROUTING_AND_BUILD_SPEC.md](ROUTING_AND_BUILD_SPEC.md) | Runtime routing, proxy policy, build, restart, and health commands |
 | [ROUTE_INDEX.md](ROUTE_INDEX.md) | Current Next.js page/API route index |
@@ -63,4 +64,3 @@ the code and the canonical docs as the newer source until the old doc is updated
 New operational docs go in `docs/`. New evidence or one-off audit output goes
 in `STRESS/` or `agent_work/`. New generated build/runtime artifacts do not go
 in `docs/` unless they are intentionally curated.
-

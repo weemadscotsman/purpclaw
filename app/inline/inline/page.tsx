@@ -69,7 +69,7 @@ const SERVICE_CONFIG = [
   { name: 'State Core', port: 7783, path: '/health', key: 'purpclaw-state' },
   { name: 'Orchestrator', port: 7784, path: '/health', key: 'purpclaw-orchestrator' },
   { name: 'Gatekeeper', port: 7791, path: '/health', key: 'purpclaw-gatekeeper' },
-  { name: 'Web Interface', port: 3000, path: '/', key: 'purpclaw-nextjs' },
+  { name: 'Web Interface', port: 3030, path: '/', key: 'purpclaw-nextjs' },
   { name: 'Companion Chorus', port: 7785, path: '/health', key: 'purpclaw-chorus' },
 ];
 

@@ -619,7 +619,7 @@ async function cmdStart(args) {
   console.log('');
 
   if (online.some(r => r.pm2 === 'purpclaw-nextjs')) {
-    console.log(`  ${col(C.gray, 'Mission Control')}  ${col(C.gray, '→')}  ${col(C.cyan + C.bold, 'http://localhost:3000')}`);
+    console.log(`  ${col(C.gray, 'Mission Control')}  ${col(C.gray, '→')}  ${col(C.cyan + C.bold, 'http://localhost:3030')}`);
   }
   console.log(`  ${col(C.gray, 'API Gateway    ')}  ${col(C.gray, '→')}  ${col(C.cyan, 'http://localhost:7780')}`);
   console.log(`  ${col(C.gray, 'Agent Tower    ')}  ${col(C.gray, '→')}  ${col(C.cyan, 'http://localhost:7790')}`);
@@ -2419,7 +2419,7 @@ rl.close();
     });
     console.log(col(C.cyan, '  PURPCLAW is booting in the background.'));
     console.log(col(C.gray, '  Watch: purpclaw status'));
-    console.log(col(C.gray, '  Web:   http://localhost:3000\n'));
+    console.log(col(C.gray, '  Web:   http://localhost:3030\n'));
   }
 
   console.log(col(C.green + C.bold, '  ✔  PURPCLAW IS READY\n'));
@@ -3948,7 +3948,7 @@ function cmdHelp() {
     ['purpclaw smoke',                 'End-to-end self-test: services + LLM + pool + memory + dispatch'],
     ['purpclaw smoke --quick',         'Skip the orchestrator workflow round-trip'],
     ['purpclaw smoke --json',          'Machine-readable for CI'],
-    ['purpclaw safe-start --core',     'Wake the 16-service stable baseline (one at a time)'],
+    ['purpclaw safe-start --core',     'Wake the stable core baseline (one at a time)'],
     ['purpclaw safe-start --dark',     'Sequentially wake defined-but-dark services (no Windows cmd flood)'],
     ['purpclaw safe-start <name>',     'Start one service with circuit breaker + stabilisation watch'],
     ['purpclaw safe-stop --dark',      'Sequentially put the dark cluster back to sleep'],
@@ -3981,7 +3981,7 @@ function cmdHelp() {
   console.log(`\n  ${col(C.cyan + C.bold, '🗺  PORTS')}`);
   console.log(col(C.gray, '  ┌──────────────────────────────────────────────────────────────────────────┐'));
   const portRows = [
-    [3000, 'Next.js Mission Control UI'],
+    [3030, 'Next.js Mission Control UI'],
     [7780, 'unified-api   — main HTTP API + MCP tools'],
     [7781, 'voice-coord   — intent parsing + TTS'],
     [7782, 'eventbus      — central pub/sub broker'],
@@ -4004,7 +4004,7 @@ function cmdHelp() {
 
   console.log('');
   console.log(`  ${col(C.magenta, 'purpclaw tui')}   ${col(C.gray, '— launch the live cockpit')}`);
-  console.log(`  ${col(C.gray, 'Web UI')}        ${col(C.gray, '—')}  ${col(C.cyan, 'http://localhost:3000')}`);
+  console.log(`  ${col(C.gray, 'Web UI')}        ${col(C.gray, '—')}  ${col(C.cyan, 'http://localhost:3030')}`);
   console.log(`  ${col(C.gray, 'Pool')}          ${col(C.gray, '—')}  ${col(C.cyan, 'http://localhost:7885')}`);
   console.log('');
   console.log(col(C.gray, '  The hammers walk. The tickets file themselves. The pool is open.'));
@@ -4078,7 +4078,7 @@ async function main() {
     console.log(col(C.cyan, `    ${col(C.bold, '1')}. CLI chat        `) + col(C.gray, '(purpclaw ask — interactive agent chat)'));
     console.log(col(C.cyan, `    ${col(C.bold, '2')}. TUI cockpit     `) + col(C.gray, '(purpclaw tui — live dashboard)'));
     console.log(col(C.cyan, `    ${col(C.bold, '3')}. TUI ask         `) + col(C.gray, '(purpclaw tui ask — full-screen chat)'));
-    console.log(col(C.cyan, `    ${col(C.bold, '4')}. WebUI           `) + col(C.gray, '(http://localhost:3000 — mission control)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '4')}. WebUI           `) + col(C.gray, '(http://localhost:3030 — mission control)'));
     console.log(col(C.cyan, `    ${col(C.bold, '5')}. Setup wizard    `) + col(C.gray, '(configure providers)'));
     console.log(col(C.cyan, `    ${col(C.bold, '6')}. Guided tour     `) + col(C.gray, '(TTS-narrated walkthrough)'));
     console.log(col(C.cyan, `    ${col(C.bold, '7')}. Help            `) + col(C.gray, '(show all commands)'));
@@ -4094,10 +4094,10 @@ async function main() {
       else if (choice === '2') { command = 'tui'; args = []; }
       else if (choice === '3') { command = 'tui'; args = ['ask']; }
       else if (choice === '4') {
-        console.log(col(C.green, '\n  🚀 Opening WebUI at http://localhost:3000'));
+        console.log(col(C.green, '\n  🚀 Opening WebUI at http://localhost:3030'));
         console.log(col(C.gray, '  Make sure the backend is running: purpclaw start\n'));
         const { exec } = require('child_process');
-        exec('start http://localhost:3000');
+        exec('start http://localhost:3030');
         process.exit(0);
       }
       else if (choice === '5') { command = 'setup'; args = []; }

@@ -8,6 +8,8 @@
 npm install
 ```
 
+Full live setup instructions are in `docs/INSTALL.md`. That file is derived from the current CLI, setup command, service registry, PM2 ecosystem, and `.env.example`.
+
 For local development, run commands through Node from the project root:
 
 ```bash
@@ -96,10 +98,14 @@ lib/runtime/ports.js
 Boot commands depend on your local environment. Prefer safe startup when in doubt:
 
 ```bash
+node bin/purpclaw.js profiles
 node bin/purpclaw.js safe-start --core
+node bin/purpclaw.js start --profile=voice
 node bin/purpclaw.js services
 node bin/purpclaw.js doctor
 ```
+
+Mission Control is served on `http://127.0.0.1:3030/mission`.
 
 ## Before Editing
 

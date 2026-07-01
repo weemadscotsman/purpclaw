@@ -32,12 +32,22 @@ PURPCLAW now has six connected layers:
 - AutoResearch front door: `purpclaw autoresearch` and `purpclaw auto-research` route to the existing `E:/training` orchestrator.
 - Folder integration audit: every top-level folder has been mapped with repair batches.
 
-## Quick Start
+## Install And Runtime
 
 ```bash
 npm install
 node bin/purpclaw.js help
 node bin/purpclaw.js status
+```
+
+Use the live install guide for one-liners, local/free model mode, hosted provider setup, safe-start, launch profiles, ports, and USD guardrails:
+
+- `docs/INSTALL.md`
+
+Mission Control runs on:
+
+```txt
+http://127.0.0.1:3030/mission
 ```
 
 Core discovery commands:
@@ -73,6 +83,7 @@ node bin/purpclaw.js donor evolve ambient_tension_from_environment
 - `STATUS.md` - current operating status.
 - `ARCHITECTURE.md` - current architecture.
 - `DOCS_INDEX.md` - documentation ownership and status.
+- `docs/INSTALL.md` - install modes, local/hosted providers, one-liners, runtime profiles, and ports.
 - `CHANGELOG.md` - release history.
 - `docs/audit/FOLDER_INTEGRATION_AUDIT_2026-06-29.md` - folder-by-folder disconnect audit.
 - `docs/audit/SOUL_STUDIO_INSPECTION_2026-06-29.md` - soul/studio subsystem inspection.
