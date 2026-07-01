@@ -1,0 +1,1621 @@
+{
+  "schema": "purpclaw.timeline.v1",
+  "version": "0.1.0",
+  "updated": "2026-06-29T20:13:49.739Z",
+  "events": [
+    {
+      "id": "backfill_vote_v_mqzb6wut_v6fiq",
+      "timestamp": "2026-06-29T14:24:25.301Z",
+      "kind": "council.vote_cast",
+      "source": "timeline.backfill",
+      "title": "Council vote passed: should we rewrite the provider router",
+      "summary": "proceed",
+      "agents": [
+        "hermes",
+        "smith",
+        "neo",
+        "goose",
+        "memory",
+        "weatherman",
+        "architect"
+      ],
+      "location": "Council Chamber",
+      "mood": null,
+      "severity": null,
+      "subject": "should we rewrite the provider router",
+      "refs": {
+        "vote_id": "v_mqzb6wut_v6fiq"
+      },
+      "data": {
+        "meeting_type": "engineering",
+        "chair": "hermes",
+        "vote_type": "simple_majority",
+        "outcome": "passed",
+        "tally": {
+          "yes_weight": 10,
+          "no_weight": 3,
+          "abstain_weight": 2,
+          "veto_weight": 0,
+          "total": 15,
+          "yes_pct": 67,
+          "threshold_pct": 50
+        },
+        "dissenters": [
+          "smith"
+        ],
+        "chaoPassers": [
+          "goose"
+        ]
+      }
+    },
+    {
+      "id": "backfill_vote_v_mqzb7hi9_kwzga",
+      "timestamp": "2026-06-29T14:24:52.065Z",
+      "kind": "council.vote_cast",
+      "source": "timeline.backfill",
+      "title": "Council vote passed: should we rewrite the provider router",
+      "summary": "proceed",
+      "agents": [
+        "hermes",
+        "smith",
+        "neo",
+        "goose",
+        "memory",
+        "weatherman",
+        "architect"
+      ],
+      "location": "Council Chamber",
+      "mood": null,
+      "severity": null,
+      "subject": "should we rewrite the provider router",
+      "refs": {
+        "vote_id": "v_mqzb7hi9_kwzga"
+      },
+      "data": {
+        "meeting_type": "engineering",
+        "chair": "hermes",
+        "vote_type": "simple_majority",
+        "outcome": "passed",
+        "tally": {
+          "yes_weight": 10,
+          "no_weight": 3,
+          "abstain_weight": 2,
+          "veto_weight": 0,
+          "total": 15,
+          "yes_pct": 67,
+          "threshold_pct": 50
+        },
+        "dissenters": [
+          "smith"
+        ],
+        "chaoPassers": [
+          "goose"
+        ]
+      }
+    },
+    {
+      "id": "backfill_vote_v_mqzb9632_2dwbl",
+      "timestamp": "2026-06-29T14:26:10.574Z",
+      "kind": "council.vote_cast",
+      "source": "timeline.backfill",
+      "title": "Council vote rejected: auth vulnerability found",
+      "summary": "defer",
+      "agents": [
+        "smith",
+        "neo",
+        "memory",
+        "goose",
+        "guardian"
+      ],
+      "location": "Council Chamber",
+      "mood": null,
+      "severity": "HIGH",
+      "subject": "auth vulnerability found",
+      "refs": {
+        "vote_id": "v_mqzb9632_2dwbl"
+      },
+      "data": {
+        "meeting_type": "security",
+        "chair": "smith",
+        "vote_type": "unanimous",
+        "outcome": "rejected",
+        "tally": {
+          "yes_weight": 3,
+          "no_weight": 6,
+          "abstain_weight": 0,
+          "veto_weight": 0,
+          "total": 9,
+          "yes_pct": 33,
+          "threshold_pct": 100
+        },
+        "dissenters": [
+          "smith",
+          "neo",
+          "guardian"
+        ],
+        "chaoPassers": [
+          "goose"
+        ]
+      }
+    },
+    {
+      "id": "backfill_vote_v_mqzbggad_vy5y1",
+      "timestamp": "2026-06-29T14:31:50.389Z",
+      "kind": "council.vote_cast",
+      "source": "timeline.backfill",
+      "title": "Council vote passed: ship the chaos-pass",
+      "summary": "proceed",
+      "agents": [
+        "hermes",
+        "goose",
+        "smith",
+        "memory",
+        "neo"
+      ],
+      "location": "Council Chamber",
+      "mood": null,
+      "severity": null,
+      "subject": "ship the chaos-pass",
+      "refs": {
+        "vote_id": "v_mqzbggad_vy5y1"
+      },
+      "data": {
+        "meeting_type": "engineering",
+        "chair": "hermes",
+        "vote_type": "simple_majority",
+        "outcome": "passed",
+        "tally": {
+          "yes_weight": 6,
+          "no_weight": 3,
+          "abstain_weight": 2,
+          "veto_weight": 0,
+          "total": 11,
+          "yes_pct": 55,
+          "threshold_pct": 50
+        },
+        "dissenters": [
+          "smith"
+        ],
+        "chaoPassers": [
+          "goose"
+        ]
+      }
+    },
+    {
+      "id": "backfill_vote_v_mqzdcfph_tegt4",
+      "timestamp": "2026-06-29T15:24:42.245Z",
+      "kind": "council.vote_cast",
+      "source": "timeline.backfill",
+      "title": "Council vote passed: adopt the studio broadcast model for PURPCLAW",
+      "summary": "proceed",
+      "agents": [
+        "goose",
+        "maverick",
+        "hermes",
+        "phoenix",
+        "crow",
+        "panda"
+      ],
+      "location": "Council Chamber",
+      "mood": null,
+      "severity": null,
+      "subject": "adopt the studio broadcast model for PURPCLAW",
+      "refs": {
+        "vote_id": "v_mqzdcfph_tegt4"
+      },
+      "data": {
+        "meeting_type": "creative",
+        "chair": "goose",
+        "vote_type": "simple_majority",
+        "outcome": "passed",
+        "tally": {
+          "yes_weight": 8.5,
+          "no_weight": 0,
+          "abstain_weight": 0,
+          "veto_weight": 0,
+          "total": 8.5,
+          "yes_pct": 100,
+          "threshold_pct": 50
+        },
+        "dissenters": [],
+        "chaoPassers": [
+          "goose"
+        ]
+      }
+    },
+    {
+      "id": "backfill_session_s_1io623io",
+      "timestamp": "2026-06-29T15:26:31.396Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: council",
+      "summary": "the duck approves",
+      "agents": [
+        "goose",
+        "maverick",
+        "hermes"
+      ],
+      "location": "Council Chamber",
+      "mood": null,
+      "severity": null,
+      "subject": "council",
+      "refs": {
+        "session_id": "s_1io623io"
+      },
+      "data": {
+        "mode": "council",
+        "topic": "podcast format for PURPCLAW",
+        "turns": 3,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "backfill_session_s_5ufnkeqb",
+      "timestamp": "2026-06-29T15:26:39.550Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: directors_cut",
+      "summary": "the duck is not panicking. the duck has seen worse.",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": null,
+      "subject": "directors_cut",
+      "refs": {
+        "session_id": "s_5ufnkeqb"
+      },
+      "data": {
+        "mode": "directors_cut",
+        "topic": null,
+        "turns": 5,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "evt_mqzeshvh_mg1o6",
+      "timestamp": "2026-06-29T16:05:11.165Z",
+      "kind": "manual.note",
+      "source": "cli",
+      "title": "Soul interview protocol established: Solid Crew to 21 Seconds to 21 Questions to the Soul Registry",
+      "summary": "Soul interview protocol established: Solid Crew to 21 Seconds to 21 Questions to the Soul Registry",
+      "agents": [],
+      "location": "Archive",
+      "mood": null,
+      "severity": null,
+      "subject": "Soul interview protocol established: Solid Crew to 21 Seconds to 21 Questions to the Soul Registry",
+      "refs": {},
+      "data": {}
+    },
+    {
+      "id": "evt_mqzew51k_46mjy",
+      "timestamp": "2026-06-29T16:08:01.161Z",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "title": "Director incident: Developer only slept 2 hours",
+      "summary": "judgement may be impaired",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": "LOW",
+      "subject": "developer_exhausted",
+      "refs": {
+        "incident_id": "developer_exhausted"
+      },
+      "data": {
+        "world_delta": {
+          "goose_energy": "UNBOUND",
+          "council_mood": "TENSE"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzew52d_8qlrq",
+      "timestamp": "2026-06-29T16:08:01.189Z",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "title": "Director incident: NVIDIA API offline",
+      "summary": "model calls failing",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": "HIGH",
+      "subject": "nvidia_offline",
+      "refs": {
+        "incident_id": "nvidia_offline"
+      },
+      "data": {
+        "world_delta": {
+          "provider_name": "nvidia",
+          "provider_latency": "CRITICAL"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzew52e_udxnc",
+      "timestamp": "2026-06-29T16:08:01.190Z",
+      "kind": "studio.session_started",
+      "source": "studio",
+      "title": "Studio session started: after_hours",
+      "summary": "☕ AFTER HOURS",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_ex0bthrm"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "world": {
+          "provider_latency": "CRITICAL",
+          "provider_name": "nvidia",
+          "build_health": 0,
+          "memory_pressure": "LOW",
+          "duplicated_ui": "NONE",
+          "funding": "GOOD",
+          "release_window_days": null,
+          "active_incidents": [],
+          "last_commit": null,
+          "last_commit_message": null,
+          "council_mood": "TENSE",
+          "goose_energy": "UNBOUND",
+          "smith_alert_level": "RED",
+          "weatherman_forecast": "STABLE"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzew54s_cl3j4",
+      "timestamp": "2026-06-29T16:08:01.276Z",
+      "kind": "studio.session_ended",
+      "source": "studio",
+      "title": "Studio session ended: after_hours",
+      "summary": "the duck is concerned about the security posture.",
+      "agents": [
+        "hermes",
+        "goose",
+        "maverick",
+        "smith",
+        "neo"
+      ],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_ex0bthrm"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "turns": 5,
+        "votes_cast": 0,
+        "arena_winner": null
+      }
+    },
+    {
+      "id": "evt_mqzewjus_mf1zt",
+      "timestamp": "2026-06-29T16:08:20.356Z",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "title": "Director incident: Developer only slept 2 hours",
+      "summary": "judgement may be impaired",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": "LOW",
+      "subject": "developer_exhausted",
+      "refs": {
+        "incident_id": "developer_exhausted"
+      },
+      "data": {
+        "world_delta": {
+          "goose_energy": "UNBOUND",
+          "council_mood": "TENSE"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzewjve_twhie",
+      "timestamp": "2026-06-29T16:08:20.378Z",
+      "kind": "studio.session_started",
+      "source": "studio",
+      "title": "Studio session started: after_hours",
+      "summary": "☕ AFTER HOURS",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_46d4exyd"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "world": {
+          "provider_latency": "CRITICAL",
+          "provider_name": "nvidia",
+          "build_health": 0,
+          "memory_pressure": "LOW",
+          "duplicated_ui": "NONE",
+          "funding": "GOOD",
+          "release_window_days": null,
+          "active_incidents": [],
+          "last_commit": null,
+          "last_commit_message": null,
+          "council_mood": "TENSE",
+          "goose_energy": "UNBOUND",
+          "smith_alert_level": "RED",
+          "weatherman_forecast": "STABLE"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzewjxm_20r56",
+      "timestamp": "2026-06-29T16:08:20.458Z",
+      "kind": "studio.session_ended",
+      "source": "studio",
+      "title": "Studio session ended: after_hours",
+      "summary": "the duck is concerned about the security posture.",
+      "agents": [
+        "hermes",
+        "goose",
+        "maverick",
+        "smith",
+        "memory"
+      ],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_46d4exyd"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "turns": 7,
+        "votes_cast": 0,
+        "arena_winner": null
+      }
+    },
+    {
+      "id": "evt_mqzf02j6_n2zyp",
+      "timestamp": "2026-06-29T16:11:04.530Z",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "title": "Director incident: Build broken on main",
+      "summary": "deployment blocked",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": "HIGH",
+      "subject": "build_broken",
+      "refs": {
+        "incident_id": "build_broken"
+      },
+      "data": {
+        "world_delta": {
+          "build_health": 0,
+          "council_mood": "CRISIS"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzf02jn_iapw6",
+      "timestamp": "2026-06-29T16:11:04.547Z",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "title": "Director incident: Developer only slept 2 hours",
+      "summary": "judgement may be impaired",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": "LOW",
+      "subject": "developer_exhausted",
+      "refs": {
+        "incident_id": "developer_exhausted"
+      },
+      "data": {
+        "world_delta": {
+          "goose_energy": "UNBOUND",
+          "council_mood": "TENSE"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzf02jn_ccrgg",
+      "timestamp": "2026-06-29T16:11:04.547Z",
+      "kind": "studio.session_started",
+      "source": "studio",
+      "title": "Studio session started: after_hours",
+      "summary": "☕ AFTER HOURS",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_grq5cihq"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "world": {
+          "provider_latency": "CRITICAL",
+          "provider_name": "nvidia",
+          "build_health": 0,
+          "memory_pressure": "LOW",
+          "duplicated_ui": "NONE",
+          "funding": "GOOD",
+          "release_window_days": null,
+          "active_incidents": [],
+          "last_commit": null,
+          "last_commit_message": null,
+          "council_mood": "TENSE",
+          "goose_energy": "UNBOUND",
+          "smith_alert_level": "RED",
+          "weatherman_forecast": "STABLE"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzf02ln_pbyye",
+      "timestamp": "2026-06-29T16:11:04.619Z",
+      "kind": "studio.session_ended",
+      "source": "studio",
+      "title": "Studio session ended: after_hours",
+      "summary": "the duck is concerned about the security posture.",
+      "agents": [
+        "hermes",
+        "goose",
+        "maverick",
+        "smith",
+        "memory",
+        "phoenix"
+      ],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_grq5cihq"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "turns": 9,
+        "votes_cast": 0,
+        "arena_winner": null,
+        "memory_generated": true
+      }
+    },
+    {
+      "id": "evt_mqzf0cbq_v3hob",
+      "timestamp": "2026-06-29T16:11:17.222Z",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "title": "Director incident: Build broken on main",
+      "summary": "deployment blocked",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": "HIGH",
+      "subject": "build_broken",
+      "refs": {
+        "incident_id": "build_broken"
+      },
+      "data": {
+        "world_delta": {
+          "build_health": 0,
+          "council_mood": "CRISIS"
+        }
+      }
+    },
+    {
+      "id": "backfill_session_ambient_1782749477258",
+      "timestamp": "2026-06-29T16:11:17.258Z",
+      "kind": "studio.ambient_life",
+      "source": "timeline.backfill",
+      "title": "Ambient life: ambient_life",
+      "summary": "Memory is always right. Eventually.",
+      "agents": [
+        "memory",
+        "goose",
+        "hermes"
+      ],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "ambient_life",
+      "refs": {
+        "session_id": "ambient_1782749477258"
+      },
+      "data": {
+        "mode": "ambient_life",
+        "topic": "callback",
+        "turns": 7,
+        "votes_cast": 0,
+        "ambient": true
+      }
+    },
+    {
+      "id": "backfill_session_ambient_1782749515702",
+      "timestamp": "2026-06-29T16:11:55.703Z",
+      "kind": "studio.ambient_life",
+      "source": "timeline.backfill",
+      "title": "Ambient life: ambient_life",
+      "summary": "A meeting that was not a meeting. The most important kind.",
+      "agents": [
+        "hermes",
+        "goose",
+        "maverick",
+        "smith",
+        "panda"
+      ],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "ambient_life",
+      "refs": {
+        "session_id": "ambient_1782749515702"
+      },
+      "data": {
+        "mode": "ambient_life",
+        "topic": "office_life",
+        "turns": 7,
+        "votes_cast": 0,
+        "ambient": true
+      }
+    },
+    {
+      "id": "backfill_session_s_cin3yemk",
+      "timestamp": "2026-06-29T16:21:03.821Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: after_hours",
+      "summary": "the duck is concerned about the security posture.",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_cin3yemk"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "turns": 4,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "backfill_session_s_7c2rr9w5",
+      "timestamp": "2026-06-29T16:21:03.821Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: council",
+      "summary": "the duck is not panicking. the duck has seen worse.",
+      "agents": [],
+      "location": "Council Chamber",
+      "mood": null,
+      "severity": null,
+      "subject": "council",
+      "refs": {
+        "session_id": "s_7c2rr9w5"
+      },
+      "data": {
+        "mode": "council",
+        "topic": "incident response",
+        "turns": 4,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "backfill_session_s_qashtx8o",
+      "timestamp": "2026-06-29T16:21:03.821Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: after_hours",
+      "summary": "the duck is concerned about the security posture.",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_qashtx8o"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "turns": 4,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "backfill_session_s_9n9nhja6",
+      "timestamp": "2026-06-29T16:21:03.821Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: news",
+      "summary": "the duck is not panicking. the duck has seen worse.",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": null,
+      "subject": "news",
+      "refs": {
+        "session_id": "s_9n9nhja6"
+      },
+      "data": {
+        "mode": "news",
+        "topic": "evening report",
+        "turns": 2,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "backfill_session_s_s41xhjrl",
+      "timestamp": "2026-06-29T16:21:03.821Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: news",
+      "summary": "the duck is not panicking. the duck has seen worse.",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": null,
+      "subject": "news",
+      "refs": {
+        "session_id": "s_s41xhjrl"
+      },
+      "data": {
+        "mode": "news",
+        "topic": "evening report",
+        "turns": 3,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "backfill_session_s_zc7ngibo",
+      "timestamp": "2026-06-29T16:21:03.821Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: after_hours",
+      "summary": "the duck is concerned about the security posture.",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_zc7ngibo"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "turns": 8,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "backfill_session_s_uzod8cbc",
+      "timestamp": "2026-06-29T16:21:03.821Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: council",
+      "summary": "the duck is not panicking. the duck has seen worse.",
+      "agents": [],
+      "location": "Council Chamber",
+      "mood": null,
+      "severity": null,
+      "subject": "council",
+      "refs": {
+        "session_id": "s_uzod8cbc"
+      },
+      "data": {
+        "mode": "council",
+        "topic": "provider outage and security incident",
+        "turns": 4,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "backfill_session_s_e0q7ay4b",
+      "timestamp": "2026-06-29T16:21:03.821Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: council",
+      "summary": "the duck is not panicking. the duck has seen worse.",
+      "agents": [],
+      "location": "Council Chamber",
+      "mood": null,
+      "severity": null,
+      "subject": "council",
+      "refs": {
+        "session_id": "s_e0q7ay4b"
+      },
+      "data": {
+        "mode": "council",
+        "topic": "provider outage and security incident",
+        "turns": 0,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "backfill_session_s_n42uebgu",
+      "timestamp": "2026-06-29T16:21:03.821Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: council",
+      "summary": "the duck is not panicking. the duck has seen worse.",
+      "agents": [],
+      "location": "Council Chamber",
+      "mood": null,
+      "severity": null,
+      "subject": "council",
+      "refs": {
+        "session_id": "s_n42uebgu"
+      },
+      "data": {
+        "mode": "council",
+        "topic": "provider outage and security incident",
+        "turns": 0,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "backfill_session_s_7z2r6roz",
+      "timestamp": "2026-06-29T16:21:03.821Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: news",
+      "summary": "the duck is not panicking. the duck has seen worse.",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": null,
+      "subject": "news",
+      "refs": {
+        "session_id": "s_7z2r6roz"
+      },
+      "data": {
+        "mode": "news",
+        "topic": "evening report",
+        "turns": 0,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "backfill_session_s_xo6hdajv",
+      "timestamp": "2026-06-29T16:21:03.821Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: after_hours",
+      "summary": "the duck is nervous about the goose energy levels.",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_xo6hdajv"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "turns": 0,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "backfill_session_s_ot9j14cl",
+      "timestamp": "2026-06-29T16:21:03.821Z",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "title": "Studio session: after_hours",
+      "summary": "the duck is nervous about the goose energy levels.",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_ot9j14cl"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "turns": 9,
+        "votes_cast": 0,
+        "ambient": false
+      }
+    },
+    {
+      "id": "evt_mqzflzbv_c11a7",
+      "timestamp": "2026-06-29T16:28:06.811Z",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "title": "Director incident: Potential security breach detected",
+      "summary": "incident response required",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": "HIGH",
+      "subject": "security_incident",
+      "refs": {
+        "incident_id": "security_incident"
+      },
+      "data": {
+        "world_delta": {
+          "smith_alert_level": "RED",
+          "council_mood": "CRISIS"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzfmbcu_6z4gh",
+      "timestamp": "2026-06-29T16:28:22.398Z",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "title": "Director incident: Potential security breach detected",
+      "summary": "incident response required",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": "HIGH",
+      "subject": "security_incident",
+      "refs": {
+        "incident_id": "security_incident"
+      },
+      "data": {
+        "world_delta": {
+          "smith_alert_level": "RED",
+          "council_mood": "CRISIS"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzfqjuh_5218z",
+      "timestamp": "2026-06-29T16:31:40.025Z",
+      "kind": "donor.heist_reported",
+      "source": "donor-archaeology",
+      "title": "Heist report: Environmental tension",
+      "summary": "Boss, I got us more loot. Environmental tension is now in the stack.",
+      "agents": [
+        "scout",
+        "goose",
+        "hermes",
+        "memory"
+      ],
+      "location": "Archive",
+      "mood": null,
+      "severity": null,
+      "subject": "Environmental tension",
+      "refs": {
+        "donor_report_id": "heist_mqzfqjue_ambient_tension_from_env",
+        "donor_artifact_id": "ambient_tension_from_environment"
+      },
+      "data": {
+        "target": "MLM Hero",
+        "status": "candidate",
+        "behavioural_law": "Rooms feel alive when background risk changes how characters interpret ordinary actions.",
+        "integrated_into": [
+          "Presence",
+          "Residue",
+          "Studio World State"
+        ],
+        "duck_observation": "The duck watched the entire operation."
+      }
+    },
+    {
+      "id": "evt_mqzfsdux_nm2js",
+      "timestamp": "2026-06-29T16:33:05.577Z",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "title": "Director incident: Potential security breach detected",
+      "summary": "incident response required",
+      "agents": [],
+      "location": "Studio",
+      "mood": null,
+      "severity": "HIGH",
+      "subject": "security_incident",
+      "refs": {
+        "incident_id": "security_incident"
+      },
+      "data": {
+        "world_delta": {
+          "smith_alert_level": "RED",
+          "council_mood": "CRISIS"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzfx4n8_n2imk",
+      "timestamp": "2026-06-29T16:36:46.916Z",
+      "kind": "donor.evolution_queued",
+      "source": "donor-archaeology",
+      "title": "Donor artifact queued for evolution: Environmental tension",
+      "summary": "Rooms feel alive when background risk changes how characters interpret ordinary actions.",
+      "agents": [],
+      "location": "Archive",
+      "mood": null,
+      "severity": null,
+      "subject": "Environmental tension",
+      "refs": {
+        "donor_artifact_id": "ambient_tension_from_environment",
+        "evolution_proposal_id": "mut_mqzfx4n6_byc9q4"
+      },
+      "data": {
+        "origin": "MLM Hero",
+        "proposal_kind": "append_planner_hint",
+        "risk": "low",
+        "next_command": "purpclaw evolve approve mut_mqzfx4n6_byc9q4"
+      }
+    },
+    {
+      "id": "evt_mqzh24ch_kvopx",
+      "timestamp": "2026-06-29T17:08:39.425Z",
+      "kind": "studio.session_started",
+      "source": "studio",
+      "title": "Studio session started: after_hours",
+      "summary": "☕ AFTER HOURS",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_fxvi5lcp"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "world": {
+          "provider_latency": "CRITICAL",
+          "provider_name": "nvidia",
+          "build_health": 0,
+          "memory_pressure": "LOW",
+          "duplicated_ui": "NONE",
+          "funding": "GOOD",
+          "release_window_days": null,
+          "active_incidents": [],
+          "last_commit": null,
+          "last_commit_message": null,
+          "council_mood": "CRISIS",
+          "goose_energy": "UNBOUND",
+          "smith_alert_level": "RED",
+          "weatherman_forecast": "STABLE"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzh3h3h_ntu6c",
+      "timestamp": "2026-06-29T17:09:42.605Z",
+      "kind": "studio.session_started",
+      "source": "studio",
+      "title": "Studio session started: after_hours",
+      "summary": "☕ AFTER HOURS",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_3otypkfr"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": null,
+        "world": {
+          "provider_latency": "CRITICAL",
+          "provider_name": "nvidia",
+          "build_health": 0,
+          "memory_pressure": "LOW",
+          "duplicated_ui": "NONE",
+          "funding": "GOOD",
+          "release_window_days": null,
+          "active_incidents": [],
+          "last_commit": null,
+          "last_commit_message": null,
+          "council_mood": "CRISIS",
+          "goose_energy": "UNBOUND",
+          "smith_alert_level": "RED",
+          "weatherman_forecast": "STABLE"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzhfiue_5ampv",
+      "timestamp": "2026-06-29T17:19:04.742Z",
+      "kind": "studio.session_started",
+      "source": "studio",
+      "title": "Studio session started: after_hours",
+      "summary": "testing the memory confidence pipeline",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_dhtfaequ"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": "testing the memory confidence pipeline",
+        "world": {
+          "provider_latency": "CRITICAL",
+          "provider_name": "nvidia",
+          "build_health": 0,
+          "memory_pressure": "LOW",
+          "duplicated_ui": "NONE",
+          "funding": "GOOD",
+          "release_window_days": null,
+          "active_incidents": [],
+          "last_commit": null,
+          "last_commit_message": null,
+          "council_mood": "CRISIS",
+          "goose_energy": "UNBOUND",
+          "smith_alert_level": "RED",
+          "weatherman_forecast": "STABLE"
+        }
+      }
+    },
+    {
+      "id": "evt_mqznj736_ooq2d",
+      "timestamp": "2026-06-29T20:09:53.826Z",
+      "kind": "studio.session_started",
+      "source": "studio",
+      "title": "Studio session started: after_hours",
+      "summary": "post-patch verification",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_gzheu52w"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": "post-patch verification",
+        "world": {
+          "provider_latency": "CRITICAL",
+          "provider_name": "nvidia",
+          "build_health": 0,
+          "memory_pressure": "LOW",
+          "duplicated_ui": "NONE",
+          "funding": "GOOD",
+          "release_window_days": null,
+          "active_incidents": [],
+          "last_commit": null,
+          "last_commit_message": null,
+          "council_mood": "CRISIS",
+          "goose_energy": "UNBOUND",
+          "smith_alert_level": "RED",
+          "weatherman_forecast": "STABLE"
+        }
+      }
+    },
+    {
+      "id": "evt_mqznj74c_8fd3f",
+      "timestamp": "2026-06-29T20:09:53.868Z",
+      "kind": "studio.session_ended",
+      "source": "studio",
+      "title": "Studio session ended: after_hours",
+      "summary": "the duck is not panicking. the duck has seen worse.",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_gzheu52w"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": "post-patch verification",
+        "turns": 5,
+        "votes_cast": 0,
+        "arena_winner": null,
+        "memory_generated": true
+      }
+    },
+    {
+      "id": "evt_mqznngxt_glaqj",
+      "timestamp": "2026-06-29T20:13:13.217Z",
+      "kind": "studio.session_started",
+      "source": "studio",
+      "title": "Studio session started: after_hours",
+      "summary": "tradition verification",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_bzah8c2c"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": "tradition verification",
+        "world": {
+          "council_mood": "CRISIS"
+        }
+      }
+    },
+    {
+      "id": "evt_mqznngzs_p0fdo",
+      "timestamp": "2026-06-29T20:13:13.288Z",
+      "kind": "studio.session_ended",
+      "source": "studio",
+      "title": "Studio session ended: after_hours",
+      "summary": "the duck is not panicking. the duck has seen worse.",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_bzah8c2c"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": "tradition verification",
+        "turns": 6,
+        "votes_cast": 0,
+        "arena_winner": null,
+        "memory_generated": true
+      }
+    },
+    {
+      "id": "evt_mqzno93c_oos4q",
+      "timestamp": "2026-06-29T20:13:49.704Z",
+      "kind": "studio.session_started",
+      "source": "studio",
+      "title": "Studio session started: after_hours",
+      "summary": "final test",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_qv6zafxn"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": "final test",
+        "world": {
+          "provider_latency": "CRITICAL",
+          "provider_name": "nvidia",
+          "build_health": 0,
+          "memory_pressure": "LOW",
+          "duplicated_ui": "NONE",
+          "funding": "GOOD",
+          "release_window_days": null,
+          "active_incidents": [],
+          "last_commit": null,
+          "last_commit_message": null,
+          "council_mood": "CRISIS",
+          "goose_energy": "UNBOUND",
+          "smith_alert_level": "RED",
+          "weatherman_forecast": "STABLE"
+        }
+      }
+    },
+    {
+      "id": "evt_mqzno94b_n4d2m",
+      "timestamp": "2026-06-29T20:13:49.739Z",
+      "kind": "studio.session_ended",
+      "source": "studio",
+      "title": "Studio session ended: after_hours",
+      "summary": "the duck is not panicking. the duck has seen worse.",
+      "agents": [],
+      "location": "Tea Room",
+      "mood": null,
+      "severity": null,
+      "subject": "after_hours",
+      "refs": {
+        "session_id": "s_qv6zafxn"
+      },
+      "data": {
+        "mode": "after_hours",
+        "topic": "final test",
+        "turns": 3,
+        "votes_cast": 0,
+        "arena_winner": null,
+        "memory_generated": true
+      }
+    }
+  ],
+  "patterns": {
+    "manual.note:soul-interview-protocol-established-solid-crew-to-21-seconds-to-21-questions-to-": {
+      "key": "manual.note:soul-interview-protocol-established-solid-crew-to-21-seconds-to-21-questions-to-",
+      "label": "Soul interview protocol established: Solid Crew to 21 Seconds to 21 Questions to the Soul Registry",
+      "kind": "manual.note",
+      "source": "cli",
+      "count": 1,
+      "confidence": 14,
+      "first_seen": "2026-06-29T16:05:11.165Z",
+      "last_seen": "2026-06-29T16:05:11.165Z",
+      "event_ids": [
+        "evt_mqzeshvh_mg1o6"
+      ],
+      "tradition": false
+    },
+    "studio.incident_injected:developer-exhausted": {
+      "key": "studio.incident_injected:developer-exhausted",
+      "label": "developer_exhausted",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "count": 3,
+      "confidence": 42,
+      "first_seen": "2026-06-29T16:08:01.161Z",
+      "last_seen": "2026-06-29T16:11:04.547Z",
+      "event_ids": [
+        "evt_mqzew51k_46mjy",
+        "evt_mqzewjus_mf1zt",
+        "evt_mqzf02jn_iapw6"
+      ],
+      "tradition": true
+    },
+    "studio.incident_injected:nvidia-offline": {
+      "key": "studio.incident_injected:nvidia-offline",
+      "label": "nvidia_offline",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "count": 1,
+      "confidence": 14,
+      "first_seen": "2026-06-29T16:08:01.189Z",
+      "last_seen": "2026-06-29T16:08:01.189Z",
+      "event_ids": [
+        "evt_mqzew52d_8qlrq"
+      ],
+      "tradition": false
+    },
+    "studio.session_started:after-hours": {
+      "key": "studio.session_started:after-hours",
+      "label": "after_hours",
+      "kind": "studio.session_started",
+      "source": "studio",
+      "count": 9,
+      "confidence": 95,
+      "first_seen": "2026-06-29T16:08:01.190Z",
+      "last_seen": "2026-06-29T20:13:49.704Z",
+      "event_ids": [
+        "evt_mqzew52e_udxnc",
+        "evt_mqzewjve_twhie",
+        "evt_mqzf02jn_ccrgg",
+        "evt_mqzh24ch_kvopx",
+        "evt_mqzh3h3h_ntu6c",
+        "evt_mqzhfiue_5ampv",
+        "evt_mqznj736_ooq2d",
+        "evt_mqznngxt_glaqj",
+        "evt_mqzno93c_oos4q"
+      ],
+      "tradition": true
+    },
+    "studio.session_ended:after-hours": {
+      "key": "studio.session_ended:after-hours",
+      "label": "after_hours",
+      "kind": "studio.session_ended",
+      "source": "studio",
+      "count": 11,
+      "confidence": 95,
+      "first_seen": "2026-06-29T16:08:01.276Z",
+      "last_seen": "2026-06-29T20:13:49.739Z",
+      "event_ids": [
+        "evt_mqzew54s_cl3j4",
+        "evt_mqzewjxm_20r56",
+        "evt_mqzf02ln_pbyye",
+        "backfill_session_s_cin3yemk",
+        "backfill_session_s_qashtx8o",
+        "backfill_session_s_zc7ngibo",
+        "backfill_session_s_xo6hdajv",
+        "backfill_session_s_ot9j14cl",
+        "evt_mqznj74c_8fd3f",
+        "evt_mqznngzs_p0fdo",
+        "evt_mqzno94b_n4d2m"
+      ],
+      "tradition": true
+    },
+    "studio.incident_injected:build-broken": {
+      "key": "studio.incident_injected:build-broken",
+      "label": "build_broken",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "count": 2,
+      "confidence": 28,
+      "first_seen": "2026-06-29T16:11:04.530Z",
+      "last_seen": "2026-06-29T16:11:17.222Z",
+      "event_ids": [
+        "evt_mqzf02j6_n2zyp",
+        "evt_mqzf0cbq_v3hob"
+      ],
+      "tradition": false
+    },
+    "council.vote_cast:should-we-rewrite-the-provider-router": {
+      "key": "council.vote_cast:should-we-rewrite-the-provider-router",
+      "label": "should we rewrite the provider router",
+      "kind": "council.vote_cast",
+      "source": "timeline.backfill",
+      "count": 2,
+      "confidence": 28,
+      "first_seen": "2026-06-29T14:24:25.301Z",
+      "last_seen": "2026-06-29T14:24:52.065Z",
+      "event_ids": [
+        "backfill_vote_v_mqzb6wut_v6fiq",
+        "backfill_vote_v_mqzb7hi9_kwzga"
+      ],
+      "tradition": false
+    },
+    "council.vote_cast:auth-vulnerability-found": {
+      "key": "council.vote_cast:auth-vulnerability-found",
+      "label": "auth vulnerability found",
+      "kind": "council.vote_cast",
+      "source": "timeline.backfill",
+      "count": 1,
+      "confidence": 14,
+      "first_seen": "2026-06-29T14:26:10.574Z",
+      "last_seen": "2026-06-29T14:26:10.574Z",
+      "event_ids": [
+        "backfill_vote_v_mqzb9632_2dwbl"
+      ],
+      "tradition": false
+    },
+    "council.vote_cast:ship-the-chaos-pass": {
+      "key": "council.vote_cast:ship-the-chaos-pass",
+      "label": "ship the chaos-pass",
+      "kind": "council.vote_cast",
+      "source": "timeline.backfill",
+      "count": 1,
+      "confidence": 14,
+      "first_seen": "2026-06-29T14:31:50.389Z",
+      "last_seen": "2026-06-29T14:31:50.389Z",
+      "event_ids": [
+        "backfill_vote_v_mqzbggad_vy5y1"
+      ],
+      "tradition": false
+    },
+    "council.vote_cast:adopt-the-studio-broadcast-model-for-purpclaw": {
+      "key": "council.vote_cast:adopt-the-studio-broadcast-model-for-purpclaw",
+      "label": "adopt the studio broadcast model for PURPCLAW",
+      "kind": "council.vote_cast",
+      "source": "timeline.backfill",
+      "count": 1,
+      "confidence": 14,
+      "first_seen": "2026-06-29T15:24:42.245Z",
+      "last_seen": "2026-06-29T15:24:42.245Z",
+      "event_ids": [
+        "backfill_vote_v_mqzdcfph_tegt4"
+      ],
+      "tradition": false
+    },
+    "studio.session_ended:council": {
+      "key": "studio.session_ended:council",
+      "label": "council",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "count": 5,
+      "confidence": 70,
+      "first_seen": "2026-06-29T15:26:31.396Z",
+      "last_seen": "2026-06-29T16:21:03.821Z",
+      "event_ids": [
+        "backfill_session_s_1io623io",
+        "backfill_session_s_7c2rr9w5",
+        "backfill_session_s_uzod8cbc",
+        "backfill_session_s_e0q7ay4b",
+        "backfill_session_s_n42uebgu"
+      ],
+      "tradition": true
+    },
+    "studio.session_ended:directors-cut": {
+      "key": "studio.session_ended:directors-cut",
+      "label": "directors_cut",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "count": 1,
+      "confidence": 14,
+      "first_seen": "2026-06-29T15:26:39.550Z",
+      "last_seen": "2026-06-29T15:26:39.550Z",
+      "event_ids": [
+        "backfill_session_s_5ufnkeqb"
+      ],
+      "tradition": false
+    },
+    "studio.ambient_life:ambient-life": {
+      "key": "studio.ambient_life:ambient-life",
+      "label": "ambient_life",
+      "kind": "studio.ambient_life",
+      "source": "timeline.backfill",
+      "count": 2,
+      "confidence": 28,
+      "first_seen": "2026-06-29T16:11:17.258Z",
+      "last_seen": "2026-06-29T16:11:55.703Z",
+      "event_ids": [
+        "backfill_session_ambient_1782749477258",
+        "backfill_session_ambient_1782749515702"
+      ],
+      "tradition": false
+    },
+    "studio.session_ended:news": {
+      "key": "studio.session_ended:news",
+      "label": "news",
+      "kind": "studio.session_ended",
+      "source": "timeline.backfill",
+      "count": 3,
+      "confidence": 42,
+      "first_seen": "2026-06-29T16:21:03.821Z",
+      "last_seen": "2026-06-29T16:21:03.821Z",
+      "event_ids": [
+        "backfill_session_s_9n9nhja6",
+        "backfill_session_s_s41xhjrl",
+        "backfill_session_s_7z2r6roz"
+      ],
+      "tradition": true
+    },
+    "studio.incident_injected:security-incident": {
+      "key": "studio.incident_injected:security-incident",
+      "label": "security_incident",
+      "kind": "studio.incident_injected",
+      "source": "director",
+      "count": 3,
+      "confidence": 42,
+      "first_seen": "2026-06-29T16:28:06.811Z",
+      "last_seen": "2026-06-29T16:33:05.577Z",
+      "event_ids": [
+        "evt_mqzflzbv_c11a7",
+        "evt_mqzfmbcu_6z4gh",
+        "evt_mqzfsdux_nm2js"
+      ],
+      "tradition": true
+    },
+    "donor.heist_reported:environmental-tension": {
+      "key": "donor.heist_reported:environmental-tension",
+      "label": "Environmental tension",
+      "kind": "donor.heist_reported",
+      "source": "donor-archaeology",
+      "count": 1,
+      "confidence": 14,
+      "first_seen": "2026-06-29T16:31:40.025Z",
+      "last_seen": "2026-06-29T16:31:40.025Z",
+      "event_ids": [
+        "evt_mqzfqjuh_5218z"
+      ],
+      "tradition": false
+    },
+    "donor.evolution_queued:environmental-tension": {
+      "key": "donor.evolution_queued:environmental-tension",
+      "label": "Environmental tension",
+      "kind": "donor.evolution_queued",
+      "source": "donor-archaeology",
+      "count": 1,
+      "confidence": 14,
+      "first_seen": "2026-06-29T16:36:46.916Z",
+      "last_seen": "2026-06-29T16:36:46.916Z",
+      "event_ids": [
+        "evt_mqzfx4n8_n2imk"
+      ],
+      "tradition": false
+    }
+  }
+}

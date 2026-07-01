@@ -1,0 +1,98 @@
+{
+  "schema": "purpclaw.hivemind.trace.v1",
+  "run_id": "rank1-refactor_module-1782753633125-15-udqb",
+  "workflow_id": "wf-rank1-refactor_module-ctyjxi",
+  "task": "verified refactor_module",
+  "source": "spring_doctrine_seed",
+  "agent": "verified_execution",
+  "model": "verified",
+  "provider": "verified",
+  "intent": "refactor_module",
+  "job_type": "code_modification",
+  "route_intent": "refactor_module",
+  "started_at": "2026-06-29T17:19:33.125Z",
+  "ended_at": "2026-06-29T17:20:33.125Z",
+  "duration_ms": 5000,
+  "tools_used": [
+    "read_file",
+    "write_file",
+    "test_runner"
+  ],
+  "tool_calls": [
+    {
+      "name": "read_file",
+      "args_hash": "sha256:verified",
+      "output_summary": "verified"
+    },
+    {
+      "name": "write_file",
+      "args_hash": "sha256:verified",
+      "output_summary": "verified"
+    },
+    {
+      "name": "test_runner",
+      "args_hash": "sha256:verified",
+      "output_summary": "verified"
+    }
+  ],
+  "files_touched": [
+    "src/module_1.ts",
+    "tests/test_module_1.ts"
+  ],
+  "commands": [
+    "verified refactor_module"
+  ],
+  "verification_gates": [
+    "gate_lint",
+    "gate_tests",
+    "gate_verified"
+  ],
+  "gate_results": [
+    {
+      "gate": "gate_lint",
+      "ok": true
+    },
+    {
+      "gate": "gate_tests",
+      "ok": true
+    },
+    {
+      "gate": "gate_verified",
+      "ok": true
+    }
+  ],
+  "outcome": "success",
+  "tests_passed": true,
+  "rollback": false,
+  "destructive": false,
+  "tokens": 1000,
+  "evidence": [
+    {
+      "kind": "test",
+      "ref": "tests/test_refactor_module.py",
+      "passed": true
+    },
+    {
+      "kind": "lint",
+      "ref": "eslint --quiet",
+      "passed": true
+    },
+    {
+      "kind": "verified_execution",
+      "ref": "production_run",
+      "passed": true
+    }
+  ],
+  "status": "completed",
+  "immutable": true,
+  "trust_score": 0.96,
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "verified_execution",
+    "spring_rank": 1,
+    "spring_label": "Pure Spring",
+    "trust_score": 0.96
+  },
+  "updated_at": "2026-06-29T17:20:33.137Z",
+  "score": 0.994
+}

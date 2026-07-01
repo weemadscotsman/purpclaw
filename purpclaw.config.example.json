@@ -1,0 +1,20 @@
+{
+  "_comment": "PurpClaw safe default config. Copy to purpclaw.config.json and edit. Demo mode works with NO keys.",
+  "mode": "demo",
+  "_mode_options": ["demo", "api", "local", "dev"],
+  "displayName": "operator",
+  "storagePath": "~/.purpclaw",
+  "ui": { "port": 3030, "autoOpenBrowser": true, "host": "127.0.0.1" },
+  "provider": {
+    "_comment": "In demo mode no key is needed. For api/local mode set one provider + key in .env.",
+    "default": "demo",
+    "fallback": "ollama",
+    "localEndpoint": "http://127.0.0.1:11434"
+  },
+  "services": {
+    "_comment": "Core services started by `safe-start --core`. Optional ones are off by default.",
+    "core": ["eventbus", "state", "api", "tower", "orchestrator", "nextjs", "gatekeeper", "metrics", "pool", "context-bus", "cognitive"],
+    "optional": ["voice", "vision", "yolo", "stt", "reasoning", "harness", "telegram"]
+  },
+  "onboarding": { "showTutorial": true, "preloadFirstMessage": "Explain what PurpClaw can do and show me my first command." }
+}

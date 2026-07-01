@@ -3,52 +3,39 @@ import { NextRequest, NextResponse } from 'next/server';
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
+/**
+ * /api/evolution/status — proxy to unified_api (:7780).
+ *
+ * The self-evolution loop status + controls live in the api process (:7780).
+ * The /evolution page (and the MissionControl evolution lens) fetch this as a
+ * relative path, which hit nextjs (:3030) and 404'd. This proxy mounts the
+ * canonical path on the web port. GET = status, POST = action (run-once/pause/resume).
+ */
+const UPSTREAM = 'http://127.0.0.1:7780/api/evolution/status';
+
 export async function GET() {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const evolution = require('../../../../lib/self-evolution-loop.js');
-    return NextResponse.json({ ok: true, ...evolution.getStatus() });
-  } catch (error: unknown) {
-    return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    const r = await fetch(UPSTREAM, { cache: 'no-store', signal: AbortSignal.timeout(5000) });
+    const body = await r.text();
+    return new NextResponse(body, { status: r.status, headers: { 'Content-Type': 'application/json' } });
+  } catch (e: unknown) {
+    return NextResponse.json({ ok: false, enabled: false, error: e instanceof Error ? e.message : String(e), hint: 'unified_api (:7780) unreachable' }, { status: 200 });
   }
 }
 
 export async function POST(req: NextRequest) {
+  let body = '{}';
+  try { body = await req.text(); } catch { /* empty body ok */ }
   try {
-    const body = await req.json().catch(() => ({}));
-    const action = String(body?.action || '').toLowerCase();
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const evolution = require('../../../../lib/self-evolution-loop.js');
-    let result: any = null;
-    if (action === 'run-once' || action === 'tick') {
-      result = await evolution.runTick();
-    } else if (action === 'pause' || action === 'stop' || action === 'disable') {
-      evolution.stop();
-      result = { stopped: true, note: 'Stopped the loop timer in this runtime. Persist EVOLUTION_DISABLED=1 to keep it disabled across restarts.' };
-    } else if (action === 'resume' || action === 'start' || action === 'enable') {
-      evolution.start();
-      result = { started: true, note: 'Started the loop timer in this runtime. Persist EVOLUTION_DISABLED=0 to keep it enabled across restarts.' };
-    } else {
-      return NextResponse.json({ ok: false, error: 'unknown_action', actions: ['run-once', 'pause', 'resume'] }, { status: 400 });
-    }
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      require('../../../../lib/trace-store.js').record({
-        source: 'evolution-api',
-        route: '/api/evolution/status',
-        action: `evolution_${action}`,
-        status: 'ok',
-        detail: typeof result === 'string' ? result : JSON.stringify(result).slice(0, 400),
-      });
-    } catch {}
-    return NextResponse.json({ ok: true, action, result, status: evolution.getStatus() });
-  } catch (error: unknown) {
-    return NextResponse.json(
-      { ok: false, error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    const r = await fetch(UPSTREAM, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      signal: AbortSignal.timeout(8000),
+    });
+    const out = await r.text();
+    return new NextResponse(out, { status: r.status, headers: { 'Content-Type': 'application/json' } });
+  } catch (e: unknown) {
+    return NextResponse.json({ ok: false, error: e instanceof Error ? e.message : String(e), hint: 'unified_api (:7780) unreachable' }, { status: 200 });
   }
 }

@@ -19,6 +19,14 @@ try {
   agentLoopTools = require('./lib/agent-loop');
 } catch {}
 
+let HIVEMIND = null;
+try {
+  HIVEMIND = require('./lib/hivemind');
+  console.log('[TOWER] Hivemind layer loaded — agents receive proven skills and write traces');
+} catch (e) {
+  console.log('[TOWER] Hivemind unavailable:', e.message);
+}
+
 // Environment Constants
 const PURP_DIR = __dirname;
 const AGENT_TOWER_PORT = process.env.AGENT_TOWER_PORT || 7790;
@@ -37,17 +45,57 @@ const TOWER_TIERS = {
   TIER_3_STRATEGIC: { level: 3, name: 'Strategic', color: '#E74C3C' }
 };
 
-const DIVISIONS = {
-  INTELLIGENCE: { id: 'intel', color: '#E74C3C', tier: 3, agents: ['spider', 'raven', 'ghost'] },
-  ENGINEERING: { id: 'eng', color: '#3498DB', tier: 1, agents: ['dragon', 'robot', 'mushroom', 'chonk', 'turtle', 'axolotl', 'wolf', 'bee'] },
-  SECURITY: { id: 'sec', color: '#27AE60', tier: 2, agents: ['octopus', 'owl', 'rabbit', 'snake', 'bunny', 'guardian'] },
-  INFRASTRUCTURE: { id: 'infra', color: '#F39C12', tier: 1, agents: ['cactus', 'void'] },
-  MEDIA_OPS: { id: 'media', color: '#9B59B6', tier: 2, agents: ['duck', 'goose', 'parrot'] },
-  MANAGEMENT: { id: 'mgmt', color: '#1ABC9C', tier: 3, agents: ['penguin', 'karen', 'lemur'] },
-  SCIENCE: { id: 'science', color: '#00BCD4', tier: 2, agents: ['scientist'] },
-  CREATIVE: { id: 'creative', color: '#E91E63', tier: 2, agents: ['phoenix', 'crow'] },
-  OPERATIONS: { id: 'ops', color: '#FF5722', tier: 2, agents: ['mantis', 'shark', 'gorilla'] }
+// DIVISIONS — built dynamically from AGENT_TOWER.registry (after persona merge).
+// Canonical source: agents/AGENT_REGISTRY.json (scripts/sync-agents.js).
+// Replace a stale hardcoded list that only had 9 animals per division.
+const DIVISION_COLORS = {
+  INTELLIGENCE:   '#E74C3C',
+  ENGINEERING:    '#3498DB',
+  SECURITY:       '#27AE60',
+  INFRASTRUCTURE: '#F39C12',
+  MEDIA_OPS:     '#9B59B6',
+  MANAGEMENT:    '#1ABC9C',
+  SCIENCE:        '#00BCD4',
+  CREATIVE:       '#E91E63',
+  OPERATIONS:     '#FF5722',
 };
+
+// Reads from canonical AGENT_REGISTRY.json to derive divisions at init time.
+// After persona merge, AGENT_TOWER.registry is the superset, so we rebuild from there.
+// Reading from file first avoids "AGENT_TOWER not yet initialized" at module load.
+function buildDivisions() {
+  // Reads from canonical AGENT_REGISTRY.json — never touches AGENT_TOWER (avoids TDZ).
+  let entries = [];
+  try {
+    const { readRegistry } = require('./lib/agent-registry');
+    const reg = readRegistry();
+    entries = reg.agents || [];
+  } catch (_) { return {}; }
+  const byDiv = {};
+  for (const info of entries) {
+    const key = (info.name || info.key || '').toLowerCase();
+    const div = (info.division || 'UNASSIGNED').toUpperCase().replace(/-/g, '_');
+    if (!byDiv[div]) byDiv[div] = { agents: [] };
+    byDiv[div].agents.push(key);
+  }
+  const out = {};
+  for (const [div, data] of Object.entries(byDiv)) {
+    out[div] = {
+      id: div.toLowerCase().replace(/_/g, '-'),
+      color: DIVISION_COLORS[div] || '#888888',
+      tier: 2,
+      agents: data.agents,
+    };
+  }
+  return out;
+}
+
+
+// DIVISIONS is built after AGENT_TOWER is fully initialized (after persona merge).
+// See below: DIVISIONS = buildDivisions() is called after module load completes.
+let DIVISIONS = {};
+
+
 
 const AGENT_TOWER = {
   registry: {
@@ -136,6 +184,9 @@ try {
   AGENT_TOWER.stats.personasSkipped = skipped;
 } catch (e) {
   AGENT_TOWER.stats.personasError = e.message;
+
+// DIVISIONS built from canonical registry at module load end
+
 }
 
 function broadcast(event) {
@@ -220,6 +271,14 @@ async function spawnAgent(agentName, task, options = {}) {
     prompt = await buildAgentPrompt(agentName, task);
   }
 
+  if (hivemindBlock) {
+    prompt = `${prompt}
+
+${hivemindBlock}
+
+Follow the Hivemind skills when they fit the task, but never ignore live evidence. AntiSkills are traps to avoid.`;
+  }
+
   const activeAgent = {
     id: agentId,
     name: agentName,
@@ -235,6 +294,8 @@ async function spawnAgent(agentName, task, options = {}) {
     teamId: options.teamId || null,
     parentId: options.parentId || null,
     workflowId: options.workflowId || null,
+    hivemindTraceId: options?.hivemind?.traceId || null,
+    hivemindSkills: options?.hivemind?.skills || [],
     logFile,
     workDir: agentWorkDir
   };
@@ -459,6 +520,20 @@ async function spawnAgent(agentName, task, options = {}) {
     output: String(output || '').substring(0, 500),
     status: activeAgent.status
   });
+
+  if (HIVEMIND) {
+    try {
+      const trace = HIVEMIND.recordAgentTrace(activeAgent, { ...result, provider: providerName, model: modelName, error: exitCode === 0 ? null : output }, options || {});
+      activeAgent.hivemindAgentTrace = trace ? { run_id: trace.run_id, score: trace.score, outcome: trace.outcome } : null;
+      if (options?.hivemind?.traceId) {
+        HIVEMIND.recordEvent(options.hivemind.traceId, exitCode === 0 ? 'agent.completed' : 'agent.failed', {
+          agentId, agentName, provider: providerName, model: modelName, toolCalls: (activeAgent.toolCalls || []).length
+        });
+      }
+    } catch (e) {
+      console.log(`[TOWER] Hivemind agent trace failed: ${e.message}`);
+    }
+  }
 
   AGENT_TOWER.activeAgents.delete(agentId);
   if (options.teamId) removeAgentFromTeam(agentId, options.teamId);
@@ -1124,5 +1199,10 @@ if (require.main === module) {
     process.exit(0);
   });
 }
+
+
+// ── Build DIVISIONS from canonical registry after everything is initialized ──
+// AGENT_TOWER is now fully set up (personas merged in); rebuild DIVISIONS from live registry.
+try { AGENT_TOWER.divisions = buildDivisions(); DIVISIONS = AGENT_TOWER.divisions; } catch (e) { console.warn('[TOWER] DIVISIONS build failed:', e.message); }
 
 module.exports = AGENT_TOWER;

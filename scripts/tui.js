@@ -6,7 +6,7 @@
  * Launched by:  purpclaw tui
  *
  * Keyboard:
- *   1-6 / ←→ / Tab  Switch tabs
+ *   1-7 / ←→ / Tab  Switch tabs
  *   r               Force refresh
  *   p / Space       Pause / resume auto-refresh
  *   q / Ctrl-C      Exit
@@ -22,6 +22,8 @@ const readline = require('readline');
 const PURP_DIR   = path.resolve(__dirname, '..');
 const VOICE      = (() => { try { return require(path.join(PURP_DIR, 'lib', 'voice-client.js')); } catch { return null; } })();
 const SPRITES    = (() => { try { return require(path.join(PURP_DIR, 'lib', 'mochi-sprites.js')); } catch { return null; } })();
+const CAPABILITIES = (() => { try { return require(path.join(PURP_DIR, 'lib', 'surface-capabilities.js')); } catch { return null; } })();
+const ACTIONS    = (() => { try { return require(path.join(PURP_DIR, 'lib', 'action-dispatcher.js')); } catch { return null; } })();
 
 // ── .env loader ───────────────────────────────────────────────────────────────
 (function loadEnv() {
@@ -125,6 +127,9 @@ let paused     = false;
 let tick_      = 0;
 let lastData   = null;
 let eventLog   = [];
+let activeAction = 0;
+let actionPreview = null;
+let actionStatus = null;
 const MAX_LOG  = 300;
 
 // ── voice state ───────────────────────────────────────────────────────────────
@@ -159,7 +164,7 @@ async function toggleVoice() {
   }
 }
 
-const TABS = ['OVERVIEW', 'AGENTS', 'JOBS', 'MEMORY', 'POOL', 'LOGS'];
+const TABS = ['OVERVIEW', 'ACTIONS', 'AGENTS', 'JOBS', 'MEMORY', 'POOL', 'LOGS'];
 
 function addLog(ts, type, msg) {
   eventLog.push({ ts, type: fit(String(type), 14), msg: String(msg) });
@@ -308,7 +313,7 @@ function drawHeader(out, W, data) {
 function drawFooter(out, W, H) {
   out.push(at(H - 1, 1) + boxMid(W));
   const vState = voiceStatus.voiceEnabled ? col(C.green, 'on') : col(C.gray, 'off');
-  const hints = `  ${col(C.gray, '1-6')}:tab  ${col(C.gray, '←→')}:nav  ${col(C.gray, 'r')}:refresh  ${col(C.gray, 'p')}:pause  ${col(C.gray, 'v')}:voice(${vState})  ${col(C.gray, 'q')}:quit  `;
+  const hints = `  ${col(C.gray, '1-' + TABS.length)}:tab  ${col(C.gray, '←→')}:nav  ${col(C.gray, 'r')}:refresh  ${col(C.gray, 'p')}:pause  ${col(C.gray, 'v')}:voice(${vState})  ${col(C.gray, 'q')}:quit  `;
   const footer = hints + col(C.dim, '  ·  PURPCLAW TUI  ·  tiny haunted workshop');
   out.push(at(H, 2) + footer);
 }
@@ -445,6 +450,60 @@ function drawOverview(out, R1, RN, W, data) {
       const typeC = e.type.includes('complete') ? C.green : e.type.includes('fail') ? C.red : e.type.includes('spawn') ? C.cyan : C.gray;
       out.push(at(rr, mid) + col(C.purple, '│') + ` ${col(C.gray, e.ts)}  ${col(typeC, e.type)}  ${col(C.dim, fit(e.msg, W - mid - 28))}`);
       rr++;
+    }
+  }
+}
+
+function drawActions(out, R1, RN, W) {
+  let r = R1;
+  const capabilities = CAPABILITIES ? CAPABILITIES.listCapabilities() : [];
+  out.push(at(r, 2) + col(C.bold, 'SURFACE ACTIONS') + col(C.gray, '  ·  same jobs across CLI, TUI, and web UI'));
+  r += 2;
+
+  if (!capabilities.length) {
+    out.push(at(r, 2) + col(C.red, '  Capability catalog unavailable: lib/surface-capabilities.js'));
+    return;
+  }
+
+  const leftW = Math.max(34, Math.floor(W * 0.33));
+  const midW = Math.max(34, Math.floor(W * 0.31));
+  const rightW = Math.max(34, W - leftW - midW - 8);
+  const rowsPerItem = 4;
+  const maxItems = Math.max(1, Math.floor((RN - r + 1) / rowsPerItem));
+
+  for (const [idx, item] of capabilities.slice(0, maxItems).entries()) {
+    const setup = item.setup.join(', ');
+    const cli = item.cli[0] || 'purpclaw capabilities';
+    const tui = item.tui[0] || 'this tab';
+    const web = `${item.web.route} / ${item.web.mode}`;
+    const tone = item.category === 'execute' ? C.green : item.category === 'setup' ? C.yellow : item.category === 'observe' ? C.cyan : C.white;
+    const marker = idx === activeAction ? col(C.yellow + C.bold, '▶') : col(C.gray, ' ');
+    out.push(at(r, 2) + `${marker} ${col(tone + C.bold, fit(item.label, leftW - 5))} ${col(C.gray, fit(item.category, 11))}`);
+    out.push(at(r, leftW) + col(C.cyan, fit(`CLI ${cli}`, midW - 2)));
+    out.push(at(r, leftW + midW) + col(C.lavender, fit(`WEB ${web}`, rightW - 2)));
+    r++;
+    out.push(at(r, 4) + col(C.gray, fit(item.reason, W - 8)));
+    r++;
+    out.push(at(r, 4) + col(C.gray, fit(`TUI ${tui}`, leftW - 4)));
+    out.push(at(r, leftW) + col(C.gray, fit(`SETUP ${setup}`, W - leftW - 4)));
+    r += 2;
+    if (r > RN) break;
+  }
+
+  if (capabilities.length > maxItems && r <= RN) {
+    out.push(at(r, 2) + col(C.gray, `  ${capabilities.length - maxItems} more. CLI: purpclaw capabilities --json  ·  Web API: /api/capabilities`));
+  }
+  if (r <= RN - 2) {
+    r++;
+    const selected = capabilities[activeAction] || capabilities[0];
+    out.push(at(r, 2) + col(C.yellow, '  ↑/↓ select  Enter plan  l launch  ') + col(C.gray, `selected: ${selected?.id || 'none'}`));
+    r++;
+    if (actionPreview) {
+      const p = actionPreview.plan || actionPreview;
+      out.push(at(r, 2) + col(C.gray, `  plan: ${p.method || '?'} ${p.port ? ':' + p.port : ''}${p.path || ''}`));
+      if (actionStatus && r + 1 <= RN - 1) out.push(at(r + 1, 2) + col(C.gray, `  status: ${actionStatus}`));
+    } else {
+      out.push(at(r, 2) + col(C.gray, '  plan: press Enter to preview the same dispatch target used by CLI and web'));
     }
   }
 }
@@ -713,11 +772,12 @@ async function render() {
 
   switch (activeTab) {
     case 0: drawOverview(out, R1, RN, W, data); break;
-    case 1: drawAgents(out, R1, RN, W);         break;
-    case 2: drawJobs(out, R1, RN, W, data);     break;
-    case 3: await drawMemory(out, R1, RN, W);   break;
-    case 4: drawPool(out, R1, RN, W, data);     break;
-    case 5: drawLogs(out, R1, RN, W);           break;
+    case 1: drawActions(out, R1, RN, W);        break;
+    case 2: drawAgents(out, R1, RN, W);         break;
+    case 3: drawJobs(out, R1, RN, W, data);     break;
+    case 4: await drawMemory(out, R1, RN, W);   break;
+    case 5: drawPool(out, R1, RN, W, data);     break;
+    case 6: drawLogs(out, R1, RN, W);           break;
   }
 
   process.stdout.write(out.join(''));
@@ -734,7 +794,45 @@ function setupKeys(quit) {
     if (key.name === 'r') { await render(); return; }
     if (key.name === 'p' || key.name === 'space') { paused = !paused; await render(); return; }
     if (key.name === 'v') { await toggleVoice(); await render(); return; }
-    if (key.name >= '1' && key.name <= '6') { activeTab = parseInt(key.name) - 1; await render(); return; }
+    if (activeTab === 1 && CAPABILITIES) {
+      const caps = CAPABILITIES.listCapabilities();
+      if (key.name === 'down') { activeAction = Math.min(caps.length - 1, activeAction + 1); await render(); return; }
+      if (key.name === 'up') { activeAction = Math.max(0, activeAction - 1); await render(); return; }
+      if (key.name === 'return') {
+        const selected = caps[activeAction] || caps[0];
+        try {
+          actionPreview = ACTIONS
+            ? ACTIONS.buildActionPlan(selected.id, selected.reason, { source: 'tui-action-plan' })
+            : { plan: { method: 'missing', path: 'lib/action-dispatcher.js unavailable' } };
+          actionStatus = 'planned';
+          addLog(new Date().toLocaleTimeString('en-GB'), 'action.plan', `${selected.id} -> ${actionPreview.method || actionPreview.plan?.method || '?'}`);
+        } catch (e) {
+          actionPreview = { plan: { method: 'error', path: e.message || String(e) } };
+          actionStatus = e.message || String(e);
+        }
+        await render();
+        return;
+      }
+      if (key.name === 'l') {
+        const selected = caps[activeAction] || caps[0];
+        try {
+          actionStatus = `launching ${selected.id}`;
+          await render();
+          actionPreview = ACTIONS
+            ? await ACTIONS.dispatchAction(selected.id, selected.reason, { source: 'tui-action' })
+            : { plan: { method: 'missing', path: 'lib/action-dispatcher.js unavailable' } };
+          const status = actionPreview.result?.status || (actionPreview.ok ? 'ok' : 'failed');
+          actionStatus = `${selected.id} ${status}`;
+          addLog(new Date().toLocaleTimeString('en-GB'), 'action.launch', `${selected.id} -> ${status}`);
+        } catch (e) {
+          actionPreview = { plan: { method: 'error', path: e.message || String(e) } };
+          actionStatus = e.message || String(e);
+        }
+        await render();
+        return;
+      }
+    }
+    if (/^[1-9]$/.test(key.name) && parseInt(key.name, 10) <= TABS.length) { activeTab = parseInt(key.name, 10) - 1; await render(); return; }
     if (key.name === 'right' || key.name === 'tab') { activeTab = (activeTab + 1) % TABS.length; await render(); return; }
     if (key.name === 'left') { activeTab = (activeTab - 1 + TABS.length) % TABS.length; await render(); return; }
   });

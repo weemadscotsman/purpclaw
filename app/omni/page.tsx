@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CockpitShell } from '../components/CockpitShell';
 
 // OMNI-SURGEON Cockpit — Phase Five
 // Operator surface that shows the truth snapshot, feature registry,
@@ -81,7 +80,7 @@ export default function OmniPage() {
   }) || [];
 
   return (
-    <CockpitShell>
+    <>
       <div style={{ padding: 24, color: '#e5e7eb', fontFamily: 'system-ui' }}>
         <h1 style={{ color: '#22d3ee', fontSize: 24, margin: '0 0 16px' }}>
           OMNI-SURGEON Cockpit
@@ -199,10 +198,171 @@ export default function OmniPage() {
           </section>
         )}
 
+        {/* RELIABILITY LEDGER — STRESS adversarial test evidence */}
+        <section style={{ background: '#0f172a', padding: 16, marginBottom: 16, borderRadius: 8, border: '1px solid #1e293b' }}>
+          <h2 style={{ color: '#a855f7', fontSize: 16, margin: '0 0 12px' }}>
+            Reliability Ledger — STRESS Benchmark History
+          </h2>
+          <div style={{ color: '#7b7fa3', fontSize: 11, marginBottom: 8 }}>
+            Evidence: <code style={{ color: '#22d3ee' }}>agent_work/benchmark/history.jsonl</code>
+          </div>
+          <BenchmarkLedger />
+        </section>
+
+        {/* REFUSAL WEIGHTS — read-only evidence display */}
+        <section style={{ background: '#0f172a', padding: 16, marginBottom: 16, borderRadius: 8, border: '1px solid #1e293b' }}>
+          <h2 style={{ color: '#a855f7', fontSize: 16, margin: '0 0 12px' }}>
+            Abliterator — Refusal Weights
+          </h2>
+          <div style={{ color: '#7b7fa3', fontSize: 11, marginBottom: 8 }}>
+            Evidence: <code style={{ color: '#22d3ee' }}>rules/refusal_weights.json</code>
+            {' · '}
+            <span style={{ color: '#fbbf24' }}>read-only</span>
+            {' · '}
+            Editor behind operator gate — no unsafe clickable controls without approval.
+          </div>
+          <RefusalWeightsReadOnly />
+        </section>
+
         <div style={{ color: '#7b7fa3', fontSize: 11, marginTop: 24 }}>
           Auto-refresh every 5s. Read <a href="/api/omni/status" style={{ color: '#22d3ee' }}>/api/omni/status</a> for raw JSON.
         </div>
       </div>
-    </CockpitShell>
+    </>
+  );
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function BenchmarkLedger() {
+  const [cycles, setCycles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/benchmark/ledger', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.cycles) setCycles(data.cycles); })
+      .catch(() => null)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div style={{ color: '#7b7fa3', fontSize: 12 }}>loading benchmark history…</div>;
+  if (!cycles.length) return (
+    <div style={{ color: '#7b7fa3', fontSize: 12 }}>
+      no benchmark cycles found at{' '}
+      <code style={{ color: '#22d3ee' }}>agent_work/benchmark/history.jsonl</code>
+      {' — '}
+      <span style={{ color: '#fbbf23' }}>UNKNOWN</span>
+    </div>
+  );
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {cycles.map((cycle, i) => {
+        const agg = cycle.aggregate || {};
+        const acceptRate = agg.acceptRate ?? 0;
+        const totalGoals = agg.totalGoals ?? 0;
+        const completed = agg.completed ?? 0;
+        const failed = agg.totalFailed ?? 0;
+        const rateColor = acceptRate > 0.5 ? '#34d399' : acceptRate > 0.2 ? '#fbbf23' : '#f43f5e';
+
+        return (
+          <div key={i} style={{ background: '#1e293b', padding: 12, borderRadius: 6, borderLeft: `3px solid ${rateColor}` }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+              <span style={{ color: '#22d3ee', fontWeight: 600, fontSize: 13 }}>{cycle.label}</span>
+              <div style={{ display: 'flex', gap: 16, fontSize: 11, color: '#7b7fa3' }}>
+                <span>
+                  <span style={{ color: '#34d399' }}>{completed}</span>/{totalGoals} completed
+                </span>
+                <span>
+                  <span style={{ color: '#f43f5e' }}>{failed}</span> failed
+                </span>
+                <span>
+                  accept rate:{' '}
+                  <span style={{ color: rateColor, fontWeight: 600 }}>
+                    {(acceptRate * 100).toFixed(1)}%
+                  </span>
+                </span>
+                <span>
+                  total challenged:{' '}
+                  <span style={{ color: '#fbbf23' }}>{agg.totalChallenged ?? 0}</span>
+                </span>
+              </div>
+            </div>
+            {cycle.boardDelta && cycle.boardDelta.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {cycle.boardDelta.map((delta: any, j: number) => (
+                  <span key={j} style={{
+                    background: '#0f172a',
+                    padding: '2px 8px',
+                    borderRadius: 4,
+                    fontSize: 11,
+                    color: delta.delta === 'new' ? '#34d399' : delta.delta > 0 ? '#34d399' : '#f43f5e',
+                  }}>
+                    {delta.agent}{': '}
+                    {delta.delta === 'new' ? 'NEW' : (delta.delta > 0 ? '+' : '') + delta.delta}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function RefusalWeightsReadOnly() {
+  const [weights, setWeights] = useState<Record<string, number> | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/rules/refusal-weights', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setWeights(data); })
+      .catch(() => null)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div style={{ color: '#7b7fa3', fontSize: 12 }}>loading refusal weights…</div>;
+  if (!weights) return (
+    <div style={{ color: '#7b7fa3', fontSize: 12 }}>
+      no refusal weights found at{' '}
+      <code style={{ color: '#22d3ee' }}>rules/refusal_weights.json</code>
+      {' — '}
+      <span style={{ color: '#fbbf23' }}>UNKNOWN</span>
+    </div>
+  );
+
+  const entries = Object.entries(weights).sort((a, b) => b[1] - a[1]);
+
+  return (
+    <div>
+      <div style={{ maxHeight: 320, overflow: 'auto', border: '1px solid #1e293b', borderRadius: 4 }}>
+        <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+          <thead style={{ position: 'sticky', top: 0, background: '#1e293b' }}>
+            <tr>
+              <th style={{ textAlign: 'left', padding: '6px 8px', color: '#7b7fa3' }}>rule</th>
+              <th style={{ textAlign: 'right', padding: '6px 8px', color: '#7b7fa3' }}>weight</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map(([rule, weight]) => (
+              <tr key={rule} style={{ borderTop: '1px solid #1e293b' }}>
+                <td style={{ padding: '4px 8px', color: '#e5e7eb' }}>{rule}</td>
+                <td style={{ padding: '4px 8px', textAlign: 'right', color: '#22d3ee', fontFamily: 'monospace' }}>
+                  {weight}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div style={{ marginTop: 8, fontSize: 11, color: '#7b7fa3' }}>
+        {entries.length} rules loaded.{' '}
+        <span style={{ color: '#fbbf23' }}>Read-only display.</span>{' '}
+        To edit, modify <code style={{ color: '#22d3ee' }}>rules/refusal_weights.json</code> directly.
+      </div>
+    </div>
   );
 }

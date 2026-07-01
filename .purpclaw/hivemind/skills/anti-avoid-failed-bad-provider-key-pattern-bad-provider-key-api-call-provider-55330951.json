@@ -1,0 +1,51 @@
+{
+  "schema": "purpclaw.hivemind.skill.v1",
+  "kind": "antiskill",
+  "skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-55330951",
+  "title": "Avoid failed bad_provider_key pattern: bad_provider_key api_call provider call failed",
+  "description": "401 Unauthorized: invalid api key",
+  "task_type": "api_call",
+  "intent": "bad_provider_key",
+  "trigger_terms": [
+    "bad_provider_key",
+    "api_call",
+    "provider",
+    "call",
+    "failed",
+    "invalid",
+    "api",
+    "key",
+    "anthropic"
+  ],
+  "steps": [],
+  "avoid": [
+    "401 Unauthorized: invalid api key",
+    "Use a different route, smaller scope, or more verification before repeating."
+  ],
+  "source_trace_ids": [
+    "loop-bad_provider_key-fail-1782756821612-38-yo33"
+  ],
+  "success_count": 0,
+  "failure_count": 1,
+  "usage_count": 0,
+  "score": 0.55,
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "failed_execution",
+    "spring_rank": 8,
+    "spring_label": "Poisoned Well",
+    "verification": [
+      "[object Object]"
+    ],
+    "trust_score": 0,
+    "repeatability": 0,
+    "freshness": 1,
+    "evaluated_at": "2026-06-29T18:13:41.949Z"
+  },
+  "created_at": "2026-06-29T18:13:41.949Z",
+  "updated_at": "2026-06-29T18:13:41.950Z",
+  "last_used_at": null,
+  "deprecated": false,
+  "spring_rank": 8,
+  "trust_score": 0
+}

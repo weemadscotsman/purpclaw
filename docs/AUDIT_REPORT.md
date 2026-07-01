@@ -1,6 +1,10 @@
 # PURPCLAW Deep Audit Report
 Generated: 2026-06-10T15:55:28.074Z
 
+> ⚠️ **SUPERSEDED** — This report is from v0.2.0 (2026-06-10).
+> It has been replaced by `PURPCLAW_FULL_AUDIT_2026-06-29.md` and `docs/audit/DOCS_VS_REALITY_2026-06-29.md`.
+> The v0.3.0 audit was completed 2026-06-29 and is the canonical source of truth.
+
 ## Summary
 
 - **68/101** checks passed

@@ -7,16 +7,6 @@ import ToolCallBadge from './ToolCallBadge';
 import { SessionSidebar } from './SessionSidebar';
 import { TraceTerminal } from './TraceTerminal';
 
-// Message content is usually a string, but kernel/swarm/harness job results can
-// arrive as objects (e.g. {summary, filesModified, validationStatus}). Rendering
-// a raw object as a React child throws "Objects are not valid as a React child"
-// (React #31) and blanks the whole page — so coerce to readable text on render.
-function asText(c: unknown): string {
-  if (typeof c === 'string') return c;
-  if (c == null) return '';
-  try { return JSON.stringify(c, null, 2); } catch { return String(c); }
-}
-
 // ── TTS via voice_bridge :7792/api/speak ──────────────────────────────────────
 // One-shot client-side speak. Fire-and-forget; we don't await it because the
 // audio plays in the OS media player and the UI doesn't block on it. Logs a
@@ -24,24 +14,13 @@ function asText(c: unknown): string {
 // fatal. Used to make the chat voice-first by default.
 async function speakReply(text: string): Promise<{ ok: boolean; reason?: string }> {
   if (!text || !text.trim()) return { ok: false, reason: 'empty' };
-  // LOCAL-FIRST: speak with the browser's built-in speechSynthesis (offline, OS
-  // voices). Two-way voice works by default with no backend service. Only fall
-  // back to the voice_bridge if one is explicitly configured.
-  if (typeof window !== 'undefined' && window.speechSynthesis && typeof SpeechSynthesisUtterance !== 'undefined') {
-    try {
-      window.speechSynthesis.cancel();
-      const u = new SpeechSynthesisUtterance(text.slice(0, 800));
-      u.rate = 1.05;
-      window.speechSynthesis.speak(u);
-      return { ok: true };
-    } catch { /* fall through to bridge */ }
-  }
   const configuredVoiceBridge =
     (typeof window !== 'undefined' && (window as any).__PURPCLAW_VOICE_BRIDGE_URL) ||
     process.env.NEXT_PUBLIC_VOICE_BRIDGE_URL ||
     '';
-  if (!configuredVoiceBridge) return { ok: false, reason: 'no_local_tts' };
-  const speakUrl = `${configuredVoiceBridge.replace(/\/+$/, '')}/api/speak`;
+  const speakUrl = configuredVoiceBridge
+    ? `${configuredVoiceBridge.replace(/\/+$/, '')}/api/speak`
+    : `/api/service-proxy?port=7792&path=${encodeURIComponent('/api/speak')}`;
   try {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 5000);
@@ -627,42 +606,6 @@ interface Msg {
   toolCalls?: { tool: string; args?: any; status: 'running' | 'success' | 'failure'; result?: string; error?: string; durationMs?: number }[];
 }
 
-function shortValue(value: unknown, max = 96): string {
-  if (value == null) return '';
-  const text = typeof value === 'string' ? value : (() => {
-    try { return JSON.stringify(value); } catch { return String(value); }
-  })();
-  const compact = text.replace(/\s+/g, ' ').trim();
-  return compact.length > max ? compact.slice(0, max - 1) + '…' : compact;
-}
-
-function toolArgHint(args: any): string {
-  if (!args || typeof args !== 'object') return shortValue(args, 80);
-  for (const key of ['path', 'file', 'filename', 'command', 'cmd', 'query', 'q', 'url', 'selector', 'text', 'name']) {
-    if (args[key] != null) return shortValue(args[key], 80);
-  }
-  return shortValue(args, 80);
-}
-
-function actionRowsForMessage(msg: Msg) {
-  const rows: { label: string; value: string; tone?: 'ok' | 'warn' | 'bad' | 'info' }[] = [];
-  if (msg.pending) rows.push({ label: 'State', value: msg.meta || 'thinking / waiting for stream', tone: 'warn' });
-  else rows.push({ label: 'State', value: msg.meta || 'reply complete', tone: msg.role === 'error' ? 'bad' : 'ok' });
-  if (msg.route) rows.push({ label: 'Route', value: msg.route, tone: 'info' });
-  if (msg.model) rows.push({ label: 'Model', value: msg.model, tone: 'info' });
-  if (msg.jobId) rows.push({ label: 'Job', value: msg.jobId, tone: 'info' });
-  if (msg.planState) rows.push({ label: 'Plan', value: msg.planState, tone: msg.planState === 'rejected' ? 'bad' : msg.planState === 'done' ? 'ok' : 'warn' });
-  if (msg.planStepResults?.length) rows.push({ label: 'Steps', value: `${msg.planStepResults.filter(r => r.ok).length}/${msg.planStepResults.length} ok`, tone: msg.planStepResults.every(r => r.ok) ? 'ok' : 'warn' });
-  for (const call of msg.toolCalls || []) {
-    rows.push({
-      label: call.status === 'running' ? 'Tool running' : call.status === 'success' ? 'Tool ok' : 'Tool failed',
-      value: `${call.tool}${toolArgHint(call.args) ? ` · ${toolArgHint(call.args)}` : ''}`,
-      tone: call.status === 'running' ? 'warn' : call.status === 'success' ? 'ok' : 'bad',
-    });
-  }
-  return rows;
-}
-
 interface PlanStep {
   index: number;
   title: string;
@@ -1133,10 +1076,9 @@ export function CommandPanel({ data }: { data: MissionData }) {
   const [selectedModels, setSelectedModels] = useState<string[]>(FREE_MODELS.filter(m => m.fast).slice(0, 3).map(m => m.id));
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
-  const [expandedReplies, setExpandedReplies] = useState<Record<string, boolean>>({});
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [sessionTitle, setSessionTitle] = useState('New Chat');
-  // sessionDrawerOpen removed — sidebar is permanent on lg; mobile falls back to header actions
+  const [sessionDrawerOpen, setSessionDrawerOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Voice-first: every Quill reply speaks by default. Track current TTS
@@ -1448,10 +1390,6 @@ export function CommandPanel({ data }: { data: MissionData }) {
 
   const updateMsg = useCallback((id: string, patch: Partial<Msg>) => {
     setMessages(prev => prev.map(m => m.id === id ? { ...m, ...patch } : m));
-  }, []);
-
-  const toggleReplyTrace = useCallback((id: string) => {
-    setExpandedReplies(prev => ({ ...prev, [id]: !prev[id] }));
   }, []);
 
   // ── PLAN: execute / reject ────────────────────────────────────────────────
@@ -2273,18 +2211,26 @@ export function CommandPanel({ data }: { data: MissionData }) {
     estimatedTokens,
   };
 
-return (
-    <div className="relative grid h-full min-h-0 grid-rows-[minmax(0,1fr)_260px] overflow-hidden lg:grid-cols-[19rem_minmax(0,1fr)] lg:grid-rows-1">
-      {/* Permanent left panel — sessions list (Claude/Codex/ChatGPT layout) */}
-      <div className="hidden lg:flex lg:flex-col lg:border-r lg:border-cyan-300/10 lg:bg-black/75 lg:backdrop-blur-xl">
-        <SessionSidebar
-          activeSessionId={activeSessionId}
-          onNew={newSession}
-          onLoad={(id) => { loadSession(id); }}
-          onSave={() => saveCurrentSession().catch(() => {})}
-          onExport={exportLog}
-        />
-      </div>
+  return (
+    <div className="relative grid h-full min-h-0 grid-rows-[minmax(0,1fr)_260px] overflow-hidden lg:grid-cols-[minmax(0,1fr)_clamp(360px,29vw,460px)] lg:grid-rows-1">
+      {sessionDrawerOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Close sessions drawer"
+            onClick={() => setSessionDrawerOpen(false)}
+            className="absolute inset-0 z-30 bg-black/45 backdrop-blur-sm lg:hidden"
+          />
+          <div className="absolute bottom-0 left-0 top-0 z-40 w-[min(22rem,calc(100vw-3rem))] border-r border-cyan-300/15 bg-black/95 shadow-2xl">
+            <SessionSidebar
+              activeSessionId={activeSessionId}
+              onNew={() => { newSession(); setSessionDrawerOpen(false); }}
+              onLoad={(id) => { loadSession(id); setSessionDrawerOpen(false); }}
+              onSave={() => saveCurrentSession().catch(() => {})}
+            />
+          </div>
+        </>
+      )}
 
       {/* Mochi narrator sidebar — visible on wide screens */}
       <aside className="hidden w-64 shrink-0 flex-col gap-3 border-r border-white/6 bg-black/50 p-3 overflow-y-auto">
@@ -2329,6 +2275,12 @@ return (
             <div className="truncate text-sm font-black uppercase tracking-[0.16em] text-cyan-100">{sessionTitle}</div>
             <div className="text-[11px] font-mono text-white/35">{activeSessionId || 'unsaved local chat'}</div>
           </div>
+          <div className="flex gap-2">
+            <button onClick={() => setSessionDrawerOpen(true)} className="rounded border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-bold text-cyan-100">Sessions</button>
+            <button onClick={newSession} className="rounded border border-white/10 px-3 py-1.5 text-xs font-bold text-white/65">New</button>
+            <button onClick={() => saveCurrentSession().catch(() => {})} className="rounded border border-emerald-300/25 bg-emerald-300/10 px-3 py-1.5 text-xs font-bold text-emerald-100">Save</button>
+            <button onClick={exportLog} className="rounded border border-white/10 px-3 py-1.5 text-xs font-bold text-white/65">Export</button>
+          </div>
         </div>
         <div ref={scrollContainerRef} className={`flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-3 ${messages.length === 0 ? 'flex flex-col items-center justify-center' : ''}`}>
           {messages.length === 0 && (
@@ -2341,7 +2293,7 @@ return (
               {msg.role === 'user' && (
                 <div className="max-w-[66%]">
                   <div className={`rounded-2xl rounded-tl-sm px-4 py-3 text-[15px] leading-relaxed border ${msg.route ? C[ROUTES.find(r=>r.id===msg.route)!.color].pill : c.pill}`}>
-                    {asText(msg.content)}
+                    {msg.content}
                   </div>
                   <div className="mt-0.5 flex justify-start gap-2 text-[10px] font-mono">
                     {msg.route && <span className={C[ROUTES.find(r=>r.id===msg.route)!.color].text}>{ROUTES.find(r=>r.id===msg.route)!.label}</span>}
@@ -2369,54 +2321,6 @@ return (
                         agent invoked while producing this reply. Each badge
                         runs its shine + pulse animation while 'running',
                         then settles green (success) or red (failure). */}
-                    {(msg.pending || msg.meta || msg.jobId || msg.planState || (msg.toolCalls?.length || 0) > 0) && (
-                      <button
-                        type="button"
-                        onClick={() => toggleReplyTrace(msg.id)}
-                        className={`mb-2 flex w-full items-center justify-between gap-3 rounded-lg border px-2.5 py-1.5 text-left font-mono text-[10px] transition-colors ${
-                          expandedReplies[msg.id]
-                            ? 'border-cyan-300/30 bg-cyan-300/10 text-cyan-100'
-                            : 'border-white/8 bg-black/25 text-white/42 hover:border-cyan-300/25 hover:bg-cyan-300/8 hover:text-cyan-100'
-                        }`}
-                        title="Show route, job, tool calls, and current action state"
-                      >
-                        <span className="flex min-w-0 items-center gap-2">
-                          <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${msg.pending ? 'animate-pulse bg-amber-300' : 'bg-emerald-300'}`} />
-                          <span className="truncate">
-                            {msg.pending ? (msg.meta || 'thinking / routing') : (msg.meta || 'reply complete')}
-                          </span>
-                        </span>
-                        <span className="shrink-0 text-white/35">
-                          {(msg.toolCalls?.length || 0) > 0 ? `${msg.toolCalls?.length} tool${msg.toolCalls?.length === 1 ? '' : 's'} · ` : ''}
-                          {expandedReplies[msg.id] ? 'hide' : 'actions'}
-                        </span>
-                      </button>
-                    )}
-
-                    {expandedReplies[msg.id] && (
-                      <div className="mb-2 rounded-lg border border-cyan-300/15 bg-black/35 p-2 font-mono text-[10px]" data-reply-action-trace>
-                        <div className="mb-1 flex items-center justify-between text-cyan-100/80">
-                          <span className="font-black uppercase tracking-[0.14em]">Action Trace</span>
-                          <span className="text-white/30">click strip to collapse</span>
-                        </div>
-                        <div className="space-y-1">
-                          {actionRowsForMessage(msg).map((row, i) => (
-                            <div key={`${row.label}-${i}`} className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2 rounded border border-white/6 bg-white/[0.025] px-2 py-1">
-                              <span className={
-                                row.tone === 'bad' ? 'text-rose-300' :
-                                row.tone === 'warn' ? 'text-amber-300' :
-                                row.tone === 'ok' ? 'text-emerald-300' :
-                                'text-cyan-300'
-                              }>
-                                {row.label}
-                              </span>
-                              <span className="min-w-0 break-words text-white/62">{row.value}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
                     {msg.toolCalls && msg.toolCalls.length > 0 && (
                       <div className="mb-2 flex flex-wrap gap-1.5" data-tool-strip>
                         {msg.toolCalls.map((tc, i) => (
@@ -2435,10 +2339,10 @@ return (
                     {msg.pending ? (
                       <div className="flex items-center gap-2">
                         {[0,1,2].map(i => <span key={i} className={`w-1.5 h-1.5 rounded-full ${c.dot} animate-bounce`} style={{ animationDelay: `${i*140}ms` }} />)}
-                        <span className="text-[10px] font-mono text-white/35">{asText(msg.content)}</span>
+                        <span className="text-[10px] font-mono text-white/35">{msg.content}</span>
                       </div>
                     ) : (
-                      <pre className="text-[15px] text-white/85 leading-relaxed whitespace-pre-wrap font-sans">{asText(msg.content)}</pre>
+                      <pre className="text-[15px] text-white/85 leading-relaxed whitespace-pre-wrap font-sans">{msg.content}</pre>
                     )}
                     {msg.meta && !msg.pending && (
                       <div className="mt-2 rounded border border-white/6 bg-black/30 px-2 py-1 text-[8px] font-mono text-white/30">{msg.meta}</div>
@@ -2535,7 +2439,7 @@ return (
               {msg.role === 'error' && (
                 <div className="w-full max-w-3xl rounded-2xl border border-rose-500/25 bg-rose-500/6 px-4 py-3">
                   <div className="text-[8px] uppercase tracking-wider text-rose-300/45 font-mono mb-1">error · {msg.ts}</div>
-                  <div className="text-[13px] text-rose-200/75">{asText(msg.content)}</div>
+                  <div className="text-[13px] text-rose-200/75">{msg.content}</div>
                 </div>
               )}
             </div>

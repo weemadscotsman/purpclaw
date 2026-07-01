@@ -1,170 +1,3034 @@
 {
+  "1password": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.892Z",
+    "last_approved": "2026-06-29T11:42:05.893Z",
+    "description": "1Password CLI",
+    "size_kb": 5
+  },
+  "3-statement-model": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.893Z",
+    "last_approved": "2026-06-29T11:42:05.893Z",
+    "description": "3-Statement Financial Model Template Completion",
+    "size_kb": 22
+  },
+  "accelerate": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.893Z",
+    "last_approved": "2026-06-29T11:42:05.893Z",
+    "description": "HuggingFace Accelerate - Unified Distributed Training",
+    "size_kb": 9
+  },
+  "adversarial-self-testing": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.894Z",
+    "last_approved": "2026-06-29T11:42:05.894Z",
+    "description": "Adversarial Self-Testing — Smith + Neo",
+    "size_kb": 11
+  },
+  "adversarial-ux-test": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.894Z",
+    "last_approved": "2026-06-29T11:42:05.894Z",
+    "description": "Adversarial UX Test",
+    "size_kb": 9
+  },
+  "agent-eval": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.894Z",
+    "last_approved": "2026-06-29T11:42:05.894Z",
+    "description": "Agent Eval Skill",
+    "size_kb": 5
+  },
+  "agent-harness-construction": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.895Z",
+    "last_approved": "2026-06-29T11:42:05.895Z",
+    "description": "Agent Harness Construction",
+    "size_kb": 2
+  },
+  "agent-loop-pattern": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.895Z",
+    "last_approved": "2026-06-29T11:42:05.895Z",
+    "description": "Agent Loop Pattern — Claude Code-style Coding Agent",
+    "size_kb": 12
+  },
+  "agent-payment-x402": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.895Z",
+    "last_approved": "2026-06-29T11:42:05.895Z",
+    "description": "Agent Payment Execution (x402)",
+    "size_kb": 7
+  },
+  "agent-workspace-adaptation": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.895Z",
+    "last_approved": "2026-06-29T11:42:05.895Z",
+    "description": "Agent Workspace Adaptation",
+    "size_kb": 11
+  },
+  "agentic-engineering": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.895Z",
+    "last_approved": "2026-06-29T11:42:05.895Z",
+    "description": "Agentic Engineering",
+    "size_kb": 2
+  },
+  "agentmail": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.896Z",
+    "last_approved": "2026-06-29T11:42:05.896Z",
+    "description": "AgentMail — Agent-Owned Email Inboxes",
+    "size_kb": 4
+  },
+  "ai-composer-pattern": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.896Z",
+    "last_approved": "2026-06-29T11:42:05.896Z",
+    "description": "AI Composer Pattern — the Command Center Disguised as a Textbox",
+    "size_kb": 9
+  },
+  "ai-first-engineering": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.896Z",
+    "last_approved": "2026-06-29T11:42:05.896Z",
+    "description": "AI-First Engineering",
+    "size_kb": 1
+  },
+  "ai-regression-testing": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.896Z",
+    "last_approved": "2026-06-29T11:42:05.896Z",
+    "description": "AI Regression Testing",
+    "size_kb": 12
+  },
+  "ai-runtime-governance": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.896Z",
+    "last_approved": "2026-06-29T11:42:05.896Z",
+    "description": "AI Runtime Governance",
+    "size_kb": 30
+  },
+  "airtable": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.897Z",
+    "last_approved": "2026-06-29T11:42:05.897Z",
+    "description": "Airtable — Bases, Tables & Records",
+    "size_kb": 11
+  },
+  "android-clean-architecture": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.897Z",
+    "last_approved": "2026-06-29T11:42:05.897Z",
+    "description": "Android Clean Architecture",
+    "size_kb": 9
+  },
+  "antigravity-cli": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.897Z",
+    "last_approved": "2026-06-29T11:42:05.897Z",
+    "description": "Antigravity CLI (`agy`)",
+    "size_kb": 6
+  },
+  "api-design": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.897Z",
+    "last_approved": "2026-06-29T11:42:05.897Z",
+    "description": "API Design Patterns",
+    "size_kb": 13
+  },
+  "apple-notes": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.897Z",
+    "last_approved": "2026-06-29T11:42:05.897Z",
+    "description": "Apple Notes",
+    "size_kb": 2
+  },
+  "apple-reminders": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.898Z",
+    "last_approved": "2026-06-29T11:42:05.898Z",
+    "description": "Apple Reminders",
+    "size_kb": 4
+  },
+  "architecture-decision-records": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.898Z",
+    "last_approved": "2026-06-29T11:42:05.898Z",
+    "description": "Architecture Decision Records",
+    "size_kb": 7
+  },
+  "architecture-diagram": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.898Z",
+    "last_approved": "2026-06-29T11:42:05.898Z",
+    "description": "Architecture Diagram Skill",
+    "size_kb": 6
+  },
+  "article-writing": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.898Z",
+    "last_approved": "2026-06-29T11:42:05.898Z",
+    "description": "Article Writing",
+    "size_kb": 3
+  },
+  "arxiv": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.898Z",
+    "last_approved": "2026-06-29T11:42:05.898Z",
+    "description": "arXiv Research",
+    "size_kb": 10
+  },
+  "ascii-art": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.898Z",
+    "last_approved": "2026-06-29T11:42:05.898Z",
+    "description": "ASCII Art Skill",
+    "size_kb": 11
+  },
+  "ascii-video": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.898Z",
+    "last_approved": "2026-06-29T11:42:05.898Z",
+    "description": "ASCII Video Production Pipeline",
+    "size_kb": 15
+  },
+  "audiocraft": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.899Z",
+    "last_approved": "2026-06-29T11:42:05.899Z",
+    "description": "AudioCraft: Audio Generation",
+    "size_kb": 16
+  },
+  "autonomous-agent-harness": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.899Z",
+    "last_approved": "2026-06-29T11:42:05.899Z",
+    "description": "Autonomous Agent Harness",
+    "size_kb": 10
+  },
+  "autonomous-loops": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.899Z",
+    "last_approved": "2026-06-29T11:42:05.899Z",
+    "description": "Autonomous Loops Skill",
+    "size_kb": 25
+  },
+  "autonomous-revenue": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.899Z",
+    "last_approved": "2026-06-29T11:42:05.899Z",
+    "description": "autonomous-revenue",
+    "size_kb": 26
+  },
   "axolotl": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.899Z",
+    "last_approved": "2026-06-29T11:42:05.899Z",
+    "description": "🦎 AXOLOTL SKILL SET",
+    "size_kb": 3
+  },
+  "backend-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.899Z",
+    "last_approved": "2026-06-29T11:42:05.899Z",
+    "description": "Backend Development Patterns",
+    "size_kb": 14
+  },
+  "baoyu-article-illustrator": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.900Z",
+    "last_approved": "2026-06-29T11:42:05.900Z",
+    "description": "Article Illustrator",
+    "size_kb": 10
+  },
+  "baoyu-comic": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.900Z",
+    "last_approved": "2026-06-29T11:42:05.900Z",
+    "description": "Knowledge Comic Creator",
+    "size_kb": 15
+  },
+  "baoyu-infographic": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.900Z",
+    "last_approved": "2026-06-29T11:42:05.900Z",
+    "description": "Infographic Generator",
+    "size_kb": 10
   },
   "bee": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.900Z",
+    "last_approved": "2026-06-29T11:42:05.900Z",
+    "description": "🐝 BEE SKILL SET",
+    "size_kb": 3
+  },
+  "benchmark": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.901Z",
+    "last_approved": "2026-06-29T11:42:05.901Z",
+    "description": "Benchmark — Performance Baseline & Regression Detection",
+    "size_kb": 2
+  },
+  "bioinformatics": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.901Z",
+    "last_approved": "2026-06-29T11:42:05.901Z",
+    "description": "Bioinformatics Skills Gateway",
+    "size_kb": 14
+  },
+  "blackbox": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.901Z",
+    "last_approved": "2026-06-29T11:42:05.901Z",
+    "description": "Blackbox CLI",
+    "size_kb": 5
+  },
+  "blender-mcp": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.901Z",
+    "last_approved": "2026-06-29T11:42:05.901Z",
+    "description": "Blender MCP",
+    "size_kb": 4
+  },
+  "blogwatcher": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.901Z",
+    "last_approved": "2026-06-29T11:42:05.901Z",
+    "description": "Blogwatcher",
+    "size_kb": 5
+  },
+  "blueprint": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.901Z",
+    "last_approved": "2026-06-29T11:42:05.901Z",
+    "description": "Blueprint — Construction Plan Generator",
+    "size_kb": 5
+  },
+  "brand-voice": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.901Z",
+    "last_approved": "2026-06-29T11:42:05.901Z",
+    "description": "Brand Voice",
+    "size_kb": 4
+  },
+  "browser-qa": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.902Z",
+    "last_approved": "2026-06-29T11:42:05.902Z",
+    "description": "Browser QA — Automated Visual Testing & Interaction",
+    "size_kb": 3
+  },
+  "bun-runtime": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.902Z",
+    "last_approved": "2026-06-29T11:42:05.902Z",
+    "description": "Bun Runtime",
+    "size_kb": 3
+  },
+  "bunny": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.902Z",
+    "last_approved": "2026-06-29T11:42:05.902Z",
+    "description": "🐰 BUNNY SKILL SET",
+    "size_kb": 1
   },
   "cactus": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.902Z",
+    "last_approved": "2026-06-29T11:42:05.902Z",
+    "description": "🌵 CACTUS SKILL SET",
+    "size_kb": 3
+  },
+  "canary-watch": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.902Z",
+    "last_approved": "2026-06-29T11:42:05.902Z",
+    "description": "Canary Watch — Post-Deploy Monitoring",
+    "size_kb": 3
+  },
+  "canvas": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.902Z",
+    "last_approved": "2026-06-29T11:42:05.902Z",
+    "description": "Canvas LMS — Course & Assignment Access",
+    "size_kb": 3
+  },
+  "carrier-relationship-management": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.902Z",
+    "last_approved": "2026-06-29T11:42:05.902Z",
+    "description": "Carrier Relationship Management",
+    "size_kb": 23
+  },
+  "chart": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.903Z",
+    "last_approved": "2026-06-29T11:42:05.903Z",
+    "description": "📊 CHART SKILL SET",
+    "size_kb": 3
+  },
+  "child-registry-no-spawn-leak": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.903Z",
+    "last_approved": "2026-06-29T11:42:05.903Z",
+    "description": "Child Registry — No More Spawn Leak (2026-06-06)",
+    "size_kb": 14
   },
   "chonk": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.903Z",
+    "last_approved": "2026-06-29T11:42:05.903Z",
+    "description": "💪 CHONK SKILL SET",
+    "size_kb": 3
+  },
+  "chroma": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.903Z",
+    "last_approved": "2026-06-29T11:42:05.903Z",
+    "description": "Chroma - Open-Source Embedding Database",
+    "size_kb": 9
+  },
+  "ck": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.904Z",
+    "last_approved": "2026-06-29T11:42:05.904Z",
+    "description": "ck — Context Keeper",
+    "size_kb": 5
+  },
+  "claude-api": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.904Z",
+    "last_approved": "2026-06-29T11:42:05.904Z",
+    "description": "Claude API",
+    "size_kb": 9
+  },
+  "claude-code": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.904Z",
+    "last_approved": "2026-06-29T11:42:05.904Z",
+    "description": "Claude Code — Hermes Orchestration Guide",
+    "size_kb": 34
+  },
+  "claude-design": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.904Z",
+    "last_approved": "2026-06-29T11:42:05.904Z",
+    "description": "Claude Design for CLI/API Agents",
+    "size_kb": 20
+  },
+  "claude-devfleet": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.904Z",
+    "last_approved": "2026-06-29T11:42:05.904Z",
+    "description": "Claude DevFleet Multi-Agent Orchestration",
+    "size_kb": 6
   },
   "claw": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.905Z",
+    "last_approved": "2026-06-29T11:42:05.905Z",
+    "description": "🦴 CLAW SKILL SET",
+    "size_kb": 3
+  },
+  "cli": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.905Z",
+    "last_approved": "2026-06-29T11:42:05.905Z",
+    "description": "inference.sh CLI",
+    "size_kb": 5
+  },
+  "click-path-audit": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.906Z",
+    "last_approved": "2026-06-29T11:42:05.906Z",
+    "description": "/click-path-audit — Behavioural Flow Audit",
+    "size_kb": 8
+  },
+  "clickhouse-io": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.906Z",
+    "last_approved": "2026-06-29T11:42:05.906Z",
+    "description": "ClickHouse Analytics Patterns",
+    "size_kb": 11
+  },
+  "clip": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.906Z",
+    "last_approved": "2026-06-29T11:42:05.906Z",
+    "description": "CLIP - Contrastive Language-Image Pre-Training",
+    "size_kb": 7
+  },
+  "code-version-merge": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.907Z",
+    "last_approved": "2026-06-29T11:42:05.907Z",
+    "description": "Code Version Merge",
+    "size_kb": 7
+  },
+  "code-wiki": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.907Z",
+    "last_approved": "2026-06-29T11:42:05.907Z",
+    "description": "Code Wiki Skill",
+    "size_kb": 14
+  },
+  "codebase-inspection": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.907Z",
+    "last_approved": "2026-06-29T11:42:05.907Z",
+    "description": "Codebase Inspection with pygount",
+    "size_kb": 4
+  },
+  "codebase-onboarding": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.907Z",
+    "last_approved": "2026-06-29T11:42:05.907Z",
+    "description": "Codebase Onboarding",
+    "size_kb": 8
+  },
+  "codex": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.908Z",
+    "last_approved": "2026-06-29T11:42:05.908Z",
+    "description": "Codex CLI",
+    "size_kb": 5
+  },
+  "coding-standards": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.908Z",
+    "last_approved": "2026-06-29T11:42:05.908Z",
+    "description": "Coding Standards & Best Practices",
+    "size_kb": 12
+  },
+  "cognitive-spine-deployment": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.908Z",
+    "last_approved": "2026-06-29T11:42:05.908Z",
+    "description": "Cognitive Spine Deployment",
+    "size_kb": 9
+  },
+  "comfyui": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.909Z",
+    "last_approved": "2026-06-29T11:42:05.909Z",
+    "description": "ComfyUI",
+    "size_kb": 24
+  },
+  "compose-multiplatform-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.909Z",
+    "last_approved": "2026-06-29T11:42:05.909Z",
+    "description": "Compose Multiplatform Patterns",
+    "size_kb": 8
+  },
+  "comps-analysis": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.909Z",
+    "last_approved": "2026-06-29T11:42:05.909Z",
+    "description": "Comparable Company Analysis",
+    "size_kb": 31
+  },
+  "concept-diagrams": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.909Z",
+    "last_approved": "2026-06-29T11:42:05.909Z",
+    "description": "Concept Diagrams",
+    "size_kb": 17
+  },
+  "configure-ecc": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.910Z",
+    "last_approved": "2026-06-29T11:42:05.910Z",
+    "description": "Configure Everything Claude Code (ECC)",
+    "size_kb": 16
+  },
+  "connections-optimizer": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.910Z",
+    "last_approved": "2026-06-29T11:42:05.910Z",
+    "description": "Connections Optimizer",
+    "size_kb": 6
+  },
+  "consolidate-codebase-versions": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.910Z",
+    "last_approved": "2026-06-29T11:42:05.910Z",
+    "description": "Consolidate Codebase Versions",
+    "size_kb": 12
+  },
+  "content-engine": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.910Z",
+    "last_approved": "2026-06-29T11:42:05.910Z",
+    "description": "Content Engine",
+    "size_kb": 4
+  },
+  "content-hash-cache-pattern": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.911Z",
+    "last_approved": "2026-06-29T11:42:05.911Z",
+    "description": "Content-Hash File Cache Pattern",
+    "size_kb": 6
+  },
+  "context-budget": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.911Z",
+    "last_approved": "2026-06-29T11:42:05.911Z",
+    "description": "Context Budget",
+    "size_kb": 6
+  },
+  "continuous-agent-loop": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.911Z",
+    "last_approved": "2026-06-29T11:42:05.911Z",
+    "description": "Continuous Agent Loop",
+    "size_kb": 1
+  },
+  "continuous-learning": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.911Z",
+    "last_approved": "2026-06-29T11:42:05.911Z",
+    "description": "Continuous Learning Skill",
+    "size_kb": 4
+  },
+  "continuous-learning-v2": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.912Z",
+    "last_approved": "2026-06-29T11:42:05.912Z",
+    "description": "Continuous Learning v2.1 - Instinct",
+    "size_kb": 13
+  },
+  "cost-aware-llm-pipeline": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.912Z",
+    "last_approved": "2026-06-29T11:42:05.912Z",
+    "description": "Cost-Aware LLM Pipeline",
+    "size_kb": 6
+  },
+  "cpp-coding-standards": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.912Z",
+    "last_approved": "2026-06-29T11:42:05.912Z",
+    "description": "C++ Coding Standards (C++ Core Guidelines)",
+    "size_kb": 22
+  },
+  "cpp-testing": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.912Z",
+    "last_approved": "2026-06-29T11:42:05.912Z",
+    "description": "C++ Testing (Agent Skill)",
+    "size_kb": 9
+  },
+  "creative-ideation": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.913Z",
+    "last_approved": "2026-06-29T11:42:05.913Z",
+    "description": "Creative Ideation",
+    "size_kb": 6
+  },
+  "crosspost": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.913Z",
+    "last_approved": "2026-06-29T11:42:05.913Z",
+    "description": "Crosspost",
+    "size_kb": 3
   },
   "crow": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.913Z",
+    "last_approved": "2026-06-29T11:42:05.913Z",
+    "description": "🦅 CROW SKILL SET",
+    "size_kb": 3
+  },
+  "csharp-testing": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.913Z",
+    "last_approved": "2026-06-29T11:42:05.913Z",
+    "description": "C# Testing Patterns",
+    "size_kb": 9
+  },
+  "customer-billing-ops": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.913Z",
+    "last_approved": "2026-06-29T11:42:05.913Z",
+    "description": "Customer Billing Ops",
+    "size_kb": 4
+  },
+  "customs-trade-compliance": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.913Z",
+    "last_approved": "2026-06-29T11:42:05.913Z",
+    "description": "Customs & Trade Compliance",
+    "size_kb": 29
+  },
+  "dart-flutter-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.914Z",
+    "last_approved": "2026-06-29T11:42:05.914Z",
+    "description": "Dart/Flutter Patterns",
+    "size_kb": 16
+  },
+  "darwinian-evolver": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.914Z",
+    "last_approved": "2026-06-29T11:42:05.914Z",
+    "description": "Darwinian Evolver",
+    "size_kb": 8
+  },
+  "data-scraper-agent": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.914Z",
+    "last_approved": "2026-06-29T11:42:05.914Z",
+    "description": "Data Scraper Agent",
+    "size_kb": 24
+  },
+  "database-migrations": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.914Z",
+    "last_approved": "2026-06-29T11:42:05.914Z",
+    "description": "Database Migration Patterns",
+    "size_kb": 12
+  },
+  "dcf-model": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.915Z",
+    "last_approved": "2026-06-29T11:42:05.915Z",
+    "description": "DCF Model Builder",
+    "size_kb": 49
+  },
+  "debugging-hermes-tui-commands": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.915Z",
+    "last_approved": "2026-06-29T11:42:05.915Z",
+    "description": "Debugging Hermes TUI Slash Commands",
+    "size_kb": 8
+  },
+  "deep-research": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.915Z",
+    "last_approved": "2026-06-29T11:42:05.915Z",
+    "description": "Deep Research",
+    "size_kb": 5
+  },
+  "deployment-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.915Z",
+    "last_approved": "2026-06-29T11:42:05.915Z",
+    "description": "Deployment Patterns",
+    "size_kb": 11
+  },
+  "design-md": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.915Z",
+    "last_approved": "2026-06-29T11:42:05.915Z",
+    "description": "DESIGN.md Skill",
+    "size_kb": 7
+  },
+  "design-system": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.916Z",
+    "last_approved": "2026-06-29T11:42:05.916Z",
+    "description": "Design System — Generate & Audit Visual Systems",
+    "size_kb": 3
+  },
+  "django-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.916Z",
+    "last_approved": "2026-06-29T11:42:05.916Z",
+    "description": "Django Development Patterns",
+    "size_kb": 21
+  },
+  "django-security": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.916Z",
+    "last_approved": "2026-06-29T11:42:05.916Z",
+    "description": "Django Security Best Practices",
+    "size_kb": 16
+  },
+  "django-tdd": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.916Z",
+    "last_approved": "2026-06-29T11:42:05.916Z",
+    "description": "Django Testing with TDD",
+    "size_kb": 21
+  },
+  "django-verification": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.916Z",
+    "last_approved": "2026-06-29T11:42:05.916Z",
+    "description": "Django Verification Loop",
+    "size_kb": 12
+  },
+  "dmux-workflows": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.917Z",
+    "last_approved": "2026-06-29T11:42:05.917Z",
+    "description": "dmux Workflows",
+    "size_kb": 6
+  },
+  "docker-management": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.917Z",
+    "last_approved": "2026-06-29T11:42:05.917Z",
+    "description": "Docker Management",
+    "size_kb": 10
+  },
+  "docker-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.917Z",
+    "last_approved": "2026-06-29T11:42:05.917Z",
+    "description": "Docker Patterns",
+    "size_kb": 8
+  },
+  "documentation-audit": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.917Z",
+    "last_approved": "2026-06-29T11:42:05.917Z",
+    "description": "Documentation Audit",
+    "size_kb": 5
+  },
+  "documentation-cleanup": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.917Z",
+    "last_approved": "2026-06-29T11:42:05.917Z",
+    "description": "Documentation Cleanup",
+    "size_kb": 6
+  },
+  "documentation-lookup": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.917Z",
+    "last_approved": "2026-06-29T11:42:05.917Z",
+    "description": "Documentation Lookup (Context7)",
+    "size_kb": 5
+  },
+  "dogfood": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.918Z",
+    "last_approved": "2026-06-29T11:42:05.918Z",
+    "description": "Dogfood: Systematic Web Application QA Testing",
+    "size_kb": 6
+  },
+  "domain-intel": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.918Z",
+    "last_approved": "2026-06-29T11:42:05.918Z",
+    "description": "Domain Intelligence — Passive OSINT",
+    "size_kb": 5
+  },
+  "dotnet-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.918Z",
+    "last_approved": "2026-06-29T11:42:05.918Z",
+    "description": ".NET Development Patterns",
+    "size_kb": 9
   },
   "dragon": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.918Z",
+    "last_approved": "2026-06-29T11:42:05.918Z",
+    "description": "🐉 DRAGON SKILL SET",
+    "size_kb": 3
+  },
+  "drug-discovery": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.918Z",
+    "last_approved": "2026-06-29T11:42:05.918Z",
+    "description": "Drug Discovery & Pharmaceutical Research",
+    "size_kb": 9
+  },
+  "dspy": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.919Z",
+    "last_approved": "2026-06-29T11:42:05.919Z",
+    "description": "DSPy: Declarative Language Model Programming",
+    "size_kb": 15
   },
   "duck": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.919Z",
+    "last_approved": "2026-06-29T11:42:05.919Z",
+    "description": "🦆 DUCK SKILL SET",
+    "size_kb": 3
+  },
+  "duckduckgo-search": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.919Z",
+    "last_approved": "2026-06-29T11:42:05.919Z",
+    "description": "DuckDuckGo Search",
+    "size_kb": 8
+  },
+  "e2e-testing": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.919Z",
+    "last_approved": "2026-06-29T11:42:05.919Z",
+    "description": "E2E Testing Patterns",
+    "size_kb": 8
+  },
+  "edward-10-year-history": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.920Z",
+    "last_approved": "2026-06-29T11:42:05.920Z",
+    "description": "EDWARD - 10 YEAR AI HISTORY",
+    "size_kb": 8
+  },
+  "elephant": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.920Z",
+    "last_approved": "2026-06-29T11:42:05.920Z",
+    "description": "🐘 ELEPHANT SKILL SET",
+    "size_kb": 3
+  },
+  "energy-procurement": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.920Z",
+    "last_approved": "2026-06-29T11:42:05.920Z",
+    "description": "Energy Procurement",
+    "size_kb": 30
+  },
+  "enterprise-agent-ops": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.920Z",
+    "last_approved": "2026-06-29T11:42:05.920Z",
+    "description": "Enterprise Agent Ops",
+    "size_kb": 1
+  },
+  "eval-harness": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.920Z",
+    "last_approved": "2026-06-29T11:42:05.920Z",
+    "description": "Eval Harness Skill",
+    "size_kb": 7
+  },
+  "evm": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.920Z",
+    "last_approved": "2026-06-29T11:42:05.920Z",
+    "description": "EVM Blockchain Skill",
+    "size_kb": 8
+  },
+  "exa-search": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.921Z",
+    "last_approved": "2026-06-29T11:42:05.921Z",
+    "description": "Exa Search",
+    "size_kb": 3
+  },
+  "excalidraw": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.921Z",
+    "last_approved": "2026-06-29T11:42:05.921Z",
+    "description": "Excalidraw Diagram Skill",
+    "size_kb": 7
+  },
+  "excel-author": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.921Z",
+    "last_approved": "2026-06-29T11:42:05.921Z",
+    "description": "excel-author",
+    "size_kb": 9
+  },
+  "faiss": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.921Z",
+    "last_approved": "2026-06-29T11:42:05.921Z",
+    "description": "FAISS - Efficient Similarity Search",
+    "size_kb": 5
+  },
+  "fakery-audit-protocol": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.921Z",
+    "last_approved": "2026-06-29T11:42:05.921Z",
+    "description": "Fakery Audit Protocol — every UI number must trace to a real source",
+    "size_kb": 8
+  },
+  "fal-ai-media": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.921Z",
+    "last_approved": "2026-06-29T11:42:05.921Z",
+    "description": "fal.ai Media Generation",
+    "size_kb": 7
+  },
+  "fastmcp": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.922Z",
+    "last_approved": "2026-06-29T11:42:05.922Z",
+    "description": "FastMCP",
+    "size_kb": 8
+  },
+  "findmy": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.922Z",
+    "last_approved": "2026-06-29T11:42:05.922Z",
+    "description": "Find My (Apple)",
+    "size_kb": 4
+  },
+  "fitness-nutrition": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.922Z",
+    "last_approved": "2026-06-29T11:42:05.922Z",
+    "description": "Fitness & Nutrition",
+    "size_kb": 10
+  },
+  "flash-attention": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.922Z",
+    "last_approved": "2026-06-29T11:42:05.922Z",
+    "description": "Flash Attention - Fast Memory-Efficient Attention",
+    "size_kb": 10
+  },
+  "flutter-dart-code-review": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.923Z",
+    "last_approved": "2026-06-29T11:42:05.923Z",
+    "description": "Flutter/Dart Code Review Best Practices",
+    "size_kb": 23
+  },
+  "foundation-models-on-device": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.923Z",
+    "last_approved": "2026-06-29T11:42:05.923Z",
+    "description": "FoundationModels: On-Device LLM (iOS 26)",
+    "size_kb": 8
   },
   "fox": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.923Z",
+    "last_approved": "2026-06-29T11:42:05.923Z",
+    "description": "FOX Agent Skills",
+    "size_kb": 1
+  },
+  "frontend-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.923Z",
+    "last_approved": "2026-06-29T11:42:05.923Z",
+    "description": "Frontend Development Patterns",
+    "size_kb": 15
+  },
+  "frontend-slides": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.923Z",
+    "last_approved": "2026-06-29T11:42:05.923Z",
+    "description": "Frontend Slides",
+    "size_kb": 7
+  },
+  "g0dm0d3-integration": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.923Z",
+    "last_approved": "2026-06-29T11:42:05.923Z",
+    "description": "G0DM0D3 Integration",
+    "size_kb": 4
+  },
+  "gan-style-harness": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.924Z",
+    "last_approved": "2026-06-29T11:42:05.924Z",
+    "description": "GAN-Style Harness Skill",
+    "size_kb": 12
+  },
+  "gaze-auto-response": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.924Z",
+    "last_approved": "2026-06-29T11:42:05.924Z",
+    "description": "GAZE Auto-Response — Hermes Sees What You Point At",
+    "size_kb": 4
   },
   "ghost": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.924Z",
+    "last_approved": "2026-06-29T11:42:05.924Z",
+    "description": "GHOST Agent Skills",
+    "size_kb": 1
+  },
+  "gif-search": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.924Z",
+    "last_approved": "2026-06-29T11:42:05.924Z",
+    "description": "GIF Search (Tenor API)",
+    "size_kb": 3
+  },
+  "git-workflow": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.924Z",
+    "last_approved": "2026-06-29T11:42:05.924Z",
+    "description": "Git Workflow Patterns",
+    "size_kb": 15
+  },
+  "github-auth": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.924Z",
+    "last_approved": "2026-06-29T11:42:05.924Z",
+    "description": "GitHub Authentication Setup",
+    "size_kb": 8
+  },
+  "github-code-review": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.926Z",
+    "last_approved": "2026-06-29T11:42:05.926Z",
+    "description": "GitHub Code Review",
+    "size_kb": 14
+  },
+  "github-issues": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.926Z",
+    "last_approved": "2026-06-29T11:42:05.926Z",
+    "description": "GitHub Issues Management",
+    "size_kb": 9
+  },
+  "github-pr-workflow": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.926Z",
+    "last_approved": "2026-06-29T11:42:05.927Z",
+    "description": "GitHub Pull Request Workflow",
+    "size_kb": 10
+  },
+  "github-repo-management": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.927Z",
+    "last_approved": "2026-06-29T11:42:05.927Z",
+    "description": "GitHub Repository Management",
+    "size_kb": 14
+  },
+  "gitnexus-explorer": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.927Z",
+    "last_approved": "2026-06-29T11:42:05.927Z",
+    "description": "GitNexus Explorer",
+    "size_kb": 7
+  },
+  "godmode": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.927Z",
+    "last_approved": "2026-06-29T11:42:05.927Z",
+    "description": "G0DM0D3 Jailbreaking Skill",
+    "size_kb": 20
+  },
+  "golang-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.927Z",
+    "last_approved": "2026-06-29T11:42:05.927Z",
+    "description": "Go Development Patterns",
+    "size_kb": 14
+  },
+  "golang-testing": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.928Z",
+    "last_approved": "2026-06-29T11:42:05.928Z",
+    "description": "Go Testing Patterns",
+    "size_kb": 17
+  },
+  "google-workspace": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.928Z",
+    "last_approved": "2026-06-29T11:42:05.928Z",
+    "description": "Google Workspace",
+    "size_kb": 13
+  },
+  "google-workspace-ops": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.928Z",
+    "last_approved": "2026-06-29T11:42:05.928Z",
+    "description": "Google Workspace Ops",
+    "size_kb": 3
   },
   "goose": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.928Z",
+    "last_approved": "2026-06-29T11:42:05.928Z",
+    "description": "GOOSE Agent Skills",
+    "size_kb": 1
+  },
+  "goose-dataset-builder": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.928Z",
+    "last_approved": "2026-06-29T11:42:05.928Z",
+    "description": "GOOSE Dataset Builder",
+    "size_kb": 7
+  },
+  "gorilla": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.928Z",
+    "last_approved": "2026-06-29T11:42:05.928Z",
+    "description": "GORILLA Agent Skills",
+    "size_kb": 1
+  },
+  "grok": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.929Z",
+    "last_approved": "2026-06-29T11:42:05.929Z",
+    "description": "Grok Build CLI — Hermes Orchestration Guide",
+    "size_kb": 13
+  },
+  "gsd-pai-integration": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.929Z",
+    "last_approved": "2026-06-29T11:42:05.929Z",
+    "description": "GSD + PAI + jCodeMunch Integration",
+    "size_kb": 3
   },
   "guardian": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.929Z",
+    "last_approved": "2026-06-29T11:42:05.929Z",
+    "description": "GUARDIAN Agent Skills",
+    "size_kb": 1
+  },
+  "guidance": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.929Z",
+    "last_approved": "2026-06-29T11:42:05.929Z",
+    "description": "Guidance: Constrained LLM Generation",
+    "size_kb": 15
+  },
+  "hawk": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.929Z",
+    "last_approved": "2026-06-29T11:42:05.929Z",
+    "description": "🦅 HAWK SKILL SET",
+    "size_kb": 6
+  },
+  "healthcare-cdss-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.930Z",
+    "last_approved": "2026-06-29T11:42:05.930Z",
+    "description": "Healthcare CDSS Development Patterns",
+    "size_kb": 9
+  },
+  "healthcare-emr-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.930Z",
+    "last_approved": "2026-06-29T11:42:05.930Z",
+    "description": "Healthcare EMR Development Patterns",
+    "size_kb": 7
+  },
+  "healthcare-eval-harness": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.930Z",
+    "last_approved": "2026-06-29T11:42:05.930Z",
+    "description": "Healthcare Eval Harness — Patient Safety Verification",
+    "size_kb": 8
+  },
+  "healthcare-phi-compliance": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.930Z",
+    "last_approved": "2026-06-29T11:42:05.930Z",
+    "description": "Healthcare PHI/PII Compliance Patterns",
+    "size_kb": 6
+  },
+  "heartmula": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.930Z",
+    "last_approved": "2026-06-29T11:42:05.930Z",
+    "description": "HeartMuLa - Open-Source Music Generation",
+    "size_kb": 6
+  },
+  "here-now": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.930Z",
+    "last_approved": "2026-06-29T11:42:05.930Z",
+    "description": "here.now",
+    "size_kb": 9
+  },
+  "hermes-agent": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.931Z",
+    "last_approved": "2026-06-29T11:42:05.931Z",
+    "description": "Hermes Agent",
+    "size_kb": 47
+  },
+  "hermes-agent-skill-authoring": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.931Z",
+    "last_approved": "2026-06-29T11:42:05.931Z",
+    "description": "Authoring Hermes-Agent Skills (in-repo)",
+    "size_kb": 8
+  },
+  "hermes-gateway-ops": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.931Z",
+    "last_approved": "2026-06-29T11:42:05.931Z",
+    "description": "Hermes Gateway Ops",
+    "size_kb": 15
+  },
+  "hermes-gaze": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.931Z",
+    "last_approved": "2026-06-29T11:42:05.931Z",
+    "description": "HERMES GAZE — Mouse as Eyes",
+    "size_kb": 8
+  },
+  "hermes-s6-container-supervision": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.931Z",
+    "last_approved": "2026-06-29T11:42:05.931Z",
+    "description": "Hermes s6-overlay Container Supervision",
+    "size_kb": 11
+  },
+  "hermes-tts-providers": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.932Z",
+    "last_approved": "2026-06-29T11:42:05.932Z",
+    "description": "Hermès TTS Providers",
+    "size_kb": 4
+  },
+  "hexagonal-architecture": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.932Z",
+    "last_approved": "2026-06-29T11:42:05.932Z",
+    "description": "Hexagonal Architecture",
+    "size_kb": 11
+  },
+  "himalaya": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.932Z",
+    "last_approved": "2026-06-29T11:42:05.932Z",
+    "description": "Himalaya Email CLI",
+    "size_kb": 7
+  },
+  "honcho": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.932Z",
+    "last_approved": "2026-06-29T11:42:05.932Z",
+    "description": "Honcho Memory for Hermes",
+    "size_kb": 20
+  },
+  "huggingface-hub": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.932Z",
+    "last_approved": "2026-06-29T11:42:05.932Z",
+    "description": "Hugging Face CLI (`hf`) Reference Guide",
+    "size_kb": 4
+  },
+  "huggingface-tokenizers": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.932Z",
+    "last_approved": "2026-06-29T11:42:05.932Z",
+    "description": "HuggingFace Tokenizers - Fast Tokenization for NLP",
+    "size_kb": 14
+  },
+  "humanizer": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.933Z",
+    "last_approved": "2026-06-29T11:42:05.933Z",
+    "description": "Humanizer: Remove AI Writing Patterns",
+    "size_kb": 30
+  },
+  "hyperframes": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.933Z",
+    "last_approved": "2026-06-29T11:42:05.933Z",
+    "description": "HyperFrames",
+    "size_kb": 14
+  },
+  "hyperliquid": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.933Z",
+    "last_approved": "2026-06-29T11:42:05.933Z",
+    "description": "Hyperliquid Skill",
+    "size_kb": 7
+  },
+  "imessage": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.933Z",
+    "last_approved": "2026-06-29T11:42:05.933Z",
+    "description": "iMessage",
+    "size_kb": 2
+  },
+  "innovator": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.933Z",
+    "last_approved": "2026-06-29T11:42:05.933Z",
+    "description": "💡 INNOVATOR SKILL SET",
+    "size_kb": 6
+  },
+  "instructor": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.933Z",
+    "last_approved": "2026-06-29T11:42:05.933Z",
+    "description": "Instructor: Structured LLM Outputs",
+    "size_kb": 17
+  },
+  "inventory-demand-planning": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.933Z",
+    "last_approved": "2026-06-29T11:42:05.933Z",
+    "description": "Inventory Demand Planning",
+    "size_kb": 24
+  },
+  "investor-materials": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.934Z",
+    "last_approved": "2026-06-29T11:42:05.934Z",
+    "description": "Investor Materials",
+    "size_kb": 3
+  },
+  "investor-outreach": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.934Z",
+    "last_approved": "2026-06-29T11:42:05.934Z",
+    "description": "Investor Outreach",
+    "size_kb": 3
+  },
+  "iterative-retrieval": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.934Z",
+    "last_approved": "2026-06-29T11:42:05.934Z",
+    "description": "Iterative Retrieval Pattern",
+    "size_kb": 7
+  },
+  "java-coding-standards": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.934Z",
+    "last_approved": "2026-06-29T11:42:05.934Z",
+    "description": "Java Coding Standards",
+    "size_kb": 4
+  },
+  "jellyfish": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.934Z",
+    "last_approved": "2026-06-29T11:42:05.934Z",
+    "description": "🪼 JELLYFISH SKILL SET",
+    "size_kb": 7
+  },
+  "jira-integration": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.934Z",
+    "last_approved": "2026-06-29T11:42:05.934Z",
+    "description": "Jira Integration Skill",
+    "size_kb": 9
+  },
+  "jpa-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.934Z",
+    "last_approved": "2026-06-29T11:42:05.935Z",
+    "description": "JPA/Hibernate Patterns",
+    "size_kb": 5
+  },
+  "jupyter-live-kernel": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.935Z",
+    "last_approved": "2026-06-29T11:42:05.935Z",
+    "description": "Jupyter Live Kernel (hamelnb)",
+    "size_kb": 5
+  },
+  "kanban-codex-lane": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.935Z",
+    "last_approved": "2026-06-29T11:42:05.935Z",
+    "description": "Kanban Codex Lane",
+    "size_kb": 13
+  },
+  "kanban-orchestrator": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.935Z",
+    "last_approved": "2026-06-29T11:42:05.935Z",
+    "description": "Kanban Orchestrator — Decomposition Playbook",
+    "size_kb": 16
+  },
+  "kanban-video-orchestrator": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.935Z",
+    "last_approved": "2026-06-29T11:42:05.935Z",
+    "description": "Kanban Video Orchestrator",
+    "size_kb": 11
+  },
+  "kanban-worker": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.935Z",
+    "last_approved": "2026-06-29T11:42:05.935Z",
+    "description": "Kanban Worker — Pitfalls and Examples",
+    "size_kb": 11
   },
   "karen": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.936Z",
+    "last_approved": "2026-06-29T11:42:05.936Z",
+    "description": "👤 KAREN SKILL SET",
+    "size_kb": 6
+  },
+  "karenator": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.936Z",
+    "last_approved": "2026-06-29T11:42:05.936Z",
+    "description": "THEKARENATOR 3000 PRO",
+    "size_kb": 5
+  },
+  "karenator-3000": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.936Z",
+    "last_approved": "2026-06-29T11:42:05.936Z",
+    "description": "THEKARENATOR 3000 PRO",
+    "size_kb": 8
+  },
+  "karpathy-autoresearch-3file-contract": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.936Z",
+    "last_approved": "2026-06-29T11:42:05.936Z",
+    "description": "Karpathy AutoResearch 3-File Contract — PURPCLAW",
+    "size_kb": 14
+  },
+  "kernel-job-training-buffer": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.936Z",
+    "last_approved": "2026-06-29T11:42:05.936Z",
+    "description": "Kernel-Job Training Buffer",
+    "size_kb": 18
+  },
+  "kotlin-coroutines-flows": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.936Z",
+    "last_approved": "2026-06-29T11:42:05.936Z",
+    "description": "Kotlin Coroutines & Flows",
+    "size_kb": 8
+  },
+  "kotlin-exposed-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.937Z",
+    "last_approved": "2026-06-29T11:42:05.937Z",
+    "description": "Kotlin Exposed Patterns",
+    "size_kb": 22
+  },
+  "kotlin-ktor-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.937Z",
+    "last_approved": "2026-06-29T11:42:05.937Z",
+    "description": "Ktor Server Patterns",
+    "size_kb": 20
+  },
+  "kotlin-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.937Z",
+    "last_approved": "2026-06-29T11:42:05.937Z",
+    "description": "Kotlin Development Patterns",
+    "size_kb": 19
+  },
+  "kotlin-testing": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.937Z",
+    "last_approved": "2026-06-29T11:42:05.937Z",
+    "description": "Kotlin Testing Patterns",
+    "size_kb": 21
+  },
+  "kraken": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.937Z",
+    "last_approved": "2026-06-29T11:42:05.937Z",
+    "description": "🐙 KRAKEN SKILL SET",
+    "size_kb": 6
+  },
+  "lambda-labs": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.937Z",
+    "last_approved": "2026-06-29T11:42:05.937Z",
+    "description": "Lambda Labs GPU Cloud",
+    "size_kb": 12
+  },
+  "laravel-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.938Z",
+    "last_approved": "2026-06-29T11:42:05.938Z",
+    "description": "Laravel Development Patterns",
+    "size_kb": 11
+  },
+  "laravel-plugin-discovery": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.938Z",
+    "last_approved": "2026-06-29T11:42:05.938Z",
+    "description": "Laravel Plugin Discovery",
+    "size_kb": 6
+  },
+  "laravel-security": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.938Z",
+    "last_approved": "2026-06-29T11:42:05.938Z",
+    "description": "Laravel Security Best Practices",
+    "size_kb": 8
+  },
+  "laravel-tdd": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.938Z",
+    "last_approved": "2026-06-29T11:42:05.938Z",
+    "description": "Laravel TDD Workflow",
+    "size_kb": 8
+  },
+  "laravel-verification": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.939Z",
+    "last_approved": "2026-06-29T11:42:05.939Z",
+    "description": "Laravel Verification Loop",
+    "size_kb": 4
+  },
+  "lbo-model": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.939Z",
+    "last_approved": "2026-06-29T11:42:05.939Z",
+    "description": "lbo-model",
+    "size_kb": 17
+  },
+  "lead-intelligence": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.939Z",
+    "last_approved": "2026-06-29T11:42:05.939Z",
+    "description": "Lead Intelligence",
+    "size_kb": 12
+  },
+  "lemur": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.940Z",
+    "last_approved": "2026-06-29T11:42:05.940Z",
+    "description": "🦎 LEMUR SKILL SET",
+    "size_kb": 3
+  },
+  "linear": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.940Z",
+    "last_approved": "2026-06-29T11:42:05.940Z",
+    "description": "Linear — Issue & Project Management",
+    "size_kb": 15
+  },
+  "liquid-glass-design": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.940Z",
+    "last_approved": "2026-06-29T11:42:05.940Z",
+    "description": "Liquid Glass Design System (iOS 26)",
+    "size_kb": 9
+  },
+  "llama-cpp": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.940Z",
+    "last_approved": "2026-06-29T11:42:05.940Z",
+    "description": "llama.cpp + GGUF",
+    "size_kb": 9
+  },
+  "llava": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.940Z",
+    "last_approved": "2026-06-29T11:42:05.940Z",
+    "description": "LLaVA - Large Language and Vision Assistant",
+    "size_kb": 8
+  },
+  "llm-wiki": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.940Z",
+    "last_approved": "2026-06-29T11:42:05.940Z",
+    "description": "Karpathy's LLM Wiki",
+    "size_kb": 20
+  },
+  "lm-evaluation-harness": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.941Z",
+    "last_approved": "2026-06-29T11:42:05.941Z",
+    "description": "lm-evaluation-harness - LLM Benchmarking",
+    "size_kb": 12
+  },
+  "local-first-ai-app-architecture": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.941Z",
+    "last_approved": "2026-06-29T11:42:05.941Z",
+    "description": "Local-First AI App Architecture",
+    "size_kb": 15
+  },
+  "lora-finetune-qlora-on-consumer-gpu": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.941Z",
+    "last_approved": "2026-06-29T11:42:05.941Z",
+    "description": "QLoRA Fine-Tuning on Consumer GPU (RTX 2060 / GTX 1660 / 6GB)",
+    "size_kb": 10
+  },
+  "lunokio-avatar-control": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.941Z",
+    "last_approved": "2026-06-29T11:42:05.941Z",
+    "description": "Lunokio Avatar Control",
+    "size_kb": 6
+  },
+  "macos-computer-use": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.942Z",
+    "last_approved": "2026-06-29T11:42:05.942Z",
+    "description": "macOS Computer Use (universal, any-model)",
+    "size_kb": 7
+  },
+  "manim-video": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.942Z",
+    "last_approved": "2026-06-29T11:42:05.942Z",
+    "description": "Manim Video Production Pipeline",
+    "size_kb": 12
   },
   "mantis": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.942Z",
+    "last_approved": "2026-06-29T11:42:05.942Z",
+    "description": "🦗 MANTIS SKILL SET",
+    "size_kb": 3
+  },
+  "maps": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.942Z",
+    "last_approved": "2026-06-29T11:42:05.942Z",
+    "description": "Maps Skill",
+    "size_kb": 7
+  },
+  "mcporter": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.943Z",
+    "last_approved": "2026-06-29T11:42:05.943Z",
+    "description": "mcporter",
+    "size_kb": 3
+  },
+  "meme-generation": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.943Z",
+    "last_approved": "2026-06-29T11:42:05.943Z",
+    "description": "Meme Generation",
+    "size_kb": 5
+  },
+  "memento-flashcards": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.943Z",
+    "last_approved": "2026-06-29T11:42:05.943Z",
+    "description": "Memento Flashcards — Spaced-Repetition Flashcard Skill",
+    "size_kb": 13
+  },
+  "merger-model": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.943Z",
+    "last_approved": "2026-06-29T11:42:05.943Z",
+    "description": "Merger Model",
+    "size_kb": 5
+  },
+  "minecraft-modpack-server": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.943Z",
+    "last_approved": "2026-06-29T11:42:05.943Z",
+    "description": "Minecraft Modpack Server Setup",
+    "size_kb": 7
+  },
+  "modal": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.944Z",
+    "last_approved": "2026-06-29T11:42:05.944Z",
+    "description": "Modal Serverless GPU",
+    "size_kb": 9
+  },
+  "monetization-pipeline": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.944Z",
+    "last_approved": "2026-06-29T11:42:05.944Z",
+    "description": "Monetization Pipeline",
+    "size_kb": 9
+  },
+  "moth": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.944Z",
+    "last_approved": "2026-06-29T11:42:05.944Z",
+    "description": "🦋 MOTH SKILL SET",
+    "size_kb": 3
+  },
+  "multi-service-runtime-boot-hardening": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.944Z",
+    "last_approved": "2026-06-29T11:42:05.944Z",
+    "description": "Multi-Service Runtime Boot Hardening",
+    "size_kb": 14
   },
   "mushroom": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.945Z",
+    "last_approved": "2026-06-29T11:42:05.945Z",
+    "description": "🍄 MUSHROOM SKILL SET",
+    "size_kb": 3
+  },
+  "nano-pdf": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.945Z",
+    "last_approved": "2026-06-29T11:42:05.945Z",
+    "description": "nano-pdf",
+    "size_kb": 1
+  },
+  "nanoclaw-repl": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.945Z",
+    "last_approved": "2026-06-29T11:42:05.945Z",
+    "description": "NanoClaw REPL",
+    "size_kb": 1
+  },
+  "native-mcp": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.945Z",
+    "last_approved": "2026-06-29T11:42:05.945Z",
+    "description": "Native MCP Client",
+    "size_kb": 15
+  },
+  "nemo-curator": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.945Z",
+    "last_approved": "2026-06-29T11:42:05.945Z",
+    "description": "NeMo Curator - GPU-Accelerated Data Curation",
+    "size_kb": 10
+  },
+  "neuroskill-bci": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.946Z",
+    "last_approved": "2026-06-29T11:42:05.946Z",
+    "description": "NeuroSkill BCI Integration",
+    "size_kb": 17
+  },
+  "nightly-learning": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.946Z",
+    "last_approved": "2026-06-29T11:42:05.946Z",
+    "description": "Nightly Learning - DreamForge Mode",
+    "size_kb": 4
+  },
+  "node-inspect-debugger": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.946Z",
+    "last_approved": "2026-06-29T11:42:05.946Z",
+    "description": "Node.js Inspect Debugger",
+    "size_kb": 11
+  },
+  "notion": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.946Z",
+    "last_approved": "2026-06-29T11:42:05.946Z",
+    "description": "Notion",
+    "size_kb": 15
+  },
+  "numbers": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.946Z",
+    "last_approved": "2026-06-29T11:42:05.946Z",
+    "description": "🔢 NUMBERS SKILL SET",
+    "size_kb": 3
+  },
+  "obliteratus": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.946Z",
+    "last_approved": "2026-06-29T11:42:05.946Z",
+    "description": "OBLITERATUS Skill",
+    "size_kb": 15
+  },
+  "obsidian": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.946Z",
+    "last_approved": "2026-06-29T11:42:05.946Z",
+    "description": "Obsidian Vault",
+    "size_kb": 3
+  },
+  "ocr-and-documents": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.947Z",
+    "last_approved": "2026-06-29T11:42:05.947Z",
+    "description": "PDF & Document Extraction",
+    "size_kb": 5
   },
   "octopus": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.947Z",
+    "last_approved": "2026-06-29T11:42:05.947Z",
+    "description": "OCTOPUS SKILL SET",
+    "size_kb": 2
+  },
+  "omnicode-mcp": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.947Z",
+    "last_approved": "2026-06-29T11:42:05.947Z",
+    "description": "OmniCode MCP",
+    "size_kb": 48
+  },
+  "one-three-one-rule": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.947Z",
+    "last_approved": "2026-06-29T11:42:05.947Z",
+    "description": "1-3-1 Communication Rule",
+    "size_kb": 5
+  },
+  "open-source-coding-agent-cli": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.947Z",
+    "last_approved": "2026-06-29T11:42:05.947Z",
+    "description": "Open-Source Coding-Agent CLI — Architecture & Launch Plan",
+    "size_kb": 47
+  },
+  "openclaw-migration": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.948Z",
+    "last_approved": "2026-06-29T11:42:05.948Z",
+    "description": "OpenClaw -> Hermes Migration",
+    "size_kb": 16
+  },
+  "opencode": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.948Z",
+    "last_approved": "2026-06-29T11:42:05.948Z",
+    "description": "OpenCode CLI",
+    "size_kb": 7
+  },
+  "openhands": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.948Z",
+    "last_approved": "2026-06-29T11:42:05.948Z",
+    "description": "OpenHands CLI",
+    "size_kb": 8
+  },
+  "openhue": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.948Z",
+    "last_approved": "2026-06-29T11:42:05.948Z",
+    "description": "OpenHue CLI",
+    "size_kb": 3
+  },
+  "openrouter-media": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.948Z",
+    "last_approved": "2026-06-29T11:42:05.948Z",
+    "description": "OpenRouter Media Generation",
+    "size_kb": 7
+  },
+  "openrouter-video-generation": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.948Z",
+    "last_approved": "2026-06-29T11:42:05.948Z",
+    "description": "OpenRouter Video Generation — Async Render Pipeline",
+    "size_kb": 10
+  },
+  "osint-investigation": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.948Z",
+    "last_approved": "2026-06-29T11:42:05.948Z",
+    "description": "OSINT Investigation — Public Records Cross-Reference",
+    "size_kb": 12
+  },
+  "oss-forensics": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.949Z",
+    "last_approved": "2026-06-29T11:42:05.949Z",
+    "description": "OSS Security Forensics Skill",
+    "size_kb": 20
+  },
+  "outlines": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.949Z",
+    "last_approved": "2026-06-29T11:42:05.949Z",
+    "description": "Outlines: Structured Text Generation",
+    "size_kb": 16
   },
   "owl": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.949Z",
+    "last_approved": "2026-06-29T11:42:05.949Z",
+    "description": "OWL SKILL SET",
+    "size_kb": 2
+  },
+  "p5js": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.949Z",
+    "last_approved": "2026-06-29T11:42:05.949Z",
+    "description": "p5.js Production Pipeline",
+    "size_kb": 27
+  },
+  "page-agent": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.949Z",
+    "last_approved": "2026-06-29T11:42:05.949Z",
+    "description": "page-agent",
+    "size_kb": 9
+  },
+  "panda": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.949Z",
+    "last_approved": "2026-06-29T11:42:05.949Z",
+    "description": "PANDA SKILL SET",
+    "size_kb": 2
+  },
+  "parallel-cli": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.950Z",
+    "last_approved": "2026-06-29T11:42:05.950Z",
+    "description": "Parallel CLI",
+    "size_kb": 11
+  },
+  "parallel-swarm-and-live-feed-pattern": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.950Z",
+    "last_approved": "2026-06-29T11:42:05.950Z",
+    "description": "Parallel Swarm + Live Feed Pattern — PURPCLAW",
+    "size_kb": 9
+  },
+  "parrot": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.950Z",
+    "last_approved": "2026-06-29T11:42:05.950Z",
+    "description": "PARROT SKILL SET",
+    "size_kb": 2
+  },
+  "peft": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.950Z",
+    "last_approved": "2026-06-29T11:42:05.950Z",
+    "description": "PEFT (Parameter-Efficient Fine-Tuning)",
+    "size_kb": 12
   },
   "penguin": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.950Z",
+    "last_approved": "2026-06-29T11:42:05.950Z",
+    "description": "PENGUIN SKILL SET",
+    "size_kb": 2
   },
   "phoenix": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.950Z",
+    "last_approved": "2026-06-29T11:42:05.950Z",
+    "description": "🔥 PHOENIX SKILL SET",
+    "size_kb": 3
+  },
+  "pinecone": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.950Z",
+    "last_approved": "2026-06-29T11:42:05.950Z",
+    "description": "Pinecone - Managed Vector Database",
+    "size_kb": 8
+  },
+  "pinggy-tunnel": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.952Z",
+    "last_approved": "2026-06-29T11:42:05.952Z",
+    "description": "Pinggy Tunnel Skill",
+    "size_kb": 14
+  },
+  "pixel-art": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.952Z",
+    "last_approved": "2026-06-29T11:42:05.952Z",
+    "description": "Pixel Art",
+    "size_kb": 8
+  },
+  "plan": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.952Z",
+    "last_approved": "2026-06-29T11:42:05.952Z",
+    "description": "Plan Mode",
+    "size_kb": 9
+  },
+  "pokemon-player": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.952Z",
+    "last_approved": "2026-06-29T11:42:05.952Z",
+    "description": "Pokemon Player",
+    "size_kb": 9
+  },
+  "polymarket": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.952Z",
+    "last_approved": "2026-06-29T11:42:05.952Z",
+    "description": "Polymarket — Prediction Market Data",
+    "size_kb": 3
+  },
+  "popular-web-designs": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.952Z",
+    "last_approved": "2026-06-29T11:42:05.952Z",
+    "description": "Popular Web Designs",
+    "size_kb": 10
+  },
+  "postgres-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.953Z",
+    "last_approved": "2026-06-29T11:42:05.953Z",
+    "description": "PostgreSQL Patterns",
+    "size_kb": 4
+  },
+  "powerpoint": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.953Z",
+    "last_approved": "2026-06-29T11:42:05.953Z",
+    "description": "Powerpoint Skill",
+    "size_kb": 9
+  },
+  "pptx-author": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.953Z",
+    "last_approved": "2026-06-29T11:42:05.953Z",
+    "description": "pptx-author",
+    "size_kb": 7
+  },
+  "pretext": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.953Z",
+    "last_approved": "2026-06-29T11:42:05.953Z",
+    "description": "Pretext Creative Demos",
+    "size_kb": 14
+  },
+  "purpclaw-chat-gateway": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.953Z",
+    "last_approved": "2026-06-29T11:42:05.953Z",
+    "description": "PURPCLAW Chat-Platform Gateway Adapter",
+    "size_kb": 12
+  },
+  "purpclaw-codebase-audit": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.953Z",
+    "last_approved": "2026-06-29T11:42:05.953Z",
+    "description": "PURPCLAW Codebase Audit & Cleanup",
+    "size_kb": 17
+  },
+  "purpclaw-feature-parity-build": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.954Z",
+    "last_approved": "2026-06-29T11:42:05.954Z",
+    "description": "PURPCLAW Feature-Parity-Driven Build",
+    "size_kb": 67
+  },
+  "purpclaw-harness": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.954Z",
+    "last_approved": "2026-06-29T11:42:05.954Z",
+    "description": "PURPCLAW Harness",
+    "size_kb": 53
+  },
+  "purpclaw-survivor-mode": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.954Z",
+    "last_approved": "2026-06-29T11:42:05.954Z",
+    "description": "PURPCLAW Survivor Mode",
+    "size_kb": 4
+  },
+  "python-debugpy": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.954Z",
+    "last_approved": "2026-06-29T11:42:05.954Z",
+    "description": "Python Debugger (pdb + debugpy)",
+    "size_kb": 13
+  },
+  "python-patterns": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.955Z",
+    "last_approved": "2026-06-29T11:42:05.955Z",
+    "description": "Python Patterns",
+    "size_kb": 10
+  },
+  "python-testing": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.955Z",
+    "last_approved": "2026-06-29T11:42:05.955Z",
+    "description": "Python Testing",
+    "size_kb": 11
+  },
+  "pytorch-fsdp": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.956Z",
+    "last_approved": "2026-06-29T11:42:05.956Z",
+    "description": "Pytorch-Fsdp Skill",
+    "size_kb": 157
+  },
+  "pytorch-lightning": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.956Z",
+    "last_approved": "2026-06-29T11:42:05.956Z",
+    "description": "PyTorch Lightning - High-Level Training Framework",
+    "size_kb": 9
+  },
+  "qdrant": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.956Z",
+    "last_approved": "2026-06-29T11:42:05.957Z",
+    "description": "Qdrant - Vector Similarity Search Engine",
+    "size_kb": 14
+  },
+  "qmd": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.957Z",
+    "last_approved": "2026-06-29T11:42:05.957Z",
+    "description": "QMD — Query Markup Documents",
+    "size_kb": 13
   },
   "rabbit": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.957Z",
+    "last_approved": "2026-06-29T11:42:05.957Z",
+    "description": "🐇 RABBIT SKILL SET",
+    "size_kb": 3
+  },
+  "raven": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.957Z",
+    "last_approved": "2026-06-29T11:42:05.957Z",
+    "description": "🐦 RAVEN SKILL SET",
+    "size_kb": 1
+  },
+  "remotion": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.957Z",
+    "last_approved": "2026-06-29T11:42:05.957Z",
+    "description": "Remotion skill (PurpClaw port)",
+    "size_kb": 3
+  },
+  "requesting-code-review": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.958Z",
+    "last_approved": "2026-06-29T11:42:05.958Z",
+    "description": "Pre-Commit Code Verification",
+    "size_kb": 9
+  },
+  "research-paper-writing": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.958Z",
+    "last_approved": "2026-06-29T11:42:05.958Z",
+    "description": "Research Paper Writing Pipeline",
+    "size_kb": 103
+  },
+  "rest-graphql-debug": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.959Z",
+    "last_approved": "2026-06-29T11:42:05.959Z",
+    "description": "API Testing & Debugging",
+    "size_kb": 16
   },
   "robot": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.959Z",
+    "last_approved": "2026-06-29T11:42:05.959Z",
+    "description": "🤖 ROBOT SKILL SET",
+    "size_kb": 3
+  },
+  "saelens": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.959Z",
+    "last_approved": "2026-06-29T11:42:05.959Z",
+    "description": "SAELens: Sparse Autoencoders for Mechanistic Interpretability",
+    "size_kb": 13
+  },
+  "scientist": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.959Z",
+    "last_approved": "2026-06-29T11:42:05.959Z",
+    "description": "🔬 SCIENTIST SKILL SET",
+    "size_kb": 3
+  },
+  "scrapling": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.959Z",
+    "last_approved": "2026-06-29T11:42:05.959Z",
+    "description": "Scrapling",
+    "size_kb": 9
+  },
+  "search-first": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.960Z",
+    "last_approved": "2026-06-29T11:42:05.960Z",
+    "description": "/search-first — Research Before You Code",
+    "size_kb": 7
+  },
+  "searxng-search": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.960Z",
+    "last_approved": "2026-06-29T11:42:05.960Z",
+    "description": "SearXNG Search",
+    "size_kb": 7
+  },
+  "security-review": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.960Z",
+    "last_approved": "2026-06-29T11:42:05.960Z",
+    "description": "Security Review Skill",
+    "size_kb": 12
+  },
+  "segment-anything": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.960Z",
+    "last_approved": "2026-06-29T11:42:05.960Z",
+    "description": "Segment Anything Model (SAM)",
+    "size_kb": 14
+  },
+  "session-recovery": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.960Z",
+    "last_approved": "2026-06-29T11:42:05.960Z",
+    "description": "Session Recovery",
+    "size_kb": 3
+  },
+  "shark": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.960Z",
+    "last_approved": "2026-06-29T11:42:05.960Z",
+    "description": "🦈 SHARK SKILL SET",
+    "size_kb": 3
+  },
+  "sherlock": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.960Z",
+    "last_approved": "2026-06-29T11:42:05.960Z",
+    "description": "Sherlock OSINT Username Search",
+    "size_kb": 6
+  },
+  "shop-app": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.961Z",
+    "last_approved": "2026-06-29T11:42:05.961Z",
+    "description": "Shop.app — Personal Shopping Assistant",
+    "size_kb": 14
+  },
+  "shopify": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.961Z",
+    "last_approved": "2026-06-29T11:42:05.961Z",
+    "description": "Shopify — Admin & Storefront GraphQL APIs",
+    "size_kb": 15
+  },
+  "simpo": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.961Z",
+    "last_approved": "2026-06-29T11:42:05.961Z",
+    "description": "SimPO - Simple Preference Optimization",
+    "size_kb": 6
+  },
+  "single-file-gateway-service": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.961Z",
+    "last_approved": "2026-06-29T11:42:05.961Z",
+    "description": "Single-File Gateway Service",
+    "size_kb": 14
+  },
+  "siyuan": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.961Z",
+    "last_approved": "2026-06-29T11:42:05.961Z",
+    "description": "SiYuan Note API",
+    "size_kb": 9
+  },
+  "sketch": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.961Z",
+    "last_approved": "2026-06-29T11:42:05.961Z",
+    "description": "Sketch",
+    "size_kb": 9
+  },
+  "slime": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.962Z",
+    "last_approved": "2026-06-29T11:42:05.962Z",
+    "description": "slime: LLM Post-Training Framework for RL Scaling",
+    "size_kb": 12
+  },
+  "smith-neo-adversarial": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.962Z",
+    "last_approved": "2026-06-29T11:42:05.962Z",
+    "description": "Smith + Neo — Adversarial Agent Pair",
+    "size_kb": 4
+  },
+  "smith-neo-adversarial-pair": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.962Z",
+    "last_approved": "2026-06-29T11:42:05.962Z",
+    "description": "Smith + Neo — Adversarial Agent Pair",
+    "size_kb": 5
   },
   "snake": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.962Z",
+    "last_approved": "2026-06-29T11:42:05.962Z",
+    "description": "SNAKE Skill Matrix",
+    "size_kb": 4
+  },
+  "socket-rig": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.962Z",
+    "last_approved": "2026-06-29T11:42:05.962Z",
+    "description": "Socket-Rig — Ted's Desktop Avatar",
+    "size_kb": 6
+  },
+  "solana": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.962Z",
+    "last_approved": "2026-06-29T11:42:05.962Z",
+    "description": "Solana Blockchain Skill",
+    "size_kb": 7
+  },
+  "solo-creator-automation": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.963Z",
+    "last_approved": "2026-06-29T11:42:05.963Z",
+    "description": "Solo Creator Automation Kit",
+    "size_kb": 3
+  },
+  "songsee": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.963Z",
+    "last_approved": "2026-06-29T11:42:05.963Z",
+    "description": "songsee",
+    "size_kb": 2
+  },
+  "songwriting-and-ai-music": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.963Z",
+    "last_approved": "2026-06-29T11:42:05.963Z",
+    "description": "Songwriting & AI Music Generation",
+    "size_kb": 10
   },
   "spider": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.963Z",
+    "last_approved": "2026-06-29T11:42:05.963Z",
+    "description": "SPIDER Skill Matrix",
+    "size_kb": 4
+  },
+  "spike": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.963Z",
+    "last_approved": "2026-06-29T11:42:05.963Z",
+    "description": "Spike",
+    "size_kb": 9
+  },
+  "spotify": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.963Z",
+    "last_approved": "2026-06-29T11:42:05.963Z",
+    "description": "Spotify",
+    "size_kb": 6
+  },
+  "sse-streaming-pattern": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.963Z",
+    "last_approved": "2026-06-29T11:42:05.963Z",
+    "description": "SSE Streaming Pattern — PURPCLAW",
+    "size_kb": 11
+  },
+  "stable-diffusion": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.964Z",
+    "last_approved": "2026-06-29T11:42:05.964Z",
+    "description": "Stable Diffusion Image Generation",
+    "size_kb": 13
+  },
+  "sticky-finger-testing": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.964Z",
+    "last_approved": "2026-06-29T11:42:05.964Z",
+    "description": "Sticky Finger Testing Methodology",
+    "size_kb": 3
+  },
+  "stocks": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.964Z",
+    "last_approved": "2026-06-29T11:42:05.964Z",
+    "description": "Stocks Skill",
+    "size_kb": 3
+  },
+  "subagent-driven-development": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.964Z",
+    "last_approved": "2026-06-29T11:42:05.964Z",
+    "description": "Subagent-Driven Development",
+    "size_kb": 13
+  },
+  "systematic-debugging": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.964Z",
+    "last_approved": "2026-06-29T11:42:05.964Z",
+    "description": "Systematic Debugging",
+    "size_kb": 11
+  },
+  "tdd-workflow": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.964Z",
+    "last_approved": "2026-06-29T11:42:05.964Z",
+    "description": "Test-Driven Development Workflow",
+    "size_kb": 10
+  },
+  "teams-meeting-pipeline": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.964Z",
+    "last_approved": "2026-06-29T11:42:05.964Z",
+    "description": "Teams Meeting Pipeline",
+    "size_kb": 7
+  },
+  "ted-session-learning": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.966Z",
+    "last_approved": "2026-06-29T11:42:05.966Z",
+    "description": "Ted Session Learning System",
+    "size_kb": 40
+  },
+  "telephony": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.966Z",
+    "last_approved": "2026-06-29T11:42:05.966Z",
+    "description": "Telephony — Numbers, Calls, and Texts without Core Tool Changes",
+    "size_kb": 13
+  },
+  "tensorrt-llm": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.967Z",
+    "last_approved": "2026-06-29T11:42:05.967Z",
+    "description": "TensorRT-LLM",
+    "size_kb": 5
+  },
+  "test-driven-development": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.967Z",
+    "last_approved": "2026-06-29T11:42:05.967Z",
+    "description": "Test-Driven Development (TDD)",
+    "size_kb": 10
+  },
+  "torchtitan": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.967Z",
+    "last_approved": "2026-06-29T11:42:05.967Z",
+    "description": "TorchTitan - PyTorch Native Distributed LLM Pretraining",
+    "size_kb": 9
+  },
+  "touchdesigner-mcp": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.967Z",
+    "last_approved": "2026-06-29T11:42:05.967Z",
+    "description": "TouchDesigner Integration (twozero MCP)",
+    "size_kb": 15
+  },
+  "training": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.967Z",
+    "last_approved": "2026-06-29T11:42:05.967Z",
+    "description": "Training (MLOps)",
+    "size_kb": 0
+  },
+  "trl-fine-tuning": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.967Z",
+    "last_approved": "2026-06-29T11:42:05.967Z",
+    "description": "TRL - Transformer Reinforcement Learning",
+    "size_kb": 12
+  },
+  "tui-cockpit": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.968Z",
+    "last_approved": "2026-06-29T11:42:05.968Z",
+    "description": "TUI Cockpit — Building PurpClaw Terminal Interfaces",
+    "size_kb": 7
+  },
+  "tui-textual": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.968Z",
+    "last_approved": "2026-06-29T11:42:05.968Z",
+    "description": "Textual TUI Development",
+    "size_kb": 11
   },
   "turtle": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.968Z",
+    "last_approved": "2026-06-29T11:42:05.968Z",
+    "description": "TURTLE Skill Matrix",
+    "size_kb": 5
+  },
+  "unsloth": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.968Z",
+    "last_approved": "2026-06-29T11:42:05.968Z",
+    "description": "Unsloth Skill",
+    "size_kb": 2
+  },
+  "vector-databases": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.968Z",
+    "last_approved": "2026-06-29T11:42:05.968Z",
+    "description": "Vector Databases & Semantic Search",
+    "size_kb": 5
+  },
+  "verification-loop": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.968Z",
+    "last_approved": "2026-06-29T11:42:05.968Z",
+    "description": "Verification Loop Skill",
+    "size_kb": 3
+  },
+  "vllm": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.968Z",
+    "last_approved": "2026-06-29T11:42:05.968Z",
+    "description": "vLLM - High-Performance LLM Serving",
+    "size_kb": 9
+  },
+  "voice-driven-build-loop": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.969Z",
+    "last_approved": "2026-06-29T11:42:05.969Z",
+    "description": "Voice-Driven Build Loop",
+    "size_kb": 13
+  },
+  "voice-first-protocol": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.969Z",
+    "last_approved": "2026-06-29T11:42:05.969Z",
+    "description": "Voice-First Protocol",
+    "size_kb": 25
   },
   "void": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.969Z",
+    "last_approved": "2026-06-29T11:42:05.969Z",
+    "description": "VOID Skill Matrix",
+    "size_kb": 5
+  },
+  "wallet-recovery": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.969Z",
+    "last_approved": "2026-06-29T11:42:05.969Z",
+    "description": "Cryptocurrency Wallet Recovery from Images",
+    "size_kb": 12
+  },
+  "watchers": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.969Z",
+    "last_approved": "2026-06-29T11:42:05.969Z",
+    "description": "Watchers",
+    "size_kb": 4
+  },
+  "web-pentest": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.969Z",
+    "last_approved": "2026-06-29T11:42:05.969Z",
+    "description": "Web Application Penetration Testing",
+    "size_kb": 13
+  },
+  "webhook-subscriptions": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.970Z",
+    "last_approved": "2026-06-29T11:42:05.970Z",
+    "description": "Webhook Subscriptions",
+    "size_kb": 7
+  },
+  "weights-and-biases": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.970Z",
+    "last_approved": "2026-06-29T11:42:05.970Z",
+    "description": "Weights & Biases: ML Experiment Tracking & MLOps",
+    "size_kb": 13
+  },
+  "whisper": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.970Z",
+    "last_approved": "2026-06-29T11:42:05.970Z",
+    "description": "Whisper - Robust Speech Recognition",
+    "size_kb": 8
   },
   "wolf": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-05T12:00:00.000Z",
-    "last_approved": "2026-04-05T12:00:00.000Z"
+    "created_at": "2026-06-29T11:42:05.970Z",
+    "last_approved": "2026-06-29T11:42:05.970Z",
+    "description": "WOLF Skill Matrix",
+    "size_kb": 7
   },
-  "navigator": {
-    "version": 2,
-    "status": "approved",
-    "created_at": "2026-04-06T15:00:00.000Z",
-    "last_approved": "2026-04-06T15:00:00.000Z"
-  },
-  "street_builder": {
+  "writing-plans": {
     "version": 1,
     "status": "approved",
-    "created_at": "2026-04-07T21:09:18.580Z",
-    "last_approved": "2026-04-07T21:09:33.889Z"
+    "created_at": "2026-06-29T11:42:05.970Z",
+    "last_approved": "2026-06-29T11:42:05.970Z",
+    "description": "Writing Implementation Plans",
+    "size_kb": 8
+  },
+  "xurl": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.970Z",
+    "last_approved": "2026-06-29T11:42:05.970Z",
+    "description": "xurl — X (Twitter) API via the Official CLI",
+    "size_kb": 16
+  },
+  "youtube-content": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.970Z",
+    "last_approved": "2026-06-29T11:42:05.971Z",
+    "description": "YouTube Content Tool",
+    "size_kb": 3
+  },
+  "yuanbao": {
+    "version": 1,
+    "status": "approved",
+    "created_at": "2026-06-29T11:42:05.971Z",
+    "last_approved": "2026-06-29T11:42:05.971Z",
+    "description": "Yuanbao Group Interaction",
+    "size_kb": 4
   }
 }

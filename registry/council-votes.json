@@ -1,0 +1,590 @@
+{
+  "schema": "purpclaw.council-votes.v1",
+  "version": "0.1.0",
+  "updated": "2026-06-29T15:24:42.245Z",
+  "votes": [
+    {
+      "vote_id": "v_mqzb6wut_v6fiq",
+      "timestamp": "2026-06-29T14:24:25.301Z",
+      "problem": "should we rewrite the provider router",
+      "meeting_type": "engineering",
+      "chair": "hermes",
+      "vote_type": "simple_majority",
+      "threshold": 0.5,
+      "attendees": [
+        "hermes",
+        "smith",
+        "neo",
+        "goose",
+        "memory",
+        "weatherman",
+        "architect"
+      ],
+      "votes": [
+        {
+          "agent_id": "hermes",
+          "name": "Hermes",
+          "emoji": "⚡",
+          "vote": "approve",
+          "rationale": "Current architecture is brittle",
+          "weight": 3,
+          "personality": {
+            "humour": 40,
+            "confidence": 90,
+            "curiosity": 80,
+            "patience": 95
+          }
+        },
+        {
+          "agent_id": "smith",
+          "name": "Smith",
+          "emoji": "⚔️",
+          "vote": "reject",
+          "rationale": "Not enough evidence yet",
+          "weight": 3,
+          "personality": {
+            "humour": 30,
+            "confidence": 92,
+            "curiosity": 70,
+            "patience": 60
+          }
+        },
+        {
+          "agent_id": "neo",
+          "name": "Neo",
+          "emoji": "🛡️",
+          "vote": "abstain",
+          "rationale": "Need more data",
+          "weight": 2,
+          "personality": {
+            "humour": 20,
+            "confidence": 82,
+            "curiosity": 75,
+            "patience": 90
+          }
+        },
+        {
+          "agent_id": "goose",
+          "name": "Goose",
+          "emoji": "🪿",
+          "vote": "chaos-pass",
+          "rationale": "Stupid might work",
+          "weight": 1.5,
+          "personality": {
+            "humour": 95,
+            "confidence": 78,
+            "curiosity": 70,
+            "patience": 20
+          }
+        },
+        {
+          "agent_id": "memory",
+          "name": "Memory",
+          "emoji": "🧠",
+          "vote": "approve",
+          "rationale": "We tried patching twice before",
+          "weight": 1.5,
+          "personality": {
+            "humour": 15,
+            "confidence": 78,
+            "curiosity": 72,
+            "patience": 96
+          }
+        },
+        {
+          "agent_id": "weatherman",
+          "name": "Weatherman",
+          "emoji": "🌦️",
+          "vote": "approve",
+          "rationale": "Three providers degraded",
+          "weight": 2,
+          "personality": {
+            "humour": 25,
+            "confidence": 84,
+            "curiosity": 65,
+            "patience": 78
+          }
+        },
+        {
+          "agent_id": "architect",
+          "name": "Architect",
+          "emoji": "🏗️",
+          "vote": "approve",
+          "rationale": "Architecture is outdated",
+          "weight": 2,
+          "personality": {
+            "humour": 25,
+            "confidence": 86,
+            "curiosity": 76,
+            "patience": 82
+          }
+        }
+      ],
+      "tally": {
+        "yes_weight": 10,
+        "no_weight": 3,
+        "abstain_weight": 2,
+        "veto_weight": 0,
+        "total": 15,
+        "yes_pct": 67,
+        "threshold_pct": 50
+      },
+      "outcome": "passed",
+      "veto_override": false,
+      "dissenters": [
+        "smith"
+      ],
+      "chaoPassers": [
+        "goose"
+      ],
+      "decision": "proceed",
+      "risks": "",
+      "actions": "hermes, smith, neo, goose, memory, weatherman, architect to act on outcome",
+      "risk_owners": {
+        "smith_veto_risk": false,
+        "neo_needs_proof": false,
+        "action_owner": "hermes",
+        "observer": "duck"
+      },
+      "duck_observation": "🦆 Chaos-pass accepted from goose. Against all odds, this might work. The Duck is concerned."
+    },
+    {
+      "vote_id": "v_mqzb7hi9_kwzga",
+      "timestamp": "2026-06-29T14:24:52.065Z",
+      "problem": "should we rewrite the provider router",
+      "meeting_type": "engineering",
+      "chair": "hermes",
+      "vote_type": "simple_majority",
+      "threshold": 0.5,
+      "attendees": [
+        "hermes",
+        "smith",
+        "neo",
+        "goose",
+        "memory",
+        "weatherman",
+        "architect"
+      ],
+      "votes": [
+        {
+          "agent_id": "hermes",
+          "name": "Hermes",
+          "emoji": "⚡",
+          "vote": "approve",
+          "rationale": "",
+          "weight": 3,
+          "personality": {
+            "humour": 40,
+            "confidence": 90,
+            "curiosity": 80,
+            "patience": 95
+          }
+        },
+        {
+          "agent_id": "smith",
+          "name": "Smith",
+          "emoji": "⚔️",
+          "vote": "reject",
+          "rationale": "",
+          "weight": 3,
+          "personality": {
+            "humour": 30,
+            "confidence": 92,
+            "curiosity": 70,
+            "patience": 60
+          }
+        },
+        {
+          "agent_id": "neo",
+          "name": "Neo",
+          "emoji": "🛡️",
+          "vote": "abstain",
+          "rationale": "",
+          "weight": 2,
+          "personality": {
+            "humour": 20,
+            "confidence": 82,
+            "curiosity": 75,
+            "patience": 90
+          }
+        },
+        {
+          "agent_id": "goose",
+          "name": "Goose",
+          "emoji": "🪿",
+          "vote": "chaos-pass",
+          "rationale": "",
+          "weight": 1.5,
+          "personality": {
+            "humour": 95,
+            "confidence": 78,
+            "curiosity": 70,
+            "patience": 20
+          }
+        },
+        {
+          "agent_id": "memory",
+          "name": "Memory",
+          "emoji": "🧠",
+          "vote": "approve",
+          "rationale": "",
+          "weight": 1.5,
+          "personality": {
+            "humour": 15,
+            "confidence": 78,
+            "curiosity": 72,
+            "patience": 96
+          }
+        },
+        {
+          "agent_id": "weatherman",
+          "name": "Weatherman",
+          "emoji": "🌦️",
+          "vote": "approve",
+          "rationale": "",
+          "weight": 2,
+          "personality": {
+            "humour": 25,
+            "confidence": 84,
+            "curiosity": 65,
+            "patience": 78
+          }
+        },
+        {
+          "agent_id": "architect",
+          "name": "Architect",
+          "emoji": "🏗️",
+          "vote": "approve",
+          "rationale": "",
+          "weight": 2,
+          "personality": {
+            "humour": 25,
+            "confidence": 86,
+            "curiosity": 76,
+            "patience": 82
+          }
+        }
+      ],
+      "tally": {
+        "yes_weight": 10,
+        "no_weight": 3,
+        "abstain_weight": 2,
+        "veto_weight": 0,
+        "total": 15,
+        "yes_pct": 67,
+        "threshold_pct": 50
+      },
+      "outcome": "passed",
+      "veto_override": false,
+      "dissenters": [
+        "smith"
+      ],
+      "chaoPassers": [
+        "goose"
+      ],
+      "decision": "proceed",
+      "risks": "",
+      "actions": "hermes, smith, neo, goose, memory, weatherman, architect to act on outcome",
+      "risk_owners": {
+        "smith_veto_risk": false,
+        "neo_needs_proof": false,
+        "action_owner": "hermes",
+        "observer": "duck"
+      },
+      "duck_observation": "🦆 Chaos-pass accepted from goose. Against all odds, this might work. The Duck is concerned."
+    },
+    {
+      "vote_id": "v_mqzb9632_2dwbl",
+      "timestamp": "2026-06-29T14:26:10.574Z",
+      "problem": "auth vulnerability found",
+      "meeting_type": "security",
+      "chair": "smith",
+      "vote_type": "unanimous",
+      "threshold": 1,
+      "attendees": [
+        "smith",
+        "neo",
+        "memory",
+        "goose",
+        "guardian"
+      ],
+      "votes": [
+        {
+          "agent_id": "smith",
+          "name": "Smith",
+          "emoji": "⚔️",
+          "vote": "reject",
+          "rationale": "Too many unknowns to proceed safely",
+          "weight": 3,
+          "personality": {
+            "humour": 30,
+            "confidence": 92,
+            "curiosity": 70,
+            "patience": 60
+          }
+        },
+        {
+          "agent_id": "neo",
+          "name": "Neo",
+          "emoji": "🛡️",
+          "vote": "reject",
+          "rationale": "Need PoC first",
+          "weight": 2,
+          "personality": {
+            "humour": 20,
+            "confidence": 82,
+            "curiosity": 75,
+            "patience": 90
+          }
+        },
+        {
+          "agent_id": "memory",
+          "name": "Memory",
+          "emoji": "🧠",
+          "vote": "approve",
+          "rationale": "We've handled this before",
+          "weight": 1.5,
+          "personality": {
+            "humour": 15,
+            "confidence": 78,
+            "curiosity": 72,
+            "patience": 96
+          }
+        },
+        {
+          "agent_id": "goose",
+          "name": "Goose",
+          "emoji": "🪿",
+          "vote": "chaos-pass",
+          "rationale": "Patch it live",
+          "weight": 1.5,
+          "personality": {
+            "humour": 95,
+            "confidence": 78,
+            "curiosity": 70,
+            "patience": 20
+          }
+        },
+        {
+          "agent_id": "guardian",
+          "name": "Guardian",
+          "emoji": "🛡️",
+          "vote": "reject",
+          "rationale": "Not enough time to verify",
+          "weight": 1,
+          "personality": {
+            "vigilance": 97,
+            "reaction_time": 90,
+            "humour": 20
+          }
+        }
+      ],
+      "tally": {
+        "yes_weight": 3,
+        "no_weight": 6,
+        "abstain_weight": 0,
+        "veto_weight": 0,
+        "total": 9,
+        "yes_pct": 33,
+        "threshold_pct": 100
+      },
+      "outcome": "rejected",
+      "veto_override": false,
+      "dissenters": [
+        "smith",
+        "neo",
+        "guardian"
+      ],
+      "chaoPassers": [
+        "goose"
+      ],
+      "decision": "defer",
+      "risks": "",
+      "actions": "smith, neo, memory, goose, guardian to act on outcome",
+      "risk_owners": {
+        "smith_veto_risk": false,
+        "neo_needs_proof": false,
+        "action_owner": "smith",
+        "observer": "duck"
+      },
+      "duck_observation": "🦆 Chaos-pass accepted from goose. Against all odds, this might work. The Duck is concerned."
+    },
+    {
+      "vote_id": "v_mqzbggad_vy5y1",
+      "timestamp": "2026-06-29T14:31:50.389Z",
+      "problem": "ship the chaos-pass",
+      "meeting_type": "engineering",
+      "chair": "hermes",
+      "vote_type": "simple_majority",
+      "threshold": 0.5,
+      "attendees": [
+        "hermes",
+        "goose",
+        "smith",
+        "memory",
+        "neo"
+      ],
+      "votes": [
+        {
+          "agent_id": "hermes",
+          "name": "Hermes",
+          "emoji": "⚡",
+          "vote": "approve",
+          "rationale": "",
+          "weight": 3
+        },
+        {
+          "agent_id": "goose",
+          "name": "Goose",
+          "emoji": "🪿",
+          "vote": "chaos-pass",
+          "rationale": "this is stupid but stupid works",
+          "weight": 1.5
+        },
+        {
+          "agent_id": "smith",
+          "name": "Smith",
+          "emoji": "⚔️",
+          "vote": "reject",
+          "rationale": "",
+          "weight": 3
+        },
+        {
+          "agent_id": "memory",
+          "name": "Memory",
+          "emoji": "🧠",
+          "vote": "approve",
+          "rationale": "",
+          "weight": 1.5
+        },
+        {
+          "agent_id": "neo",
+          "name": "Neo",
+          "emoji": "🛡️",
+          "vote": "abstain",
+          "rationale": "",
+          "weight": 2
+        }
+      ],
+      "tally": {
+        "yes_weight": 6,
+        "no_weight": 3,
+        "abstain_weight": 2,
+        "veto_weight": 0,
+        "total": 11,
+        "yes_pct": 55,
+        "threshold_pct": 50
+      },
+      "outcome": "passed",
+      "veto_override": false,
+      "dissenters": [
+        "smith"
+      ],
+      "chaoPassers": [
+        "goose"
+      ],
+      "decision": "proceed",
+      "risks": "",
+      "actions": "hermes, goose, smith, memory, neo to act on outcome",
+      "risk_owners": {
+        "smith_veto_risk": false,
+        "neo_needs_proof": false,
+        "action_owner": "hermes",
+        "observer": "duck"
+      },
+      "duck_observation": "🦆 Chaos-pass accepted from goose. Against all odds, this might work. The Duck is concerned."
+    },
+    {
+      "vote_id": "v_mqzdcfph_tegt4",
+      "timestamp": "2026-06-29T15:24:42.245Z",
+      "problem": "adopt the studio broadcast model for PURPCLAW",
+      "meeting_type": "creative",
+      "chair": "goose",
+      "vote_type": "simple_majority",
+      "threshold": 0.5,
+      "attendees": [
+        "goose",
+        "maverick",
+        "hermes",
+        "phoenix",
+        "crow",
+        "panda"
+      ],
+      "votes": [
+        {
+          "agent_id": "goose",
+          "name": "Goose",
+          "emoji": "🪿",
+          "vote": "chaos-pass",
+          "rationale": "ship it",
+          "weight": 1.5
+        },
+        {
+          "agent_id": "maverick",
+          "name": "Maverick",
+          "emoji": "✈️",
+          "vote": "approve",
+          "rationale": "precision matters",
+          "weight": 1
+        },
+        {
+          "agent_id": "hermes",
+          "name": "Hermes",
+          "emoji": "⚡",
+          "vote": "approve",
+          "rationale": "good structure",
+          "weight": 3
+        },
+        {
+          "agent_id": "phoenix",
+          "name": "Phoenix",
+          "emoji": "🔥",
+          "vote": "approve",
+          "rationale": "burning it down",
+          "weight": 1
+        },
+        {
+          "agent_id": "crow",
+          "name": "Crow",
+          "emoji": "🦅",
+          "vote": "approve",
+          "rationale": "content ops",
+          "weight": 1
+        },
+        {
+          "agent_id": "panda",
+          "name": "Panda",
+          "emoji": "🐼",
+          "vote": "approve",
+          "rationale": "keep it nice",
+          "weight": 1
+        }
+      ],
+      "tally": {
+        "yes_weight": 8.5,
+        "no_weight": 0,
+        "abstain_weight": 0,
+        "veto_weight": 0,
+        "total": 8.5,
+        "yes_pct": 100,
+        "threshold_pct": 50
+      },
+      "outcome": "passed",
+      "veto_override": false,
+      "dissenters": [],
+      "chaoPassers": [
+        "goose"
+      ],
+      "decision": "proceed",
+      "risks": "",
+      "actions": "goose, maverick, hermes, phoenix, crow, panda to act on outcome",
+      "risk_owners": {
+        "smith_veto_risk": false,
+        "neo_needs_proof": false,
+        "action_owner": "goose",
+        "observer": "duck"
+      },
+      "duck_observation": "🦆 Chaos-pass accepted from goose. Against all odds, this might work. The Duck is concerned."
+    }
+  ]
+}

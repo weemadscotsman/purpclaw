@@ -1,7 +1,14 @@
 {
   "name": "purpclaw",
-  "version": "0.2.0",
-  "description": "Open-source coding-agent CLI. Terminal-first, multi-agent, self-improving. Supports OpenAI, Anthropic, Gemini, Ollama, and 13 more providers.",
+  "version": "0.3.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "tools/*"
+  ],
+  "description": "Local-first AI organisation runtime with Council Mode, Studio ecology, workflow registry, memory, and governed self-evolution.",
   "keywords": [
     "ai",
     "agent",
@@ -46,6 +53,7 @@
   ],
   "scripts": {
     "dev": "next dev -p 3030 -H 127.0.0.1",
+    "dev:cc": "pnpm --filter @purpclaw/companion-chorus start",
     "build": "next build",
     "start": "next start",
     "cli": "node bin/purpclaw.js",
@@ -54,8 +62,23 @@
     "pm2:restart": "pm2 restart ecosystem.config.js",
     "pm2:status": "pm2 list",
     "docs:check": "node scripts/validate-docs.js",
+  "version:status": "node scripts/manifest.js status",
+  "version:diff": "node scripts/manifest.js diff",
+  "stamp": "node scripts/manifest.js stamp",
+  "sync:agents": "node scripts/sync-agents.js",
+  "sync:registry": "node scripts/sync-registry.js",
+  "drift": "node lib/drift-watcher.js",
+  "drift:fix": "node lib/drift-watcher.js --fix",
+  "drift:watch": "node lib/drift-watcher.js --watch --fix --interval=60",
+  "drift:json": "node lib/drift-watcher.js --json",
+  "weather": "node lib/weatherman.js",
+  "oracle": "node lib/oracle.js",
     "lint": "eslint .",
-    "clean": "next clean"
+    "verify:hivemind": "node scripts/verify-hivemind.js",
+    "verify:hivemind:rank1": "node scripts/verify-hivemind.js --rank=1",
+    "clean": "next clean",
+    "smoke": "python scripts/smoke_all.py",
+    "smoke:save": "python scripts/smoke_all.py --save /tmp/purpclaw_smoke.json"
   },
   "dependencies": {
     "@google/genai": "^1.17.0",

@@ -1,0 +1,46 @@
+{
+  "agents": {
+    "unknown": {
+      "totalTasks": 1,
+      "successes": 0,
+      "failures": 1,
+      "totalDuration": 37749,
+      "avgDuration": 37749,
+      "bugCount": 0,
+      "bugRate": 0,
+      "lastTask": "2026-06-30T15:27:37.368Z",
+      "lastSuccess": null,
+      "intentScores": {}
+    }
+  },
+  "intents": {
+    "general": {
+      "totalTasks": 1,
+      "successes": 0,
+      "failures": 1,
+      "agents": {
+        "unknown": {
+          "attempts": 1,
+          "successes": 0,
+          "avgDuration": 37749,
+          "totalDuration": 37749
+        }
+      }
+    }
+  },
+  "history": [
+    {
+      "agent": "unknown",
+      "intent": "general",
+      "success": false,
+      "duration": 37749,
+      "bugIntroduced": false,
+      "timestamp": "2026-06-30T15:27:37.368Z"
+    }
+  ],
+  "meta": {
+    "version": "1.0",
+    "lastUpdated": "2026-06-30T15:27:37.368Z",
+    "totalTasksRecorded": 1
+  }
+}

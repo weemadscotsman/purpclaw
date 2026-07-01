@@ -93,7 +93,8 @@ async function generateResponse(agentId, topic, recentMessages) {
       agent.name,
       agent.personality,
       formattedHistory,
-      topic
+      topic,
+      agent
     );
     if (response && response.trim()) {
       return response.trim();

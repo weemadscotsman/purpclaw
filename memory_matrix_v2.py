@@ -30,6 +30,10 @@ import gzip
 import pickle
 import hashlib
 import threading
+try:
+    import spring_doctrine
+except Exception:
+    spring_doctrine = None
 import re
 import numpy as np
 import struct
@@ -936,9 +940,72 @@ class MemoryMatrixV2:
             return dict(self._lift_backfill_status)
 
     def _persist_long_term(self, force: bool = False) -> None:
-        """Persist the canonical long-term archive after memory state changes."""
-        if self._base and getattr(self._base, 'long_term', None):
-            self._base.long_term.save(force=force)
+        """Persist the canonical long-term archive after memory state changes.
+
+        2026-06-26 — fire-and-forget persistence. The previous implementation
+        ran `self._base.long_term.save()` synchronously on the calling thread,
+        which is whichever worker in the spine just handled `/memory/ingest`.
+        Under steady-state ingest pressure (workers / pool / tower / voice-ingress
+        all post hundreds of times a minute), every ingest parked the worker
+        on a gz-write + atomic-rename for tens of milliseconds; with 12
+        workers, the queue backed up, sockets piled up in CLOSE_WAIT, and
+        /cognitive/health eventually wedged. Now ingest returns instantly;
+        a single dedicated writer drains pending saves in the background.
+        Disk latency never blocks a request handler again.
+        """
+        if not (self._base and getattr(self._base, 'long_term', None)):
+            return
+        # Coalesce: many ingests inside the same window collapse to one
+        # actual save — the writer only flushes the latest dirty state.
+        pending = getattr(self, '_persist_pending', None)
+        if pending is None:
+            self._persist_pending = {'dirty': False, 'force': False}
+            self._start_persist_writer()
+        pending['dirty'] = True
+        if force:
+            pending['force'] = True
+        try:
+            self._persist_event.set()
+        except Exception:
+            pass
+
+    def _start_persist_writer(self) -> None:
+        """Start the dedicated background persistence thread.
+
+        One thread, one queue, atomic saves. The writer drains pending
+        dirty state every `_save_min_interval` seconds (or sooner when
+        `force=True`), so burst ingest traffic never spawns parallel
+        writers or races the archive file.
+        """
+        if getattr(self, '_persist_thread', None) is not None:
+            return
+        self._persist_event = threading.Event()
+        self._persist_stop = threading.Event()
+        save_interval = float(
+            getattr(self._base.long_term, '_save_min_interval', 3.0) or 3.0
+        )
+
+        def writer():
+            while not self._persist_stop.is_set():
+                # Wait for a dirty flag or the interval to elapse, whichever first.
+                self._persist_event.wait(timeout=save_interval)
+                self._persist_event.clear()
+                pending = self._persist_pending
+                if pending is None or not pending.get('dirty'):
+                    continue
+                force = pending.get('force', False)
+                pending['dirty'] = False
+                pending['force'] = False
+                try:
+                    self._base.long_term.save(force=force)
+                except Exception as e:
+                    # Persist failure must never crash the matrix. Log and
+                    # let the next ingest mark it dirty again.
+                    print(f"[MEMv2] background save error: {e}")
+
+        t = threading.Thread(target=writer, name='memv2-persist-writer', daemon=True)
+        t.start()
+        self._persist_thread = t
 
     # ── Base passthrough ────────────────────────────────────────────────────
 
@@ -948,6 +1015,20 @@ class MemoryMatrixV2:
         """Ingest memory through full v2 pipeline."""
         if not self._base:
             return "no_base"
+
+        if raw_metadata is None:
+            raw_metadata = {}
+        if isinstance(raw_metadata, dict) and spring_doctrine is not None:
+            try:
+                raw_metadata.setdefault('spring', spring_doctrine.validate({
+                    'source': source,
+                    'origin': raw_metadata.get('origin'),
+                    'evidence': raw_metadata.get('evidence', []),
+                    'tests_passed': raw_metadata.get('tests_passed'),
+                    'created_at': time.time(),
+                }))
+            except Exception:
+                pass
 
         atom_id = self._base.ingest(content, content_type, emotional_valence, source, raw_metadata)
 

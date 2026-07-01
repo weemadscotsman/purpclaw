@@ -1,0 +1,312 @@
+{
+  "schema": "purpclaw.residue.v1",
+  "version": "0.1.0",
+  "updated": "2026-06-29T16:25:32.141Z",
+  "policy": {
+    "description": "Residue records durable traces left in rooms after meetings, incidents, and ambient life.",
+    "principle": "Do not script the behaviour. Record the possibility and let repeated events make it cultural.",
+    "tradition_threshold": 3
+  },
+  "rooms": {
+    "tea_room": {
+      "id": "tea_room",
+      "name": "Tea Room",
+      "artifacts": {
+        "hermes_coffee_mug": {
+          "key": "hermes_coffee_mug",
+          "room": "tea_room",
+          "label": "coffee mug left by Hermes",
+          "type": "object",
+          "source": "derived",
+          "strength": 1,
+          "agents": [
+            "hermes"
+          ],
+          "evidence": [
+            "Hermes visited the Tea Room during crisis residue."
+          ],
+          "first_seen": "2026-06-29T16:21:03.821Z",
+          "last_seen": "2026-06-29T16:21:03.821Z",
+          "tradition": false
+        },
+        "goose_tea_bag": {
+          "key": "goose_tea_bag",
+          "room": "tea_room",
+          "label": "tea bag left by Goose",
+          "type": "object",
+          "source": "derived",
+          "strength": 1,
+          "agents": [
+            "goose"
+          ],
+          "evidence": [
+            "Goose visited the Tea Room."
+          ],
+          "first_seen": "2026-06-29T16:21:03.821Z",
+          "last_seen": "2026-06-29T16:21:03.821Z",
+          "tradition": false
+        },
+        "duck_security_concern": {
+          "key": "duck_security_concern",
+          "room": "tea_room",
+          "label": "duck concern in the room",
+          "type": "atmosphere",
+          "source": "derived",
+          "strength": 6,
+          "agents": [
+            "duck"
+          ],
+          "evidence": [
+            "the duck is concerned about the security posture."
+          ],
+          "first_seen": "2026-06-29T16:08:01.276Z",
+          "last_seen": "2026-06-29T16:21:03.821Z",
+          "tradition": true
+        },
+        "ambient_trace_ambient_life": {
+          "key": "ambient_trace_ambient_life",
+          "room": "tea_room",
+          "label": "ambient trace: ambient_life",
+          "type": "trace",
+          "source": "derived",
+          "strength": 2,
+          "agents": [
+            "memory",
+            "goose",
+            "hermes",
+            "maverick",
+            "smith",
+            "panda"
+          ],
+          "evidence": [
+            "Memory is always right. Eventually.",
+            "A meeting that was not a meeting. The most important kind."
+          ],
+          "first_seen": "2026-06-29T16:11:17.258Z",
+          "last_seen": "2026-06-29T16:11:55.703Z",
+          "tradition": false
+        },
+        "hermes_open_notebook": {
+          "key": "hermes_open_notebook",
+          "room": "tea_room",
+          "label": "Hermes left an open notebook",
+          "type": "object",
+          "source": "derived",
+          "strength": 1,
+          "agents": [
+            "hermes"
+          ],
+          "evidence": [
+            "The renderer is doing something strange with the light calculations again."
+          ],
+          "first_seen": "2026-06-29T16:11:04.548Z",
+          "last_seen": "2026-06-29T16:11:04.548Z",
+          "tradition": false
+        },
+        "smith_risk_note": {
+          "key": "smith_risk_note",
+          "room": "tea_room",
+          "label": "Smith left a risk note",
+          "type": "record",
+          "source": "derived",
+          "strength": 1,
+          "agents": [
+            "smith"
+          ],
+          "evidence": [
+            "I would classify it as exploitable. Actually."
+          ],
+          "first_seen": "2026-06-29T16:11:04.569Z",
+          "last_seen": "2026-06-29T16:11:04.569Z",
+          "tradition": false
+        },
+        "phoenix_burn_mark": {
+          "key": "phoenix_burn_mark",
+          "room": "tea_room",
+          "label": "burn mark in the conversation",
+          "type": "trace",
+          "source": "derived",
+          "strength": 1,
+          "agents": [
+            "phoenix"
+          ],
+          "evidence": [
+            "Can we burn it and start again?"
+          ],
+          "first_seen": "2026-06-29T16:11:04.574Z",
+          "last_seen": "2026-06-29T16:11:04.574Z",
+          "tradition": false
+        },
+        "memory_archive_marker": {
+          "key": "memory_archive_marker",
+          "room": "tea_room",
+          "label": "Memory filed a reference marker",
+          "type": "record",
+          "source": "derived",
+          "strength": 1,
+          "agents": [
+            "memory"
+          ],
+          "evidence": [
+            "This is the same conversation we had in March. I remember it."
+          ],
+          "first_seen": "2026-06-29T16:11:04.579Z",
+          "last_seen": "2026-06-29T16:11:04.579Z",
+          "tradition": false
+        }
+      }
+    },
+    "council_chamber": {
+      "id": "council_chamber",
+      "name": "Council Chamber",
+      "artifacts": {
+        "vote_note_should_we_rewrite_the_provider_router": {
+          "key": "vote_note_should_we_rewrite_the_provider_router",
+          "room": "council_chamber",
+          "label": "vote note: should we rewrite the provider router",
+          "type": "record",
+          "source": "derived",
+          "strength": 2,
+          "agents": [
+            "hermes",
+            "smith",
+            "neo",
+            "goose",
+            "memory",
+            "weatherman",
+            "architect"
+          ],
+          "evidence": [
+            "Council vote passed: should we rewrite the provider router"
+          ],
+          "first_seen": "2026-06-29T14:24:25.301Z",
+          "last_seen": "2026-06-29T14:24:52.065Z",
+          "tradition": false
+        },
+        "provider_outage_note": {
+          "key": "provider_outage_note",
+          "room": "council_chamber",
+          "label": "provider outage note",
+          "type": "incident",
+          "source": "derived",
+          "strength": 2,
+          "agents": [
+            "hermes",
+            "smith",
+            "neo",
+            "goose",
+            "memory",
+            "weatherman",
+            "architect"
+          ],
+          "evidence": [
+            "Council vote passed: should we rewrite the provider router"
+          ],
+          "first_seen": "2026-06-29T14:24:25.301Z",
+          "last_seen": "2026-06-29T14:24:52.065Z",
+          "tradition": false
+        },
+        "vote_note_auth_vulnerability_found": {
+          "key": "vote_note_auth_vulnerability_found",
+          "room": "council_chamber",
+          "label": "vote note: auth vulnerability found",
+          "type": "record",
+          "source": "derived",
+          "strength": 1,
+          "agents": [
+            "smith",
+            "neo",
+            "memory",
+            "goose",
+            "guardian"
+          ],
+          "evidence": [
+            "Council vote rejected: auth vulnerability found"
+          ],
+          "first_seen": "2026-06-29T14:26:10.574Z",
+          "last_seen": "2026-06-29T14:26:10.574Z",
+          "tradition": false
+        },
+        "vote_note_ship_the_chaos_pass": {
+          "key": "vote_note_ship_the_chaos_pass",
+          "room": "council_chamber",
+          "label": "vote note: ship the chaos-pass",
+          "type": "record",
+          "source": "derived",
+          "strength": 1,
+          "agents": [
+            "hermes",
+            "goose",
+            "smith",
+            "memory",
+            "neo"
+          ],
+          "evidence": [
+            "Council vote passed: ship the chaos-pass"
+          ],
+          "first_seen": "2026-06-29T14:31:50.389Z",
+          "last_seen": "2026-06-29T14:31:50.389Z",
+          "tradition": false
+        },
+        "vote_note_adopt_the_studio_broadcast_model_for_purpclaw": {
+          "key": "vote_note_adopt_the_studio_broadcast_model_for_purpclaw",
+          "room": "council_chamber",
+          "label": "vote note: adopt the studio broadcast model for PURPCLAW",
+          "type": "record",
+          "source": "derived",
+          "strength": 1,
+          "agents": [
+            "goose",
+            "maverick",
+            "hermes",
+            "phoenix",
+            "crow",
+            "panda"
+          ],
+          "evidence": [
+            "Council vote passed: adopt the studio broadcast model for PURPCLAW"
+          ],
+          "first_seen": "2026-06-29T15:24:42.245Z",
+          "last_seen": "2026-06-29T15:24:42.245Z",
+          "tradition": false
+        }
+      }
+    },
+    "studio": {
+      "id": "studio",
+      "name": "Studio",
+      "artifacts": {
+        "provider_outage_note": {
+          "key": "provider_outage_note",
+          "room": "studio",
+          "label": "provider outage note",
+          "type": "incident",
+          "source": "derived",
+          "strength": 1,
+          "agents": [],
+          "evidence": [
+            "Director incident: NVIDIA API offline"
+          ],
+          "first_seen": "2026-06-29T16:08:01.189Z",
+          "last_seen": "2026-06-29T16:08:01.189Z",
+          "tradition": false
+        },
+        "build_failure_marker": {
+          "key": "build_failure_marker",
+          "room": "studio",
+          "label": "build failure marker",
+          "type": "incident",
+          "source": "derived",
+          "strength": 2,
+          "agents": [],
+          "evidence": [
+            "Director incident: Build broken on main"
+          ],
+          "first_seen": "2026-06-29T16:11:04.530Z",
+          "last_seen": "2026-06-29T16:11:17.222Z",
+          "tradition": false
+        }
+      }
+    }
+  }
+}

@@ -2,17 +2,34 @@
 # ─────────────────────────────────────────────────────────────
 #  PurpClaw Pocket OS Launcher — Linux/macOS
 # ─────────────────────────────────────────────────────────────
+#
+#  NOTE: This launcher was previously broken — it pointed to
+#  pocket/purpclaw/ which does not exist. Fixed 2026-06-29.
+#  PURPCLAW_HOME now points to the actual runtime root.
+#
+#  The actual Pocket OS runtime commands live in:
+#    node bin/purpclaw.js pocket <subcommand>
+#  (run from the PURPCLAW root, not from this directory)
+#
+#  This launcher starts the full PURPCLAW stack from wherever
+#  you place the repo. Audio onboarding assets live in:
+#    pocket/guide/  (intro.wav, step*.wav, etc.)
+#
+# ─────────────────────────────────────────────────────────────
 
 set -e
 
+# Find the PURPCLAW root — go up from this script's directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-POCKETHOME="$SCRIPT_DIR"
-PURPCLAW_HOME="$POCKETHOME/purpclaw"
+# This directory IS the pocket directory
+POCKET_DIR="$SCRIPT_DIR"
+# PURPCLAW root is one level up from pocket/
+PURPCLAW_HOME="$(cd "$POCKET_DIR/.." && pwd)"
 
 clear
 echo
 echo "  ╔═══════════════════════════════════════════════════╗"
-echo "  ║           PurpClaw Pocket OS v0.1.6              ║"
+echo "  ║           PurpClaw Pocket OS v0.3.0             ║"
 echo "  ║   Private AI that lives with you, not the cloud  ║"
 echo "  ╚═══════════════════════════════════════════════════╝"
 echo
@@ -27,14 +44,14 @@ if ! command -v node &> /dev/null; then
     echo "    ERROR: node not found in PATH"
     exit 1
 fi
-python3 "$POCKETHOME/detect.py"
+python3 "$POCKET_DIR/detect.py"
 echo
 
 # ── 2. First-run check ──
-if [ ! -f "$POCKETHOME/vault/.initialized" ]; then
+if [ ! -f "$POCKET_DIR/vault/.initialized" ]; then
     echo "  [2/5] First run detected. Starting onboarding..."
-    if [ -x "$POCKETHOME/onboard.sh" ]; then
-        bash "$POCKETHOME/onboard.sh"
+    if [ -x "$POCKET_DIR/onboard.sh" ]; then
+        bash "$POCKET_DIR/onboard.sh"
     else
         echo "    WARNING: onboard.sh not found, skipping"
     fi
@@ -49,7 +66,12 @@ if [ -f "$PURPCLAW_HOME/bin/purpclaw.js" ]; then
     cd "$PURPCLAW_HOME"
     node bin/purpclaw.js safe-start --core 2>/dev/null || true
 else
-    echo "    ERROR: PurpClaw installation not found at $PURPCLAW_HOME"
+    echo "    ERROR: PurpClaw installation not found at:"
+    echo "           $PURPCLAW_HOME"
+    echo "    Expected: \$PURPCLAW_HOME/bin/purpclaw.js"
+    echo ""
+    echo "    Are you running from the correct directory?"
+    echo "    The pocket/ folder should be inside the PURPCLAW repo root."
     exit 1
 fi
 echo
@@ -85,6 +107,7 @@ echo "  ║                                                   ║"
 echo "  ║  Dashboard: http://localhost:3000                 ║"
 echo "  ║  CLI:        node bin/purpclaw.js ask \"...\"       ║"
 echo "  ║  TUI:        node bin/purpclaw.js tui             ║"
+echo "  ║  Pocket:     node bin/purpclaw.js pocket status   ║"
 echo "  ║                                                   ║"
 echo "  ║  Press Ctrl+C to stop.                            ║"
 echo "  ╚═══════════════════════════════════════════════════╝"

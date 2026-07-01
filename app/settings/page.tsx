@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { CockpitShell } from '../components/CockpitShell';
 import { PersonalityDial } from '../components/PersonalityDial';
 
 type SettingItem = {
@@ -139,7 +138,7 @@ function SettingsPageInner() {
   });
 
   return (
-    <CockpitShell title="Settings Center · Control every layer of your PURPCLAW stack">
+    <>
       <div className="settings-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 14, padding: 14, minHeight: '100%' }}>
 
         {/* ── MAIN COLUMN ── */}
@@ -333,7 +332,7 @@ function SettingsPageInner() {
         </div>
       </div>
       {msg && <div style={{ position: 'fixed', bottom: 60, left: '50%', transform: 'translateX(-50%)', padding: '8px 18px', background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.4)', borderRadius: 4, color: '#34d399', fontSize: 11, zIndex: 100 }}>{msg}</div>}
-    </CockpitShell>
+    </>
   );
 }
 

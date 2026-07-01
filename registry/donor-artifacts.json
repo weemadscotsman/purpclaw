@@ -1,0 +1,115 @@
+{
+  "schema": "purpclaw.donor-artifacts.v1",
+  "version": "0.1.0",
+  "updated": "2026-06-29T16:31:40.023Z",
+  "doctrine": {
+    "name": "Donor Archaeology",
+    "principle": "Never import a feature until the underlying behavioural law is identified.",
+    "allowed": [
+      "behavioural laws",
+      "interaction physics",
+      "provenance notes",
+      "integration rationale",
+      "rejected ideas with reasons"
+    ],
+    "forbidden": [
+      "blind code copying",
+      "unattributed imports",
+      "project-specific mechanics without distillation",
+      "runtime mutation without review"
+    ]
+  },
+  "artifacts": [
+    {
+      "id": "competitive_conversation_victory_conditions",
+      "name": "Competitive conversation with explicit victory conditions",
+      "origin": "Token Wars",
+      "type": "Behaviour Physics",
+      "status": "harvested",
+      "value": "high",
+      "behavioural_law": "When a discussion has explicit victory conditions, agents optimise arguments instead of consensus.",
+      "integrated_into": [
+        "Studio Arena Mode"
+      ],
+      "rejected": [],
+      "reason": "Arena Mode needs adversarial reasoning without changing the souls themselves.",
+      "harvested_at": "2026-06-29T00:00:00.000Z",
+      "notes": "Harvest the physics, not the dialogue."
+    },
+    {
+      "id": "ambient_tension_from_environment",
+      "name": "Environmental tension",
+      "origin": "MLM Hero",
+      "type": "Behaviour Physics",
+      "status": "candidate",
+      "value": "high",
+      "behavioural_law": "Rooms feel alive when background risk changes how characters interpret ordinary actions.",
+      "integrated_into": [
+        "Presence",
+        "Residue",
+        "Studio World State"
+      ],
+      "rejected": [
+        "MLM economy",
+        "fake currency",
+        "inventory loop"
+      ],
+      "reason": "World state already changes council mood; environmental tension can make empty rooms carry operational meaning.",
+      "harvested_at": "2026-06-29T00:00:00.000Z",
+      "notes": "Good candidate for Weatherman-generated incidents."
+    },
+    {
+      "id": "relationship_driven_interruptions",
+      "name": "Relationship-driven interruptions",
+      "origin": "Token Wars",
+      "type": "Social Physics",
+      "status": "candidate",
+      "value": "high",
+      "behavioural_law": "Friends and rivals should interrupt at different rates because relationship pressure changes turn-taking.",
+      "integrated_into": [
+        "Council Mode",
+        "Studio Turn Manager"
+      ],
+      "rejected": [
+        "scripted interruptions",
+        "copied dialogue"
+      ],
+      "reason": "Useful for making council friction emerge from relationships instead of prompt instructions.",
+      "harvested_at": "2026-06-29T00:00:00.000Z",
+      "notes": "Future rule: friends +20%, rivals +45%, Oracle override only."
+    }
+  ],
+  "reports": [
+    {
+      "id": "heist_mqzfqjue_ambient_tension_from_env",
+      "timestamp": "2026-06-29T16:31:40.022Z",
+      "protocol": "purpclaw.heist-report.v1",
+      "target": "MLM Hero",
+      "asset": "Environmental tension",
+      "type": "Behaviour Physics",
+      "status": "candidate",
+      "scout": "Scout",
+      "thief": "Goose",
+      "integrator": "Hermes",
+      "historian": "Memory",
+      "behavioural_law": "Rooms feel alive when background risk changes how characters interpret ordinary actions.",
+      "integrated_into": [
+        "Presence",
+        "Residue",
+        "Studio World State"
+      ],
+      "rejected": [
+        "MLM economy",
+        "fake currency",
+        "inventory loop"
+      ],
+      "value": "high",
+      "calling_card": "Boss, I got us more loot. Environmental tension is now in the stack.",
+      "duck_observation": "The duck watched the entire operation.",
+      "note": "Good candidate for Weatherman-generated incidents.",
+      "refs": {
+        "donor_artifact_id": "ambient_tension_from_environment"
+      }
+    }
+  ]
+}

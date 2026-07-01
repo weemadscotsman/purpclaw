@@ -228,6 +228,17 @@ def maybe_filter_trajectories(examples, min_score=0.0, require_assistant=True):
 
 def train(base_model, examples, args):
     import torch
+    # CUDA preflight: QLoRA 4-bit (bitsandbytes nf4) REQUIRES a CUDA GPU. On a
+    # CPU-only torch build this crashed deep inside bitsandbytes with no usable
+    # error → silent red jobs. Fail fast with a CLEAR blocker (distinct exit 3)
+    # so the registry records "no-CUDA paused", not an opaque failure.
+    if not torch.cuda.is_available():
+        log(f"BLOCKER: no CUDA GPU visible to torch (build={torch.__version__}, cuda={torch.version.cuda}).")
+        log("  QLoRA 4-bit needs CUDA. GPU(s) may be present but torch is the CPU-only wheel.")
+        log("  Fix: install the CUDA torch build (see TROUBLESHOOTING.md). Training PAUSED, not failed.")
+        sys.exit(3)
+    _props = torch.cuda.get_device_properties(0)
+    log(f"CUDA OK · training on {torch.cuda.get_device_name(0)} ({_props.total_memory // (1024**2)}MB VRAM)")
     from transformers import (
         AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig,
         TrainingArguments,
@@ -400,6 +411,10 @@ def main():
                    help="path to personal training dataset (ChatML JSON)")
     p.add_argument("--merge", action="store_true",
                    help="merge LoRA into base model after training")
+    p.add_argument("--activate", action="store_true",
+                   help="set this model live (LLM_MODEL) after build. DEFAULT OFF — "
+                        "activation is gated by eval + gatekeeper (Phase E). Autonomous "
+                        "self-evolution NEVER passes this; only an approved handshake does.")
     args = p.parse_args()
 
     log("=" * 60)
@@ -443,14 +458,23 @@ def main():
     merged_dir = merge(adapter_dir, args.base)
     gguf = convert_to_gguf(merged_dir, quant=args.quant)
     if gguf and ollama_import(gguf, name=args.ollama_name):
-        update_env_model(args.ollama_name)
+        if args.activate:
+            # Only reached via an approved Phase-E handshake or an explicit
+            # operator --activate. Never from autonomous self-evolution.
+            update_env_model(args.ollama_name)
+            log("ACTIVATED: live model set to " + args.ollama_name)
+        else:
+            log("CANDIDATE built, NOT activated — eval + gatekeeper gate required.")
         log("=" * 60)
         log("✓ pipeline complete")
         log(f"  adapter : {adapter_dir}")
         log(f"  merged  : {merged_dir}")
         log(f"  gguf    : {gguf}")
         log(f"  ollama  : {args.ollama_name}")
-        log("  next run : pm2 restart purpclaw-api")
+        # Machine-parseable candidate marker so the Phase-E handshake knows what
+        # to evaluate and (after approval) activate.
+        log(f"CANDIDATE_MODEL={args.ollama_name}")
+        log(f"CANDIDATE_MERGED={merged_dir}")
         log("=" * 60)
 
 

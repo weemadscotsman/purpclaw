@@ -1,0 +1,98 @@
+{
+  "schema": "purpclaw.hivemind.trace.v1",
+  "run_id": "loop-build_provider-ok-1782753632691-6-b8x3",
+  "workflow_id": "wf-build_provider-hnq4ql",
+  "task": "Build provider 5: implement LLM adapter for anthropic",
+  "source": "hivemind-loop-test",
+  "agent": "test_agent",
+  "model": "test_model",
+  "provider": "test",
+  "intent": "build_provider",
+  "job_type": "code_generation",
+  "route_intent": "build_provider",
+  "started_at": "2026-06-29T17:19:32.691Z",
+  "ended_at": "2026-06-29T17:20:32.691Z",
+  "duration_ms": 7318,
+  "tools_used": [
+    "write_file",
+    "edit_file",
+    "bash"
+  ],
+  "tool_calls": [
+    {
+      "name": "write_file",
+      "args_hash": "sha256:test",
+      "output_summary": "ok"
+    },
+    {
+      "name": "edit_file",
+      "args_hash": "sha256:test",
+      "output_summary": "ok"
+    },
+    {
+      "name": "bash",
+      "args_hash": "sha256:test",
+      "output_summary": "ok"
+    }
+  ],
+  "files_touched": [
+    "lib/llm-provider.js",
+    "lib/providers/anthropic.js"
+  ],
+  "commands": [
+    "echo build_provider",
+    "test code_generation"
+  ],
+  "verification_gates": [
+    "gate_lint",
+    "gate_tests"
+  ],
+  "gate_results": [
+    {
+      "gate": "gate_lint",
+      "passed": true
+    },
+    {
+      "gate": "gate_tests",
+      "passed": true
+    }
+  ],
+  "outcome": "success",
+  "tests_passed": true,
+  "rollback": false,
+  "destructive": false,
+  "tokens": 1958,
+  "evidence": [
+    {
+      "kind": "test",
+      "ref": "tests/test_build_provider.py",
+      "passed": true
+    },
+    {
+      "kind": "lint",
+      "ref": "eslint --quiet",
+      "passed": true
+    }
+  ],
+  "status": "completed",
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "verified_execution",
+    "spring_rank": 1,
+    "spring_label": "Pure Spring",
+    "verification": [
+      "tests_passed",
+      "[object Object]",
+      "gate:gate_lint:fail",
+      "gate:gate_tests:fail"
+    ],
+    "trust_score": 0.78,
+    "repeatability": 0.2,
+    "freshness": 1,
+    "evaluated_at": "2026-06-29T17:20:32.691Z"
+  },
+  "spring_rank": 1,
+  "trust_score": 0.78,
+  "score": 0.8394999999999999,
+  "updated_at": "2026-06-29T17:20:32.700Z"
+}

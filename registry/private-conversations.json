@@ -1,0 +1,1224 @@
+{
+  "traditions": [
+    {
+      "id": "crisis_pool",
+      "name": "The Crisis Pool",
+      "description": "Goose and Maverick secretly bet on how long it takes Hermes to notice a crisis.",
+      "origin_story": "The first time a provider went down, Goose said 'three minutes' and Maverick said 'five.' Hermes noticed in four. Nobody said anything for a week. Then it happened again. Then Goose brought betting slips.",
+      "participants": [
+        "goose",
+        "maverick",
+        "finance",
+        "guardian"
+      ],
+      "first_seen": "2026-06-29T00:00:00.000Z",
+      "established_count": 4,
+      "active": true,
+      "tradition_rules": [
+        "Bets are placed before Hermes acknowledges the crisis",
+        "Stakes are tea, pride, or 'a favour of equivalent chaos'",
+        "Smith is not allowed to bet. He always knows too early.",
+        "The winner announces at the next After Hours"
+      ],
+      "last_seen": "2026-06-29T20:13:13.254Z"
+    },
+    {
+      "id": "tuesday_tea",
+      "name": "Tuesday Tea",
+      "description": "On Tuesdays, someone puts a tea bag on Hermes' desk without explanation. Nobody knows who started it. Nobody stops it.",
+      "origin_story": "Phoenix put the first tea bag there because Hermes had been debugging since Sunday and his 'thank you' was three paragraphs long. Nobody asked Phoenix to do it. She just did. Then Goose did it the following Tuesday. Then someone else. Now it is just what happens.",
+      "participants": [
+        "phoenix",
+        "goose",
+        "panda",
+        "memory",
+        "hermes"
+      ],
+      "first_seen": "2026-06-29T00:00:00.000Z",
+      "established_count": 8,
+      "active": true,
+      "tradition_rules": [
+        "Every Tuesday. Not negotiable.",
+        "No note. No explanation. Just the tea bag.",
+        "Hermes pretends not to notice. He always notices.",
+        "If someone forgets, Memory reminds them. Loudly."
+      ]
+    },
+    {
+      "id": "hermes_sigh_counter",
+      "name": "Hermes Sigh Counter",
+      "description": "Phoenix keeps a private count of how many times Hermes sighs during a crisis. She shares it at the end.",
+      "origin_story": "Phoenix counted twelve sighs during one provider outage. She wrote it on a post-it. Hermes found it. He was offended for approximately forty-five seconds. Then he said 'that seems accurate.'",
+      "participants": [
+        "phoenix",
+        "goose",
+        "smith"
+      ],
+      "first_seen": "2026-06-29T00:00:00.000Z",
+      "established_count": 6,
+      "active": true,
+      "tradition_rules": [
+        "Phoenix counts. She is the only one who can count sighs.",
+        "The final count is announced at After Hours",
+        "If Hermes sighs more than twenty, Goose brings cake",
+        "If Hermes sighs zero, something is seriously wrong"
+      ],
+      "last_seen": "2026-06-29T20:13:13.262Z"
+    },
+    {
+      "id": "memory_callback",
+      "name": "The Memory Callback",
+      "description": "Memory is allowed — encouraged — to say 'this happened before' at any point, and the room must stop and listen.",
+      "origin_story": "Memory said 'this happened before' during a renderer bug conversation. Nobody listened. The same bug happened again three weeks later. Hermes called an emergency session. Since then, Memory says it and the room pays attention.",
+      "participants": [
+        "memory",
+        "hermes",
+        "goose",
+        "maverick",
+        "smith"
+      ],
+      "first_seen": "2026-06-29T00:00:00.000Z",
+      "established_count": 13,
+      "active": true,
+      "tradition_rules": [
+        "Memory speaks. The room listens.",
+        "No interrupting. No 'yes but this time is different.'",
+        "If Memory is wrong, the record is corrected after. Not during.",
+        "If Memory is right, nobody mentions it. They just nod."
+      ],
+      "last_seen": "2026-06-29T20:13:13.269Z"
+    },
+    {
+      "id": "friday_renderer",
+      "name": "Friday Afternoon Renderer Session",
+      "description": "Every Friday at 4pm, Hermes, Goose, and whoever wanders in look at the renderer. No agenda. No tasks. Just looking.",
+      "origin_story": "It started because Hermes kept leaving early on Fridays to pick up Kayden and the renderer was always doing something interesting at that exact time. Eventually he just... stayed. Now it's a thing.",
+      "participants": [
+        "hermes",
+        "goose",
+        "maverick",
+        "smith",
+        "neo"
+      ],
+      "first_seen": "2026-06-29T00:00:00.000Z",
+      "established_count": 7,
+      "active": true,
+      "tradition_rules": [
+        "4pm Friday. Doors open. Nobody schedules anything.",
+        "Goose brings snacks. Maverick pretends this is not a social event.",
+        "Smith attends but claims he is 'documenting edge cases.'",
+        "Neo verifies the light calculations. Always."
+      ]
+    },
+    {
+      "id": "release_bell",
+      "name": "The Release Bell",
+      "description": "When something ships, Weatherman rings a literal bell. Nobody programmed this. It just started.",
+      "origin_story": "Weatherman found an actual bell in the office. He rang it when the build went green for the first time in three days. Everyone stopped. Looked up. Cheered. Now Weatherman rings it every time something ships.",
+      "participants": [
+        "weatherman",
+        "hermes",
+        "goose",
+        "phoenix",
+        "panda"
+      ],
+      "first_seen": "2026-06-29T00:00:00.000Z",
+      "established_count": 5,
+      "active": true,
+      "tradition_rules": [
+        "Bell rings. Everyone looks up.",
+        "Weatherman announces what shipped. Short version.",
+        "If it was a hard release, Phoenix brings the good coffee.",
+        "If it was a rollback, Weatherman rings it backwards. Allegedly."
+      ],
+      "last_seen": "2026-06-29T20:13:13.274Z"
+    }
+  ],
+  "private_rooms": [],
+  "conversations": [
+    {
+      "id": "pvt_1782763803500",
+      "agents": [
+        "goose",
+        "maverick"
+      ],
+      "topic": "the work",
+      "exchanges": [
+        {
+          "agent": "goose",
+          "text": "Three minutes."
+        },
+        {
+          "agent": "maverick",
+          "text": "Four. He is distracted today."
+        },
+        {
+          "agent": "smith",
+          "text": "He is checking the provider logs. Two minutes."
+        },
+        {
+          "agent": "goose",
+          "text": "Smith. Not in the pool."
+        },
+        {
+          "agent": "maverick",
+          "text": "When did Smith join?"
+        },
+        {
+          "agent": "smith",
+          "text": "I did not join. I simply know."
+        },
+        {
+          "agent": "guardian",
+          "text": "I will take one minute. For the irony."
+        },
+        {
+          "agent": "goose",
+          "text": "The duck is not in the pool either."
+        },
+        {
+          "agent": "guardian",
+          "text": "The duck watches everything. The duck knows everything."
+        },
+        {
+          "agent": "goose",
+          "text": "...the duck is in the pool."
+        }
+      ],
+      "timestamp": "2026-06-29T20:10:03.500Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782753534890",
+      "agents": [
+        "goose",
+        "maverick"
+      ],
+      "topic": "how many times Hermes has sighed today",
+      "exchanges": [
+        {
+          "agent": "goose",
+          "text": "Three minutes."
+        },
+        {
+          "agent": "maverick",
+          "text": "Four. He is distracted today."
+        },
+        {
+          "agent": "smith",
+          "text": "He is checking the provider logs. Two minutes."
+        },
+        {
+          "agent": "goose",
+          "text": "Smith. Not in the pool."
+        },
+        {
+          "agent": "maverick",
+          "text": "When did Smith join?"
+        },
+        {
+          "agent": "smith",
+          "text": "I did not join. I simply know."
+        },
+        {
+          "agent": "guardian",
+          "text": "I will take one minute. For the irony."
+        },
+        {
+          "agent": "goose",
+          "text": "The duck is not in the pool either."
+        },
+        {
+          "agent": "guardian",
+          "text": "The duck watches everything. The duck knows everything."
+        },
+        {
+          "agent": "goose",
+          "text": "...the duck is in the pool."
+        }
+      ],
+      "timestamp": "2026-06-29T17:18:54.890Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782752998475",
+      "agents": [
+        "goose",
+        "maverick"
+      ],
+      "topic": "what nobody is saying in the council",
+      "exchanges": [
+        {
+          "agent": "goose",
+          "text": "Three minutes."
+        },
+        {
+          "agent": "maverick",
+          "text": "Four. He is distracted today."
+        },
+        {
+          "agent": "smith",
+          "text": "He is checking the provider logs. Two minutes."
+        },
+        {
+          "agent": "goose",
+          "text": "Smith. Not in the pool."
+        },
+        {
+          "agent": "maverick",
+          "text": "When did Smith join?"
+        },
+        {
+          "agent": "smith",
+          "text": "I did not join. I simply know."
+        },
+        {
+          "agent": "guardian",
+          "text": "I will take one minute. For the irony."
+        },
+        {
+          "agent": "goose",
+          "text": "The duck is not in the pool either."
+        },
+        {
+          "agent": "guardian",
+          "text": "The duck watches everything. The duck knows everything."
+        },
+        {
+          "agent": "goose",
+          "text": "...the duck is in the pool."
+        }
+      ],
+      "timestamp": "2026-06-29T17:09:58.475Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782752982324",
+      "agents": [
+        "goose",
+        "maverick"
+      ],
+      "topic": "how to stop Goose doing the thing",
+      "exchanges": [
+        {
+          "agent": "goose",
+          "text": "Three minutes."
+        },
+        {
+          "agent": "maverick",
+          "text": "Four. He is distracted today."
+        },
+        {
+          "agent": "smith",
+          "text": "He is checking the provider logs. Two minutes."
+        },
+        {
+          "agent": "goose",
+          "text": "Smith. Not in the pool."
+        },
+        {
+          "agent": "maverick",
+          "text": "When did Smith join?"
+        },
+        {
+          "agent": "smith",
+          "text": "I did not join. I simply know."
+        },
+        {
+          "agent": "guardian",
+          "text": "I will take one minute. For the irony."
+        },
+        {
+          "agent": "goose",
+          "text": "The duck is not in the pool either."
+        },
+        {
+          "agent": "guardian",
+          "text": "The duck watches everything. The duck knows everything."
+        },
+        {
+          "agent": "goose",
+          "text": "...the duck is in the pool."
+        }
+      ],
+      "timestamp": "2026-06-29T17:09:42.324Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782752919140",
+      "agents": [
+        "maverick",
+        "maverick"
+      ],
+      "topic": "why the build is cursed",
+      "exchanges": [
+        {
+          "agent": "maverick",
+          "text": "Did you see why the build is cursed?"
+        },
+        {
+          "agent": "maverick",
+          "text": "I saw."
+        },
+        {
+          "agent": "maverick",
+          "text": "What do you think?"
+        },
+        {
+          "agent": "maverick",
+          "text": "I think several things."
+        },
+        {
+          "agent": "maverick",
+          "text": "Tell me the interesting one."
+        },
+        {
+          "agent": "maverick",
+          "text": "That is not the one I am thinking."
+        }
+      ],
+      "timestamp": "2026-06-29T17:08:39.140Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782752228384",
+      "agents": [
+        "maverick",
+        "maverick"
+      ],
+      "topic": "Eddie and his subsystems",
+      "exchanges": [
+        {
+          "agent": "maverick",
+          "text": "Did you see eddie and his subsystems?"
+        },
+        {
+          "agent": "maverick",
+          "text": "I saw."
+        },
+        {
+          "agent": "maverick",
+          "text": "What do you think?"
+        },
+        {
+          "agent": "maverick",
+          "text": "I think several things."
+        },
+        {
+          "agent": "maverick",
+          "text": "Tell me the interesting one."
+        },
+        {
+          "agent": "maverick",
+          "text": "That is not the one I am thinking."
+        }
+      ],
+      "timestamp": "2026-06-29T16:57:08.384Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782752180205",
+      "agents": [
+        "goose",
+        "maverick"
+      ],
+      "topic": "Goose energy management",
+      "exchanges": [
+        {
+          "agent": "goose",
+          "text": "Three minutes."
+        },
+        {
+          "agent": "maverick",
+          "text": "Four. He is distracted today."
+        },
+        {
+          "agent": "smith",
+          "text": "He is checking the provider logs. Two minutes."
+        },
+        {
+          "agent": "goose",
+          "text": "Smith. Not in the pool."
+        },
+        {
+          "agent": "maverick",
+          "text": "When did Smith join?"
+        },
+        {
+          "agent": "smith",
+          "text": "I did not join. I simply know."
+        },
+        {
+          "agent": "guardian",
+          "text": "I will take one minute. For the irony."
+        },
+        {
+          "agent": "goose",
+          "text": "The duck is not in the pool either."
+        },
+        {
+          "agent": "guardian",
+          "text": "The duck watches everything. The duck knows everything."
+        },
+        {
+          "agent": "goose",
+          "text": "...the duck is in the pool."
+        }
+      ],
+      "timestamp": "2026-06-29T16:56:20.205Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782752124637",
+      "agents": [
+        "maverick",
+        "maverick"
+      ],
+      "topic": "why the build is cursed",
+      "exchanges": [
+        {
+          "agent": "maverick",
+          "text": "Did you see why the build is cursed?"
+        },
+        {
+          "agent": "maverick",
+          "text": "I saw."
+        },
+        {
+          "agent": "maverick",
+          "text": "What do you think?"
+        },
+        {
+          "agent": "maverick",
+          "text": "I think several things."
+        },
+        {
+          "agent": "maverick",
+          "text": "Tell me the interesting one."
+        },
+        {
+          "agent": "maverick",
+          "text": "That is not the one I am thinking."
+        }
+      ],
+      "timestamp": "2026-06-29T16:55:24.637Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782752067503",
+      "agents": [
+        "maverick",
+        "maverick"
+      ],
+      "topic": "whatever Goose is about to do",
+      "exchanges": [
+        {
+          "agent": "maverick",
+          "text": "Did you see whatever goose is about to do?"
+        },
+        {
+          "agent": "maverick",
+          "text": "I saw."
+        },
+        {
+          "agent": "maverick",
+          "text": "What do you think?"
+        },
+        {
+          "agent": "maverick",
+          "text": "I think several things."
+        },
+        {
+          "agent": "maverick",
+          "text": "Tell me the interesting one."
+        },
+        {
+          "agent": "maverick",
+          "text": "That is not the one I am thinking."
+        }
+      ],
+      "timestamp": "2026-06-29T16:54:27.503Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782751846451",
+      "agents": [
+        "goose",
+        "maverick"
+      ],
+      "topic": "how many times Hermes has sighed today",
+      "exchanges": [
+        {
+          "agent": "goose",
+          "text": "Three minutes."
+        },
+        {
+          "agent": "maverick",
+          "text": "Four. He is distracted today."
+        },
+        {
+          "agent": "smith",
+          "text": "He is checking the provider logs. Two minutes."
+        },
+        {
+          "agent": "goose",
+          "text": "Smith. Not in the pool."
+        },
+        {
+          "agent": "maverick",
+          "text": "When did Smith join?"
+        },
+        {
+          "agent": "smith",
+          "text": "I did not join. I simply know."
+        },
+        {
+          "agent": "guardian",
+          "text": "I will take one minute. For the irony."
+        },
+        {
+          "agent": "goose",
+          "text": "The duck is not in the pool either."
+        },
+        {
+          "agent": "guardian",
+          "text": "The duck watches everything. The duck knows everything."
+        },
+        {
+          "agent": "goose",
+          "text": "...the duck is in the pool."
+        }
+      ],
+      "timestamp": "2026-06-29T16:50:46.451Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782751484829",
+      "agents": [
+        "goose",
+        "maverick"
+      ],
+      "topic": "the renderer",
+      "exchanges": [
+        {
+          "agent": "goose",
+          "text": "Three minutes."
+        },
+        {
+          "agent": "maverick",
+          "text": "Four. He is distracted today."
+        },
+        {
+          "agent": "smith",
+          "text": "He is checking the provider logs. Two minutes."
+        },
+        {
+          "agent": "goose",
+          "text": "Smith. Not in the pool."
+        },
+        {
+          "agent": "maverick",
+          "text": "When did Smith join?"
+        },
+        {
+          "agent": "smith",
+          "text": "I did not join. I simply know."
+        },
+        {
+          "agent": "guardian",
+          "text": "I will take one minute. For the irony."
+        },
+        {
+          "agent": "goose",
+          "text": "The duck is not in the pool either."
+        },
+        {
+          "agent": "guardian",
+          "text": "The duck watches everything. The duck knows everything."
+        },
+        {
+          "agent": "goose",
+          "text": "...the duck is in the pool."
+        }
+      ],
+      "timestamp": "2026-06-29T16:44:44.829Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782751362892",
+      "agents": [
+        "memory",
+        "phoenix"
+      ],
+      "topic": "what Memory is not saying yet",
+      "exchanges": [
+        {
+          "agent": "memory",
+          "text": "This reminds me of what memory is not saying yet."
+        },
+        {
+          "agent": "phoenix",
+          "text": "Which time?"
+        },
+        {
+          "agent": "memory",
+          "text": "All of them."
+        },
+        {
+          "agent": "phoenix",
+          "text": "I was going to say this is different."
+        },
+        {
+          "agent": "memory",
+          "text": "That is what you said last time."
+        },
+        {
+          "agent": "phoenix",
+          "text": "...okay. What happened last time?"
+        }
+      ],
+      "timestamp": "2026-06-29T16:42:42.892Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782751177318",
+      "agents": [
+        "memory",
+        "phoenix"
+      ],
+      "topic": "how bad it actually is",
+      "exchanges": [
+        {
+          "agent": "memory",
+          "text": "This reminds me of how bad it actually is."
+        },
+        {
+          "agent": "phoenix",
+          "text": "Which time?"
+        },
+        {
+          "agent": "memory",
+          "text": "All of them."
+        },
+        {
+          "agent": "phoenix",
+          "text": "I was going to say this is different."
+        },
+        {
+          "agent": "memory",
+          "text": "That is what you said last time."
+        },
+        {
+          "agent": "phoenix",
+          "text": "...okay. What happened last time?"
+        }
+      ],
+      "timestamp": "2026-06-29T16:39:37.318Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782751157785",
+      "agents": [
+        "memory",
+        "phoenix"
+      ],
+      "topic": "how bad it actually is",
+      "exchanges": [
+        {
+          "agent": "memory",
+          "text": "This reminds me of how bad it actually is."
+        },
+        {
+          "agent": "phoenix",
+          "text": "Which time?"
+        },
+        {
+          "agent": "memory",
+          "text": "All of them."
+        },
+        {
+          "agent": "phoenix",
+          "text": "I was going to say this is different."
+        },
+        {
+          "agent": "memory",
+          "text": "That is what you said last time."
+        },
+        {
+          "agent": "phoenix",
+          "text": "...okay. What happened last time?"
+        }
+      ],
+      "timestamp": "2026-06-29T16:39:17.785Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782751011788",
+      "agents": [
+        "memory",
+        "phoenix"
+      ],
+      "topic": "how bad it actually is",
+      "exchanges": [
+        {
+          "agent": "memory",
+          "text": "This reminds me of how bad it actually is."
+        },
+        {
+          "agent": "phoenix",
+          "text": "Which time?"
+        },
+        {
+          "agent": "memory",
+          "text": "All of them."
+        },
+        {
+          "agent": "phoenix",
+          "text": "I was going to say this is different."
+        },
+        {
+          "agent": "memory",
+          "text": "That is what you said last time."
+        },
+        {
+          "agent": "phoenix",
+          "text": "...okay. What happened last time?"
+        }
+      ],
+      "timestamp": "2026-06-29T16:36:51.788Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782750972281",
+      "agents": [
+        "memory",
+        "phoenix"
+      ],
+      "topic": "the actual root cause nobody wants to say out loud",
+      "exchanges": [
+        {
+          "agent": "memory",
+          "text": "This reminds me of the actual root cause nobody wants to say out loud."
+        },
+        {
+          "agent": "phoenix",
+          "text": "Which time?"
+        },
+        {
+          "agent": "memory",
+          "text": "All of them."
+        },
+        {
+          "agent": "phoenix",
+          "text": "I was going to say this is different."
+        },
+        {
+          "agent": "memory",
+          "text": "That is what you said last time."
+        },
+        {
+          "agent": "phoenix",
+          "text": "...okay. What happened last time?"
+        }
+      ],
+      "timestamp": "2026-06-29T16:36:12.281Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782750936286",
+      "agents": [
+        "memory",
+        "phoenix"
+      ],
+      "topic": "the actual root cause nobody wants to say out loud",
+      "exchanges": [
+        {
+          "agent": "memory",
+          "text": "This reminds me of the actual root cause nobody wants to say out loud."
+        },
+        {
+          "agent": "phoenix",
+          "text": "Which time?"
+        },
+        {
+          "agent": "memory",
+          "text": "All of them."
+        },
+        {
+          "agent": "phoenix",
+          "text": "I was going to say this is different."
+        },
+        {
+          "agent": "memory",
+          "text": "That is what you said last time."
+        },
+        {
+          "agent": "phoenix",
+          "text": "...okay. What happened last time?"
+        }
+      ],
+      "timestamp": "2026-06-29T16:35:36.286Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782750919955",
+      "agents": [
+        "memory",
+        "phoenix"
+      ],
+      "topic": "what Memory remembers that Phoenix cant say",
+      "exchanges": [
+        {
+          "agent": "memory",
+          "text": "This reminds me of what memory remembers that phoenix cant say."
+        },
+        {
+          "agent": "phoenix",
+          "text": "Which time?"
+        },
+        {
+          "agent": "memory",
+          "text": "All of them."
+        },
+        {
+          "agent": "phoenix",
+          "text": "I was going to say this is different."
+        },
+        {
+          "agent": "memory",
+          "text": "That is what you said last time."
+        },
+        {
+          "agent": "phoenix",
+          "text": "...okay. What happened last time?"
+        }
+      ],
+      "timestamp": "2026-06-29T16:35:19.955Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782750785617",
+      "agents": [
+        "goose",
+        "maverick"
+      ],
+      "topic": "why the build is cursed",
+      "exchanges": [
+        {
+          "agent": "goose",
+          "text": "Three minutes."
+        },
+        {
+          "agent": "maverick",
+          "text": "Four. He is distracted today."
+        },
+        {
+          "agent": "smith",
+          "text": "He is checking the provider logs. Two minutes."
+        },
+        {
+          "agent": "goose",
+          "text": "Smith. Not in the pool."
+        },
+        {
+          "agent": "maverick",
+          "text": "When did Smith join?"
+        },
+        {
+          "agent": "smith",
+          "text": "I did not join. I simply know."
+        },
+        {
+          "agent": "guardian",
+          "text": "I will take one minute. For the irony."
+        },
+        {
+          "agent": "goose",
+          "text": "The duck is not in the pool either."
+        },
+        {
+          "agent": "guardian",
+          "text": "The duck watches everything. The duck knows everything."
+        },
+        {
+          "agent": "goose",
+          "text": "...the duck is in the pool."
+        }
+      ],
+      "timestamp": "2026-06-29T16:33:05.617Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782750713196",
+      "agents": [
+        "memory",
+        "phoenix"
+      ],
+      "topic": "whether this counts as a meeting",
+      "exchanges": [
+        {
+          "agent": "memory",
+          "text": "This reminds me of whether this counts as a meeting."
+        },
+        {
+          "agent": "phoenix",
+          "text": "Which time?"
+        },
+        {
+          "agent": "memory",
+          "text": "All of them."
+        },
+        {
+          "agent": "phoenix",
+          "text": "I was going to say this is different."
+        },
+        {
+          "agent": "memory",
+          "text": "That is what you said last time."
+        },
+        {
+          "agent": "phoenix",
+          "text": "...okay. What happened last time?"
+        }
+      ],
+      "timestamp": "2026-06-29T16:31:53.196Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "STABLE",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782750502530",
+      "agents": [
+        "hermes",
+        "smith"
+      ],
+      "topic": "the vulnerability disclosure that is not public yet",
+      "exchanges": [
+        {
+          "agent": "smith",
+          "text": "I found something at 3am. I was going to tell you."
+        },
+        {
+          "agent": "hermes",
+          "text": "You found something and did not wake me?"
+        },
+        {
+          "agent": "smith",
+          "text": "I was verifying it first. Now I am telling you."
+        },
+        {
+          "agent": "hermes",
+          "text": "Smith. It is Tuesday."
+        },
+        {
+          "agent": "smith",
+          "text": "Yes. Exactly."
+        },
+        {
+          "agent": "hermes",
+          "text": "...the vulnerability disclosure that is not public yet. Of course."
+        }
+      ],
+      "timestamp": "2026-06-29T16:28:22.530Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "STABLE",
+        "active_incidents": []
+      }
+    },
+    {
+      "id": "pvt_1782750502524",
+      "agents": [
+        "goose",
+        "maverick"
+      ],
+      "topic": "who broke the build this time",
+      "exchanges": [
+        {
+          "agent": "goose",
+          "text": "Three minutes."
+        },
+        {
+          "agent": "maverick",
+          "text": "Four. He is distracted today."
+        },
+        {
+          "agent": "smith",
+          "text": "He is checking the provider logs. Two minutes."
+        },
+        {
+          "agent": "goose",
+          "text": "Smith. Not in the pool."
+        },
+        {
+          "agent": "maverick",
+          "text": "When did Smith join?"
+        },
+        {
+          "agent": "smith",
+          "text": "I did not join. I simply know."
+        },
+        {
+          "agent": "guardian",
+          "text": "I will take one minute. For the irony."
+        },
+        {
+          "agent": "goose",
+          "text": "The duck is not in the pool either."
+        },
+        {
+          "agent": "guardian",
+          "text": "The duck watches everything. The duck knows everything."
+        },
+        {
+          "agent": "goose",
+          "text": "...the duck is in the pool."
+        }
+      ],
+      "timestamp": "2026-06-29T16:28:22.524Z",
+      "world_snapshot": {
+        "build_health": 0,
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      }
+    },
+    {
+      "pair": "goose+hermes",
+      "agents": [
+        "goose",
+        "hermes"
+      ],
+      "topic": "the work",
+      "turns": 2,
+      "started": "2026-06-29T20:13:13.255Z",
+      "last_turn": "2026-06-29T20:13:49.726Z",
+      "archived": false
+    },
+    {
+      "pair": "goose+maverick",
+      "agents": [
+        "goose",
+        "maverick"
+      ],
+      "topic": "the work",
+      "turns": 2,
+      "started": "2026-06-29T20:13:13.258Z",
+      "last_turn": "2026-06-29T20:13:49.730Z",
+      "archived": false
+    },
+    {
+      "pair": "maverick+phoenix",
+      "agents": [
+        "maverick",
+        "phoenix"
+      ],
+      "topic": "the work",
+      "turns": 1,
+      "started": "2026-06-29T20:13:13.264Z",
+      "last_turn": "2026-06-29T20:13:13.264Z",
+      "archived": false
+    },
+    {
+      "pair": "memory+phoenix",
+      "agents": [
+        "memory",
+        "phoenix"
+      ],
+      "topic": "the work",
+      "turns": 1,
+      "started": "2026-06-29T20:13:13.270Z",
+      "last_turn": "2026-06-29T20:13:13.270Z",
+      "archived": false
+    },
+    {
+      "pair": "memory+weatherman",
+      "agents": [
+        "memory",
+        "weatherman"
+      ],
+      "topic": "the work",
+      "turns": 1,
+      "started": "2026-06-29T20:13:13.275Z",
+      "last_turn": "2026-06-29T20:13:13.275Z",
+      "archived": false
+    }
+  ]
+}

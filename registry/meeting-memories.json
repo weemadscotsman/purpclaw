@@ -1,0 +1,236 @@
+{
+  "memories": [
+    {
+      "session_id": "s_qv6zafxn",
+      "timestamp": "2026-06-29T20:13:49.736Z",
+      "mode": "after_hours",
+      "topic": "final test",
+      "decision": null,
+      "attendees": 0,
+      "turns": 3,
+      "quote": {
+        "text": "Three times this week.",
+        "agent": "goose",
+        "agent_name": "Goose",
+        "emoji": "🪿"
+      },
+      "funny_moment": null,
+      "mood_shift": "CRISIS → TENSE",
+      "touchpoints": [],
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "historical_importance": "Cultural",
+      "world_snapshot": {
+        "build_health": 0,
+        "provider_latency": "CRITICAL",
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      },
+      "archived": true
+    },
+    {
+      "session_id": "s_bzah8c2c",
+      "timestamp": "2026-06-29T20:13:13.284Z",
+      "mode": "after_hours",
+      "topic": "tradition verification",
+      "decision": null,
+      "attendees": 0,
+      "turns": 6,
+      "quote": {
+        "text": "Three minutes until Hermes notices.",
+        "agent": "goose",
+        "agent_name": "Goose",
+        "emoji": "🪿"
+      },
+      "funny_moment": null,
+      "mood_shift": "CRISIS → RESOLVING",
+      "touchpoints": [
+        "Memory contributed institutional knowledge"
+      ],
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "historical_importance": "Cultural",
+      "world_snapshot": {
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      },
+      "archived": true
+    },
+    {
+      "session_id": "s_gzheu52w",
+      "timestamp": "2026-06-29T20:09:53.863Z",
+      "mode": "after_hours",
+      "topic": "post-patch verification",
+      "decision": null,
+      "attendees": 0,
+      "turns": 5,
+      "quote": {
+        "text": "Can we burn it and start again?",
+        "agent": "phoenix",
+        "agent_name": "Phoenix",
+        "emoji": "🔥"
+      },
+      "funny_moment": null,
+      "mood_shift": "CRISIS → RESOLVING",
+      "touchpoints": [
+        "Memory contributed institutional knowledge"
+      ],
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "historical_importance": "Cultural",
+      "world_snapshot": {
+        "build_health": 0,
+        "provider_latency": "CRITICAL",
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      },
+      "archived": true,
+      "_eroded_confidence": 0.95,
+      "_age_hours": 0.0002886111111111111
+    },
+    {
+      "session_id": "s_dhtfaequ",
+      "timestamp": "2026-06-29T17:19:04.783Z",
+      "mode": "after_hours",
+      "topic": "testing the memory confidence pipeline",
+      "decision": null,
+      "attendees": 0,
+      "turns": 5,
+      "quote": {
+        "text": "Can we burn it and start again?",
+        "agent": "phoenix",
+        "agent_name": "Phoenix",
+        "emoji": "🔥"
+      },
+      "funny_moment": null,
+      "mood_shift": "CRISIS → RESOLVING",
+      "touchpoints": [
+        "Memory contributed institutional knowledge"
+      ],
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "historical_importance": "Cultural",
+      "world_snapshot": {
+        "build_health": 0,
+        "provider_latency": "CRITICAL",
+        "council_mood": "CRISIS",
+        "active_incidents": []
+      },
+      "archived": true,
+      "_eroded_confidence": 0.947,
+      "_age_hours": 2.8472552777777778
+    },
+    {
+      "session_id": "s_grq5cihq",
+      "timestamp": "2026-06-29T16:11:04.617Z",
+      "mode": "after_hours",
+      "topic": "(no topic)",
+      "decision": null,
+      "attendees": 6,
+      "turns": 9,
+      "quote": {
+        "text": "Can we burn it and start again?",
+        "agent": "phoenix",
+        "agent_name": "Phoenix",
+        "emoji": "🔥"
+      },
+      "funny_moment": "Goose and maverick had a moment about the work.",
+      "mood_shift": null,
+      "touchpoints": [
+        "Hermes showed exhaustion",
+        "Memory contributed institutional knowledge"
+      ],
+      "duck_observation": "the duck is concerned about the security posture.",
+      "historical_importance": "Cultural",
+      "world_snapshot": {
+        "build_health": 0,
+        "provider_latency": "CRITICAL",
+        "council_mood": "TENSE",
+        "active_incidents": []
+      },
+      "archived": true,
+      "_eroded_confidence": 0.944,
+      "_age_hours": 3.9806347222222223
+    },
+    {
+      "session_id": "s_gzheu52w",
+      "timestamp": "2026-06-29T20:09:53.866Z",
+      "mode": "after_hours",
+      "topic": "post-patch verification",
+      "decision": null,
+      "attendees": 0,
+      "turns": 5,
+      "confidence_initial": 0.95,
+      "confidence": 0.95,
+      "_eroded_confidence": 0.95,
+      "_age_hours": 0,
+      "is_funny": true,
+      "is_important": false,
+      "mood_shift": null,
+      "conflicting_accounts": 0,
+      "fragmented": false,
+      "cold_case": false,
+      "touchpoints": [],
+      "quote": null,
+      "summary": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "tags": [
+        "after_hours"
+      ],
+      "annotations": [],
+      "versions": []
+    },
+    {
+      "session_id": "s_bzah8c2c",
+      "timestamp": "2026-06-29T20:13:13.287Z",
+      "mode": "after_hours",
+      "topic": "tradition verification",
+      "decision": null,
+      "attendees": 0,
+      "turns": 6,
+      "confidence_initial": 0.95,
+      "confidence": 0.95,
+      "_eroded_confidence": 0.95,
+      "_age_hours": 0,
+      "is_funny": true,
+      "is_important": false,
+      "mood_shift": null,
+      "conflicting_accounts": 0,
+      "fragmented": false,
+      "cold_case": false,
+      "touchpoints": [],
+      "quote": null,
+      "summary": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "tags": [
+        "after_hours"
+      ],
+      "annotations": [],
+      "versions": []
+    },
+    {
+      "session_id": "s_qv6zafxn",
+      "timestamp": "2026-06-29T20:13:49.738Z",
+      "mode": "after_hours",
+      "topic": "final test",
+      "decision": null,
+      "attendees": 0,
+      "turns": 3,
+      "confidence_initial": 0.95,
+      "confidence": 0.95,
+      "_eroded_confidence": 0.95,
+      "_age_hours": 0,
+      "is_funny": true,
+      "is_important": false,
+      "mood_shift": null,
+      "conflicting_accounts": 0,
+      "fragmented": false,
+      "cold_case": false,
+      "touchpoints": [],
+      "quote": null,
+      "summary": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "tags": [
+        "after_hours"
+      ],
+      "annotations": [],
+      "versions": []
+    }
+  ]
+}

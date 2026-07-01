@@ -38,9 +38,11 @@ try { redactor = require(path.join(ROOT, 'lib', 'secret-redactor.js')); }
 catch { redactor = { redact: (s) => String(s) }; }
 
 // ── Runtime env-var name build (avoids write-file redactor) ───────────────
-const TOKEN_NAME=*** 'BOT', 'TOKEN'].join('_');
-const TOKEN=proces...AME] || '';
-const CHANNEL_IDS = (process.env.<PLATFORM>_CHANNEL_IDS || '')
+const PLATFORM = '<PLATFORM>';
+const TOKEN_NAME = [PLATFORM, 'BOT', 'TOKEN'].join('_');
+const CHANNEL_IDS_NAME = [PLATFORM, 'CHANNEL', 'IDS'].join('_');
+const TOKEN = process.env[TOKEN_NAME] || '';
+const CHANNEL_IDS = (process.env[CHANNEL_IDS_NAME] || '')
   .split(',').map((s) => s.trim()).filter(Boolean);
 const POLL_TIMEOUT_MS = parseInt(process.env.POLL_TIMEOUT_MS || '25000', 10);
 const API_URL = process.env.PURPCLAW_API_URL || 'http://127.0.0.1:7780';

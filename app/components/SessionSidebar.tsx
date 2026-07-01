@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
 
 export type ChatSessionMeta = {
   id: string;
@@ -42,10 +41,9 @@ export function SessionSidebar({
   const [sessions, setSessions] = useState<ChatSessionMeta[]>([]);
   const [query, setQuery] = useState('');
   const [sessionsOpen, setSessionsOpen] = useState(true);
-  const [navOpen, setNavOpen] = useState(true);
 
   const refresh = () => {
-    fetch('/api/sessions?limit=80')
+    fetch('/api/sessions?limit=10')
       .then(r => r.ok ? r.json() : null)
       .then(j => setSessions(Array.isArray(j?.sessions) ? j.sessions : []))
       .catch(() => {});
@@ -111,19 +109,16 @@ export function SessionSidebar({
         )}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-3">
-        <button onClick={() => setNavOpen(v => !v)} className="mb-2 text-left text-sm font-black uppercase tracking-[0.14em] text-violet-100">Stack Pages</button>
-        {navOpen && (
-          <div className="space-y-1">
-            {STACK_LINKS.map(([href, label, sub]) => (
-              <Link key={href} href={href} className="block rounded-lg border border-white/8 bg-white/[0.025] px-3 py-2 hover:border-violet-300/25 hover:bg-violet-300/[0.06]">
-                <div className="text-sm font-semibold text-white/80">{label}</div>
-                <div className="text-[11px] text-white/35">{sub}</div>
-              </Link>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* ── Stack Pages nav removed (Eddie, 2026-06-24) ──────────────────────
+          The main /mission UI is the only surface. We are NOT deleting the
+          standalone pages — their files stay on disk, fully salvageable. Most
+          already exist as native /mission lenses (System Map=graph, Self-
+          Evolution=evolution, Agents=agents/tower, Harness=harness,
+          Pipeline=pipeline, Swarm=swarm). The three with NO native lens yet —
+          to be salvaged and integrated INTO /mission as real lenses (not glued
+          iframes): Providers, Settings, OMNI. See STACK_LINKS above for the
+          salvage manifest. */}
+      <div className="min-h-0 flex-1" />
     </aside>
   );
 }

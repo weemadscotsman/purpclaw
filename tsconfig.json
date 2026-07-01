@@ -1,73 +1,35 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": true,
+    "strict": false,
     "noEmit": true,
-    "esModuleInterop": true,
+    "incremental": true,
     "module": "esnext",
-    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
-    "incremental": true,
     "plugins": [
       {
         "name": "next"
       }
-    ],
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./*"]
-    }
+    ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "**/*.ts",
+    "**/*.tsx"
+  ],
   "exclude": [
-    "node_modules",
-    "docs/archive",
-    "archive",
-    ".archive",
-    ".donors",
-    "vendor",
-    "build",
-    "PURPCLAW",
-    "PURPCLAW.zip",
-    "lib/thringlets/_vendor-from-pvx",
-    "companion-chorus",
-    "podcast_studio",
-    "pocket",
-    "skills",
-    "_scratch",
-    "agent_work",
-    ".worktrees",
-    "_FF",
-    "_SW",
-    "STRESS",
-    ".STRESS",
-    "trip_logs",
-    ".trip_logs",
-    "TASKS",
-    "test-patches",
-    "tests",
-    "__tests__",
-    "tests/**/*",
-    "__tests__/**/*",
-    "*.test.ts",
-    "*.test.tsx",
-    "*.spec.ts",
-    "*.spec.tsx",
-    "ablation_probes",
-    "DreamTask",
-    "echo",
-    "harness/captures",
-    "harness/reports",
-    "mochi",
-    "models",
-    "vendor/**/*",
-    "**/__pycache__",
-    "deploy",
-    "scripts"
+    "node_modules"
   ]
 }

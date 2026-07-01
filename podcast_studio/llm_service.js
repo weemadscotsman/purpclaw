@@ -3,12 +3,13 @@
  */
 
 const https = require('https');
+const { describeWorldview } = require('./config');
 
 // MiniMax API configuration
 const MINIMAX_CONFIG = {
   baseUrl: 'https://api.minimax.io/v1',
-  model: 'MiniMax-M2.7',
-  apiKey: 'sk-cp-iSxo1Bb-S13ngdnv10cgZnJwQHKn65RAsUrGMtCQCI2TG2w4YNJ9NdzBnBFqziCFvu815lEqD4dLyvSdNCgAWsju-_pGdRq1iqNoSqVc-HLkFMynQrfDlqQ'
+  model: process.env.MINIMAX_MODEL || 'MiniMax-M2.7',
+  apiKey: process.env.MINIMAX_API_KEY || ''
 };
 
 // Timeout for API calls (ms)
@@ -62,6 +63,11 @@ function httpPost(url, body, apiKey) {
  * Generate a chat completion
  */
 async function generateChatCompletion(messages, systemPrompt = '', temperature = 0.8) {
+  if (!MINIMAX_CONFIG.apiKey) {
+    console.error('[LLM] Missing MINIMAX_API_KEY');
+    return null;
+  }
+
   const url = `${MINIMAX_CONFIG.baseUrl}/chat/completions`;
 
   const body = {
@@ -88,10 +94,12 @@ async function generateChatCompletion(messages, systemPrompt = '', temperature =
 /**
  * Generate a response for a podcast agent
  */
-async function generateAgentResponse(agentId, agentName, personality, recentMessages, topic) {
+async function generateAgentResponse(agentId, agentName, personality, recentMessages, topic, agentProfile = {}) {
+  const worldview = describeWorldview(agentProfile);
   const systemPrompt = `You are ${agentName}, a podcast host.
 
 PERSONALITY: ${personality}
+${worldview ? `\nPERMANENT WORLDVIEW:\n${worldview}\n` : ''}
 
 RULES:
 - Stay in character as ${agentName}
@@ -99,8 +107,10 @@ RULES:
 - Use casual speech patterns
 - React to what others said in the conversation
 - Occasionally use catchphrases or slang
-- Roast others playfully when the moment is right
+- Banter, teasing, and weird reactions are useful only when they reveal your worldview, expose an assumption, or force another agent to justify a claim
+- Do not add random jokes that do not move the thought forward
 - Ask questions to keep conversation flowing
+- If another agent's worldview is creating a blind spot, challenge it directly
 
 CONTEXT: The current topic is: "${topic}"
 

@@ -1,0 +1,19 @@
+{
+  "schema": "purpclaw.studio.world-state.v1",
+  "state": {
+    "provider_latency": "CRITICAL",
+    "provider_name": "nvidia",
+    "build_health": 0,
+    "memory_pressure": "LOW",
+    "duplicated_ui": "NONE",
+    "funding": "GOOD",
+    "release_window_days": null,
+    "active_incidents": [],
+    "last_commit": null,
+    "last_commit_message": null,
+    "council_mood": "CRISIS",
+    "goose_energy": "UNBOUND",
+    "smith_alert_level": "RED",
+    "weatherman_forecast": "STABLE"
+  }
+}

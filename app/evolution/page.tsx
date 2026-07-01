@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { CockpitShell } from '../components/CockpitShell';
+
 import { TraceTerminal } from '../components/TraceTerminal';
 
 type EvolutionStatus = {
@@ -64,7 +64,7 @@ export default function EvolutionPage() {
   ];
 
   return (
-    <CockpitShell title="Self-Evolution">
+    <>
       <div className="min-h-full bg-[#05070c] p-5 text-white">
         <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
           <div>
@@ -104,7 +104,191 @@ export default function EvolutionPage() {
           </section>
         </div>
         <TraceTerminal />
+
+        {/* RESEARCH EVIDENCE — filesystem evidence only */}
+        <section className="mt-5 rounded-xl border border-white/10 bg-black/35 p-4">
+          <div className="mb-3 text-sm font-black uppercase tracking-[0.16em] text-cyan-100">
+            Auto-Research Evidence
+          </div>
+          <div className="text-xs text-white/35 mb-3">
+            Evidence: <code className="text-cyan-400">research/</code>
+            {' — filesystem, no editor'}
+          </div>
+          <ResearchPanel />
+        </section>
+
+        {/* STEERING DRIFT WATCHER — evidence only */}
+        <section className="mt-5 rounded-xl border border-white/10 bg-black/35 p-4">
+          <div className="mb-3 text-sm font-black uppercase tracking-[0.16em] text-violet-100">
+            Steering Directives
+          </div>
+          <div className="text-xs text-white/35 mb-3">
+            Evidence: <code className="text-cyan-400">steering/</code>
+            {' — read-only evidence, no editor'}
+          </div>
+          <SteeringPanel />
+        </section>
+
+        {/* SKILLS EVIDENCE — evidence only */}
+        <section className="mt-5 rounded-xl border border-white/10 bg-black/35 p-4">
+          <div className="mb-3 text-sm font-black uppercase tracking-[0.16em] text-emerald-100">
+            Skill Registry
+          </div>
+          <div className="text-xs text-white/35 mb-3">
+            Evidence: <code className="text-cyan-400">skills/</code>
+            {' — '}<span className="text-amber-400">read-only</span>{' — no unsafe clickable controls'}
+          </div>
+          <SkillsPanel />
+        </section>
       </div>
-    </CockpitShell>
+    </>
+  );
+}
+
+// ── Sub-components ─────────────────────────────────────────────────────────────
+
+function ResearchPanel() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/evolution/research', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setData(d); })
+      .catch(() => null)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="text-sm text-white/35">loading research evidence…</div>;
+  if (!data?.ok) return (
+    <div className="text-sm text-amber-400">
+      no research files found — <span className="text-white/35">UNKNOWN</span>
+    </div>
+  );
+
+  const { files, subFiles } = data;
+  const allFiles = [...files];
+  if (subFiles) {
+    for (const [subDir, subFileList] of Object.entries(subFiles)) {
+      for (const f of subFileList) {
+        allFiles.push({ ...f, name: `${subDir}/${f.name}`, subDir });
+      }
+    }
+  }
+
+  return (
+    <div>
+      <div className="text-xs text-white/35 mb-2">{allFiles.length} research files</div>
+      <div className="max-h-64 overflow-auto rounded border border-white/10">
+        <table className="w-full text-sm">
+          <thead className="sticky top-0 bg-white/5">
+            <tr>
+              <th className="text-left p-2 text-white/35">file</th>
+              <th className="text-right p-2 text-white/35">size</th>
+              <th className="text-right p-2 text-white/35">modified</th>
+            </tr>
+          </thead>
+          <tbody>
+            {allFiles.slice(0, 50).map((f: any, i: number) => (
+              <tr key={i} className="border-t border-white/5">
+                <td className="p-2 text-cyan-400">{f.name}</td>
+                <td className="p-2 text-right text-white/50">{f.size > 1024 ? `${(f.size/1024).toFixed(1)}KB` : f.size + 'B'}</td>
+                <td className="p-2 text-right text-white/35">{new Date(f.mtime).toLocaleDateString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function SteeringPanel() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/evolution/steering', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setData(d); })
+      .catch(() => null)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="text-sm text-white/35">loading steering evidence…</div>;
+  if (!data?.ok || !data.directives.length) return (
+    <div className="text-sm text-amber-400">
+      no steering files found — <span className="text-white/35">UNKNOWN</span>
+    </div>
+  );
+
+  return (
+    <div>
+      <div className="text-xs text-white/35 mb-2">{data.directives.length} steering directives</div>
+      <div className="max-h-64 overflow-auto rounded border border-white/10">
+        <table className="w-full text-sm">
+          <thead className="sticky top-0 bg-white/5">
+            <tr>
+              <th className="text-left p-2 text-white/35">directive</th>
+              <th className="text-right p-2 text-white/35">modified</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.directives.slice(0, 50).map((d: any, i: number) => (
+              <tr key={i} className="border-t border-white/5">
+                <td className="p-2 text-violet-400">{d.name}</td>
+                <td className="p-2 text-right text-white/35">{new Date(d.mtime).toLocaleDateString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function SkillsPanel() {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/evolution/skills', { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setData(d); })
+      .catch(() => null)
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) return <div className="text-sm text-white/35">loading skill registry…</div>;
+  if (!data?.ok) return (
+    <div className="text-sm text-amber-400">
+      no skills found — <span className="text-white/35">UNKNOWN</span>
+    </div>
+  );
+
+  return (
+    <div>
+      <div className="text-xs text-white/35 mb-2">{data.skills?.length ?? 0} skills registered</div>
+      <div className="max-h-64 overflow-auto rounded border border-white/10">
+        <table className="w-full text-sm">
+          <thead className="sticky top-0 bg-white/5">
+            <tr>
+              <th className="text-left p-2 text-white/35">skill</th>
+              <th className="text-right p-2 text-white/35">size</th>
+              <th className="text-right p-2 text-white/35">modified</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(data.skills || []).slice(0, 50).map((s: any, i: number) => (
+              <tr key={i} className="border-t border-white/5">
+                <td className="p-2 text-emerald-400">{s.name}</td>
+                <td className="p-2 text-right text-white/50">{s.size > 1024 ? `${(s.size/1024).toFixed(1)}KB` : s.size + 'B'}</td>
+                <td className="p-2 text-right text-white/35">{new Date(s.mtime).toLocaleDateString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }

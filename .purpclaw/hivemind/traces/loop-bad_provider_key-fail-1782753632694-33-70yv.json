@@ -1,0 +1,86 @@
+{
+  "schema": "purpclaw.hivemind.trace.v1",
+  "run_id": "loop-bad_provider_key-fail-1782753632694-33-70yv",
+  "workflow_id": "wf-bad_provider_key-fail-t65dpk",
+  "task": "Provider call failed 2: invalid API key for openai",
+  "source": "hivemind-loop-test",
+  "agent": "test_agent",
+  "model": "test_model",
+  "provider": "test",
+  "intent": "bad_provider_key",
+  "job_type": "api_call",
+  "route_intent": "bad_provider_key",
+  "started_at": "2026-06-29T17:20:02.694Z",
+  "ended_at": "2026-06-29T17:20:32.694Z",
+  "duration_ms": 53085,
+  "tools_used": [
+    "bash",
+    "http_request"
+  ],
+  "tool_calls": [
+    {
+      "name": "bash",
+      "args_hash": "sha256:test",
+      "output_summary": "failed"
+    },
+    {
+      "name": "http_request",
+      "args_hash": "sha256:test",
+      "output_summary": "failed"
+    }
+  ],
+  "files_touched": [
+    "lib/llm-provider.js"
+  ],
+  "commands": [
+    "run bad_provider_key"
+  ],
+  "verification_gates": [
+    "gate_lint",
+    "gate_tests"
+  ],
+  "gate_results": [
+    {
+      "gate": "gate_lint",
+      "passed": false
+    },
+    {
+      "gate": "gate_tests",
+      "passed": false
+    }
+  ],
+  "outcome": "failed",
+  "tests_passed": false,
+  "rollback": false,
+  "destructive": false,
+  "tokens": 500,
+  "evidence": [
+    {
+      "kind": "error_log",
+      "ref": "401 Unauthorized: invalid api key",
+      "passed": false
+    }
+  ],
+  "status": "failed",
+  "error": "401 Unauthorized: invalid api key",
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "failed_execution",
+    "spring_rank": 8,
+    "spring_label": "Poisoned Well",
+    "verification": [
+      "tests_failed",
+      "[object Object]",
+      "gate:gate_lint:fail",
+      "gate:gate_tests:fail"
+    ],
+    "trust_score": 0,
+    "repeatability": 0.2,
+    "freshness": 1,
+    "evaluated_at": "2026-06-29T17:20:32.694Z"
+  },
+  "spring_rank": 8,
+  "trust_score": 0,
+  "score": 0.33999999999999997,
+  "updated_at": "2026-06-29T17:20:32.720Z"
+}

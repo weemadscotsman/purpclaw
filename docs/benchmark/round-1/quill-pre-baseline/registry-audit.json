@@ -1,0 +1,113 @@
+{
+  "audit_version": "purpclaw.registry.audit.v1",
+  "started_at": "2026-06-29T01:27:39.608Z",
+  "root": "E:\\god folder\\02_ACTIVE_PROJECTS\\PURPCLAW",
+  "mode": "READ-ONLY",
+  "services": {
+    "service_count": 26,
+    "services_by_group": {
+      "core": 12,
+      "goop": 1,
+      "voice": 4,
+      "companions": 2,
+      "vision": 2,
+      "cognitive": 1,
+      "optional": 4
+    },
+    "required_count": 11,
+    "optional_count": 15,
+    "ecosystem_app_count": 26,
+    "capability_count": 30,
+    "surface_capability_count": 18,
+    "in_service_registry_only": [
+      "context-bus",
+      "voice-coordinator",
+      "voice-bridge"
+    ],
+    "in_ecosystem_only": [
+      "purpclaw-voice",
+      "purpclaw-bridge",
+      "purpclaw-context"
+    ]
+  },
+  "skills": {
+    "registry_index_total_skills": 139,
+    "registry_index_total_agents": 38,
+    "registry_index_updated": "2026-05-24T00:00:00Z",
+    "skills_registry_json_count": 28,
+    "skills_registry_txt_count": 28,
+    "filesystem_skill_count": 379,
+    "drift_severity": "CRITICAL",
+    "drift_delta": 351
+  },
+  "models": {
+    "root_exists": true,
+    "nested_exists": true,
+    "nested_is_stale_copy": true,
+    "root_routing_keys": [
+      "chat",
+      "code",
+      "local",
+      "swarm",
+      "planning",
+      "quick",
+      "review",
+      "creative",
+      "vision",
+      "tts",
+      "video"
+    ]
+  },
+  "recommendations": [
+    {
+      "severity": "CRITICAL",
+      "area": "skills",
+      "issue": "skills/skills_registry.json declares 28 entries but filesystem has 379 skill folders (delta=351)",
+      "recommendation": "Regenerate skills/skills_registry.json from filesystem OR deprecate it as companion-only metadata",
+      "blocks_launch": true
+    },
+    {
+      "severity": "MEDIUM",
+      "area": "models",
+      "issue": "PURPCLAW/model_registry.json is a stale byte-identical copy of root",
+      "recommendation": "Quarantine to archive/quarantine/<date>/ (HUMAN APPROVAL REQUIRED)",
+      "blocks_launch": false
+    },
+    {
+      "severity": "MEDIUM",
+      "area": "services",
+      "issue": "Services in service_registry.js but missing from ecosystem.config.js: context-bus, voice-coordinator, voice-bridge",
+      "recommendation": "Add corresponding apps to ecosystem.config.js OR remove from service_registry.js",
+      "blocks_launch": false
+    },
+    {
+      "severity": "MEDIUM",
+      "area": "services",
+      "issue": "Apps in ecosystem.config.js but missing from service_registry.js: purpclaw-voice, purpclaw-bridge, purpclaw-context",
+      "recommendation": "Add corresponding entries to service_registry.js OR remove from ecosystem.config.js",
+      "blocks_launch": false
+    },
+    {
+      "severity": "LOW",
+      "area": "skills",
+      "issue": "registry/index.json last updated 36 days ago (2026-05-24T00:00:00Z)",
+      "recommendation": "Refresh from upstream ECC registry on next sync window",
+      "blocks_launch": false
+    }
+  ],
+  "ended_at": "2026-06-29T01:27:39.621Z",
+  "risk_summary": {
+    "critical": 1,
+    "high": 0,
+    "medium": 3,
+    "low": 1,
+    "launch_blockers": 1,
+    "verdict": "CRITICAL_DRIFT"
+  },
+  "hivemind_trace": {
+    "run_id": "registry-audit-1782696459633",
+    "spring_rank": 1,
+    "spring_label": "Pure Spring",
+    "trust_score": 0.78
+  }
+}

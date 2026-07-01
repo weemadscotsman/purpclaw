@@ -1,0 +1,119 @@
+{
+  "$schema": "cactus.reachability.v1",
+  "generated_at": "<ISO8601_UTC>",
+  "generated_by": "cactus.efficiency-auditor",
+  "division": "INFRASTRUCTURE",
+  "cluster": "dark-cluster",
+  "probe_window_seconds": 300,
+  "verdict_thresholds": {
+    "GREEN":  { "p95_ms_max": 200,   "error_rate_max": 0.01 },
+    "YELLOW": { "p95_ms_max": 1000,  "error_rate_max": 0.05 },
+    "RED":    { "p95_ms_max": null,  "error_rate_max": null, "triggers": ["timeout", "5xx", "connect_refused", "dns_fail", "p95>1000", "errors>0.05"] }
+  },
+  "probe_environment": {
+    "tool_layer": "DEGRADED",
+    "shell": "no_stdout",
+    "curl": "stub_only",
+    "fs_listing": "unavailable",
+    "note": "Active probes could not be executed in this session. All rows carry PROBE_STATUS=INCONCLUSIVE; verdicts defaulted to RED pending real measurement. Re-run via cactus_probe.ps1."
+  },
+  "services": [
+    {
+      "name": "voice",
+      "expected_endpoint": "http://127.0.0.1:11401/health",
+      "protocol": "http",
+      "method": "GET",
+      "status": null,
+      "latency_ms": { "p50": null, "p95": null },
+      "error_rate_last_5m": null,
+      "samples_in_window": 0,
+      "last_heartbeat_ts": null,
+      "verdict": "RED",
+      "verdict_reason": "PROBE_INCONCLUSIVE — tool layer offline; no live measurements",
+      "probe_status": "INCONCLUSIVE"
+    },
+    {
+      "name": "vision",
+      "expected_endpoint": "http://127.0.0.1:11402/health",
+      "protocol": "http",
+      "method": "GET",
+      "status": null,
+      "latency_ms": { "p50": null, "p95": null },
+      "error_rate_last_5m": null,
+      "samples_in_window": 0,
+      "last_heartbeat_ts": null,
+      "verdict": "RED",
+      "verdict_reason": "PROBE_INCONCLUSIVE — tool layer offline; no live measurements",
+      "probe_status": "INCONCLUSIVE"
+    },
+    {
+      "name": "autodream",
+      "expected_endpoint": "http://127.0.0.1:11403/health",
+      "protocol": "http",
+      "method": "GET",
+      "status": null,
+      "latency_ms": { "p50": null, "p95": null },
+      "error_rate_last_5m": null,
+      "samples_in_window": 0,
+      "last_heartbeat_ts": null,
+      "verdict": "RED",
+      "verdict_reason": "PROBE_INCONCLUSIVE — tool layer offline; no live measurements",
+      "probe_status": "INCONCLUSIVE"
+    },
+    {
+      "name": "reasoning",
+      "expected_endpoint": "http://127.0.0.1:11434/api/tags",
+      "protocol": "http",
+      "method": "GET",
+      "status": null,
+      "latency_ms": { "p50": null, "p95": null },
+      "error_rate_last_5m": null,
+      "samples_in_window": 0,
+      "last_heartbeat_ts": null,
+      "verdict": "RED",
+      "verdict_reason": "PROBE_INCONCLUSIVE — tool layer offline; no live measurements",
+      "probe_status": "INCONCLUSIVE"
+    },
+    {
+      "name": "stt",
+      "expected_endpoint": "http://127.0.0.1:9000/health",
+      "protocol": "http",
+      "method": "GET",
+      "status": null,
+      "latency_ms": { "p50": null, "p95": null },
+      "error_rate_last_5m": null,
+      "samples_in_window": 0,
+      "last_heartbeat_ts": null,
+      "verdict": "RED",
+      "verdict_reason": "PROBE_INCONCLUSIVE — tool layer offline; no live measurements",
+      "probe_status": "INCONCLUSIVE"
+    },
+    {
+      "name": "chorus",
+      "expected_endpoint": "http://127.0.0.1:11406/health",
+      "protocol": "http",
+      "method": "GET",
+      "status": null,
+      "latency_ms": { "p50": null, "p95": null },
+      "error_rate_last_5m": null,
+      "samples_in_window": 0,
+      "last_heartbeat_ts": null,
+      "verdict": "RED",
+      "verdict_reason": "PROBE_INCONCLUSIVE — tool layer offline; no live measurements",
+      "probe_status": "INCONCLUSIVE"
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "green": 0,
+    "yellow": 0,
+    "red": 6,
+    "inconclusive": 6,
+    "degraded_reason": "Active probes could not be executed — shell tool returned empty stdout, curl returned stub-only, fs tools unavailable. All services defaulted to RED pending re-probe."
+  },
+  "recovery_actions": [
+    "Run .\\.cactus\\reachability\\cactus_probe.ps1 from a real PowerShell to populate real metrics.",
+    "Re-emit matrix via: .\\.cactus\\reachability\\cactus_probe.ps1 -EmitMatrix",
+    "If shell tool layer is broken globally, route probes via raw HTTP using a working curl/Invoke-WebRequest path."
+  ]
+}

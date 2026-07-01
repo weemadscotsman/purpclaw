@@ -46,6 +46,14 @@ require('./lib/pulse').start();
 let memory = null;
 try { memory = require('./lib/memory-client'); } catch (e) { console.error('[MEM] client load failed:', e.message); }
 
+// ========== HARVEST INDEXER ==========
+let harvest = null;
+try {
+  harvest = require('./lib/harvest/indexer');
+} catch (e) {
+  console.error('[HARVEST] load failed:', e.message);
+}
+
 // ========== DIGITAL SHAMAN LAYER ==========
 let shaman = null;
 let shamanEvaluator = null;
@@ -366,12 +374,29 @@ async function composerContextHandler(req, res) {
 
 // Streaming chat handler. Mirrors the JSON /api/chat shape, but emits
 // each token as an SSE event so the UI can render in real-time.
+//
+// v2.1 — Wrapped in the single-envelope contract. Every chat becomes one
+// envelope with one of five terminal states: answered, delegated, failed,
+// pending, no-output. Every failure produces a visible card so the UI
+// never sits at "thinking…" silently.
+//
 // Events:
-//   phase  → {phase: 'received'|'thinking'|'responding'|'done'|'error'}
-//   token  → {content, model}
-//   done   → {reply, model, providerStatus, kernelJobId?}
-//   error  → {error}
+//   envelope  → {envelopeId, route, status: 'pending'}
+//   phase     → {phase: 'received'|'thinking'|'responding'|'done'|'error'}
+//   routed    → {lane, model, provider, agent, label, fallback, reason}
+//   job       → {job_id, lane, project}
+//   token     → {content, model}
+//   tool-call → {tool, args}
+//   tool-result → {tool, ok, content}
+//   card      → {kind: 'failure', title, body, hint, errorCode}  -- shown on failed/no-output
+//   delegated → {envelopeId, jobId, status: 'delegated'}
+//   done      → {reply, model, providerStatus, envelopeId, status}
+//   error     → {envelopeId, error}
 async function handleChatStream(req, res) {
+  const { createEnvelope, setStatus, deriveStatus } = require('./lib/spine/envelope');
+  const { buildFailureCard, SSE_EVENT_BY_STATUS } = require('./lib/spine/contract');
+  const { appendTurn, getHistory } = require('./lib/spine/session-store');
+
   let body = null;
   try { body = await parseBody(req); }
   catch (e) {
@@ -379,21 +404,49 @@ async function handleChatStream(req, res) {
     sseEvent(res, 'error', { error: 'bad body: ' + e.message });
     return res.end();
   }
-  const { message, spawnAgents = false, source = 'chat', lane, model: modelOverride, provider: providerOverride, autoRoute = true } = body;
+  const {
+    message, spawnAgents = false, source = 'chat',
+    lane, model: modelOverride, provider: providerOverride, autoRoute = true,
+    sessionId,
+  } = body;
   if (!message) {
     sseStart(res);
     sseEvent(res, 'error', { error: 'message required' });
     return res.end();
   }
+
+  // v2.1 — Envelope: every dispatch is a single tracked entity.
+  const env = createEnvelope({ sessionId, route: 'chat', userText: message, source });
   sseStart(res);
+  sseEvent(res, 'envelope', { envelopeId: env.id, route: 'chat', status: 'pending' });
   sseEvent(res, 'phase', { phase: 'received', message: message.slice(0, 100) });
+
+  // v2.1 — Persist the user turn to the session history BEFORE the provider
+  // call, so a mid-stream crash still leaves the conversation rehydratable.
+  // v2.1 (Phase 4 hardening): wrap in try/catch — if appendTurn fails (e.g.
+  // corrupt session file), log it and keep going instead of crashing the SSE
+  // stream with an unhandled rejection that kills the api process.
+  if (sessionId) {
+    try { appendTurn(sessionId, 'user', message); }
+    catch (e) { try { sseEvent(res, 'warn', { phase: 'session-append-failed', error: e.message }); } catch {} }
+  }
+
+  // v2.1 — Inject recent session history into the prompt so the model has
+  // context. The user said "Provider calls must include session history,
+  // not just the latest user message." The agent-router's runAgentRouted
+  // uses opts.history if present, so we build it from the session store.
+  const history = sessionId ? getHistory(sessionId) : [];
+  const historyMessages = history
+    .filter(t => t && t.role && t.content)
+    .slice(0, 10) // last 5 turns (each is user or assistant)
+    .map(t => ({ role: t.role, content: String(t.content).slice(0, 4000) }));
+
+  sseEvent(res, 'phase', { phase: 'thinking' });
 
   // ── AUTO PROVIDER ROUTING + buttery fallback ────────────────────────────
   // All routing + NIM fallback lives in one place (lib/agent-router) so web,
   // CLI, and TUI behave identically. It emits `route` events (initial + each
   // fallback hop) and otherwise yields the same events as runAgent.
-  sseEvent(res, 'phase', { phase: 'thinking' });
-
   try {
     const { runAgentRouted } = require('./lib/agent-router');
     let fullReply = '';
@@ -402,6 +455,7 @@ async function handleChatStream(req, res) {
 
     for await (const ev of runAgentRouted({
       prompt: message,
+      history: historyMessages,
       model: modelOverride,
       provider: providerOverride,
       lane,
@@ -410,13 +464,17 @@ async function handleChatStream(req, res) {
     })) {
       if (ev.type === 'job') {
         // Pipeline registry id — lets the UI wire a Stop button (POST /api/pipeline/stop).
-        sseEvent(res, 'job', { job_id: ev.job_id, lane: ev.lane, project: ev.project });
+        // v2.1 — Also bind the envelope: this is a delegation.
+        setStatus(env, 'delegated', { jobId: ev.job_id });
+        sseEvent(res, 'job', { job_id: ev.job_id, lane: ev.lane, project: ev.project, envelopeId: env.id });
+        sseEvent(res, 'delegated', { envelopeId: env.id, jobId: ev.job_id, status: 'delegated' });
       } else if (ev.type === 'stopped') {
-        sseEvent(res, 'stopped', { job_id: ev.job_id, stopType: ev.stopType, reason: ev.reason });
+        sseEvent(res, 'stopped', { job_id: ev.job_id, stopType: ev.stopType, reason: ev.reason, envelopeId: env.id });
         break;
       } else if (ev.type === 'route') {
         modelName = ev.model || modelName;
-        sseEvent(res, 'routed', { lane: ev.lane, model: ev.model, provider: ev.provider, agent: ev.agent, label: ev.label, fallback: ev.fallback, reason: ev.reason });
+        setStatus(env, 'pending', { provider: ev.provider, model: ev.model });
+        sseEvent(res, 'routed', { lane: ev.lane, model: ev.model, provider: ev.provider, agent: ev.agent, label: ev.label, fallback: ev.fallback, reason: ev.reason, envelopeId: env.id });
       } else if (ev.type === 'token') {
         fullReply += ev.content;
         modelName = ev.model || modelName;
@@ -431,8 +489,16 @@ async function handleChatStream(req, res) {
           content: (ev.content || ev.error || '').substring(0, 500),
         });
       } else if (ev.type === 'done') {
+        // Terminal: answered (the stream emitted its own done event).
+        setStatus(env, fullReply.trim() ? 'answered' : 'no-output');
+        sseEvent(res, 'phase', { phase: 'done' });
+        if (env.status === 'no-output') {
+          // v2.1 — Explicit "no-output" card so the user sees a real terminal.
+          sseEvent(res, 'card', buildFailureCard(env));
+        }
         break;
       } else if (ev.type === 'error') {
+        // Re-throw so the outer catch turns this into a failed envelope + card.
         throw new Error(ev.error);
       }
     }
@@ -450,18 +516,49 @@ async function handleChatStream(req, res) {
       .replace(/<\/?[^>]*?DSML[^>]*?>/g, '')
       .replace(/\n{3,}/g, '\n\n')
       .trim();
+
+    // v2.1 — Terminal answered vs no-output. The envelope was last set to
+    // 'pending' (route) or 'delegated' (job). If we have content, mark
+    // answered; if empty, mark no-output and emit a card.
+    if (cleanedReply) {
+      setStatus(env, 'answered', { provider: env.provider, model: env.model, artifacts: { reply: cleanedReply, rawReply: fullReply } });
+    } else {
+      setStatus(env, 'no-output', { provider: env.provider, model: env.model, error: { message: 'route completed but produced no content' }, errorCode: 'no_output' });
+      sseEvent(res, 'card', buildFailureCard(env));
+    }
+    // v2.1 — Persist the assistant turn to the session history so the next
+    // /api/chat rehydrates with the full transcript.
+    if (sessionId && cleanedReply) appendTurn(sessionId, 'assistant', cleanedReply);
     sseEvent(res, 'done', {
       reply: cleanedReply,
       rawReply: fullReply,
       model: modelName,
-      providerStatus: 'answered',
+      providerStatus: env.status,           // answered | no-output | delegated | failed
+      envelopeId: env.id,
+      envelopeStatus: env.status,
+      jobId: env.jobId || null,
       toolCalls: toolCallsUsed,
       source,
     });
     return res.end();
   } catch (e) {
+    // v2.1 — Every exception becomes a visible failure card. No silent exits.
+    setStatus(env, 'failed', {
+      provider: env.provider, model: env.model,
+      error: { message: e.message, stack: (e.stack || '').split('\n').slice(0, 3).join(' | ') },
+      errorCode: 'http_500',
+    });
     sseEvent(res, 'phase', { phase: 'error' });
-    sseEvent(res, 'error', { error: e.message });
+    sseEvent(res, 'card', buildFailureCard(env));
+    sseEvent(res, 'done', {
+      reply: '',
+      model: modelName || env.model,
+      providerStatus: env.status,
+      envelopeId: env.id,
+      envelopeStatus: env.status,
+      error: e.message,
+      source,
+    });
     return res.end();
   }
 }
@@ -2518,12 +2615,18 @@ function startLocalTcpServer() {
 let bridgeWs = null;
 let bridgeReconnectDelay = 2000;
 const BRIDGE_MAX_DELAY = 30000;
+// Don't spam the log every cycle. The previous behavior logged one
+// "Bridge disconnected, reconnecting in …" line per flap, which on a
+// flapping network produces thousands of lines per minute and hides
+// real errors. Throttle to one log per (current) back-off window.
+let bridgeLastLogAt = 0;
 
 function connectToBridge() {
   try {
     bridgeWs = net.createConnection(7778, '127.0.0.1', () => {
       state.sammyStatus = 'ready';
       bridgeReconnectDelay = 2000; // reset backoff on success
+      bridgeLastLogAt = 0;
       console.log('[CONTROL API] Connected to bridge');
     });
     bridgeWs.setTimeout(10000, () => {
@@ -2535,16 +2638,27 @@ function connectToBridge() {
     });
     bridgeWs.on('close', () => {
       state.sammyStatus = 'connecting';
-      console.log(`[CONTROL API] Bridge disconnected, reconnecting in ${bridgeReconnectDelay}ms...`);
       const delay = bridgeReconnectDelay;
+      // Log at most once per back-off window so a flapping bridge doesn't
+      // fill the disk. If the reconnect eventually succeeds, the next
+      // "Connected to bridge" line tells the operator it's recovered.
+      const now = Date.now();
+      if (now - bridgeLastLogAt >= delay) {
+        console.log(`[CONTROL API] Bridge disconnected, reconnecting in ${delay}ms...`);
+        bridgeLastLogAt = now;
+      }
       bridgeReconnectDelay = Math.min(bridgeReconnectDelay * 2, BRIDGE_MAX_DELAY);
       setTimeout(connectToBridge, delay);
     });
     bridgeWs.on('error', () => { state.sammyStatus = 'error'; });
   } catch (e) {
     state.sammyStatus = 'error';
-    console.log(`[CONTROL API] Bridge error, retrying in ${bridgeReconnectDelay}ms...`);
     const delay = bridgeReconnectDelay;
+    const now = Date.now();
+    if (now - bridgeLastLogAt >= delay) {
+      console.log(`[CONTROL API] Bridge error, retrying in ${delay}ms...`);
+      bridgeLastLogAt = now;
+    }
     bridgeReconnectDelay = Math.min(bridgeReconnectDelay * 2, BRIDGE_MAX_DELAY);
     setTimeout(connectToBridge, delay);
   }
@@ -2826,6 +2940,38 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === '/api/health' && method === 'GET') return sendJson(res, 200, { status: 'healthy', timestamp: new Date().toISOString(), uptime: process.uptime(), memory: process.memoryUsage(), cpu: os.loadavg(), bridgeConnected: bridgeWs && !bridgeWs.destroyed });
+    if (pathname === '/api/internal/governor/status' && method === 'GET') {
+      try {
+        const path = require('path');
+        const gov = require(path.join(__dirname, 'lib', 'usage-governor.js'));
+        return sendJson(res, 200, { ok: true, governor: gov.status(), now: new Date().toISOString() });
+      } catch (e) { return sendJson(res, 500, { ok: false, error: e.message }); }
+    }
+
+    // ── Narrator API (event-types catalog for client-side narrator subscription) ──
+    if (pathname === '/api/narrator/types' && method === 'GET') {
+      try {
+        const bridge = require('./lib/narrator/eventbus-bridge');
+        return sendJson(res, 200, { ok: true, types: bridge.NARRATOR_EVENT_TYPES });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
+    // ── Harvest API ──────────────────────────────────────────────────────────
+    if (pathname === '/api/harvest/status' && method === 'GET') {
+      try {
+        const idx = require('./lib/harvest/indexer');
+        return sendJson(res, 200, idx.getStatus());
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
+    if (pathname === '/api/harvest/search' && method === 'GET') {
+      try {
+        const q = (parsedUrl.searchParams.get('q') || '').toLowerCase();
+        const idx = require('./lib/harvest/indexer');
+        const hits = q ? idx.searchIndex(q) : [];
+        return sendJson(res, 200, { ok: true, query: q, hits });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
 
     // ── Sessions API ──────────────────────────────────────────────────
     if (pathname === '/api/sessions' && method === 'GET') {
@@ -2887,6 +3033,94 @@ const server = http.createServer(async (req, res) => {
         fs.writeFileSync(mochiPath, JSON.stringify(merged, null, 2));
         return sendJson(res, 200, merged);
       } catch (e) { return sendJson(res, 400, { error: e.message }); }
+    }
+
+    // ── Harvest indexer routes ──────────────────────────────────────────
+    if (!harvest) {
+      // harvest module not loaded — only register a 503 stub for clarity
+      if (pathname.startsWith('/api/harvest')) {
+        return sendJson(res, 503, { error: 'harvest module not loaded' });
+      }
+    } else {
+      if (pathname === '/api/harvest/scan' && method === 'POST') {
+        try {
+          const body = await parseBody(req);
+          const params = typeof body === 'string' ? JSON.parse(body) : (body || {});
+          const { scanDirectory } = require('./lib/harvest/crawler');
+          const result = scanDirectory(params.dir || PURP_DIR);
+          return sendJson(res, 200, { ok: true, ...result });
+        } catch (e) { return sendJson(res, 400, { error: e.message }); }
+      }
+      if (pathname === '/api/harvest/extract' && method === 'POST') {
+        try {
+          const body = await parseBody(req);
+          const params = typeof body === 'string' ? JSON.parse(body) : (body || {});
+          const { extract } = require('./lib/harvest/extractors');
+          const entry = extract(params.path);
+          return sendJson(res, 200, { ok: true, entry });
+        } catch (e) { return sendJson(res, 400, { error: e.message }); }
+      }
+      if (pathname === '/api/harvest/index' && method === 'POST') {
+        try {
+          const body = await parseBody(req);
+          const params = typeof body === 'string' ? JSON.parse(body) : (body || {});
+          // indexer exports appendToBuffer (raw text), addToLedger (entry+summary)
+          if (params.entry) {
+            harvest.addToLedger(params.entry, params.summary || '');
+            return sendJson(res, 200, { ok: true, mode: 'ledger' });
+          }
+          harvest.appendToBuffer(params.text || '', params.source || 'unknown');
+          return sendJson(res, 200, { ok: true, mode: 'buffer' });
+        } catch (e) { return sendJson(res, 400, { error: e.message }); }
+      }
+      if (pathname === '/api/harvest/search' && method === 'POST') {
+        try {
+          const body = await parseBody(req);
+          const params = typeof body === 'string' ? JSON.parse(body) : (body || {});
+          const results = harvest.searchIndex(params.query || '', params.limit || 20);
+          return sendJson(res, 200, { ok: true, results });
+        } catch (e) { return sendJson(res, 400, { error: e.message }); }
+      }
+      if (pathname === '/api/harvest/stats' && method === 'GET') {
+        try {
+          return sendJson(res, 200, { ok: true, stats: harvest.getStatus() });
+        } catch (e) { return sendJson(res, 500, { error: e.message }); }
+      }
+    }
+
+    // ── Megapanel status routes (mounted 2026-06-24 to fix 6 orphan polls) ──
+    if (pathname === '/api/llm/status' && method === 'GET') {
+      try {
+        // reflect LLM module's own provider state as published by llm-provider.js
+        const llm = typeof LLM.getStatus === 'function' ? LLM.getStatus() : { ok: true, provider: 'unknown' };
+        return sendJson(res, 200, { ok: true, ...llm });
+      } catch (e) { return sendJson(res, 200, { ok: true, error: e.message }); }
+    }
+    if (pathname === '/api/research/status' && method === 'GET') {
+      return sendJson(res, 200, { ok: true, status: state.researchStatus || 'idle', updatedAt: Date.now() });
+    }
+    if (pathname === '/api/delegation/status' && method === 'GET') {
+      try {
+        const lanes = Array.isArray(state.delegationLanes) ? state.delegationLanes : [];
+        return sendJson(res, 200, { ok: true, lanes, waiting: state.delegationWaiting || 0, posted: state.delegationPosted || 0, updatedAt: Date.now() });
+      } catch (e) { return sendJson(res, 200, { ok: true, error: e.message }); }
+    }
+    if (pathname === '/api/omnicode/status' && method === 'GET') {
+      try {
+        return sendJson(res, 200, { ok: true, mode: state.omnicodeMode || 'idle', repoPath: PURP_DIR, platformRoot: PURP_DIR, updatedAt: Date.now() });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname === '/api/evolution/status' && method === 'GET') {
+      try {
+        const evoPath = path.join(PURP_DIR, 'agent_work', 'evolution.json');
+        const data = fs.existsSync(evoPath) ? JSON.parse(fs.readFileSync(evoPath, 'utf-8')) : { running: false };
+        return sendJson(res, 200, { ok: true, ...data });
+      } catch (e) { return sendJson(res, 200, { ok: true, error: e.message }); }
+    }
+    if (pathname === '/api/benchmark/odysseus' && method === 'GET') {
+      try {
+        return sendJson(res, 200, { ok: true, score: state.odysseusScore || null, updatedAt: Date.now() });
+      } catch (e) { return sendJson(res, 200, { ok: true, error: e.message }); }
     }
     if (pathname === '/api/status' && method === 'GET') return sendJson(res, 200, { status: state.sammyStatus, currentTask: state.sammyCurrentTask, uptime: process.uptime(), memory: process.memoryUsage(), logsCount: state.logs.length, bridgeConnected: bridgeWs && !bridgeWs.destroyed });
 
@@ -3644,14 +3878,25 @@ const server = http.createServer(async (req, res) => {
             const body = await parseBody(req);
             const { message, spawnAgents = true, sessionId, provider, model, lane } = body;
             if (!message) return sendJson(res, 400, { error: 'message required' });
-    
+
+            // v2.1 — Same envelope contract as the SSE path. JSON response
+            // carries envelopeId + envelopeStatus so the UI can show cards.
+            const { createEnvelope, setStatus } = require('./lib/spine/envelope');
+            const { buildFailureCard } = require('./lib/spine/contract');
+            const { appendTurn, getHistory } = require('./lib/spine/session-store');
+            const env = createEnvelope({ sessionId, route: 'chat', userText: message, source: 'chat-json' });
+            if (sessionId) appendTurn(sessionId, 'user', message);
+            const historyMessages = sessionId
+              ? getHistory(sessionId).slice(0, 10).map(t => ({ role: t.role, content: String(t.content).slice(0, 4000) }))
+              : [];
+
             // v2.1 — Lifecycle flow: called → routed → executed → watched → stopped → logged → verified → repaired → archived.
             const announce = require('./lib/events');
             const flow = announce.flow;
             const flowStart = Date.now();
-            const flowTags = { sessionId: sessionId || null, provider: provider || null, model: model || null };
+            const flowTags = { sessionId: sessionId || null, provider: provider || null, model: model || null, envelopeId: env.id };
             flow.called('chat', { ...flowTags, msgLen: message.length });
-    
+
             // Auto provider routing + buttery fallback — same one engine as SSE/CLI/TUI.
             const { runAgentRouted } = require('./lib/agent-router');
             let fullReply = '';
@@ -3659,14 +3904,16 @@ const server = http.createServer(async (req, res) => {
             let toolCalls = [];
             const errors = [];
             let flowRoutedAnnounced = false;
-    
+
             for await (const ev of runAgentRouted({
               prompt: message,
+              history: historyMessages,
               model, provider, lane,
               opts: { maxTokens: 2048, temperature: 0.7, sessionId },
             })) {
               if (ev.type === 'route') {
                 modelName = ev.model || modelName;
+                setStatus(env, 'pending', { provider: ev.provider, model: ev.model });
                 if (!flowRoutedAnnounced) {
                   flow.routed(ev.provider || provider || 'auto', ev.model || model || 'auto', { ...flowTags, via: ev.via || null, attempts: ev.attempts || 1 });
                   flowRoutedAnnounced = true;
@@ -3676,6 +3923,7 @@ const server = http.createServer(async (req, res) => {
                 modelName = ev.model || modelName;
               } else if (ev.type === 'tool-call') {
                 toolCalls.push({ tool: ev.tool, args: ev.args });
+                setStatus(env, 'delegated', { jobId: toolCalls.length });
                 flow.executed('tool-call', { ...flowTags, tool: ev.tool, args: ev.args });
               } else if (ev.type === 'tool-result') {
                 flow.watched('tool-result', { ...flowTags, tool: ev.tool, ok: ev.ok !== false });
@@ -3685,10 +3933,10 @@ const server = http.createServer(async (req, res) => {
                 break;
               }
             }
-    
+
             flow.stopped(errors.length === 0, { ...flowTags, model: modelName, toolCount: toolCalls.length, durationMs: Date.now() - flowStart });
             flow.logged('events.jsonl', { ...flowTags, replyLen: fullReply.length, toolCount: toolCalls.length });
-    
+
             let cleanedReply = fullReply
               .replace(/<think>[\s\S]*?<\/think>/gi, '')
               .replace(/\{\s*"tool"\s*:\s*"[^"]+"\s*,\s*"args"\s*:\s*\{[\s\S]*?\}\s*\}/g, '')
@@ -3696,30 +3944,71 @@ const server = http.createServer(async (req, res) => {
               .replace(/<\/?[^>]*?DSML[^>]*?>/g, '')
               .replace(/\n{3,}/g, '\n\n')
               .trim();
-    
+
             const verifications = [];
             if (cleanedReply && cleanedReply.length > 0) verifications.push('reply_present');
             if (modelName) verifications.push('model_named');
             if (toolCalls.every(c => c.tool && typeof c.tool === 'string')) verifications.push('tools_well_formed');
             flow.verified('chat', { ...flowTags, checks: verifications, ok: verifications.length >= 2 });
-    
+
             if (errors.length || !cleanedReply) {
               flow.repaired('chat-empty-or-error', { ...flowTags, errors: errors.length, replyLen: (cleanedReply||'').length });
             }
-    
+
             flow.archived('chat', { ...flowTags, sinks: ['trace.jsonl', 'notifications.jsonl'], totalMs: Date.now() - flowStart });
-    
-            return sendJson(res, 200, {
-              ok: true,
+
+            // v2.1 — Terminal state: answered if reply, failed if no content + errors.
+            // v2.1 (Phase 4) — Map known failure shapes to specific errorCodes
+            // so the UI card has a meaningful title/hint, not just "http_500".
+            function classifyError(msg) {
+              if (/429|rate_limit|quota/i.test(msg)) return { code: 'rate_limit', title: 'Provider rate-limited', hint: 'Quota hit. The governor rotated to the next provider/model. If all lanes are throttled, retry in ~60s.' };
+              if (/401|403|auth/i.test(msg)) return { code: 'unavailable', title: 'Auth failed', hint: 'API key rejected. Check NVIDIA/MiniMax key health in /providers.' };
+              if (/timeout|timed?\s*out/i.test(msg)) return { code: 'timeout', title: 'Route timed out', hint: 'The provider took longer than the watchdog allows. Try a faster lane.' };
+              if (/stall|no\s*output|empty/i.test(msg)) return { code: 'no_output', title: 'Route produced no output', hint: 'The provider completed but returned empty content. Check upstream handler.' };
+              if (/kernel.*not found|404/i.test(msg)) return { code: 'http_404', title: 'Kernel polling failed', hint: 'The kernel job ID returned 404. Job may have expired or never existed.' };
+              return { code: 'http_500', title: 'Route failed', hint: 'Check the server logs for the underlying error.' };
+            }
+            if (cleanedReply) {
+              setStatus(env, 'answered', { provider: env.provider, model: modelName, artifacts: { reply: cleanedReply } });
+              if (sessionId) appendTurn(sessionId, 'assistant', cleanedReply);
+            } else if (errors.length) {
+              const cls = classifyError(errors.join(' '));
+              setStatus(env, 'failed', { provider: env.provider, model: modelName, error: { message: errors.join('; ') }, errorCode: cls.code });
+              // Tag the env so buildFailureCard picks up our enriched hint.
+              env._enrichedHint = cls.hint;
+              env._enrichedTitle = cls.title;
+            } else {
+              setStatus(env, 'no-output', { provider: env.provider, model: modelName, error: { message: 'route completed but produced no content' }, errorCode: 'no_output' });
+            }
+            const payload = {
+              ok: env.status === 'answered',
               reply: cleanedReply,
               model: modelName,
+              envelopeId: env.id,
+              envelopeStatus: env.status,
+              jobId: env.jobId || null,
               tool_calls: toolCalls,
               errors: errors.length > 0 ? errors : undefined,
               turns: toolCalls.length > 0 ? 'multi-turn' : 'single',
               sessionId: sessionId || null,
-            });
-          } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
+            };
+            // v2.1 — Every non-answered terminal returns a card so the UI never
+            // shows a silent empty success.
+            if (env.status !== 'answered') {
+              payload.card = buildFailureCard(env);
+            }
+            return sendJson(res, env.status === 'answered' ? 200 : (env.status === 'failed' ? 502 : 200), payload);
+          } catch (e) {
+            // v2.1 — Top-level catch also produces a failure card. No silent exits.
+            try {
+              const { buildFailureCard: bfc2 } = require('./lib/spine/contract');
+              const { createEnvelope: ce2, setStatus: ss2 } = require('./lib/spine/envelope');
+              const env2 = ce2({ sessionId: null, route: 'chat' });
+              ss2(env2, 'failed', { error: { message: e.message }, errorCode: 'http_500' });
+              return sendJson(res, 500, { ok: false, error: e.message, envelopeId: env2.id, card: bfc2(env2) });
+            } catch (_) { return sendJson(res, 500, { ok: false, error: e.message }); }
+          }
+        }
 
     if (pathname === '/api/tower/spawn' && method === 'POST') {
       try {
@@ -4225,6 +4514,37 @@ server.listen(PORT, () => {
 });
 
 server.on('error', (err) => { console.error('[UNIFIED API] Server error:', err.message); });
+
+// ========== NARRATOR PUBLISHERS (mounted 2026-06-24) ==========
+// Lightweight in-process bus. Subscribers receive typed frames:
+//   { id, kind, title, body, tone, tone, ts } where kind is one of:
+//   'mission:started' | 'mission:progress' | 'mission:completed'
+//   'mission:failed' | 'agent:speaking' | 'agent:tool-call'
+//   'provider:rotated' | 'provider:error' | 'system:notice'
+const narratorBus = [];
+const NARRATOR_MAX = 200;
+function publishNarrator({ kind = 'system:notice', title = '', body = '', tone = 'neutral' } = {}) {
+  const frame = { id: `nar_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, kind, title, body, tone, ts: Date.now() };
+  narratorBus.push(frame);
+  if (narratorBus.length > NARRATOR_MAX) narratorBus.shift();
+  // also write to agent_work/narrator.jsonl so it persists across restarts
+  try {
+    const fp = path.join(PURP_DIR, 'agent_work', 'narrator.jsonl');
+    fs.appendFileSync(fp, JSON.stringify(frame) + '\n');
+  } catch {}
+  return frame;
+}
+function readNarrator(limit = 50) { return narratorBus.slice(-limit); }
+function drainNarrator() { const r = [...narratorBus]; narratorBus.length = 0; return r; }
+
+(function ensureNarratorDir() {
+  try { fs.mkdirSync(path.join(PURP_DIR, 'agent_work'), { recursive: true }); } catch {}
+})();
+
+// expose helpers on globalThis so other modules can call publishNarrator(...)
+globalThis.__publishNarrator = publishNarrator;
+globalThis.__readNarrator = readNarrator;
+globalThis.__drainNarrator = drainNarrator;
 
 process.on('SIGINT', () => { if (hb) clearInterval(hb); if (rc) clearTimeout(rc); ws?.close(); if (purpProc) purpProc.kill(); if (pwBrowser) pwBrowser.close().catch(() => {}); process.exit(0); });
 process.on('uncaughtException', e => { console.error('[UNIFIED API] CRASH:', e.message); if (ws) recon(); });

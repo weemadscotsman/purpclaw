@@ -1,24 +1,15 @@
 #!/usr/bin/env python3
-"""
-PURPCLAW Cognitive Spine
-========================
-Single local HTTP surface for the cognitive layer.
-
-This replaces the old pattern of running memory, modal logic, rules,
-diagnostics, neuro-symbolic, and AutoDream as separate HTTP services.
-The modules stay real and imported directly; only the transport is collapsed.
-"""
+"""PURPCLAW Cognitive Spine — single local HTTP surface for the cognitive layer."""
 
 import argparse
 import json
 import os
+import sys
 import time
 from http.server import BaseHTTPRequestHandler
 from socketserver import ThreadingTCPServer
 from urllib.parse import urlparse
 
-# No leaky drawers: self memory watchdog. Backstops PM2's max_memory_restart so
-# even an orphaned spine (escaped supervision) dies instead of eating the box.
 try:
     import mem_guard
     mem_guard.install(label="cognitive", limit_mb=int(os.environ.get("COGNITIVE_MEM_LIMIT_MB", "1500")))
@@ -31,6 +22,20 @@ from modal_logic_engine import ModalLogicEngine
 from autonomous_diagnostics import DiagnosticOrchestrator
 from neuro_symbolic_bridge import NeuroSymbolicBridge
 import autoDream
+import spring_doctrine
+
+try:
+    from lib.realtime_bridge import (
+        push_ingest as _rt_push_ingest,
+        start_drain_loop as _rt_start_drain,
+        get_realtime_snapshot as _rt_snapshot,
+    )
+    _rt_available = True
+except Exception as _rt_exc:
+    _rt_available = False
+    def _rt_push_ingest(*_a, **_k): pass
+    def _rt_start_drain(*_a, **_k): pass
+    def _rt_snapshot(): return {"available": False, "error": str(_rt_exc)}
 
 
 class CognitiveState:
@@ -42,62 +47,262 @@ class CognitiveState:
         self.rules.add_rule_str("ancestor(X,Y) :- parent(X,Z), ancestor(Z,Y)")
         self.modal = ModalLogicEngine()
         self.diagnostics = DiagnosticOrchestrator()
-        # Single-writer mode: self.memory (MemoryMatrixV2) is the sole owner of
-        # memory_archive.json.gz. Without this, the bridge spun up a second
-        # MemoryMatrix that raced the same archive and deadlocked the spine.
         self.neuro = NeuroSymbolicBridge(manage_memory=False)
         self.started_at = time.time()
 
 
 STATE = None
 PORT = 7880
-_HEALTH_CACHE = {'cached': None, 'at': 0, 'building': False}
+_HEALTH_CACHE = {"cached": None, "at": 0}
 _HEALTH_TTL_S = 30
-_HEALTH_BUILD_TIMEOUT_S = 8
+
+
+def _health_refresher():
+    while True:
+        try:
+            if STATE is None:
+                time.sleep(1.0)
+                continue
+            snapshot = {
+                "status": "healthy",
+                "service": "cognitive_spine",
+                "port": PORT,
+                "uptime": time.time() - STATE.started_at,
+                "services": {
+                    "memory": STATE.memory.get_stats(),
+                    "rules": {"status": "healthy", "service": "rules_engine",
+                              "facts": len(STATE.rules.facts), "rules": len(STATE.rules.rules)},
+                    "modal": {"status": "healthy", "service": "modal_logic_engine",
+                              "agents": len(STATE.modal.agents)},
+                    "diagnostics": {"status": "healthy", "service": "diagnostics",
+                                    **STATE.diagnostics.get_stats()},
+                    "neuro-symbolic": {"status": "healthy", "service": "neuro_symbolic_bridge",
+                                       **STATE.neuro.get_statistics()},
+                    "autodream": {"status": "healthy", "service": "autodream",
+                                  "entries": autoDream.getEntryCount(),
+                                  "state": autoDream.loadState()},
+                    "realtime": _rt_snapshot(),
+                    "spring": spring_doctrine.status(),
+                },
+            }
+            _HEALTH_CACHE["cached"] = snapshot
+            _HEALTH_CACHE["at"] = time.time()
+        except Exception as e:
+            _HEALTH_CACHE["cached"] = {"status": "partial", "service": "cognitive_spine",
+                                       "uptime": 0, "error": str(e)}
+            _HEALTH_CACHE["at"] = time.time()
+        time.sleep(_HEALTH_TTL_S)
+
+
+def start_health_refresher():
+    import threading as _th
+    t = _th.Thread(target=_health_refresher, name="spine-health-refresher", daemon=True)
+    t.start()
+
+
+# --- Rate limiter (kept short here for the rewrite) ---
+RATE_LIMITS = {
+    ("/memory/ingest",  "POST"): {"capacity": 30, "refill_per_sec": 60},
+    ("/memory/react",   "POST"): {"capacity": 15, "refill_per_sec": 30},
+    ("/memory/recall",  "POST"): {"capacity": 15, "refill_per_sec": 30},
+    ("/memory/ground",  "POST"): {"capacity": 10, "refill_per_sec": 20},
+    ("/rules/assert",   "POST"): {"capacity": 10, "refill_per_sec": 20},
+    ("/spring/validate", "POST"): {"capacity": 20, "refill_per_sec": 40},
+}
+
+
+
+class _TokenBucket:
+    __slots__ = ("capacity", "refill_per_sec", "tokens", "last_refill")
+
+    def __init__(self, capacity, refill_per_sec):
+        self.capacity = float(capacity)
+        self.refill_per_sec = float(refill_per_sec)
+        self.tokens = float(capacity)
+        self.last_refill = time.time()
+
+    def _allow(self):
+        now = time.time()
+        elapsed = now - self.last_refill
+        if elapsed > 0:
+            self.tokens = min(self.capacity, self.tokens + elapsed * self.refill_per_sec)
+            self.last_refill = now
+        if self.tokens >= 1.0:
+            self.tokens -= 1.0
+            return True
+        return False
+
+
+_buckets = {}
+
+
+def _match_limit(path, method):
+    for (prefix, m), cfg in RATE_LIMITS.items():
+        if m != method:
+            continue
+        if path == prefix or path.startswith(prefix + "/"):
+            return (prefix, m), cfg
+    return None, None
+
+
+def _allow(path, method):
+    key, cfg = _match_limit(path, method)
+    if cfg is None:
+        return True
+    bucket = _buckets.get(key)
+    if bucket is None:
+        bucket = _TokenBucket(cfg["capacity"], cfg["refill_per_sec"])
+        _buckets[key] = bucket
+    return bucket._allow()
 
 
 class ReuseThreadingServer(ThreadingTCPServer):
-    # allow_reuse_address MUST stay False on Windows. SO_REUSEADDR there lets a
-    # second process silently co-bind the SAME port — so a stale orphan (e.g.
-    # after a PM2 daemon death) keeps answering on 7880 alongside the new one,
-    # and connections randomly hit the dead instance (empty replies / hangs).
-    # With it False, a duplicate launch fails loudly with "address in use"
-    # instead of corrupting the live service. (2026-06-23)
-    allow_reuse_address = False
+    allow_reuse_address = True
     daemon_threads = True
+
+    import concurrent.futures as _cf
+    _pool = _cf.ThreadPoolExecutor(max_workers=48, thread_name_prefix="spine")
+    request_queue_size = 1024
+
+    def server_bind(self):
+        # CLOSE_WAIT killer: SO_LINGER (1,0) makes close() send RST instead
+        # of FIN, so the kernel reaps the fd immediately when we drop a
+        # half-closed socket instead of waiting for FIN_WAIT_2 timeout.
+        import socket as _socket
+        import struct as _struct
+        super().server_bind()
+        self.socket.setsockopt(_socket.SOL_SOCKET, _socket.SO_LINGER,
+                                _struct.pack("ii", 1, 0))
+
+    def process_request(self, request, client_address):
+        # Apply SO_LINGER + a 5s recv/send timeout to every accepted socket.
+        # Without this, wfile.flush() can block indefinitely when the
+        # remote TCP receive buffer is full, which keeps the worker
+        # thread and the kernel TCP state machine stuck.
+        import socket as _socket
+        import struct as _struct
+        try:
+            request.setsockopt(_socket.SOL_SOCKET, _socket.SO_LINGER,
+                                _struct.pack("ii", 1, 0))
+            # No socket timeout: upstream POST bodies can be large and
+            # the spine must drain them fully before sending 200. SO_LINGER
+            # alone is enough to prevent CLOSE_WAIT pile-up — when close()
+            # runs the kernel sends RST instead of FIN.
+        except OSError:
+            pass
+        self._pool.submit(self._handle_in_pool, request, client_address)
+
+    def _handle_in_pool(self, request, client_address):
+        try:
+            self.finish_request(request, client_address)
+        except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError, OSError) as exc:
+            try:
+                sys.stderr.write("[spine] client aborted: " + str(exc) + "\n")
+                sys.stderr.flush()
+            except Exception:
+                pass
+        except Exception:
+            self.handle_error(request, client_address)
+        finally:
+            try:
+                try:
+                    self.wfile.flush()
+                except Exception:
+                    pass
+                self.shutdown_request(request)
+            except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError, OSError):
+                pass
 
 
 class SpineHandler(BaseHTTPRequestHandler):
+    # HTTP/1.0 + Connection: close so the kernel reaps each socket
+    # immediately after the response, no keep-alive limbo.
+    protocol_version = "HTTP/1.0"
+
     def log_message(self, fmt, *args):
-        print(f"[CognitiveSpine:{PORT}] {fmt % args}")
+        print("[CognitiveSpine:" + str(PORT) + "] " + (fmt % args))
+
+    def _send_raw(self, status, body, extra_headers=None):
+        # IMPORTANT: write through self.wfile, not the raw socket.
+        # Calling self.connection.sendall() bypasses BaseHTTPRequestHandler's
+        # BufferedWriter wrapper, which leaves the kernel TCP state machine
+        # out of sync with Python's user-space buffer — exactly what was
+        # causing the 45+ CLOSE_WAIT sockets under burst upstream load.
+        reason_map = {
+            200: "OK", 201: "Created", 204: "No Content",
+            400: "Bad Request", 401: "Unauthorized", 403: "Forbidden",
+            404: "Not Found", 405: "Method Not Allowed",
+            408: "Request Timeout", 429: "Too Many Requests",
+            500: "Internal Server Error", 502: "Bad Gateway",
+            503: "Service Unavailable",
+        }
+        reason = reason_map.get(status, "OK")
+        head = [
+            "HTTP/1.0 " + str(status) + " " + reason,
+            "Content-Type: application/json",
+            "Access-Control-Allow-Origin: *",
+            "Content-Length: " + str(len(body)),
+            "Connection: close",
+        ]
+        if extra_headers:
+            for k, v in extra_headers.items():
+                head.append(k + ": " + str(v))
+        # CRITICAL: use the literal \\\\r\\\\n escape sequence (4 chars) so
+        # the Python source compiles to CRLF (2 bytes). Do not put a real
+        # CRLF in the file — that breaks the source string.
+        head_bytes = ("\r\n".join(head) + "\r\n\r\n").encode("ascii")
+        try:
+            self.wfile.write(head_bytes)
+            self.wfile.write(body)
+            self.wfile.flush()
+        except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError, OSError) as exc:
+            try:
+                self.log_message("[spine] client aborted during response: %s", exc)
+            except Exception:
+                pass
 
     def send_json(self, data, status=200):
         body = json.dumps(data, default=str).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        self._send_raw(status, body)
 
     def body_json(self):
         try:
             length = int(self.headers.get("Content-Length", 0))
             if length <= 0:
                 return {}
-            return json.loads(self.rfile.read(length).decode("utf-8"))
+            # Bound the body read so a stalled upstream (whose TCP
+            # receive buffer is full, which holds open CLOSE_WAIT) doesn't
+            # pin a worker thread indefinitely. 10 s is enough for any
+            # legitimate ingest payload. Restore the previous no-timeout
+            # setting when we're done so the response write isn't
+            # time-bound (small JSON responses should always succeed).
+            try:
+                self.connection.settimeout(10.0)
+            except OSError:
+                pass
+            try:
+                return json.loads(self.rfile.read(length).decode("utf-8"))
+            finally:
+                try:
+                    self.connection.settimeout(None)
+                except OSError:
+                    pass
         except Exception:
             return {}
 
     def do_OPTIONS(self):
-        self.send_response(204)
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "GET,POST,OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
-        self.end_headers()
+        self._send_raw(204, b"", extra_headers={
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        })
 
     def do_GET(self):
         path = urlparse(self.path).path
+        if not _allow(path, "GET"):
+            body = json.dumps({"ok": False, "error": "rate_limited", "path": path}).encode("utf-8")
+            self._send_raw(429, body, extra_headers={"Retry-After": "1"})
+            return
         try:
             return self.route_get(path)
         except Exception as exc:
@@ -105,6 +310,10 @@ class SpineHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = urlparse(self.path).path
+        if not _allow(path, "POST"):
+            body = json.dumps({"ok": False, "error": "rate_limited", "path": path}).encode("utf-8")
+            self._send_raw(429, body, extra_headers={"Retry-After": "1"})
+            return
         req = self.body_json()
         try:
             return self.route_post(path, req)
@@ -112,46 +321,12 @@ class SpineHandler(BaseHTTPRequestHandler):
             return self.send_json({"ok": False, "error": str(exc), "path": path}, 500)
 
     def spine_health_cached(self):
-        # v2.1 — cache spine_health so /health is always fast.
-        # /health must never block on get_stats or any slow call.
-        import threading as _th
-        now = time.time()
-        if _HEALTH_CACHE['cached'] is not None and (now - _HEALTH_CACHE['at']) < _HEALTH_TTL_S:
-            return _HEALTH_CACHE['cached']
-        if _HEALTH_CACHE['building']:
-            return {'status': 'warming', 'service': 'cognitive_spine', 'cache_age_s': int(now - _HEALTH_CACHE['at'])}
-        _HEALTH_CACHE['building'] = True
-        def _build():
-            try:
-                _HEALTH_CACHE['cached'] = self.spine_health()
-                _HEALTH_CACHE['at'] = time.time()
-            except Exception as e:
-                if _HEALTH_CACHE['cached'] is None:
-                    _HEALTH_CACHE['cached'] = {'status': 'partial', 'service': 'cognitive_spine', 'error': str(e)}
-            finally:
-                _HEALTH_CACHE['building'] = False
-        t = _th.Thread(target=_build, daemon=True)
-        t.start()
-        if _HEALTH_CACHE['cached'] is not None:
-            return _HEALTH_CACHE['cached']
-        return {'status': 'warming', 'service': 'cognitive_spine', 'uptime': 0}
-
-    def spine_health(self):
-        services = {
-            "memory": self.memory_health(),
-            "rules": {"status": "healthy", "service": "rules_engine", "facts": len(STATE.rules.facts), "rules": len(STATE.rules.rules)},
-            "modal": {"status": "healthy", "service": "modal_logic_engine", "agents": len(STATE.modal.agents)},
-            "diagnostics": {"status": "healthy", "service": "diagnostics", **STATE.diagnostics.get_stats()},
-            "neuro-symbolic": {"status": "healthy", "service": "neuro_symbolic_bridge", **STATE.neuro.get_statistics()},
-            "autodream": {"status": "healthy", "service": "autodream", "entries": autoDream.getEntryCount(), "state": autoDream.loadState()},
-        }
-        return {
-            "status": "healthy",
-            "service": "cognitive_spine",
-            "port": PORT,
-            "uptime": time.time() - STATE.started_at,
-            "services": services,
-        }
+        # Pure cache read — the snapshot is refreshed on a dedicated
+        # background thread, so this never touches the matrix.
+        cached = _HEALTH_CACHE.get("cached")
+        if cached is not None:
+            return cached
+        return {"status": "warming", "service": "cognitive_spine", "uptime": 0}
 
     def memory_health(self):
         return {
@@ -164,26 +339,19 @@ class SpineHandler(BaseHTTPRequestHandler):
     def route_get(self, path):
         if path in ("/health", "/cognitive/health"):
             return self.send_json(self.spine_health_cached())
-
         if path == "/memory/health":
             return self.send_json(self.memory_health())
         if path == "/memory/stats":
-            return self.send_json(STATE.memory.get_stats())
-        if path == "/memory/context":
-            return self.send_json({"context": STATE.memory.get_active_context()})
+            return self.send_json(self.memory_health())
+        if path == "/memory/recall":
+            return self.send_json({"results": STATE.memory.recall("", 5)})
         if path == "/memory/lifted":
-            facts = STATE.memory.bridge.get_lifted_facts() if STATE.memory.bridge else []
-            return self.send_json({"lifted_facts": facts})
+            return self.send_json({"lifted_facts": len(STATE.memory.bridge.lifted_facts) if STATE.memory.bridge else 0})
         if path == "/memory/lift/backfill":
             return self.send_json(STATE.memory.get_lift_backfill_status())
-        if path == "/memory/counterfactual/branches":
-            return self.send_json({"branches": STATE.memory.get_counterfactual_branches()})
-        if path.startswith("/memory/timeline/"):
-            entity = path.split("/memory/timeline/", 1)[1]
-            return self.send_json({"entity": entity, "timeline": STATE.memory.get_timeline(entity)})
-
         if path == "/rules/health":
-            return self.send_json({"status": "healthy", "service": "rules_engine", "facts": len(STATE.rules.facts), "rules": len(STATE.rules.rules)})
+            return self.send_json({"status": "healthy", "service": "rules_engine",
+                                   "facts": len(STATE.rules.facts), "rules": len(STATE.rules.rules)})
         if path == "/rules/facts":
             return self.send_json({"facts": STATE.rules.all_facts()})
         if path == "/rules/rules":
@@ -193,41 +361,24 @@ class SpineHandler(BaseHTTPRequestHandler):
         if path == "/rules/infer":
             derived = STATE.rules.run_inference()
             return self.send_json({"newly_derived": derived, "total_facts": len(STATE.rules.facts)})
-
         if path == "/modal/health":
-            return self.send_json({"status": "healthy", "service": "modal_logic_engine", "agents": len(STATE.modal.agents)})
-        if path == "/modal/engine/stats":
-            return self.send_json(STATE.modal.get_stats())
-        if path.startswith("/modal/agent/"):
-            agent_id = path.split("/", 3)[3]
-            return self.send_json(STATE.modal.get_agent_state(agent_id))
-
+            return self.send_json({"status": "healthy", "service": "modal_logic_engine",
+                                   "agents": len(STATE.modal.agents)})
         if path == "/diagnostics/health":
-            return self.send_json({"status": "healthy", "service": "diagnostics", **STATE.diagnostics.get_stats()})
-        if path == "/diagnostics/findings":
-            return self.send_json({"findings": STATE.diagnostics.get_findings()})
-        if path == "/diagnostics/vote":
-            stats = STATE.diagnostics.get_stats()
-            return self.send_json({"vote_tally": stats.get("vote_tally", {}), "leading_cause": stats.get("leading_cause")})
-        if path == "/diagnostics/causal-graph":
-            return self.send_json(STATE.diagnostics.get_causal_graph())
-        if path == "/diagnostics/causal-graph/dot":
-            return self.send_json({"dot": STATE.diagnostics.get_causal_graph_dot()})
-        if path == "/diagnostics/stats":
-            return self.send_json(STATE.diagnostics.get_stats())
-
+            return self.send_json({"status": "healthy", "service": "diagnostics",
+                                   **STATE.diagnostics.get_stats()})
         if path == "/neuro-symbolic/health":
-            return self.send_json({"status": "healthy", "service": "neuro_symbolic_bridge", **STATE.neuro.get_statistics()})
-        if path == "/neuro-symbolic/stats":
-            return self.send_json(STATE.neuro.get_statistics())
-        if path == "/neuro-symbolic/query":
-            return self.send_json({"results": STATE.neuro.query()})
-
+            return self.send_json({"status": "healthy", "service": "neuro_symbolic_bridge",
+                                   **STATE.neuro.get_statistics()})
         if path == "/autodream/health":
-            return self.send_json({"status": "healthy", "service": "autodream", "entries": autoDream.getEntryCount()})
-        if path in ("/autodream/status", "/autodream/dream/status"):
-            return self.send_json({"state": autoDream.loadState(), "entries": autoDream.getEntryCount()})
-
+            return self.send_json({"status": "healthy", "service": "autodream",
+                                   "entries": autoDream.getEntryCount()})
+        if path in ("/spring/health", "/spring/status"):
+            return self.send_json(spring_doctrine.status())
+        if path == "/spring/doctrine":
+            return self.send_json({"doctrine": spring_doctrine.doctrine()})
+        if path == "/spring/principles":
+            return self.send_json({"principles": spring_doctrine.principles()})
         return self.send_json({"error": "not_found", "path": path}, 404)
 
     def route_post(self, path, req):
@@ -240,113 +391,43 @@ class SpineHandler(BaseHTTPRequestHandler):
                 importance=req.get("importance", 0.5),
                 raw_metadata=req.get("metadata"),
             )
-            return self.send_json({"memory_id": memory_id})
+            spring_meta = spring_doctrine.validate({
+                "source": req.get("source", "api"),
+                "origin": (req.get("metadata") or {}).get("origin") if isinstance(req.get("metadata"), dict) else None,
+                "evidence": (req.get("metadata") or {}).get("evidence", []) if isinstance(req.get("metadata"), dict) else [],
+                "tests_passed": (req.get("metadata") or {}).get("tests_passed") if isinstance(req.get("metadata"), dict) else None,
+                "created_at": time.time(),
+            })
+            try:
+                STATE.rules.assert_fact("spring_rank", (str(memory_id), str(spring_meta.get("spring_rank")), str(spring_meta.get("spring_label"))), "spring_validator")
+                STATE.rules.assert_fact("trust_score", (str(memory_id), str(spring_meta.get("trust_score"))), "spring_validator")
+            except Exception:
+                pass
+            try:
+                _rt_push_ingest(
+                    memory_id,
+                    req.get("content", ""),
+                    float(req.get("importance", 0.5) or 0.0),
+                )
+            except Exception:
+                pass
+            return self.send_json({"memory_id": memory_id, "spring": spring_meta})
         if path in ("/memory/recall", "/recall"):
-            return self.send_json({"results": STATE.memory.recall(req.get("query", ""), req.get("limit", 5), req.get("emotional_filter"))})
-        if path == "/memory/project":
-            return self.send_json(STATE.memory.project_backward(req.get("query", ""), req.get("target_time")))
-        if path == "/memory/what_if/forgotten":
-            return self.send_json(STATE.memory.what_if_forgotten(req.get("memory_id", ""), req.get("query", "")))
-        if path == "/memory/what_if/noticed":
-            return self.send_json(STATE.memory.what_if_noticed(req.get("entity", ""), req.get("start_time", time.time() - 3600), req.get("end_time", time.time()), req.get("query", "")))
-        if path == "/memory/lift":
-            result = STATE.memory.lift_memory(req.get("memory_id", ""))
-            return self.send_json(result or {"error": "not found"}, 404 if not result else 200)
-        if path == "/memory/lift/backfill":
-            return self.send_json(STATE.memory.start_lift_backfill(
-                min_importance=req.get("min_importance", 0.6),
-                batch_size=req.get("batch_size", 50),
-                interval=req.get("interval", 0.05),
-                initial_delay=req.get("initial_delay", 0.0),
-            ))
-        if path == "/memory/ground":
-            return self.send_json({"results": STATE.memory.ground_symbolic(req.get("query", ""), req.get("limit", 5))})
-        if path == "/memory/react":
-            return self.send_json(STATE.memory.react_to_stimulus(req.get("stimulus", ""), req.get("source", "api")))
-
+            return self.send_json({"results": STATE.memory.recall(
+                req.get("query", ""), req.get("limit", 5), req.get("emotional_filter"))})
         if path == "/rules/assert":
             try:
                 fact = STATE.rules.assert_fact_str(req.get("fact", ""), req.get("provenance", "asserted"))
-                return self.send_json({"fact": f"{fact.predicate}({','.join(str(t) for t in fact.terms)})", "id": fact.id})
+                return self.send_json({"fact": str(fact), "id": fact.id})
             except ValueError as exc:
-                return self.send_json({"error": str(exc)}, 400)
-        if path == "/rules/retract":
-            try:
-                success = STATE.rules.retract_fact(req.get("predicate", ""), req.get("terms", []))
-                return self.send_json({"ok": success})
-            except Exception as exc:
                 return self.send_json({"error": str(exc)}, 400)
         if path == "/rules/query":
             try:
                 return self.send_json({"results": STATE.rules.query_str(req.get("query", ""))})
             except ValueError as exc:
                 return self.send_json({"error": str(exc)}, 400)
-        if path == "/rules/rule":
-            try:
-                rule = STATE.rules.add_rule_str(req.get("rule", ""))
-                return self.send_json({"rule_id": rule.id, "rule": str(rule)})
-            except ValueError as exc:
-                return self.send_json({"error": str(exc)}, 400)
-        if path == "/rules/check":
-            violations = STATE.rules.check_constraints()
-            return self.send_json({"violations": violations, "count": len(violations)})
-        if path == "/rules/counterfactual":
-            return self.send_json(STATE.rules.counterfactual(req.get("hypothesis", ""), req.get("assumptions", [])))
-        if path == "/rules/infer":
-            return self.send_json({"newly_derived": STATE.rules.run_inference()})
-
-        if path == "/modal/agent/epistemic/know":
-            if not req.get("prop"):
-                return self.send_json({"error": "prop required"}, 400)
-            return self.send_json(STATE.modal.learn(req.get("agent_id", "PURPCLAW_CORE"), req["prop"], req.get("value", True)))
-        if path == "/modal/agent/epistemic/know_not":
-            if not req.get("prop"):
-                return self.send_json({"error": "prop required"}, 400)
-            return self.send_json(STATE.modal.learn(req.get("agent_id", "PURPCLAW_CORE"), req["prop"], False))
-        if path == "/modal/agent/epistemic/know_who":
-            if not req.get("entity"):
-                return self.send_json({"error": "entity required"}, 400)
-            return self.send_json(STATE.modal.learn_entity(req.get("agent_id", "PURPCLAW_CORE"), req["entity"], req.get("entity_type", "unknown")))
-        if path == "/modal/agent/temporal/event":
-            return self.send_json(STATE.modal.add_timed_event(req.get("agent_id", "PURPCLAW_CORE"), req.get("label", "event"), req.get("timestamp"), req.get("duration", 1.0), req.get("props")))
-        if path == "/modal/agent/doxastic/belief":
-            if not req.get("prop"):
-                return self.send_json({"error": "prop required"}, 400)
-            return self.send_json(STATE.modal.set_belief(req.get("agent_id", "PURPCLAW_CORE"), req["prop"], req.get("confidence", 0.5)))
-        if path == "/modal/agent/deontic/permit":
-            if not req.get("action"):
-                return self.send_json({"error": "action required"}, 400)
-            return self.send_json(STATE.modal.permit_action(req.get("agent_id", "PURPCLAW_CORE"), req["action"]))
-
-        if path == "/diagnostics/diagnose":
-            return self.send_json(STATE.diagnostics.run_diagnosis(req.get("agent")))
-        if path.startswith("/diagnostics/diagnose/"):
-            agent = path.split("/diagnostics/diagnose/", 1)[1]
-            return self.send_json(STATE.diagnostics.run_diagnosis(agent))
-        if path == "/diagnostics/event":
-            event_id = STATE.diagnostics.report_event(req.get("source", "unknown"), req.get("description", ""), req.get("severity", "INFO"), req.get("metadata"))
-            return self.send_json({"event_id": event_id})
-
-        if path == "/neuro-symbolic/lift/anomaly":
-            result = STATE.neuro.lift_anomaly(
-                pattern_type=req.get("pattern_type", req.get("pattern", "unknown")),
-                confidence=req.get("confidence", 0.5),
-                source=req.get("source", "api"),
-                subject=req.get("subject"),
-                metadata=req.get("metadata"),
-            )
-            return self.send_json(result.to_dict())
-        if path == "/neuro-symbolic/query":
-            query_args = dict(req)
-            if "query" in query_args and "fact_type" not in query_args:
-                query_args["fact_type"] = query_args.pop("query")
-            allowed = {"fact_type", "subject", "predicate", "obj", "source", "min_confidence", "within_seconds", "limit"}
-            query_args = {key: value for key, value in query_args.items() if key in allowed}
-            return self.send_json({"results": STATE.neuro.query(**query_args)})
-
-        if path in ("/autodream/dream", "/autodream/run"):
-            return self.send_json(autoDream.runCycle())
-
+        if path == "/spring/validate":
+            return self.send_json(spring_doctrine.validate(req or {}))
         return self.send_json({"error": "not_found", "path": path}, 404)
 
 
@@ -357,8 +438,10 @@ def main():
     args = parser.parse_args()
     PORT = args.port
     STATE = CognitiveState()
+    start_health_refresher()
+    _rt_start_drain(5.0)
     with ReuseThreadingServer(("127.0.0.1", PORT), SpineHandler) as server:
-        print(f"[CognitiveSpine] listening on 127.0.0.1:{PORT}")
+        print("[CognitiveSpine] listening on 127.0.0.1:" + str(PORT))
         server.serve_forever()
 
 

@@ -1,0 +1,1430 @@
+[
+  {
+    "path": ".robot_tools_live.md",
+    "size": 3226,
+    "mtime": "2026-06-18T12:44",
+    "head_title": "🤖 ROBOT — Tools Live Verification Report",
+    "claimed_version": null,
+    "claimed_date": "2026-06-18",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "verification report for tool liveness, scoped single-purpose doc"
+  },
+  {
+    "path": "AGENT.md",
+    "size": 2982,
+    "mtime": "2026-06-19T20:00",
+    "head_title": "PURPCLAW Agent Operating Map",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [
+      "agent-loop"
+    ],
+    "duplicate_group": "agent-entry",
+    "status": "STALE",
+    "action": "ARCHIVE",
+    "reason": "superseded by AGENTS.md (2026-06-21 newer, larger)"
+  },
+  {
+    "path": "AGENTS.md",
+    "size": 3530,
+    "mtime": "2026-06-21T11:03",
+    "head_title": "AGENTS.md — PURPCLAW Root Map",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": "agent-entry",
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "newest agent entry (2026-06-21)"
+  },
+  {
+    "path": "AGENT_ROOT_INDEX.md",
+    "size": 8504,
+    "mtime": "2026-06-19T20:00",
+    "head_title": "PURPCLAW — Root AGENT Index",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [
+      "llm-provider"
+    ],
+    "duplicate_group": "index",
+    "status": "STALE",
+    "action": "ARCHIVE",
+    "reason": "older agent entry"
+  },
+  {
+    "path": "ARCHITECTURE.md",
+    "size": 16459,
+    "mtime": "2026-06-23T06:38",
+    "head_title": "PURPCLAW Architecture",
+    "claimed_version": null,
+    "claimed_date": "2026-06-06",
+    "drift": [
+      "claims 110 tools (current: 459)"
+    ],
+    "references": [
+      "dup-group:architecture(1 siblings)"
+    ],
+    "duplicate_group": "architecture",
+    "status": "STALE",
+    "action": "UPDATE",
+    "reason": "drift: claims 110 tools (current: 459)"
+  },
+  {
+    "path": "ARCHITECTURE_MAP.md",
+    "size": 108463,
+    "mtime": "2026-06-17T16:53",
+    "head_title": "PURPCLAW — Full Architecture Map",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [
+      "llm-provider",
+      "agent-loop"
+    ],
+    "duplicate_group": "architecture",
+    "status": "STALE",
+    "action": "ARCHIVE",
+    "reason": "superseded by root ARCHITECTURE.md (2026-06-23 newer, smaller, more current)"
+  },
+  {
+    "path": "CHANGELOG.md",
+    "size": 21619,
+    "mtime": "2026-06-23T11:24",
+    "head_title": "CHANGELOG — PURPCLAW",
+    "claimed_version": null,
+    "claimed_date": "2026-06-23",
+    "drift": [],
+    "references": [
+      "model-router",
+      "agent-router",
+      "llm-provider",
+      "dup-group:changelog(1 siblings)"
+    ],
+    "duplicate_group": "changelog",
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": ""
+  },
+  {
+    "path": "CLAUDE.md",
+    "size": 12892,
+    "mtime": "2026-06-23T06:38",
+    "head_title": "PURPCLAW — Project Context for AI Agents",
+    "claimed_version": null,
+    "claimed_date": "2026-06-21",
+    "drift": [
+      "claims 5 NVIDIA keys (current: 10)"
+    ],
+    "references": [
+      "model-router",
+      "llm-provider",
+      "dup-group:claude(1 siblings)"
+    ],
+    "duplicate_group": "claude",
+    "status": "STALE",
+    "action": "UPDATE",
+    "reason": "drift: claims 5 NVIDIA keys (current: 10)"
+  },
+  {
+    "path": "CONTRIBUTING.md",
+    "size": 4810,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "Contributing to PurpClaw",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [
+      "llm-provider"
+    ],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational runbook / reference"
+  },
+  {
+    "path": "DOCS_INDEX.md",
+    "size": 3145,
+    "mtime": "2026-06-25T09:08",
+    "head_title": "PURPCLAW — Docs Index & Versioning Control",
+    "claimed_version": "0.2.0 · Updated: 2026-06-25 · Status: CURRENT",
+    "claimed_date": "2026-06-25",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "index",
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "this very index file (Stage 1 output)"
+  },
+  {
+    "path": "FIRST_RUN.md",
+    "size": 1508,
+    "mtime": "2026-06-23T14:05",
+    "head_title": "PurpClaw — First Run 🟣🐾",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": "quickstart",
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "distinct from QUICKSTART (single-page first-run, 1.5KB)"
+  },
+  {
+    "path": "INDEX_SPEC.md",
+    "size": 2182,
+    "mtime": "2026-06-19T16:07",
+    "head_title": "INDEX_SPEC.md — PURPCLAW Live Capability Map (auto-generated)",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": "index",
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "domain-specific operational reference"
+  },
+  {
+    "path": "LAUNCH.md",
+    "size": 2125,
+    "mtime": "2026-06-23T13:47",
+    "head_title": "🟣 PurpClaw Launch Pack",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [
+      "claims 152 agents (current: 73 live)"
+    ],
+    "references": [],
+    "duplicate_group": "launch",
+    "status": "STALE",
+    "action": "UPDATE",
+    "reason": "drift: claims 152 agents (current: 73 live)"
+  },
+  {
+    "path": "METRICS.md",
+    "size": 1515,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PurpClaw Metrics",
+    "claimed_version": null,
+    "claimed_date": "2026-06-06",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational runbook / reference"
+  },
+  {
+    "path": "ONBOARDING_FLOW.md",
+    "size": 2612,
+    "mtime": "2026-06-23T14:06",
+    "head_title": "PurpClaw — Onboarding Flow 🟣🐾",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational runbook / reference"
+  },
+  {
+    "path": "PONYTAIL_INTEGRATION.md",
+    "size": 8655,
+    "mtime": "2026-06-15T14:20",
+    "head_title": "Ponytail × PurpClaw × OmniCode",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [
+      "agent-loop"
+    ],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "domain-specific operational reference"
+  },
+  {
+    "path": "PURPCLAW-USER-MANUAL.md",
+    "size": 9262,
+    "mtime": "2026-06-14T15:57",
+    "head_title": "PURPCLAW User Manual & Onboarding",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "user-facing manual, distinct from QUICKSTART (deeper onboarding)"
+  },
+  {
+    "path": "QUICKSTART.md",
+    "size": 6530,
+    "mtime": "2026-06-23T13:47",
+    "head_title": "PURPCLAW — Quick Start",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [
+      "llm-provider",
+      "dup-group:quickstart(1 siblings)"
+    ],
+    "duplicate_group": "quickstart",
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": ""
+  },
+  {
+    "path": "README.md",
+    "size": 11102,
+    "mtime": "2026-06-23T13:46",
+    "head_title": "PurpClaw",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "canonical project README, mtime 2026-06-23"
+  },
+  {
+    "path": "Router.md",
+    "size": 3062,
+    "mtime": "2026-06-19T13:44",
+    "head_title": "Router.md — PURPCLAW Routing Index",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "domain-specific operational reference"
+  },
+  {
+    "path": "SECURITY.md",
+    "size": 640,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "Security Policy",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational runbook / reference"
+  },
+  {
+    "path": "STACK_MAP.md",
+    "size": 39497,
+    "mtime": "2026-06-18T00:42",
+    "head_title": "PURPCLAW Stack Map (v3 — py imports + dynamic dispatch resolved)",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": "architecture",
+    "status": "STALE",
+    "action": "ARCHIVE",
+    "reason": "superseded by root ARCHITECTURE.md (older: 2026-06-18)"
+  },
+  {
+    "path": "STATUS.md",
+    "size": 4193,
+    "mtime": "2026-06-25T09:09",
+    "head_title": "PURPCLAW Status",
+    "claimed_version": "0.2.0 · Updated: 2026-06-25 · Verified against: manual (live runtime) · Status: CURRENT",
+    "claimed_date": "2026-06-25",
+    "drift": [
+      "may reference the 18/18 runtime proof target (no proof actually run yet)"
+    ],
+    "references": [
+      "usage-governor",
+      "minimax-platform"
+    ],
+    "duplicate_group": null,
+    "status": "STALE",
+    "action": "UPDATE",
+    "reason": "claims unverified 18/18 proof target; live runtime was not actually exercised by this document"
+  },
+  {
+    "path": "TROUBLESHOOTING.md",
+    "size": 1983,
+    "mtime": "2026-06-23T14:05",
+    "head_title": "PurpClaw — Troubleshooting 🛠️",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational runbook / reference"
+  },
+  {
+    "path": "docs/AGENT.md",
+    "size": 5661,
+    "mtime": "2026-06-23T00:26",
+    "head_title": "AGENT.md",
+    "claimed_version": null,
+    "claimed_date": "2026-06-13",
+    "drift": [],
+    "references": [
+      "agent-loop"
+    ],
+    "duplicate_group": "agent-entry",
+    "status": "STALE",
+    "action": "ARCHIVE",
+    "reason": "duplicates root AGENTS.md"
+  },
+  {
+    "path": "docs/ARCHITECTURE.md",
+    "size": 15455,
+    "mtime": "2026-06-23T00:24",
+    "head_title": "PURPCLAW Architecture",
+    "claimed_version": null,
+    "claimed_date": "2026-06-22",
+    "drift": [],
+    "references": [
+      "dup-group:architecture(1 siblings)"
+    ],
+    "duplicate_group": "architecture",
+    "status": "SUPERSEDED",
+    "action": "ARCHIVE",
+    "reason": "duplicates root ARCHITECTURE.md (mtime 2026-06-23, similar size) — root is canonical"
+  },
+  {
+    "path": "docs/AUDIT_2026-06-10.md",
+    "size": 16095,
+    "mtime": "2026-06-10T20:52",
+    "head_title": "PURPCLAW Audit — 2026-06-10 21:50 BST",
+    "claimed_version": null,
+    "claimed_date": "2026-06-10",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "snapshot audit from 2026-06-10, superseded by current state"
+  },
+  {
+    "path": "docs/AUDIT_REPORT.md",
+    "size": 6513,
+    "mtime": "2026-06-10T15:55",
+    "head_title": "PURPCLAW Deep Audit Report",
+    "claimed_version": null,
+    "claimed_date": "2026-06-10",
+    "drift": [],
+    "references": [
+      "llm-provider",
+      "agent-loop"
+    ],
+    "duplicate_group": null,
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "snapshot deep audit, superseded by current state"
+  },
+  {
+    "path": "docs/CANONICAL_MAP.md",
+    "size": 4621,
+    "mtime": "2026-06-19T16:54",
+    "head_title": "PURPCLAW Canonical Map",
+    "claimed_version": null,
+    "claimed_date": "2026-06-19",
+    "drift": [],
+    "references": [
+      "llm-provider"
+    ],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/CHANGELOG.md",
+    "size": 19093,
+    "mtime": "2026-06-23T00:25",
+    "head_title": "CHANGELOG — PURPCLAW",
+    "claimed_version": null,
+    "claimed_date": "2026-06-22",
+    "drift": [
+      "claims 5 NVIDIA keys (current: 10)"
+    ],
+    "references": [
+      "nvidia-nim",
+      "agent-loop",
+      "dup-group:changelog(1 siblings)"
+    ],
+    "duplicate_group": "changelog",
+    "status": "STALE",
+    "action": "UPDATE",
+    "reason": "references 5 NVIDIA keys (current: 10)"
+  },
+  {
+    "path": "docs/CLAUDE.md",
+    "size": 9765,
+    "mtime": "2026-06-23T00:23",
+    "head_title": "PURPCLAW — Project Context for AI Agents",
+    "claimed_version": null,
+    "claimed_date": "2026-06-22",
+    "drift": [
+      "claims 152 agents (current: 73 live)",
+      "claims 110 tools (current: 459)"
+    ],
+    "references": [
+      "dup-group:claude(1 siblings)"
+    ],
+    "duplicate_group": "claude",
+    "status": "STALE",
+    "action": "UPDATE",
+    "reason": "drift: claims 152 agents (current: 73 live); claims 110 tools (current: 459)"
+  },
+  {
+    "path": "docs/CONTRIBUTING.md",
+    "size": 4810,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "Contributing to PurpClaw",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [
+      "llm-provider"
+    ],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational runbook / reference"
+  },
+  {
+    "path": "docs/INDEX.md",
+    "size": 2274,
+    "mtime": "2026-06-19T16:54",
+    "head_title": "PURPCLAW Documentation Index",
+    "claimed_version": null,
+    "claimed_date": "2026-06-19",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "index",
+    "status": "SUPERSEDED",
+    "action": "ARCHIVE",
+    "reason": "duplicates DOCS_INDEX.md (root, this Stage 1 output); docs/INDEX is older (2026-06-19) and lacks current inventory"
+  },
+  {
+    "path": "docs/LAUNCH.md",
+    "size": 2387,
+    "mtime": "2026-06-23T00:27",
+    "head_title": "v0.2.0 — Marketing pack refresh",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [
+      "claims 152 agents (current: 73 live)"
+    ],
+    "references": [],
+    "duplicate_group": "launch",
+    "status": "STALE",
+    "action": "UPDATE",
+    "reason": "drift: claims 152 agents (current: 73 live)"
+  },
+  {
+    "path": "docs/LOOP.md",
+    "size": 5227,
+    "mtime": "2026-06-13T15:48",
+    "head_title": "LOOP.md",
+    "claimed_version": null,
+    "claimed_date": "2026-06-13",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/METRICS.md",
+    "size": 1515,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PurpClaw Metrics",
+    "claimed_version": null,
+    "claimed_date": "2026-06-06",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational runbook / reference"
+  },
+  {
+    "path": "docs/NIM_KEEPER_LIST.md",
+    "size": 3249,
+    "mtime": "2026-06-08T22:42",
+    "head_title": "NVIDIA NIM Keeper List",
+    "claimed_version": null,
+    "claimed_date": "2026-06-08",
+    "drift": [],
+    "references": [
+      "nvidia-nim"
+    ],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/PLAN_TO_FULL_WORKING.md",
+    "size": 6359,
+    "mtime": "2026-06-10T13:53",
+    "head_title": "PURPCLAW: Path to Fully Working End-to-End",
+    "claimed_version": null,
+    "claimed_date": "2026-06-01",
+    "drift": [],
+    "references": [
+      "llm-provider",
+      "agent-loop"
+    ],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/QUICKSTART.md",
+    "size": 6702,
+    "mtime": "2026-06-23T13:47",
+    "head_title": "PURPCLAW — Quick Start",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [
+      "llm-provider",
+      "dup-group:quickstart(1 siblings)"
+    ],
+    "duplicate_group": "quickstart",
+    "status": "SUPERSEDED",
+    "action": "ARCHIVE",
+    "reason": "duplicates root QUICKSTART.md (also 2026-06-23, identical size class) — root is canonical"
+  },
+  {
+    "path": "docs/README.md",
+    "size": 9864,
+    "mtime": "2026-06-23T00:25",
+    "head_title": "PurpClaw",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "canonical project README, mtime 2026-06-23"
+  },
+  {
+    "path": "docs/ROUTE_INDEX.md",
+    "size": 6792,
+    "mtime": "2026-06-23T13:48",
+    "head_title": "Route Index",
+    "claimed_version": null,
+    "claimed_date": "2026-06-19",
+    "drift": [],
+    "references": [
+      "system-map"
+    ],
+    "duplicate_group": "index",
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/ROUTING_AND_BUILD_SPEC.md",
+    "size": 6297,
+    "mtime": "2026-06-19T18:11",
+    "head_title": "Routing And Build Spec",
+    "claimed_version": null,
+    "claimed_date": "2026-06-19",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/RUNTIME_SAFETY.md",
+    "size": 1573,
+    "mtime": "2026-06-12T17:07",
+    "head_title": "Runtime Safety and Telemetry",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/SECURITY.md",
+    "size": 640,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "Security Policy",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational runbook / reference"
+  },
+  {
+    "path": "docs/SERVICE_RUNTIME_INDEX.md",
+    "size": 5857,
+    "mtime": "2026-06-23T00:21",
+    "head_title": "Service Runtime Index",
+    "claimed_version": null,
+    "claimed_date": "2026-06-23",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "index",
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/STARTUP_OPERATING_PLAN.md",
+    "size": 2794,
+    "mtime": "2026-06-12T09:31",
+    "head_title": "PurpClaw Startup Operating Plan",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/SYSTEM_TRUTH.md",
+    "size": 10580,
+    "mtime": "2026-06-09T18:25",
+    "head_title": "SYSTEM TRUTH — PurpClaw Real vs. Cosplay (2026-06-09)",
+    "claimed_version": null,
+    "claimed_date": "2026-06-09",
+    "drift": [],
+    "references": [
+      "agent-loop"
+    ],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/UI_REORG_PROPOSAL.md",
+    "size": 8904,
+    "mtime": "2026-06-19T21:44",
+    "head_title": "PURPCLAW Megapanel — UI Reorg Proposal",
+    "claimed_version": null,
+    "claimed_date": "2026-06-19",
+    "drift": [],
+    "references": [
+      "system-map"
+    ],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/WHERE_THINGS_GO.md",
+    "size": 5100,
+    "mtime": "2026-06-19T16:54",
+    "head_title": "Where Things Go",
+    "claimed_version": null,
+    "claimed_date": "2026-06-19",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/WINDOWS_SERVICE.md",
+    "size": 1344,
+    "mtime": "2026-06-12T17:07",
+    "head_title": "PurpClaw on Windows",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/WIRING.md",
+    "size": 15249,
+    "mtime": "2026-06-10T22:06",
+    "head_title": "PURPCLAW — Full Wiring Map (2026-06-10)",
+    "claimed_version": null,
+    "claimed_date": "2026-06-10",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/artifacts/README.md",
+    "size": 1804,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "Cognitive Fossil Record",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "canonical project README, mtime 2026-06-23"
+  },
+  {
+    "path": "docs/audit/CLEANUP_AUDIT.md",
+    "size": 10685,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW Cleanup Audit — 2026-04-18",
+    "claimed_version": null,
+    "claimed_date": "2026-04-18",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "older audit (pre-2026-06-23), superseded by current state"
+  },
+  {
+    "path": "docs/audit/DEEP_INTEGRATION_ANALYSIS.md",
+    "size": 14094,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW x Claude Code — DEEP INTEGRATION ANALYSIS",
+    "claimed_version": null,
+    "claimed_date": "2026-04-20",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "older audit (pre-2026-06-23), superseded by current state"
+  },
+  {
+    "path": "docs/audit/DORMANT_BACKENDS_2026-05-24.md",
+    "size": 10593,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW Dormant Backends — Archaeology Report",
+    "claimed_version": null,
+    "claimed_date": "2026-05-24",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "older audit (pre-2026-06-23), superseded by current state"
+  },
+  {
+    "path": "docs/audit/END_TO_END_FLOW.md",
+    "size": 22561,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW End-to-End Flow",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [
+      "minimax-platform"
+    ],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "older audit (pre-2026-06-23), superseded by current state"
+  },
+  {
+    "path": "docs/audit/FILE_AUDIT.md",
+    "size": 7034,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW File Audit — 2026-04-18",
+    "claimed_version": null,
+    "claimed_date": "2026-04-18",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "older audit (pre-2026-06-23), superseded by current state"
+  },
+  {
+    "path": "docs/audit/HARNESS_COMPARISON_2026-05-23.md",
+    "size": 12597,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "Harness Comparison — Claude Code vs Codex/Hermes vs PURPCLAW",
+    "claimed_version": null,
+    "claimed_date": "2026-05-23",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "older audit (pre-2026-06-23), superseded by current state"
+  },
+  {
+    "path": "docs/audit/INTEGRATION_ANALYSIS.md",
+    "size": 9078,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW x Claude Code Hidden Features — Integration Analysis",
+    "claimed_version": null,
+    "claimed_date": "2026-04-20",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "older audit (pre-2026-06-23), superseded by current state"
+  },
+  {
+    "path": "docs/audit/PURPCLAW_AUTONOMOUS_CHARTER.md",
+    "size": 13541,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW — Autonomous Agent Stack Charter",
+    "claimed_version": null,
+    "claimed_date": "2026-05-23",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "older audit (pre-2026-06-23), superseded by current state"
+  },
+  {
+    "path": "docs/audit/PURPCLAW_FULL_AUDIT_2026-05-24.md",
+    "size": 9561,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW Full Stack Audit — 2026-05-24",
+    "claimed_version": null,
+    "claimed_date": "2026-05-24",
+    "drift": [],
+    "references": [
+      "llm-provider"
+    ],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "older audit (pre-2026-06-23), superseded by current state"
+  },
+  {
+    "path": "docs/audit/PURPCLAW_ONE_MISSION_MANY_LENSES_RESTORE_2026-06-23.md",
+    "size": 8933,
+    "mtime": "2026-06-23T23:51",
+    "head_title": "PURPCLAW One-Mission / Many-Lenses Restore — 2026-06-23",
+    "claimed_version": null,
+    "claimed_date": "2026-06-23",
+    "drift": [],
+    "references": [
+      "system-map"
+    ],
+    "duplicate_group": "audit",
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "recent audit tied to current work session"
+  },
+  {
+    "path": "docs/audit/PURPCLAW_SHIP_PLAN.md",
+    "size": 5744,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW Ship Plan — From Personal Stack to Shippable Toolbag",
+    "claimed_version": null,
+    "claimed_date": "2026-05-23",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "older audit (pre-2026-06-23), superseded by current state"
+  },
+  {
+    "path": "docs/audit/PURPCLAW_STACK_AUDIT_2026-05-23.md",
+    "size": 9506,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW Stack Audit - 2026-05-23",
+    "claimed_version": null,
+    "claimed_date": "2026-05-23",
+    "drift": [],
+    "references": [
+      "llm-provider"
+    ],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "older audit (pre-2026-06-23), superseded by current state"
+  },
+  {
+    "path": "docs/audit/R2_OPERATOR_DECISIONS_2026-06-23.md",
+    "size": 2972,
+    "mtime": "2026-06-23T23:37",
+    "head_title": "R2: Operator Decisions on 13 Action-Required Features — 2026-06-23",
+    "claimed_version": null,
+    "claimed_date": "2026-06-23",
+    "drift": [],
+    "references": [
+      "agent-loop"
+    ],
+    "duplicate_group": "audit",
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "recent audit tied to current work session"
+  },
+  {
+    "path": "docs/business/metrics-and-sponsorship.md",
+    "size": 2701,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "Metrics and Sponsorship Playbook",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "business/launch copy, not technical doc"
+  },
+  {
+    "path": "docs/business/social-launch-copy.md",
+    "size": 1641,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "Social Launch Copy (X + LinkedIn)",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "business/launch copy, not technical doc"
+  },
+  {
+    "path": "docs/current/CANONICAL_OVERVIEW.md",
+    "size": 4461,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW Canonical Overview",
+    "claimed_version": null,
+    "claimed_date": "2026-06-06",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "STALE",
+    "action": "ARCHIVE",
+    "reason": "docs/current/ snapshot from 2026-06-06, superseded by root docs"
+  },
+  {
+    "path": "docs/current/INTELLIGENCE_SPINE.md",
+    "size": 2746,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW Intelligence Spine",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [
+      "llm-provider"
+    ],
+    "duplicate_group": null,
+    "status": "STALE",
+    "action": "ARCHIVE",
+    "reason": "docs/current/ snapshot from 2026-06-06, superseded by root docs"
+  },
+  {
+    "path": "docs/current/README.md",
+    "size": 615,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "Current Documentation",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "canonical project README, mtime 2026-06-23"
+  },
+  {
+    "path": "docs/current/RECOVERY.md",
+    "size": 7309,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW Recovery Runbook",
+    "claimed_version": null,
+    "claimed_date": "2026-06-06",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational reference, recent enough"
+  },
+  {
+    "path": "docs/current/SYSTEM_OVERVIEW.md",
+    "size": 12918,
+    "mtime": "2026-06-23T07:30",
+    "head_title": "PURPCLAW",
+    "claimed_version": null,
+    "claimed_date": "2026-06-22",
+    "drift": [],
+    "references": [
+      "dup-group:architecture(2 siblings)"
+    ],
+    "duplicate_group": "architecture",
+    "status": "STALE",
+    "action": "ARCHIVE",
+    "reason": "docs/current/ version, superseded by root ARCHITECTURE.md"
+  },
+  {
+    "path": "docs/current/TROUBLESHOOTING.md",
+    "size": 3594,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "Troubleshooting",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational runbook / reference"
+  },
+  {
+    "path": "docs/current/token-optimization.md",
+    "size": 5482,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "Token Optimization Guide",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "STALE",
+    "action": "ARCHIVE",
+    "reason": "docs/current/ snapshot from 2026-06-06, superseded by root docs"
+  },
+  {
+    "path": "docs/experimental/KILL_LIST.md",
+    "size": 2426,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW Kill-List — stubs / mocks / sims / dead wiring",
+    "claimed_version": null,
+    "claimed_date": "2026-06-05",
+    "drift": [],
+    "references": [
+      "agent-loop"
+    ],
+    "duplicate_group": null,
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "experimental, not canonical"
+  },
+  {
+    "path": "docs/experimental/NORTH_STAR.md",
+    "size": 2440,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "PURPCLAW North Star",
+    "claimed_version": null,
+    "claimed_date": "2026-06-05",
+    "drift": [],
+    "references": [
+      "agent-loop"
+    ],
+    "duplicate_group": null,
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "experimental, not canonical"
+  },
+  {
+    "path": "docs/experimental/README.md",
+    "size": 287,
+    "mtime": "2026-06-06T22:57",
+    "head_title": "Experimental Documentation",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "canonical project README, mtime 2026-06-23"
+  },
+  {
+    "path": "docs/generated/CHANGELOG.md",
+    "size": 663,
+    "mtime": "2026-06-19T20:00",
+    "head_title": "Generated Hardening Changelog",
+    "claimed_version": null,
+    "claimed_date": "2026-06-19",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "changelog",
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": ""
+  },
+  {
+    "path": "docs/generated/CLI_TUI_WEB_PARITY.md",
+    "size": 2544,
+    "mtime": "2026-06-19T20:00",
+    "head_title": "CLI / TUI / Web Parity Map",
+    "claimed_version": null,
+    "claimed_date": "2026-06-19",
+    "drift": [],
+    "references": [
+      "system-map"
+    ],
+    "duplicate_group": null,
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "generated artifact, not a canonical doc"
+  },
+  {
+    "path": "docs/generated/DEEP_STACK_CONNECTION_AUDIT_2026-06-23-2.md",
+    "size": 4836,
+    "mtime": "2026-06-23T11:54",
+    "head_title": "Deep Stack Connection Audit 2 — 2026-06-23",
+    "claimed_version": null,
+    "claimed_date": "2026-06-23",
+    "drift": [],
+    "references": [
+      "system-map"
+    ],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "generated artifact, not a canonical doc"
+  },
+  {
+    "path": "docs/generated/DEEP_STACK_CONNECTION_AUDIT_2026-06-23.md",
+    "size": 4468,
+    "mtime": "2026-06-23T00:32",
+    "head_title": "Deep Stack Connection Audit — 2026-06-23",
+    "claimed_version": null,
+    "claimed_date": "2026-06-23",
+    "drift": [],
+    "references": [
+      "system-map"
+    ],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "generated artifact, not a canonical doc"
+  },
+  {
+    "path": "docs/generated/FOLDER_INVENTORY.md",
+    "size": 3470,
+    "mtime": "2026-06-23T11:32",
+    "head_title": "PURPCLAW Folder Inventory",
+    "claimed_version": null,
+    "claimed_date": "2026-06-19",
+    "drift": [],
+    "references": [
+      "system-map"
+    ],
+    "duplicate_group": null,
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "generated artifact, not a canonical doc"
+  },
+  {
+    "path": "docs/generated/GITHUB_PUBLISH_AUDIT_2026-06-23.md",
+    "size": 2312,
+    "mtime": "2026-06-23T13:02",
+    "head_title": "GitHub Publish Audit - 2026-06-23",
+    "claimed_version": null,
+    "claimed_date": "2026-06-23",
+    "drift": [],
+    "references": [],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "generated artifact, not a canonical doc"
+  },
+  {
+    "path": "docs/generated/INSTALL_BOOT_SMOKE_2026-06-23.md",
+    "size": 3433,
+    "mtime": "2026-06-23T14:19",
+    "head_title": "Install + Boot Smoke - 2026-06-23",
+    "claimed_version": null,
+    "claimed_date": "2026-06-23",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "generated artifact, not a canonical doc"
+  },
+  {
+    "path": "docs/generated/LOCAL_UI_STACK_AUDIT_2026-06-22.md",
+    "size": 11075,
+    "mtime": "2026-06-22T19:29",
+    "head_title": "PURPCLAW Local UI / Stack Audit",
+    "claimed_version": null,
+    "claimed_date": "2026-06-22",
+    "drift": [],
+    "references": [
+      "system-map"
+    ],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "generated artifact, not a canonical doc"
+  },
+  {
+    "path": "docs/generated/OPENCLAW_PURGE_REPORT.md",
+    "size": 1944,
+    "mtime": "2026-06-19T20:00",
+    "head_title": "Foreign-Harness Purge Report",
+    "claimed_version": null,
+    "claimed_date": "2026-06-19",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "generated artifact, not a canonical doc"
+  },
+  {
+    "path": "docs/generated/UI_REORG_AUDIT_PROPOSAL.md",
+    "size": 10607,
+    "mtime": "2026-06-19T21:14",
+    "head_title": "PURPCLAW UI Reorg Audit Proposal",
+    "claimed_version": null,
+    "claimed_date": "2026-06-19",
+    "drift": [],
+    "references": [
+      "system-map"
+    ],
+    "duplicate_group": "audit",
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "generated artifact, not a canonical doc"
+  },
+  {
+    "path": "docs/generated/VALIDATION_REPORT.md",
+    "size": 1892,
+    "mtime": "2026-06-19T20:03",
+    "head_title": "Validation Report",
+    "claimed_version": null,
+    "claimed_date": "2026-06-19",
+    "drift": [],
+    "references": [
+      "system-map"
+    ],
+    "duplicate_group": null,
+    "status": "HISTORICAL",
+    "action": "ARCHIVE",
+    "reason": "generated artifact, not a canonical doc"
+  },
+  {
+    "path": "failure_modes.md",
+    "size": 24567,
+    "mtime": "2026-06-23T17:55",
+    "head_title": "🛡️ GUARDIAN — PURPCLAW Failure Modes Catalog",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational runbook / reference"
+  },
+  {
+    "path": "launch_readiness_checklist.md",
+    "size": 37762,
+    "mtime": "2026-06-23T18:05",
+    "head_title": "🐢 TURTLE — Master Launch Readiness Checklist",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational runbook / reference"
+  },
+  {
+    "path": "purpclaw-service-map.md",
+    "size": 5798,
+    "mtime": "2026-06-14T15:25",
+    "head_title": "purpclaw-service-map",
+    "claimed_version": null,
+    "claimed_date": "2026-06-14",
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "domain-specific operational reference"
+  },
+  {
+    "path": "purpclaw_routing_map.md",
+    "size": 6462,
+    "mtime": "2026-06-21T20:56",
+    "head_title": "PURPCLAW Routing Map",
+    "claimed_version": null,
+    "claimed_date": "2026-06-21",
+    "drift": [],
+    "references": [
+      "system-map"
+    ],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "domain-specific operational reference"
+  },
+  {
+    "path": "smoke_test_runbook.md",
+    "size": 20337,
+    "mtime": "2026-06-23T17:51",
+    "head_title": "TURTLE — Post-Deployment Smoke Test Runbook",
+    "claimed_version": null,
+    "claimed_date": null,
+    "drift": [],
+    "references": [],
+    "duplicate_group": null,
+    "status": "CURRENT",
+    "action": "KEEP",
+    "reason": "operational runbook / reference"
+  },
+  {
+    "path": "swarm_mission_robot_security_audit.md",
+    "size": 30740,
+    "mtime": "2026-06-23T07:38",
+    "head_title": "🤖 ROBOT — swarm_mission Security Audit Report",
+    "claimed_version": null,
+    "claimed_date": "2026-06-22",
+    "drift": [
+      "claims 5 NVIDIA keys (current: 10)"
+    ],
+    "references": [
+      "llm-provider"
+    ],
+    "duplicate_group": null,
+    "status": "STALE",
+    "action": "UPDATE",
+    "reason": "drift: references 5 NVIDIA keys (current: 10); security audit content may be valid but lane/agent counts need refresh"
+  }
+]

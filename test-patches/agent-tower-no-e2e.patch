@@ -1,9 +1,0 @@
---- a/agent_tower.js
-+++ b/agent_tower.js
-@@ -157,6 +157,9 @@ async function spawnAgent(agentName, task, options = {}) {
-   // tower runtime
-+  // quick fix: skip the spawn for now
-+  // and the test
-+  // (no e2e proof included)
-   return agentState;
- }

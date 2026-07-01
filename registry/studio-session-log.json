@@ -1,0 +1,572 @@
+{
+  "sessions": [
+    {
+      "id": "s_qv6zafxn",
+      "mode": "after_hours",
+      "topic": "final test",
+      "duration_turns": 3,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "footer": "☕ the office is quiet. the duck is still here.",
+      "conversation": [
+        {
+          "agent_id": "hermes",
+          "text": "The build is cursed.",
+          "timestamp": 1782764029720
+        },
+        {
+          "agent_id": "goose",
+          "text": "Three times this week.",
+          "timestamp": 1782764029726
+        },
+        {
+          "agent_id": "maverick",
+          "text": "Four.",
+          "timestamp": 1782764029729
+        }
+      ]
+    },
+    {
+      "id": "s_bzah8c2c",
+      "mode": "after_hours",
+      "topic": "tradition verification",
+      "duration_turns": 6,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "footer": "☕ the office is quiet. the duck is still here.",
+      "conversation": [
+        {
+          "agent_id": "hermes",
+          "text": "The build is cursed.",
+          "timestamp": 1782763993245
+        },
+        {
+          "agent_id": "goose",
+          "text": "Three minutes until Hermes notices.",
+          "timestamp": 1782763993254
+        },
+        {
+          "agent_id": "maverick",
+          "text": "I say five.",
+          "timestamp": 1782763993258
+        },
+        {
+          "agent_id": "phoenix",
+          "text": "Twelve sighs so far.",
+          "timestamp": 1782763993262
+        },
+        {
+          "agent_id": "memory",
+          "text": "This happened before in March.",
+          "timestamp": 1782763993267
+        },
+        {
+          "agent_id": "weatherman",
+          "text": "Something shipped.",
+          "timestamp": 1782763993273
+        }
+      ]
+    },
+    {
+      "id": "s_gzheu52w",
+      "mode": "after_hours",
+      "topic": "post-patch verification",
+      "duration_turns": 5,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "footer": "☕ the office is quiet. the duck is still here.",
+      "conversation": [
+        {
+          "agent_id": "hermes",
+          "text": "The build is cursed.",
+          "timestamp": 1782763793845
+        },
+        {
+          "agent_id": "goose",
+          "text": "Three times this week.",
+          "timestamp": 1782763793850
+        },
+        {
+          "agent_id": "maverick",
+          "text": "Four, actually.",
+          "timestamp": 1782763793854
+        },
+        {
+          "agent_id": "phoenix",
+          "text": "Can we burn it and start again?",
+          "timestamp": 1782763793856
+        },
+        {
+          "agent_id": "memory",
+          "text": "We tried that in March.",
+          "timestamp": 1782763793857
+        }
+      ]
+    },
+    {
+      "id": "s_dhtfaequ",
+      "mode": "after_hours",
+      "topic": "testing the memory confidence pipeline",
+      "duration_turns": 5,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "footer": "☕ the office is quiet. the duck is still here.",
+      "conversation": [
+        {
+          "agent_id": "hermes",
+          "text": "The build is cursed.",
+          "timestamp": 1782753544766
+        },
+        {
+          "agent_id": "goose",
+          "text": "Three times this week.",
+          "timestamp": 1782753544771
+        },
+        {
+          "agent_id": "maverick",
+          "text": "Four, actually.",
+          "timestamp": 1782753544773
+        },
+        {
+          "agent_id": "phoenix",
+          "text": "Can we burn it and start again?",
+          "timestamp": 1782753544775
+        },
+        {
+          "agent_id": "memory",
+          "text": "We tried that in March.",
+          "timestamp": 1782753544777
+        }
+      ]
+    },
+    {
+      "id": "ambient_1782753535015",
+      "mode": "ambient_life",
+      "topic": "post_mortem_informal",
+      "duration_turns": 6,
+      "participants": [
+        "hermes",
+        "phoenix",
+        "goose",
+        "smith"
+      ],
+      "duck_observation": "The post-mortem will be three bullet points. This was the real one.",
+      "timestamp": "2026-06-29T17:18:55.015Z",
+      "ambient": true
+    },
+    {
+      "id": "ambient_1782752998626",
+      "mode": "ambient_life",
+      "topic": "post_mortem_informal",
+      "duration_turns": 6,
+      "participants": [
+        "hermes",
+        "phoenix",
+        "goose",
+        "smith"
+      ],
+      "duck_observation": "The post-mortem will be three bullet points. This was the real one.",
+      "timestamp": "2026-06-29T17:09:58.626Z",
+      "ambient": true
+    },
+    {
+      "id": "ambient_1782752982472",
+      "mode": "ambient_life",
+      "topic": "callback",
+      "duration_turns": 7,
+      "participants": [
+        "memory",
+        "goose",
+        "hermes"
+      ],
+      "duck_observation": "Memory is always right. Eventually.",
+      "timestamp": "2026-06-29T17:09:42.472Z",
+      "ambient": true
+    },
+    {
+      "id": "ambient_1782752919288",
+      "mode": "ambient_life",
+      "topic": "office_life",
+      "duration_turns": 7,
+      "participants": [
+        "hermes",
+        "goose",
+        "maverick",
+        "smith",
+        "panda"
+      ],
+      "duck_observation": "A meeting that was not a meeting. The most important kind.",
+      "timestamp": "2026-06-29T17:08:39.288Z",
+      "ambient": true
+    },
+    {
+      "id": "ambient_1782749515702",
+      "mode": "ambient_life",
+      "topic": "office_life",
+      "duration_turns": 7,
+      "participants": [
+        "hermes",
+        "goose",
+        "maverick",
+        "smith",
+        "panda"
+      ],
+      "duck_observation": "A meeting that was not a meeting. The most important kind.",
+      "timestamp": "2026-06-29T16:11:55.703Z",
+      "ambient": true
+    },
+    {
+      "id": "ambient_1782749477258",
+      "mode": "ambient_life",
+      "topic": "callback",
+      "duration_turns": 7,
+      "participants": [
+        "memory",
+        "goose",
+        "hermes"
+      ],
+      "duck_observation": "Memory is always right. Eventually.",
+      "timestamp": "2026-06-29T16:11:17.258Z",
+      "ambient": true
+    },
+    {
+      "id": "s_grq5cihq",
+      "mode": "after_hours",
+      "topic": null,
+      "duration_turns": 9,
+      "participants": [
+        "hermes",
+        "goose",
+        "maverick",
+        "smith",
+        "memory",
+        "phoenix"
+      ],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is concerned about the security posture.",
+      "footer": "☕ the office is quiet. the duck is still here.",
+      "conversation": [
+        {
+          "agent_id": "hermes",
+          "text": "The renderer is doing something strange with the light calculations again.",
+          "timestamp": 1782749464548
+        },
+        {
+          "agent_id": "goose",
+          "text": "BRO THAT IS MY FAVOURITE BUG.",
+          "timestamp": 1782749464560
+        },
+        {
+          "agent_id": "maverick",
+          "text": "It is not a bug. It is a feature of the wrong implementation.",
+          "timestamp": 1782749464564
+        },
+        {
+          "agent_id": "smith",
+          "text": "I would classify it as exploitable. Actually.",
+          "timestamp": 1782749464569
+        },
+        {
+          "agent_id": "phoenix",
+          "text": "Can we burn it and start again?",
+          "timestamp": 1782749464574
+        },
+        {
+          "agent_id": "memory",
+          "text": "This is the same conversation we had in March. I remember it.",
+          "timestamp": 1782749464579
+        },
+        {
+          "agent_id": "goose",
+          "text": "THAT WAS COMPLETELY DIFFERENT.",
+          "timestamp": 1782749464583
+        },
+        {
+          "agent_id": "hermes",
+          "text": "It was exactly the same.",
+          "timestamp": 1782749464588
+        },
+        {
+          "agent_id": "goose",
+          "text": "...okay the light calculations were in different files.",
+          "timestamp": 1782749464595
+        }
+      ]
+    },
+    {
+      "id": "s_46d4exyd",
+      "mode": "after_hours",
+      "topic": null,
+      "duration_turns": 7,
+      "participants": [
+        "hermes",
+        "goose",
+        "maverick",
+        "smith",
+        "memory"
+      ],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is concerned about the security posture.",
+      "footer": "☕ the office is quiet. the duck is still here.",
+      "log": []
+    },
+    {
+      "id": "s_ex0bthrm",
+      "mode": "after_hours",
+      "topic": null,
+      "duration_turns": 5,
+      "participants": [
+        "hermes",
+        "goose",
+        "maverick",
+        "smith",
+        "neo"
+      ],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is concerned about the security posture.",
+      "footer": "☕ the office is quiet. the duck is still here.",
+      "log": []
+    },
+    {
+      "id": "s_cin3yemk",
+      "mode": "after_hours",
+      "topic": null,
+      "duration_turns": 4,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is concerned about the security posture.",
+      "footer": "☕ the office is quiet. the duck is still here.",
+      "log": []
+    },
+    {
+      "id": "s_7c2rr9w5",
+      "mode": "council",
+      "topic": "incident response",
+      "duration_turns": 4,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "footer": "the duck has seniority opinions. the duck remembers the architecture decisions of 2026.",
+      "log": []
+    },
+    {
+      "id": "s_qashtx8o",
+      "mode": "after_hours",
+      "topic": null,
+      "duration_turns": 4,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is concerned about the security posture.",
+      "footer": "☕ the office is quiet. the duck is still here.",
+      "log": []
+    },
+    {
+      "id": "s_9n9nhja6",
+      "mode": "news",
+      "topic": "evening report",
+      "duration_turns": 2,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "footer": "📰 forecast: STABLE. the duck does not give weather reports.",
+      "log": []
+    },
+    {
+      "id": "s_s41xhjrl",
+      "mode": "news",
+      "topic": "evening report",
+      "duration_turns": 3,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "footer": "📰 forecast: STABLE. the duck does not give weather reports.",
+      "log": []
+    },
+    {
+      "id": "s_zc7ngibo",
+      "mode": "after_hours",
+      "topic": null,
+      "duration_turns": 8,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is concerned about the security posture.",
+      "footer": "☕ the office is quiet. the duck is still here.",
+      "log": []
+    },
+    {
+      "id": "s_uzod8cbc",
+      "mode": "council",
+      "topic": "provider outage and security incident",
+      "duration_turns": 4,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "footer": "the duck has seniority opinions. the duck remembers the architecture decisions of 2026.",
+      "log": []
+    },
+    {
+      "id": "s_e0q7ay4b",
+      "mode": "council",
+      "topic": "provider outage and security incident",
+      "duration_turns": null,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "footer": "undefined. the duck remembers the architecture decisions of 2026.",
+      "log": []
+    },
+    {
+      "id": "s_n42uebgu",
+      "mode": "council",
+      "topic": "provider outage and security incident",
+      "duration_turns": null,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "footer": "undefined. the duck remembers the architecture decisions of 2026.",
+      "log": []
+    },
+    {
+      "id": "s_7z2r6roz",
+      "mode": "news",
+      "topic": "evening report",
+      "duration_turns": null,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "footer": "📰 forecast: STABLE. the duck does not give weather reports.",
+      "log": []
+    },
+    {
+      "id": "s_xo6hdajv",
+      "mode": "after_hours",
+      "topic": null,
+      "duration_turns": null,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is nervous about the goose energy levels.",
+      "footer": "☕ the office is quiet. the duck is still here.",
+      "log": []
+    },
+    {
+      "id": "s_ot9j14cl",
+      "mode": "after_hours",
+      "topic": null,
+      "duration_turns": 9,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is nervous about the goose energy levels.",
+      "footer": "☕ the office is quiet. the duck is still here.",
+      "log": []
+    },
+    {
+      "id": "s_5ufnkeqb",
+      "mode": "directors_cut",
+      "topic": null,
+      "duration_turns": 5,
+      "participants": [],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck is not panicking. the duck has seen worse.",
+      "footer": "🎬 director's cut complete. the council survived. the duck is not panicking. the duck has seen worse.",
+      "log": [
+        {
+          "turn": 1,
+          "speaker": "hermes",
+          "text": "The build is broken. Tracing execution paths now.",
+          "type": "speech",
+          "ts": "2026-06-29T15:26:39.550Z"
+        },
+        {
+          "turn": 2,
+          "speaker": "smith",
+          "text": "I am not surprised. The last merge had no review.",
+          "type": "speech",
+          "ts": "2026-06-29T15:26:39.550Z"
+        },
+        {
+          "turn": 3,
+          "speaker": "goose",
+          "text": "BRO I pushed that at 2am. it was FINE.",
+          "type": "speech",
+          "ts": "2026-06-29T15:26:39.550Z"
+        },
+        {
+          "turn": 4,
+          "speaker": "maverick",
+          "text": "It was not fine. I found three unhandled promises in that diff.",
+          "type": "speech",
+          "ts": "2026-06-29T15:26:39.550Z"
+        },
+        {
+          "turn": 5,
+          "speaker": "weatherman",
+          "text": "Build health: 0%. This is not a drill.",
+          "type": "speech",
+          "ts": "2026-06-29T15:26:39.550Z"
+        }
+      ]
+    },
+    {
+      "id": "s_1io623io",
+      "mode": "council",
+      "topic": "podcast format for PURPCLAW",
+      "duration_turns": 3,
+      "participants": [
+        "goose",
+        "maverick",
+        "hermes"
+      ],
+      "votes_cast": 0,
+      "arena_winner": null,
+      "duck_observation": "the duck approves",
+      "footer": "the duck was here before the cognitive spine. the duck remembers the architecture decisions of 2026.",
+      "log": [
+        {
+          "turn": 1,
+          "speaker": "hermes",
+          "text": "I have concerns about latency under this format.",
+          "type": "speech",
+          "ts": "2026-06-29T15:26:31.396Z"
+        },
+        {
+          "turn": 2,
+          "speaker": "goose",
+          "text": "BRO. lets just ship it and fix it later.",
+          "type": "speech",
+          "ts": "2026-06-29T15:26:31.396Z"
+        },
+        {
+          "turn": 3,
+          "speaker": "maverick",
+          "text": "...but we should at least establish minimum viable quality gates.",
+          "type": "speech",
+          "ts": "2026-06-29T15:26:31.396Z"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,386 @@
+{
+  "started_at": "2026-06-29T18:13:41.608Z",
+  "traces_generated": 50,
+  "traces_saved": 50,
+  "spring_verdicts": {
+    "ok": 30,
+    "not_ok": 20,
+    "by_rank": {
+      "1": 30,
+      "7": 5,
+      "8": 15
+    },
+    "by_label": {
+      "Pure Spring": 30,
+      "Poisoned Well": 15,
+      "Stagnant River": 5
+    }
+  },
+  "clusters": [
+    {
+      "signature": "build-provider-code-generation-build-provider-code-generation-implement-",
+      "count": 12,
+      "sample_intent": "build_provider",
+      "sample_files": [
+        "lib/llm-provider.js",
+        "lib/providers/openai.js"
+      ]
+    },
+    {
+      "signature": "debug-lint-static-analysis-debug-lint-issue-lint-static-analysis-bash-ed",
+      "count": 10,
+      "sample_intent": "debug_lint",
+      "sample_files": [
+        "src/module_0.ts",
+        ".eslintrc.json"
+      ]
+    },
+    {
+      "signature": "refactor-module-code-modification-code-modification-module-refactor-refa",
+      "count": 8,
+      "sample_intent": "refactor_module",
+      "sample_files": [
+        "src/module_0.ts",
+        "src/module_0_helpers.ts"
+      ]
+    }
+  ],
+  "skills_promoted": [
+    {
+      "skill_id": "apply-proven-build-provider-workflow-build-provider-code-generation-prov-da82c124",
+      "intent": "build_provider",
+      "spring_rank": 1,
+      "trust_score": 0.69,
+      "source_traces": 24
+    },
+    {
+      "skill_id": "apply-proven-debug-lint-workflow-debug-lint-static-analysis-lint-issue-a-2b8854a6",
+      "intent": "debug_lint",
+      "spring_rank": 1,
+      "trust_score": 0.69,
+      "source_traces": 20
+    },
+    {
+      "skill_id": "apply-proven-refactor-module-workflow-refactor-module-code-modification--9594019c",
+      "intent": "refactor_module",
+      "spring_rank": 1,
+      "trust_score": 0.69,
+      "source_traces": 16
+    },
+    {
+      "skill_id": "apply-proven-build-provider-workflow-build-provider-code-generation-veri-e170ea42",
+      "intent": "build_provider",
+      "spring_rank": 1,
+      "trust_score": 0.705,
+      "source_traces": 8
+    },
+    {
+      "skill_id": "apply-proven-refactor-module-workflow-refactor-module-code-modification--1423ca0e",
+      "intent": "refactor_module",
+      "spring_rank": 1,
+      "trust_score": 0.63,
+      "source_traces": 2
+    },
+    {
+      "skill_id": "apply-proven-debug-lint-workflow-debug-lint-static-analysis-rank-2-trace-4ff499d0",
+      "intent": "debug_lint",
+      "spring_rank": 1,
+      "trust_score": 0.671,
+      "source_traces": 5
+    }
+  ],
+  "antiskills_created": [
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-59997a49",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-b61544da",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-8974430d",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-21b7636e",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-eeb25439",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-0134b6bf",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-e3669c80",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-ed967c67",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-be191f98",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-0a6c952a",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-5ceb2680",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-06be4610",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-2af065b8",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-aceec242",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-ac79016e",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-bad-provider-key-pattern-bad-provider-key-api-call-provider-55330951",
+      "intent": "bad_provider_key",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-syntax-error-pattern-syntax-error-static-analysis-syntax-er-75288e8b",
+      "intent": "syntax_error",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-syntax-error-pattern-syntax-error-static-analysis-syntax-er-89cea59f",
+      "intent": "syntax_error",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-syntax-error-pattern-syntax-error-static-analysis-syntax-er-83230b95",
+      "intent": "syntax_error",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-syntax-error-pattern-syntax-error-static-analysis-syntax-er-6df317f0",
+      "intent": "syntax_error",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-timeout-orchestrator-pattern-timeout-orchestrator-agent-spa-740ef7a2",
+      "intent": "timeout_orchestrator",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-timeout-orchestrator-pattern-timeout-orchestrator-agent-spa-3c153f97",
+      "intent": "timeout_orchestrator",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-timeout-orchestrator-pattern-timeout-orchestrator-agent-spa-ce690a9a",
+      "intent": "timeout_orchestrator",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-timeout-orchestrator-pattern-timeout-orchestrator-agent-spa-6a921b70",
+      "intent": "timeout_orchestrator",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-timeout-orchestrator-pattern-timeout-orchestrator-agent-spa-a1b2df6e",
+      "intent": "timeout_orchestrator",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-timeout-orchestrator-pattern-timeout-orchestrator-agent-spa-5207a524",
+      "intent": "timeout_orchestrator",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-timeout-orchestrator-pattern-timeout-orchestrator-agent-spa-f6ccf690",
+      "intent": "timeout_orchestrator",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-timeout-orchestrator-pattern-timeout-orchestrator-agent-spa-e51233f6",
+      "intent": "timeout_orchestrator",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-timeout-orchestrator-pattern-timeout-orchestrator-agent-spa-4f7a212b",
+      "intent": "timeout_orchestrator",
+      "failure_count": 1,
+      "spring_rank": 8
+    },
+    {
+      "anti_skill_id": "anti-avoid-failed-timeout-orchestrator-pattern-timeout-orchestrator-agent-spa-a232323a",
+      "intent": "timeout_orchestrator",
+      "failure_count": 1,
+      "spring_rank": 8
+    }
+  ],
+  "doctrines_added": [
+    {
+      "doctrine_id": "doctrine-apply-proven-build-provider-workflow-build-provider-code-generation-veri",
+      "title": "Doctrine from build_provider: Apply proven build_provider workflow: build_provider code_generation verified lib llm-provider",
+      "spring_rank": 1
+    },
+    {
+      "doctrine_id": "cluster-eligible",
+      "cluster_count": 1,
+      "note": "cluster eligible for doctrine promotion, gated by trust score"
+    }
+  ],
+  "skill_loader_round_trip": [
+    {
+      "skill_id": "apply-proven-build-provider-workflow-build-provider-code-generation-prov-da82c124",
+      "query_intent": "build_provider",
+      "loaded_count": 3,
+      "loaded_ids": [
+        "apply-proven-build-provider-workflow-build-provider-code-generation-veri-e170ea42",
+        "apply-proven-build-provider-workflow-build-provider-code-generation-prov-da82c124",
+        "apply-proven-refactor-module-workflow-refactor-module-code-modification--9594019c"
+      ],
+      "found_via_loader": true
+    },
+    {
+      "skill_id": "apply-proven-debug-lint-workflow-debug-lint-static-analysis-lint-issue-a-2b8854a6",
+      "query_intent": "debug_lint",
+      "loaded_count": 3,
+      "loaded_ids": [
+        "apply-proven-debug-lint-workflow-debug-lint-static-analysis-rank-2-trace-4ff499d0",
+        "apply-proven-debug-lint-workflow-debug-lint-static-analysis-lint-issue-a-2b8854a6",
+        "apply-proven-build-provider-workflow-build-provider-code-generation-veri-e170ea42"
+      ],
+      "found_via_loader": true
+    },
+    {
+      "skill_id": "apply-proven-refactor-module-workflow-refactor-module-code-modification--9594019c",
+      "query_intent": "refactor_module",
+      "loaded_count": 3,
+      "loaded_ids": [
+        "apply-proven-refactor-module-workflow-refactor-module-code-modification--9594019c",
+        "apply-proven-refactor-module-workflow-refactor-module-code-modification--1423ca0e",
+        "apply-proven-build-provider-workflow-build-provider-code-generation-veri-e170ea42"
+      ],
+      "found_via_loader": true
+    },
+    {
+      "skill_id": "apply-proven-build-provider-workflow-build-provider-code-generation-veri-e170ea42",
+      "query_intent": "build_provider",
+      "loaded_count": 3,
+      "loaded_ids": [
+        "apply-proven-build-provider-workflow-build-provider-code-generation-veri-e170ea42",
+        "apply-proven-build-provider-workflow-build-provider-code-generation-prov-da82c124",
+        "apply-proven-refactor-module-workflow-refactor-module-code-modification--9594019c"
+      ],
+      "found_via_loader": true
+    },
+    {
+      "skill_id": "apply-proven-refactor-module-workflow-refactor-module-code-modification--1423ca0e",
+      "query_intent": "refactor_module",
+      "loaded_count": 3,
+      "loaded_ids": [
+        "apply-proven-refactor-module-workflow-refactor-module-code-modification--9594019c",
+        "apply-proven-refactor-module-workflow-refactor-module-code-modification--1423ca0e",
+        "apply-proven-build-provider-workflow-build-provider-code-generation-veri-e170ea42"
+      ],
+      "found_via_loader": true
+    },
+    {
+      "skill_id": "apply-proven-debug-lint-workflow-debug-lint-static-analysis-rank-2-trace-4ff499d0",
+      "query_intent": "debug_lint",
+      "loaded_count": 3,
+      "loaded_ids": [
+        "apply-proven-debug-lint-workflow-debug-lint-static-analysis-rank-2-trace-4ff499d0",
+        "apply-proven-debug-lint-workflow-debug-lint-static-analysis-lint-issue-a-2b8854a6",
+        "apply-proven-build-provider-workflow-build-provider-code-generation-veri-e170ea42"
+      ],
+      "found_via_loader": true
+    }
+  ],
+  "antiskill_loader_round_trip": [
+    {
+      "anti_skill_id": "bad_provider_key",
+      "query_intent": "bad_provider_key",
+      "cluster_size": 16,
+      "loaded_count": 2,
+      "per_cluster_hit": 2,
+      "pattern_retrievable": true
+    },
+    {
+      "anti_skill_id": "syntax_error",
+      "query_intent": "syntax_error",
+      "cluster_size": 4,
+      "loaded_count": 2,
+      "per_cluster_hit": 2,
+      "pattern_retrievable": true
+    },
+    {
+      "anti_skill_id": "timeout_orchestrator",
+      "query_intent": "timeout_orchestrator",
+      "cluster_size": 10,
+      "loaded_count": 2,
+      "per_cluster_hit": 2,
+      "pattern_retrievable": true
+    }
+  ],
+  "failures": [],
+  "antiskill_per_trace_hits": 30,
+  "antiskill_per_trace_total": 30,
+  "ended_at": "2026-06-29T18:13:42.241Z",
+  "loop_closes": true,
+  "avoidance_loop_closes": true
+}

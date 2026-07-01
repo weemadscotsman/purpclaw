@@ -1,0 +1,86 @@
+{
+  "schema": "purpclaw.hivemind.trace.v1",
+  "run_id": "loop-syntax_error-fail-1782753632694-45-e7a2",
+  "workflow_id": "wf-syntax_error-fail-2b96ud",
+  "task": "Syntax error in module 1: unexpected token",
+  "source": "hivemind-loop-test",
+  "agent": "test_agent",
+  "model": "test_model",
+  "provider": "test",
+  "intent": "syntax_error",
+  "job_type": "static_analysis",
+  "route_intent": "syntax_error",
+  "started_at": "2026-06-29T17:20:02.694Z",
+  "ended_at": "2026-06-29T17:20:32.694Z",
+  "duration_ms": 52671,
+  "tools_used": [
+    "grep",
+    "edit_file"
+  ],
+  "tool_calls": [
+    {
+      "name": "grep",
+      "args_hash": "sha256:test",
+      "output_summary": "failed"
+    },
+    {
+      "name": "edit_file",
+      "args_hash": "sha256:test",
+      "output_summary": "failed"
+    }
+  ],
+  "files_touched": [
+    "src/broken_1.js"
+  ],
+  "commands": [
+    "run syntax_error"
+  ],
+  "verification_gates": [
+    "gate_lint",
+    "gate_tests"
+  ],
+  "gate_results": [
+    {
+      "gate": "gate_lint",
+      "passed": false
+    },
+    {
+      "gate": "gate_tests",
+      "passed": false
+    }
+  ],
+  "outcome": "failed",
+  "tests_passed": false,
+  "rollback": false,
+  "destructive": false,
+  "tokens": 500,
+  "evidence": [
+    {
+      "kind": "error_log",
+      "ref": "SyntaxError: Unexpected token (line 42)",
+      "passed": false
+    }
+  ],
+  "status": "failed",
+  "error": "SyntaxError: Unexpected token (line 42)",
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "failed_execution",
+    "spring_rank": 8,
+    "spring_label": "Poisoned Well",
+    "verification": [
+      "tests_failed",
+      "[object Object]",
+      "gate:gate_lint:fail",
+      "gate:gate_tests:fail"
+    ],
+    "trust_score": 0,
+    "repeatability": 0.2,
+    "freshness": 1,
+    "evaluated_at": "2026-06-29T17:20:32.694Z"
+  },
+  "spring_rank": 8,
+  "trust_score": 0,
+  "score": 0.33999999999999997,
+  "updated_at": "2026-06-29T17:20:32.730Z"
+}

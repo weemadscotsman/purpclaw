@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { CockpitShell } from '../components/CockpitShell';
 
 // ── The pre-prompt compiler (command-law) control surface ──────────────────
 // Isolated page — talks only to /api/preprompt. Shows live status, lets the
@@ -66,7 +65,7 @@ export default function PrepromptPage() {
   }, [status, load]);
 
   return (
-    <CockpitShell title="Pre-Prompt Compiler · Command-Law">
+    <>
     <div style={{ height: '100%', overflowY: 'auto', background: '#050308', color: '#e8d8ff', fontFamily: 'JetBrains Mono, monospace', padding: 24 }}>
       <div style={{ maxWidth: 1100, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 4 }}>
@@ -130,6 +129,6 @@ export default function PrepromptPage() {
         {!status && !err && <div style={{ color: 'rgba(255,255,255,0.3)' }}>connecting to compiler…</div>}
       </div>
     </div>
-    </CockpitShell>
+    </>
   );
 }

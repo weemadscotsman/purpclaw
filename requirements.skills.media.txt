@@ -1,3 +1,0 @@
-# PurpClaw Skills — Media/Audio (optional)
-# Install: pip install -r requirements.skills.media.txt
-kokoro>=0.3

@@ -1,241 +1,99 @@
-# PurpClaw
+# PURPCLAW
 
-**The local-first AI workstation OS.**
+> Version: 0.3.0 - Updated: 2026-06-29 - Verified against: local CLI audit - Status: CURRENT
 
-Run agents, tools, memory, models, voice, vision, and provider routing from your own machine or USB drive.
+PURPCLAW is a local-first AI organisation runtime.
 
-**Your box. Your data. Your AI.**
+It is not just a chatbot, an agent list, or a dashboard. It is a terminal-first system that combines provider routing, agents, workflows, memory, Studio/Council sessions, operational weather, and a governed self-evolution loop.
 
-```powershell
-git clone https://github.com/weemadscotsman/purpclaw.git; cd purpclaw; npm install -g pm2; npm install; npm run build; node bin\purpclaw.js safe-start --core
-```
+## Current Shape
 
-The npm registry package is not the canonical install source until `purpclaw`
-is published there at v0.2.0 or newer.
+PURPCLAW now has six connected layers:
 
-[GitHub](https://github.com/weemadscotsman/purpclaw) · [Report an Issue](https://github.com/weemadscotsman/purpclaw/issues)
+| Layer | Purpose | Current truth |
+|---|---|---|
+| Identity | Souls, interviews, values, fears, goals, relationships | `registry/souls.json`, `registry/soul-interviews.json` |
+| Governance | Oracle, Council, dynamic chairs, votes, reputation | `purpclaw council`, `registry/council-profiles.json` |
+| Workflow | Discovery, planning, solutioning, implementation, runtime | `purpclaw next`, `purpclaw workflow` |
+| Studio | Council, radio, arena, emergency, after-hours, commentary | `lib/studio.js`, `registry/studio-modes.json` |
+| Ecology | Timeline, Presence, Residue, meeting memory, ambient life | `purpclaw timeline`, `presence`, `residue` |
+| Evolution | AutoResearch, Auto-Evolve, donor archaeology, proposal gates | `purpclaw autoresearch`, `purpclaw evolve`, `purpclaw donor` |
 
----
+## What Changed In 0.3.0
 
-## Current Local Maps
-
-The live architecture, route, service, and build maps start here:
-
-- [docs/CANONICAL_MAP.md](docs/CANONICAL_MAP.md)
-- [docs/WHERE_THINGS_GO.md](docs/WHERE_THINGS_GO.md)
-- [docs/ROUTING_AND_BUILD_SPEC.md](docs/ROUTING_AND_BUILD_SPEC.md)
-- [docs/ROUTE_INDEX.md](docs/ROUTE_INDEX.md)
-- [docs/SERVICE_RUNTIME_INDEX.md](docs/SERVICE_RUNTIME_INDEX.md)
-
-If older root docs or audit notes disagree with those files, verify against the
-code and update the canonical docs first.
-
----
-
-## What It Is
-
-PurpClaw is a **complete AI operating environment** — not just a chatbot or a Claude Code plugin. It runs its own runtime, agent tower, cognitive memory, tool registry, skill system, provider router, SpendGate budget control, voice/vision stack, and USB-portable Pocket OS.
-
-| Product | Purpose |
-|---|---|
-| **PurpClaw Core** | Local-first AI workstation OS |
-| **PurpClaw Pocket OS** | USB-portable private AI (launcher, vault, audio guide) |
-| **PurpClaw Agent Tower** | 35+ agents across 9 divisions, native skill execution |
-| **PurpClaw Doctor** | One-command system health verification |
-
-### How It Compares
-
-| Feature | ChatGPT | Ollama UI | Portable USB AI | **PurpClaw** |
-|---|---|---|---|---:|
-| Local models | ✗ | ✓ | ✓ | **✓** |
-| API providers | ✓ | ⚠ | ⚠ | **9** |
-| Auto model routing | ✗ | ✗ | ✗ | **✓ (classifies your message → best model)** |
-| Agent tower | ✗ | ✗ | ✗ | **✓ (35 agents)** |
-| Tool registry | ✗ | ✗ | ⚠ | **491 tools** |
-| Skill system | ✗ | ✗ | ⚠ | **380 skills** |
-| CLI | ✗ | ⚠ | ✗ | **✓** |
-| TUI | ✗ | ✗ | ✗ | **✓** |
-| Dashboard | ✓ | ✓ | ✓ | **✓** |
-| Spend limits | ✗ | ✗ | ✗ | **✓ SpendGate** |
-| Encrypted vault | ✗ | ✗ | ⚠ | **✓ (AES-256-GCM)** |
-| USB Pocket OS | ✗ | ✗ | ✓ | **✓** |
-| Local telemetry loop | ✗ | ✗ | ✗ | **✓** |
-| User-owned memory | ⚠ | ⚠ | ⚠ | **✓ 7-layer spine** |
-| Voice/vision | ✗ | ✗ | ✗ | **✓ (local stack)** |
-
----
-
-## System Health
-
-Run one command. Get one truth report:
-
-```
-purpclaw doctor
-```
-
-Checks: tool registry (491 total: 455 built-in + 4 G0DM0D3 + 32 MCP), skill directories (380), manifests (375), services (11 services registered — runtime status varies, run `purpclaw doctor`), cognitive spine (6 engines), vault (encrypted/locked/recovery ready), SpendGate (active), providers (9 configured), dependencies (safe installed, optional quarantined), Pocket OS (launchers present), updater (signed/unsigned status).
-
-Every claim in this README is verifiable by running `purpclaw doctor`. If a number looks wrong, the doctor will tell you.
-
----
+- Canonical soul registry: 95 souls plus 95 interviews.
+- Studio modes: 11 operational behavioural environments.
+- Dynamic Council Mode: Oracle no longer hard-chairs every meeting; domain chairs and relevant specialists are selected by profile.
+- Timeline: persistent organisational event ledger.
+- Presence: rooms can expose occupancy, atmosphere, objects, recent visitors, and traditions.
+- Residue: meetings and incidents leave durable traces.
+- Donor Archaeology: harvested ideas are stored as behavioural laws with provenance and rejected mechanics.
+- Auto-Evolve bridge: donor findings queue into the existing mutator proposal path instead of creating a second evolution engine.
+- AutoResearch front door: `purpclaw autoresearch` and `purpclaw auto-research` route to the existing `E:/training` orchestrator.
+- Folder integration audit: every top-level folder has been mapped with repair batches.
 
 ## Quick Start
 
-**Developer install (5 minutes):**
-```
-git clone https://github.com/weemadscotsman/purpclaw.git
-cd purpclaw
-npm install -g pm2
+```bash
 npm install
-npm run build
-node bin/purpclaw.js safe-start --core
-node bin/purpclaw.js doctor
 node bin/purpclaw.js help
+node bin/purpclaw.js status
 ```
 
-**Pocket OS (USB):**
-```
-node bin/purpclaw.js pocket package ./pocket-build
-```
-Then copy `pocket-build/` to a USB drive and run `START_HERE.bat` (Windows), `START_HERE.sh` (Linux/macOS), or `START_HERE.command` (macOS double-click).
+Core discovery commands:
 
-**Offline/local:**
-```
-# Install Ollama, pull a model
-ollama pull qwen2.5:3b
-# Start PurpClaw
-node bin/purpclaw.js pocket init
-node bin/purpclaw.js pocket mode offline
-node bin/purpclaw.js pocket start
+```bash
+node bin/purpclaw.js next --json
+node bin/purpclaw.js workflow --json
+node bin/purpclaw.js registry audit --json
+node bin/purpclaw.js feature --verify --json
 ```
 
----
+Council and Studio commands:
 
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                    PURPCLAW CLI                          │
-│  purpclaw ask · doctor · pocket · harvest               │
-│  identity · model · show · training · log · audit       │
-│  70+ commands                                            │
-├─────────────────────────────────────────────────────────┤
-│                    THREE SURFACES                       │
-│  CLI  ·  TUI (purpclaw tui)  ·  WebUI (:3030)           │
-├─────────────────────────────────────────────────────────┤
-│                    SERVICE RUNTIME                      │
-│  API (:7780)  ·  Agent Tower (:7790)  ·  Gatekeeper     │
-│  EventBus (:7782)  ·  State Store (:7783)               │
-│  Orchestrator (:7784)  ·  Metrics (:7890)               │
-│  Pool (:7885)  ·  Context Bus (:7881)                   │
-├─────────────────────────────────────────────────────────┤
-│                    COGNITIVE SPINE                      │
-│  :7880 — 6 engines:  memory · rules · modal            │
-│  diagnostics · neuro-symbolic · autodream               │
-│  7 memory layers: episodic · semantic · procedural     │
-│  symbolic · temporal · counterfactual · emotional       │
-├─────────────────────────────────────────────────────────┤
-│                    TOOL REGISTRY                        │
-│  491 tools: 455 built-in + 4 G0DM0D3 + 32 MCP           │
-│  380 skill dirs · 375 manifests                          │
-│  Missing optional deps return install guidance          │
-├─────────────────────────────────────────────────────────┤
-│                    PROVIDER ROUTER                      │
-│  9 providers configured (21 registry keys, 9 usable):   │
-│  Ollama · OpenAI · Anthropic · Gemini · DeepSeek        │
-│  Groq · Mistral · MiniMax · NVIDIA NIM · Together       │
-│  Codex · Atomic Chat · GitHub Models · HuggingFace      │
-│  Cloudflare · Cohere · LM Studio · Kimi · GLM · Custom  │
-│  Per-job routing · Hot-swap mid-session                 │
-├─────────────────────────────────────────────────────────┤
-│                    BUDGET & SECURITY                    │
-│  SpendGate: per-request/daily/monthly caps             │
-│  per-agent caps · per-provider caps · rate limits      │
-│  Encrypted Vault: AES-256-GCM + PBKDF2 200K iterations │
-│  Atomic writes · audit log · recovery key · file lock  │
-│  Signed updater (Ed25519) · hash verify · rollback     │
-├─────────────────────────────────────────────────────────┤
-│                    POCKET OS                            │
-│  USB launcher · environment detection · mode selector  │
-│  Provider setup wizard · SpendGate · audio guide       │
-│  Telemetry loop (local-only) · signed updater · vault  │
-│  Recovery mode · backup/restore · portable identity    │
-└─────────────────────────────────────────────────────────┘
+```bash
+node bin/purpclaw.js council "Should we consolidate the provider router?"
+node bin/purpclaw.js studio modes
+node bin/purpclaw.js timeline recent 10
+node bin/purpclaw.js presence tea_room
+node bin/purpclaw.js residue tea_room
 ```
 
----
+Evolution commands:
 
-## Agent Tower
-
-35 agents across 9 divisions:
-
-| Division | Agents |
-|---|---|
-| **Tier 1** | duck, goose, owl, wolf, phoenix, turtle, mantis, crow, moth, fox |
-| **Media Ops** | duck, ghost, goose, parrot, phoenix, crow, MoneyPrinter (:8080) |
-| **Coding** | C++/Rust, Python, JS/TS, Swift, Audit |
-| **Research** | arxiv, deep-research, web, lead-intelligence, polymarket |
-| **Operations** | deployer, DB ops, data-scraper, CANN.AI Turbo Terminal |
-| **Security** | Smith/Neo adversarial pair, guardian, red-teaming |
-| **Creative** | pixel-art, ascii, excalidraw, architecture-diagram |
-| **Chaos** | raccoon QA, sticky-finger-testing, canary-watch, dogfood |
-
-```
-purpclaw ask duck "analyze this project"
-purpclaw ask goose "run chaos tests"
-purpclaw harvest scan E:\
-purpclaw harvest run
+```bash
+node bin/purpclaw.js autoresearch status
+node bin/purpclaw.js evolve status
+node bin/purpclaw.js donor
+node bin/purpclaw.js donor evolve ambient_tension_from_environment
 ```
 
----
+## Canonical Docs
 
-## Commands
+- `STATUS.md` - current operating status.
+- `ARCHITECTURE.md` - current architecture.
+- `DOCS_INDEX.md` - documentation ownership and status.
+- `CHANGELOG.md` - release history.
+- `docs/audit/FOLDER_INTEGRATION_AUDIT_2026-06-29.md` - folder-by-folder disconnect audit.
+- `docs/audit/SOUL_STUDIO_INSPECTION_2026-06-29.md` - soul/studio subsystem inspection.
+- `docs/spec/ORACLE_WEATHERMAN_WORKFLOW.md` - operational workflow model.
+- `docs/spec/PURPCLAW_COUNCIL_MODE.md` - Council Mode contract.
 
-| Command | Purpose |
-|---|---|
-| `purpclaw doctor` | System health scorecard |
-| `purpclaw health` | Compact diagnostic |
-| `purpclaw pocket ...` | Pocket OS (init/mode/start/vault/spend/telemetry/update) |
-| `purpclaw identity ...` | Portable identity (show/export/import/diff/set/reset) |
-| `purpclaw harvest ...` | Data harvester (scan/run/search/status/convert) — module present, dispatch not yet wired (falls through to default) |
-| `purpclaw model use` | Hot-swap active LLM |
-| `purpclaw show` | Stack status overview |
-| `purpclaw training ...` | Training buffer (status/export/backfill/clear/toggle/dedup/quality/diagnose) |
-| `purpclaw audit` | Code review/audit |
-| `purpclaw logs` | View service logs |
-| `purpclaw model test` | Model smoke test |
-| plus 60+ more (run `purpclaw help` for full list) | |
+## Development Rules
 
-> **Note on "phantom" commands:** `deploy`, `plan`, `security`, `test`, `eval`, `e2e`, `docs`, `refactor`, `fix` either have no loader (no module) or are never dispatched in `bin/purpclaw.js` and currently fall through to the AI chat handler at the default case. They are intentionally NOT listed as runnable commands above. Wiring these is a tracked code-side follow-up.
+- Files are the brain. State lives in registries, memory files, logs, and handoffs.
+- Read `Router.md` before choosing a division.
+- Read the relevant division pickup before work.
+- Write the relevant handoff after work.
+- Do not move folders from audit findings alone. Create ownership/crosswalk registries first, then move only what is proven inactive.
+- For UI work, read `docs/spec/PURPCLAW_UI_CONSOLIDATION_FREEZE/AGENT_RULES.md` first.
 
----
+## Current Repair Priorities
 
-## System Requirements
+1. Route or classify loose command modules.
+2. Fix `purpclaw next` so it detects the live project phase correctly.
+3. Add runtime crosswalk: service -> capability -> surface -> API -> CLI.
+4. Add API route ownership registry.
+5. Wire Registry Audit, Bughunt, AutoResearch, Auto-Evolve, Studio, Donor, and Weatherman into one operational event spine.
 
-**Minimum:**
-- OS: Windows 10+, macOS 13+, Linux (x86_64)
-- RAM: 8 GB
-- Storage: 2 GB (more for local models)
-- CPU: x86-64 (Sandy Bridge 2011+), no AVX2 required
-
-**Recommended for local models:**
-- GPU: 6+ GB VRAM (RTX 2060-class)
-- Ollama or compatible local runtime
-
-**Pocket OS:**
-- Any USB drive (at least 8 GB recommended for models)
-- No admin rights required (click-to-run launcher)
-
----
-
-## Version
-
-**Current: v0.2.0**
-
-[CHANGELOG](CHANGELOG.md) · [CONTRIBUTING](CONTRIBUTING.md) · [SECURITY](SECURITY.md)
-
----
-
-## License
-
-MIT — do what you want with the claw. Just don't blame the raccoon when it turns out you shouldn't have given an AI framework root access to your filesystem and a credit card. 🦀🦝
+PURPCLAW is now best understood as an organisation simulator for local AI work: specialists with identity, shared memory, governance, operational weather, and an evolution loop.

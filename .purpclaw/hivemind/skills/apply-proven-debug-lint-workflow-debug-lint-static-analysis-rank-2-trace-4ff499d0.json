@@ -1,0 +1,58 @@
+{
+  "schema": "purpclaw.hivemind.skill.v1",
+  "kind": "skill",
+  "skill_id": "apply-proven-debug-lint-workflow-debug-lint-static-analysis-rank-2-trace-4ff499d0",
+  "title": "Apply proven debug_lint workflow: debug_lint static_analysis rank-2 trace src",
+  "description": "Promoted from 5 successful PURPCLAW trace(s).",
+  "task_type": "static_analysis",
+  "intent": "debug_lint",
+  "trigger_terms": [
+    "debug_lint",
+    "static_analysis",
+    "rank-2",
+    "trace",
+    "src"
+  ],
+  "steps": [
+    "Inspect likely files first: src/x.ts",
+    "Use proven tools: write_file",
+    "Run targeted commands/checks: echo debug_lint",
+    "Make the smallest safe change that satisfies the task.",
+    "Capture evidence: tool calls, output, tests or explicit verification."
+  ],
+  "avoid": [
+    "Do not expand scope beyond the task without evidence.",
+    "Do not rewrite unrelated files just because the model feels artistic.",
+    "Do not skip verification when a cheap verification path exists."
+  ],
+  "source_trace_ids": [
+    "rank2-debug_lint-1782753633125-10-g4n1",
+    "rank2-debug_lint-1782753633125-11-j890",
+    "rank2-debug_lint-1782753633125-12-1bdc",
+    "rank2-debug_lint-1782753633125-13-qo1n",
+    "rank2-debug_lint-1782753633125-9-6t2w"
+  ],
+  "success_count": 5,
+  "failure_count": 0,
+  "usage_count": 0,
+  "score": 1,
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "verified_execution",
+    "spring_rank": 1,
+    "spring_label": "Pure Spring",
+    "verification": [
+      "[object Object]"
+    ],
+    "trust_score": 0.671,
+    "repeatability": 0.72,
+    "freshness": 1,
+    "evaluated_at": "2026-06-29T18:13:41.769Z"
+  },
+  "created_at": "2026-06-29T17:20:33.247Z",
+  "updated_at": "2026-06-29T18:13:41.770Z",
+  "last_used_at": null,
+  "deprecated": false,
+  "spring_rank": 1,
+  "trust_score": 0.671
+}

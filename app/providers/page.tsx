@@ -1,8 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { CockpitShell } from '../components/CockpitShell';
 
 type LaneCfg = {
   lane: string; label: string; provider: string; model: string;
@@ -24,32 +22,6 @@ function badge(text: string, color: string) {
   return <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: `${color}22`, color, border: `1px solid ${color}55`, textTransform: 'uppercase' }}>{text}</span>;
 }
 
-const PROVIDER_KEY_SETTING: Record<string, string> = {
-  minimax: 'providers.minimaxKey',
-  deepseek: 'providers.deepseekKey',
-  openrouter: 'providers.openrouterKey',
-  nvidia: 'providers.nvidiaKey',
-  kimi: 'providers.kimiKey',
-  moonshot: 'providers.kimiKey',
-  anthropic: 'providers.anthropicKey',
-  gemini: 'providers.geminiKey',
-  openai: 'providers.llmKey',
-  'github-models': 'providers.githubModelsToken',
-  github: 'providers.githubModelsToken',
-};
-
-const keyLink: React.CSSProperties = {
-  fontSize: 10,
-  fontWeight: 800,
-  padding: '2px 7px',
-  borderRadius: 999,
-  background: 'rgba(217,70,239,0.14)',
-  color: '#d946ef',
-  border: '1px solid rgba(217,70,239,0.45)',
-  textDecoration: 'none',
-  textTransform: 'uppercase',
-};
-
 export default function ProvidersPage() {
   const [data, setData] = useState<Resp | null>(null);
   const [edit, setEdit] = useState<Record<string, { provider: string; model: string }>>({});
@@ -62,10 +34,7 @@ export default function ProvidersPage() {
     const d = await fetch('/api/providers', { cache: 'no-store' }).then(r => r.json()).catch(() => null);
     if (d?.ok) setData(d);
   }, []);
-  useEffect(() => {
-    const first = setTimeout(load, 0);
-    return () => clearTimeout(first);
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   // Read-only heartbeat pulse — polls /api/heartbeat. No actions, just status.
   useEffect(() => {
@@ -104,7 +73,7 @@ export default function ProvidersPage() {
   const pct = Math.min(100, Math.round((used / cap) * 100));
 
   return (
-    <CockpitShell title="Providers & Models / Routing">
+    <>
       <div style={{ maxWidth: 1040, margin: '0 auto', padding: '8px 4px 40px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h1 style={{ fontSize: 21, color: 'var(--text-primary)', margin: 0 }}>🛰️ Provider Routing — your models, your call</h1>
@@ -166,12 +135,7 @@ export default function ProvidersPage() {
                   <div style={{ display: 'flex', gap: 8, marginTop: 6, alignItems: 'center' }}>
                     {l.source === 'user-config' ? badge('your choice', '#a78bfa') : l.source === 'env' ? badge('env', '#22d3ee') : badge('default', '#8b7ca8')}
                     {l.fellBackFrom
-                      ? (
-                        <>
-                          {badge(`⚠ fell back from ${l.fellBackFrom} (no key)`, '#fbbf24')}
-                          {PROVIDER_KEY_SETTING[l.fellBackFrom] && <Link href={`/settings?setting=${encodeURIComponent(PROVIDER_KEY_SETTING[l.fellBackFrom])}`} style={keyLink}>Set key</Link>}
-                        </>
-                      )
+                      ? badge(`⚠ fell back from ${l.fellBackFrom} (no key)`, '#fbbf24')
                       : badge('live', '#34d399')}
                     <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>effective: {l.provider}/{l.model}</span>
                   </div>
@@ -189,14 +153,11 @@ export default function ProvidersPage() {
                 <div style={{ fontSize: 12, color: 'var(--text-primary)', fontWeight: 600 }}>{a.provider}</div>
                 <div style={{ marginTop: 3 }}>{a.hasKey ? badge('key', '#34d399') : badge('no key', '#8b7ca8')}</div>
                 <div style={{ fontSize: 10, color: 'var(--text-secondary)', marginTop: 3 }}>{a.models.length} models</div>
-                {!a.hasKey && PROVIDER_KEY_SETTING[a.provider] && (
-                  <Link href={`/settings?setting=${encodeURIComponent(PROVIDER_KEY_SETTING[a.provider])}`} style={{ ...keyLink, marginTop: 7, display: 'inline-block' }}>Set key</Link>
-                )}
               </div>
             ))}
           </div>
         </section>
       </div>
-    </CockpitShell>
+    </>
   );
 }

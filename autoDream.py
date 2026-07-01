@@ -28,6 +28,7 @@ import pickle
 import hashlib
 import threading
 import sqlite3
+import subprocess
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -199,6 +200,7 @@ def dedup():
                 updateEntry(cand['id'], entry['id'], f"[MERGED] {cand.get('text','')[:200]}")
                 state['entriesMerged'] += 1
 
+
     state['lastConsolidation'] = datetime.now().isoformat()
     state['totalCycles'] += 1
     state['lastEntryCount'] = getEntryCount()
@@ -305,6 +307,33 @@ def archiveOldEntries():
 
     return {'archived': len(entries), 'archiveFile': archiveFile, 'bytes': size}
 
+
+# ── Spring/Hivemind Night Shift ──────────────────────────────────────────────
+
+def runHivemindPromotion(dry_run=False):
+    """Ask the Node Hivemind to promote verified traces into skills/doctrine.
+
+    AutoDream remains the night shift: clean memory, extract rules, then let
+    Hivemind promote operational wisdom. Optional and non-fatal; if Node is not
+    available, the dream still completes. Machines, tragically, need naps too.
+    """
+    cli = os.path.join(PURP_DIR, 'hivemind_cli.js')
+    if not os.path.exists(cli):
+        return {'ok': False, 'skipped': 'hivemind_cli_missing'}
+    cmd = ['node', cli, 'promote']
+    if dry_run:
+        cmd.append('--dry-run')
+    try:
+        proc = subprocess.run(cmd, cwd=PURP_DIR, capture_output=True, text=True, timeout=45)
+        payload = None
+        try:
+            payload = json.loads(proc.stdout or '{}')
+        except Exception:
+            payload = {'stdout': (proc.stdout or '')[-2000:]}
+        return {'ok': proc.returncode == 0, 'returncode': proc.returncode, 'result': payload, 'stderr': (proc.stderr or '')[-1000:]}
+    except Exception as exc:
+        return {'ok': False, 'error': str(exc)}
+
 # ── Main Consolidation Cycle ─────────────────────────────────────────────────
 
 def runCycle():
@@ -322,6 +351,7 @@ def runCycle():
         'dedup': None,
         'rules': None,
         'archive': None,
+        'hivemind': None,
         'triggered': entryCount >= CONSOLIDATION_THRESHOLD
     }
 
@@ -346,6 +376,10 @@ def runCycle():
         print(f"[autoDream] Archive: {results['archive']}")
         state['lastArchiveCheck'] = datetime.now().isoformat()
         saveState(state)
+
+    # Promote verified execution traces into Hivemind skills/doctrine after memory cleanup.
+    results['hivemind'] = runHivemindPromotion(dry_run=False)
+    print(f"[autoDream] Hivemind: {results['hivemind']}")
 
     state['lastConsolidation'] = datetime.now().isoformat()
     state['totalCycles'] += 1

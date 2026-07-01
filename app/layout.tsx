@@ -1,16 +1,13 @@
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
-import { AgentStatusBar } from './components/AgentStatusBar';
+import { CockpitShell } from './components/CockpitShell';
 
 export const metadata: Metadata = {
   title: 'PURPCLAW — Autonomous Governance Bridge',
   description: 'PURPCLAW multi-agent orchestration system with real-time swarm visualization',
-  icons: {
-    icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🧠</text></svg>',
-  },
 };
 
-export default function RootLayout({children}: {children: React.ReactNode}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
       <head>
@@ -21,10 +18,7 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
           rel="stylesheet"
         />
       </head>
-      <body suppressHydrationWarning>
-        {children}
-        <AgentStatusBar />
-      </body>
+      <body><CockpitShell>{children}</CockpitShell></body>
     </html>
   );
 }

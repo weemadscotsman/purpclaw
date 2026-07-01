@@ -156,7 +156,59 @@ These files are not documentation. They are law. Every agent reads them in order
 
 ---
 
-## 9. The Promise
+## 9. The Six-Pillar Doctrine
+
+These are the constitution. Not decorative.
+
+```
+1. No doc survives unless runtime proves it.
+
+2. Never code the joke.
+   Code the reason the joke could exist.
+
+3. Never import a feature until the behavioural law is identified.
+
+4. If CLI can do it, every surface must at least see it.
+
+5. Companions are not features.
+   They are the difference between a tool and a place.
+
+6. Self-improvement learns from correction, not creepiness.
+```
+
+---
+
+## 10. Layer Boundaries (Architecture Constraints)
+
+```
+Timeline           = what happened
+Meeting Memory    = what the session meant
+Soul Memory       = what a being believes / fears / knows
+Cognitive Spine   = reasoning, rules, modal logic
+Experience Layer  = Shaman, Mochi, Chorus, Trips, Drops
+Improvement Layer = corrections, HOT/WARM/COLD learning, heartbeat
+Truth Layer       = audits, runtime proof, donor provenance
+```
+
+**Self-Improving ≠ Soul Memory.** Improvement Layer learns execution rules. Soul Memory stores identity. They are separate files, separate namespaces, separate purposes.
+
+**Hard rules:**
+- No layer merger without operator approval
+- No creep inference (Self-Improving does not infer personality)
+- No silent learning (every learned rule is cited and visible)
+- No data leakage between layers
+- No credential storage in any layer
+- No third-party data in any layer without consent
+
+**Red flags — stop immediately:**
+- "Mochi noticed you always X after Y" — Mochi profiling. Violation.
+- "The soul has learned you prefer Z" — Soul merger. Violation.
+- "Timeline shows you were stressed at 11pm" — Timeline as sensor. Violation.
+- "The shaman oracle says you should do X" — Shaman as oracle. Violation.
+
+---
+
+## 11. The Promise
 
 We promise:
 
@@ -170,7 +222,7 @@ We promise:
 
 ## Last Updated
 
-**2026-06-19** — Complete native rewrite. Purged all OpenClaw references. Now the definitive soul of PurpClaw.
+**2026-06-29** — Six-pillar doctrine added. Layer boundaries codified. Self-Improving separated from Soul Memory. Architecture constraints now enforced.
 
 ---
 

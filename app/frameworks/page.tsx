@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CockpitShell } from '../components/CockpitShell';
+
 
 type ArchPattern = 'graph' | 'role-based' | 'event-driven' | 'workflow' | 'tool-runtime';
 type Language = 'python' | 'typescript' | 'rust' | 'go' | 'csharp' | 'java';
@@ -162,7 +162,7 @@ export default function FrameworksPage() {
   }, []);
 
   return (
-    <CockpitShell title="Frameworks Landscape">
+    <>
       <main className="h-full overflow-y-auto bg-[#05070c] text-white">
         <header className="border-b border-cyan-300/10 bg-gradient-to-b from-[#0a0a1a] to-[#05070c] px-6 py-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
@@ -313,7 +313,7 @@ export default function FrameworksPage() {
           </div>
         </section>
       </main>
-    </CockpitShell>
+    </>
   );
 }
 

@@ -1,0 +1,49 @@
+{
+  "schema": "purpclaw.hivemind.skill.v1",
+  "kind": "antiskill",
+  "skill_id": "anti-avoid-failed-syntax-error-pattern-syntax-error-static-analysis-syntax-er-83230b95",
+  "title": "Avoid failed syntax_error pattern: syntax_error static_analysis syntax error module",
+  "description": "SyntaxError: Unexpected token (line 42)",
+  "task_type": "static_analysis",
+  "intent": "syntax_error",
+  "trigger_terms": [
+    "syntax_error",
+    "static_analysis",
+    "syntax",
+    "error",
+    "module",
+    "unexpected",
+    "token"
+  ],
+  "steps": [],
+  "avoid": [
+    "SyntaxError: Unexpected token (line 42)",
+    "Use a different route, smaller scope, or more verification before repeating."
+  ],
+  "source_trace_ids": [
+    "loop-syntax_error-fail-1782756821613-44-kbdt"
+  ],
+  "success_count": 0,
+  "failure_count": 1,
+  "usage_count": 0,
+  "score": 0.55,
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "failed_execution",
+    "spring_rank": 8,
+    "spring_label": "Poisoned Well",
+    "verification": [
+      "[object Object]"
+    ],
+    "trust_score": 0,
+    "repeatability": 0,
+    "freshness": 1,
+    "evaluated_at": "2026-06-29T18:13:42.004Z"
+  },
+  "created_at": "2026-06-29T18:13:42.004Z",
+  "updated_at": "2026-06-29T18:13:42.005Z",
+  "last_used_at": null,
+  "deprecated": false,
+  "spring_rank": 8,
+  "trust_score": 0
+}

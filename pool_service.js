@@ -9,6 +9,9 @@ const path = require('path');
 const PORT = parseInt(process.env.POOL_PORT || '7885', 10);  // Pool service — open knowledge layer
 const PURP_DIR = path.dirname(__filename).replace(/\\/g, '/');
 const SKILLS_DIR = path.join(PURP_DIR, 'skills');
+const HIVEMIND_SKILLS_DIR = path.join(PURP_DIR, '.purpclaw', 'hivemind', 'skills');
+const HIVEMIND_DOCTRINE_DIR = path.join(PURP_DIR, '.purpclaw', 'hivemind', 'doctrine');
+const HIVEMIND_SPRING_INDEX = path.join(PURP_DIR, '.purpclaw', 'hivemind', 'spring-index.json');
 const AGENTS_DIR = path.join(PURP_DIR, 'agents');
 const POOL_DATA       = path.join(PURP_DIR, 'agent_work', 'pool');
 const POOL_INDEX_FILE = path.join(POOL_DATA, 'index.json');
@@ -105,6 +108,57 @@ function scanSkills() {
       });
     } catch { /* skip bad entries */ }
   }
+  // Generated Hivemind skills: runtime-promoted JSON skills from previous runs.
+  // These are not static docs; they are operational assets. The pool indexes them
+  // so chat/UI/agents can discover what the system has learned. Finally, a filing
+  // cabinet that occasionally does something useful.
+  if (fs.existsSync(HIVEMIND_SKILLS_DIR)) {
+    for (const item of fs.readdirSync(HIVEMIND_SKILLS_DIR)) {
+      if (!item.endsWith('.json')) continue;
+      const file = path.join(HIVEMIND_SKILLS_DIR, item);
+      try {
+        const skill = JSON.parse(fs.readFileSync(file, 'utf8'));
+        const name = skill.skill_id || item.replace(/\.json$/, '');
+        out.push({
+          name,
+          description: skill.description || skill.title || '',
+          origin: 'hivemind',
+          type: skill.kind === 'antiskill' ? 'hivemind_antiskill' : 'hivemind_skill',
+          file,
+          score: skill.score || 0,
+          trust_score: skill.trust_score ?? skill.spring?.trust_score ?? null,
+          spring_rank: skill.spring_rank ?? skill.spring?.spring_rank ?? null,
+          spring_label: skill.spring?.spring_label || null,
+          keywords: tokenize(`${name} ${skill.title || ''} ${skill.description || ''} ${(skill.trigger_terms || []).join(' ')}`),
+        });
+      } catch { /* skip malformed promoted skill */ }
+    }
+  }
+
+  // Spring Doctrine: immutable trust rules generated/seeded by Hivemind.
+  if (fs.existsSync(HIVEMIND_DOCTRINE_DIR)) {
+    for (const item of fs.readdirSync(HIVEMIND_DOCTRINE_DIR)) {
+      if (!item.endsWith('.json')) continue;
+      const file = path.join(HIVEMIND_DOCTRINE_DIR, item);
+      try {
+        const doctrine = JSON.parse(fs.readFileSync(file, 'utf8'));
+        const name = doctrine.doctrine_id || item.replace(/\.json$/, '');
+        out.push({
+          name,
+          description: doctrine.statement || doctrine.title || '',
+          origin: 'spring_doctrine',
+          type: 'hivemind_doctrine',
+          file,
+          score: doctrine.trust_score || doctrine.confidence || 0,
+          trust_score: doctrine.trust_score || null,
+          spring_rank: doctrine.spring_rank || doctrine.spring?.spring_rank || 1,
+          spring_label: doctrine.spring?.spring_label || 'Pure Spring',
+          keywords: tokenize(`${name} ${doctrine.title || ''} ${doctrine.statement || ''} ${(doctrine.evidence || []).join(' ')}`),
+        });
+      } catch { /* skip malformed doctrine */ }
+    }
+  }
+
   return out;
 }
 
@@ -157,6 +211,9 @@ function rebuildIndex() {
   poolMeta = {
     indexedAt: new Date().toISOString(),
     skillsCount: skillsIndex.length,
+    hivemindSkillsCount: skillsIndex.filter(s => s.type === 'hivemind_skill').length,
+    hivemindAntiSkillsCount: skillsIndex.filter(s => s.type === 'hivemind_antiskill').length,
+    hivemindDoctrineCount: skillsIndex.filter(s => s.type === 'hivemind_doctrine').length,
     agentsCount: agentsIndex.length,
     routingProfiles: Object.keys(routingIndex).length,
   };
@@ -284,6 +341,14 @@ const ROUTES = {
     if (!profile) return { error: 'agent profile not found', name };
     return { agent: name, ...profile };
   },
+  'GET /pool/hivemind/skills': () => ({
+    count: skillsIndex.filter(s => s.type === 'hivemind_skill' || s.type === 'hivemind_antiskill' || s.type === 'hivemind_doctrine').length,
+    results: skillsIndex.filter(s => s.type === 'hivemind_skill' || s.type === 'hivemind_antiskill' || s.type === 'hivemind_doctrine').map(({ keywords, ...rest }) => rest)
+  }),
+  'GET /pool/hivemind/spring': () => ({
+    springIndex: fs.existsSync(HIVEMIND_SPRING_INDEX) ? JSON.parse(fs.readFileSync(HIVEMIND_SPRING_INDEX, 'utf8')) : null,
+    doctrine: skillsIndex.filter(s => s.type === 'hivemind_doctrine').map(({ keywords, ...rest }) => rest)
+  }),
   'GET /pool/stats': () => ({
     ...poolMeta,
     memories: countLines(MEMORY_FILE),

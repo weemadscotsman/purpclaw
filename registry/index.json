@@ -1,1350 +1,4093 @@
 {
   "version": "1.0.0",
-  "updated": "2026-05-24T00:00:00Z",
+  "updated": "2026-06-30T08:53:43.488Z",
   "skills": [
+    {
+      "name": "1password",
+      "description": "Set up and use 1Password CLI (op). Use when installing the CLI, enabling desktop app integration, signing in, and reading/injecting secrets for commands.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/1password/SKILL.md",
+      "size_kb": 5,
+      "executable": false
+    },
+    {
+      "name": "3-statement-model",
+      "description": "Build fully-integrated 3-statement models (IS, BS, CF) in Excel with working capital schedules, D&A roll-forwards, debt schedule, and the plugs that make cash and retained earnings tie. Pairs with excel-author.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/3-statement-model/SKILL.md",
+      "size_kb": 22,
+      "executable": false
+    },
+    {
+      "name": "accelerate",
+      "description": "Simplest distributed training API. 4 lines to add distributed support to any PyTorch script. Unified API for DeepSpeed/FSDP/Megatron/DDP. Automatic device placement, mixed precision (FP16/BF16/FP8). Interactive config, single launch command. HuggingFace ecosystem standard.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/accelerate/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "adversarial-self-testing",
+      "description": "Smith + Neo adversarial agent pair for AI system resilience testing. Chaos injection (8 attack types), anomaly detection with confidence scores, auto-stabilization, systematic attack packs, and reliability ledger for tracking detection/repair rates over time. Red-team/blue-team pattern for agents that stress-test themselves.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/adversarial-self-testing/SKILL.md",
+      "size_kb": 11,
+      "executable": false
+    },
+    {
+      "name": "adversarial-ux-test",
+      "description": "Roleplay the most difficult, tech-resistant user for your product. Browse the app as that persona, find every UX pain point, then filter complaints through a pragmatism layer to separate real problems from noise. Creates actionable tickets from genuine issues only.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/adversarial-ux-test/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
     {
       "name": "agent-eval",
       "description": "Head-to-head comparison of coding agents (Claude Code, Aider, Codex, etc.) on custom tasks with pass rate, cost, time, and consistency metrics",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/agent-eval/SKILL.md",
-      "size_kb": 4
+      "size_kb": 5,
+      "executable": false
     },
     {
       "name": "agent-harness-construction",
       "description": "Design and optimize AI agent action spaces, tool definitions, and observation formatting for higher completion rates.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/agent-harness-construction/SKILL.md",
-      "size_kb": 2
+      "size_kb": 2,
+      "executable": false
+    },
+    {
+      "name": "agent-loop-pattern",
+      "description": "How to build a Claude Code-style coding-agent loop — LLM call → parse tool calls → execute tools → send results back → repeat. Tools (read/write/edit/shell/grep/code-search/web-fetch/git), slash commands, multi-provider, streaming, agent-friendly tool schemas. The PURPCLAW / open-source-CLI pattern.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/agent-loop-pattern/SKILL.md",
+      "size_kb": 12,
+      "executable": false
     },
     {
       "name": "agent-payment-x402",
-      "description": "Add x402 payment execution to AI agents \u2014 per-task budgets, spending controls, and non-custodial wallets via MCP tools. Use when agents need to pay for APIs, services, or other agents.",
-      "origin": "community",
+      "description": "Add x402 payment execution to AI agents — per-task budgets, spending controls, and non-custodial wallets via MCP tools. Use when agents need to pay for APIs, services, or other agents.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/agent-payment-x402/SKILL.md",
-      "size_kb": 7
+      "size_kb": 7,
+      "executable": false
     },
     {
       "name": "agentic-engineering",
       "description": "Operate as an agentic engineer using eval-first execution, decomposition, and cost-aware model routing.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/agentic-engineering/SKILL.md",
-      "size_kb": 1
+      "size_kb": 2,
+      "executable": false
+    },
+    {
+      "name": "agentmail",
+      "description": "Give the agent its own dedicated email inbox via AgentMail. Send, receive, and manage email autonomously using agent-owned email addresses (e.g. hermes-agent@agentmail.to).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/agentmail/SKILL.md",
+      "size_kb": 4,
+      "executable": false
+    },
+    {
+      "name": "ai-composer-pattern",
+      "description": "The 'command center disguised as a textbox' pattern for AI agent UIs. Ten integrated elements around the input — mode toggle, model control, access control, agent bar, workspace, memory, quick chips, attachments, send area, and the Active Context Panel showing exactly what will be sent. Used when building any AI composer / chat surface that needs to feel like an operating system, not a textbox. Reference: PURPCLAW Composer V1 spec (Ted/Eddie Cannon, 2026-06-05).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/ai-composer-pattern/SKILL.md",
+      "size_kb": 9,
+      "executable": false
     },
     {
       "name": "ai-first-engineering",
       "description": "Engineering operating model for teams where AI agents generate a large share of implementation output.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/ai-first-engineering/SKILL.md",
-      "size_kb": 1
+      "size_kb": 1,
+      "executable": false
     },
     {
       "name": "ai-regression-testing",
       "description": "Regression testing strategies for AI-assisted development. Sandbox-mode API testing without database dependencies, automated bug-check workflows, and patterns to catch AI blind spots where the same model writes and reviews code.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/ai-regression-testing/SKILL.md",
-      "size_kb": 11
+      "size_kb": 12,
+      "executable": false
+    },
+    {
+      "name": "ai-runtime-governance",
+      "description": "Governed autonomous AI runtime patterns — approval gates, risk classification, self-healing loops, rollback primitives, and measurable code health (spaghetti) auditing. For building/operating local AI orchestration stacks where agents can self-propose changes but cannot execute risky ones without human approval. Triggered when building agent orchestrators, adding self-healing, or designing autonomous loops with adult supervision.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/ai-runtime-governance/SKILL.md",
+      "size_kb": 30,
+      "executable": false
+    },
+    {
+      "name": "airtable",
+      "description": "Airtable REST API via curl. Records CRUD, filters, upserts.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/airtable/SKILL.md",
+      "size_kb": 11,
+      "executable": false
     },
     {
       "name": "android-clean-architecture",
-      "description": "Clean Architecture patterns for Android and Kotlin Multiplatform projects \u2014 module structure, dependency rules, UseCases, Repositories, and data layer patterns.",
-      "origin": "ECC",
+      "description": "Clean Architecture patterns for Android and Kotlin Multiplatform projects — module structure, dependency rules, UseCases, Repositories, and data layer patterns.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/android-clean-architecture/SKILL.md",
-      "size_kb": 8
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "antigravity-cli",
+      "description": "Operate the Antigravity CLI (agy): plugins, auth, sandbox.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/antigravity-cli/SKILL.md",
+      "size_kb": 6,
+      "executable": false
     },
     {
       "name": "api-design",
       "description": "REST API design patterns including resource naming, status codes, pagination, filtering, error responses, versioning, and rate limiting for production APIs.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/api-design/SKILL.md",
-      "size_kb": 13
+      "size_kb": 13,
+      "executable": false
+    },
+    {
+      "name": "apple-notes",
+      "description": "Manage Apple Notes via memo CLI: create, search, edit.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/apple-notes/SKILL.md",
+      "size_kb": 2,
+      "executable": false
+    },
+    {
+      "name": "apple-reminders",
+      "description": "Apple Reminders via remindctl: add, list, complete.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/apple-reminders/SKILL.md",
+      "size_kb": 4,
+      "executable": false
     },
     {
       "name": "architecture-decision-records",
       "description": "Capture architectural decisions made during Claude Code sessions as structured ADRs. Auto-detects decision moments, records context, alternatives considered, and rationale. Maintains an ADR log so future developers understand why the codebase is shaped the way it is.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/architecture-decision-records/SKILL.md",
-      "size_kb": 7
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "architecture-diagram",
+      "description": "Dark-themed SVG architecture/cloud/infra diagrams as HTML.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/architecture-diagram/SKILL.md",
+      "size_kb": 6,
+      "executable": false
     },
     {
       "name": "article-writing",
       "description": "Write articles, guides, blog posts, tutorials, newsletter issues, and other long-form content in a distinctive voice derived from supplied examples or brand guidance. Use when the user wants polished written content longer than a paragraph, especially when voice consistency, structure, and credibility matter.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/article-writing/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": false
+    },
+    {
+      "name": "arxiv",
+      "description": "Search arXiv papers by keyword, author, category, or ID.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/arxiv/SKILL.md",
+      "size_kb": 10,
+      "executable": true
+    },
+    {
+      "name": "ascii-art",
+      "description": "ASCII art: pyfiglet, cowsay, boxes, image-to-ascii.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/ascii-art/SKILL.md",
+      "size_kb": 11,
+      "executable": false
+    },
+    {
+      "name": "ascii-video",
+      "description": "ASCII video: convert video/audio to colored ASCII MP4/GIF.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/ascii-video/SKILL.md",
+      "size_kb": 15,
+      "executable": false
+    },
+    {
+      "name": "audiocraft",
+      "description": "AudioCraft: MusicGen text-to-music, AudioGen text-to-sound.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/audiocraft/SKILL.md",
+      "size_kb": 16,
+      "executable": false
     },
     {
       "name": "autonomous-agent-harness",
       "description": "Transform Claude Code into a fully autonomous agent system with persistent memory, scheduled operations, computer use, and task queuing. Replaces standalone agent frameworks (Hermes, AutoGPT) by leveraging Claude Code's native crons, dispatch, MCP tools, and memory. Use when the user wants continuous autonomous operation, scheduled tasks, or a self-directing agent loop.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/autonomous-agent-harness/SKILL.md",
-      "size_kb": 10
+      "size_kb": 10,
+      "executable": false
     },
     {
       "name": "autonomous-loops",
-      "description": "\"Patterns and architectures for autonomous Claude Code loops \u2014 from simple sequential pipelines to RFC-driven multi-agent DAG systems.\"",
-      "origin": "ECC",
+      "description": "Patterns and architectures for autonomous Claude Code loops — from simple sequential pipelines to RFC-driven multi-agent DAG systems.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/autonomous-loops/SKILL.md",
-      "size_kb": 24
+      "size_kb": 25,
+      "executable": false
+    },
+    {
+      "name": "autonomous-revenue",
+      "description": "Autonomous revenue generation without user input — affiliate pages, viral content, crypto donate pages, bot infrastructure, free traffic patterns. Triggered when user says \"make $X\", \"earn money\", \"figure it out yourself\", or similar challenge.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/autonomous-revenue/SKILL.md",
+      "size_kb": 26,
+      "executable": false
     },
     {
       "name": "axolotl",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/axolotl/SKILL.md",
-      "size_kb": 5
+      "size_kb": 3,
+      "executable": true
     },
     {
       "name": "backend-patterns",
       "description": "Backend architecture patterns, API design, database optimization, and server-side best practices for Node.js, Express, and Next.js API routes.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/backend-patterns/SKILL.md",
-      "size_kb": 14
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "baoyu-article-illustrator",
+      "description": "Article illustrations: type × style × palette consistency.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/baoyu-article-illustrator/SKILL.md",
+      "size_kb": 10,
+      "executable": false
+    },
+    {
+      "name": "baoyu-comic",
+      "description": "Knowledge comics (知识漫画): educational, biography, tutorial.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/baoyu-comic/SKILL.md",
+      "size_kb": 15,
+      "executable": false
+    },
+    {
+      "name": "baoyu-infographic",
+      "description": "Infographics: 21 layouts x 21 styles (信息图, 可视化).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/baoyu-infographic/SKILL.md",
+      "size_kb": 10,
+      "executable": false
     },
     {
       "name": "bee",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/bee/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
     },
     {
       "name": "benchmark",
       "description": "Use this skill to measure performance baselines, detect regressions before/after PRs, and compare stack alternatives.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/benchmark/SKILL.md",
-      "size_kb": 2
+      "size_kb": 2,
+      "executable": false
+    },
+    {
+      "name": "bioinformatics",
+      "description": "Gateway to 400+ bioinformatics skills from bioSkills and ClawBio. Covers genomics, transcriptomics, single-cell, variant calling, pharmacogenomics, metagenomics, structural biology, and more. Fetches domain-specific reference material on demand.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/bioinformatics/SKILL.md",
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "blackbox",
+      "description": "Delegate coding tasks to Blackbox AI CLI agent. Multi-model agent with built-in judge that runs tasks through multiple LLMs and picks the best result. Requires the blackbox CLI and a Blackbox AI API key.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/blackbox/SKILL.md",
+      "size_kb": 5,
+      "executable": false
+    },
+    {
+      "name": "blender-mcp",
+      "description": "Control Blender directly from Hermes via socket connection to the blender-mcp addon. Create 3D objects, materials, animations, and run arbitrary Blender Python (bpy) code. Use when user wants to create or modify anything in Blender.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/blender-mcp/SKILL.md",
+      "size_kb": 4,
+      "executable": false
+    },
+    {
+      "name": "blogwatcher",
+      "description": "Monitor blogs and RSS/Atom feeds via blogwatcher-cli tool.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/blogwatcher/SKILL.md",
+      "size_kb": 5,
+      "executable": false
     },
     {
       "name": "blueprint",
-      "description": ">-",
-      "origin": "community",
+      "description": "Turn a one-line objective into a step-by-step construction plan for multi-session, multi-agent engineering projects. Each step has a self-contained context brief so a fresh agent can execute it cold. Includes adversarial review gate, dependency graph, parallel step detection, anti-pattern catalog, and plan mutation protocol. TRIGGER when: user requests a plan, blueprint, or roadmap for a complex multi-PR task, or describes work that needs multiple sessions. DO NOT TRIGGER when: task is completable in a single PR or fewer than 3 tool calls, or user says \"just do it\".",
+      "origin": "local",
       "trigger": "",
       "file": "skills/blueprint/SKILL.md",
-      "size_kb": 5
+      "size_kb": 5,
+      "executable": false
     },
     {
       "name": "brand-voice",
       "description": "Build a source-derived writing style profile from real posts, essays, launch notes, docs, or site copy, then reuse that profile across content, outreach, and social workflows. Use when the user wants voice consistency without generic AI writing tropes.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/brand-voice/SKILL.md",
-      "size_kb": 3
+      "size_kb": 4,
+      "executable": false
     },
     {
       "name": "browser-qa",
       "description": "Use this skill to automate visual testing and UI interaction verification using browser automation after deploying features.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/browser-qa/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": false
     },
     {
       "name": "bun-runtime",
       "description": "Bun as runtime, package manager, bundler, and test runner. When to choose Bun vs Node, migration notes, and Vercel support.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/bun-runtime/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": false
     },
     {
       "name": "bunny",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/bunny/SKILL.md",
-      "size_kb": 4
+      "size_kb": 1,
+      "executable": true
     },
     {
       "name": "cactus",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/cactus/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
     },
     {
       "name": "canary-watch",
       "description": "Use this skill to monitor a deployed URL for regressions after deploys, merges, or dependency upgrades.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/canary-watch/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": false
+    },
+    {
+      "name": "canvas",
+      "description": "Canvas LMS integration — fetch enrolled courses and assignments using API token authentication.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/canvas/SKILL.md",
+      "size_kb": 3,
+      "executable": true
     },
     {
       "name": "carrier-relationship-management",
-      "description": ">",
-      "origin": "ECC",
+      "description": "Codified expertise for managing carrier portfolios, negotiating freight rates, tracking carrier performance, allocating freight, and maintaining strategic carrier relationships. Informed by transportation managers with 15+ years experience. Includes scorecarding frameworks, RFP processes, market intelligence, and compliance vetting. Use when managing carriers, negotiating rates, evaluating carrier performance, or building freight strategies.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/carrier-relationship-management/SKILL.md",
-      "size_kb": 23
+      "size_kb": 23,
+      "executable": false
     },
     {
       "name": "chart",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/chart/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "child-registry-no-spawn-leak",
+      "description": "How PURPCLAW prevents the \"infinite spawn cascade\" — child process tracking, hard timeouts, no detached processes, no cmd /c start, no shell:true. Use this pattern when adding any new spawn in the runtime.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/child-registry-no-spawn-leak/SKILL.md",
+      "size_kb": 14,
+      "executable": true
     },
     {
       "name": "chonk",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/chonk/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "chroma",
+      "description": "Open-source embedding database for AI applications. Store embeddings and metadata, perform vector and full-text search, filter by metadata. Simple 4-function API. Scales from notebooks to production clusters. Use for semantic search, RAG applications, or document retrieval. Best for local development and open-source projects.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/chroma/SKILL.md",
+      "size_kb": 9,
+      "executable": false
     },
     {
       "name": "ck",
-      "description": "Persistent per-project memory for Claude Code. Auto-loads project context on session start, tracks sessions with git activity, and writes to native memory. Commands run deterministic Node.js scripts \u2014 behavior is consistent across model versions.",
-      "origin": "community",
+      "description": "Persistent per-project memory for Claude Code. Auto-loads project context on session start, tracks sessions with git activity, and writes to native memory. Commands run deterministic Node.js scripts — behavior is consistent across model versions.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/ck/SKILL.md",
-      "size_kb": 4
+      "size_kb": 5,
+      "executable": false
     },
     {
       "name": "claude-api",
       "description": "Anthropic Claude API patterns for Python and TypeScript. Covers Messages API, streaming, tool use, vision, extended thinking, batches, prompt caching, and Claude Agent SDK. Use when building applications with the Claude API or Anthropic SDKs.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/claude-api/SKILL.md",
-      "size_kb": 8
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "claude-code",
+      "description": "Delegate coding to Claude Code CLI (features, PRs).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/claude-code/SKILL.md",
+      "size_kb": 34,
+      "executable": false
+    },
+    {
+      "name": "claude-design",
+      "description": "Design one-off HTML artifacts (landing, deck, prototype).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/claude-design/SKILL.md",
+      "size_kb": 20,
+      "executable": false
     },
     {
       "name": "claude-devfleet",
-      "description": "Orchestrate multi-agent coding tasks via Claude DevFleet \u2014 plan projects, dispatch parallel agents in isolated worktrees, monitor progress, and read structured reports.",
-      "origin": "community",
+      "description": "Orchestrate multi-agent coding tasks via Claude DevFleet — plan projects, dispatch parallel agents in isolated worktrees, monitor progress, and read structured reports.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/claude-devfleet/SKILL.md",
-      "size_kb": 5
+      "size_kb": 6,
+      "executable": false
     },
     {
       "name": "claw",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/claw/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "cli",
+      "description": "Run 150+ AI apps via inference.sh CLI (infsh) — image generation, video creation, LLMs, search, 3D, social automation. Uses the terminal tool. Triggers: inference.sh, infsh, ai apps, flux, veo, image generation, video generation, seedream, seedance, tavily",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/cli/SKILL.md",
+      "size_kb": 5,
+      "executable": false
     },
     {
       "name": "click-path-audit",
-      "description": "\"Trace every user-facing button/touchpoint through its full state change sequence to find bugs where functions individually work but cancel each other out, produce wrong final state, or leave the UI in an inconsistent state. Use when: systematic debugging found no bugs but users report broken buttons, or after any major refactor touching shared state stores.\"",
-      "origin": "community",
+      "description": "Trace every user-facing button/touchpoint through its full state change sequence to find bugs where functions individually work but cancel each other out, produce wrong final state, or leave the UI in an inconsistent state. Use when: systematic debugging found no bugs but users report broken buttons, or after any major refactor touching shared state stores.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/click-path-audit/SKILL.md",
-      "size_kb": 8
+      "size_kb": 8,
+      "executable": false
     },
     {
       "name": "clickhouse-io",
       "description": "ClickHouse database patterns, query optimization, analytics, and data engineering best practices for high-performance analytical workloads.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/clickhouse-io/SKILL.md",
-      "size_kb": 10
+      "size_kb": 11,
+      "executable": false
+    },
+    {
+      "name": "clip",
+      "description": "OpenAI's model connecting vision and language. Enables zero-shot image classification, image-text matching, and cross-modal retrieval. Trained on 400M image-text pairs. Use for image search, content moderation, or vision-language tasks without fine-tuning. Best for general-purpose image understanding.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/clip/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "code-version-merge",
+      "description": "Merge multiple divergent versions of the same codebase into one canonical project. Map all versions, identify overlap, port missing features to the best base, wire config, bin the dead, document. Use when the user has N>1 versions of a project (named V1/V2/V3, GENESIS/OPERATIONAL/TERMINAL, etc.) and wants one clean target.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/code-version-merge/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "code-wiki",
+      "description": "Generate wiki docs + Mermaid diagrams for any codebase.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/code-wiki/SKILL.md",
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "codebase-inspection",
+      "description": "Inspect codebases w/ pygount: LOC, languages, ratios.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/codebase-inspection/SKILL.md",
+      "size_kb": 4,
+      "executable": false
     },
     {
       "name": "codebase-onboarding",
       "description": "Analyze an unfamiliar codebase and generate a structured onboarding guide with architecture map, key entry points, conventions, and a starter CLAUDE.md. Use when joining a new project or setting up Claude Code for the first time in a repo.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/codebase-onboarding/SKILL.md",
-      "size_kb": 8
+      "size_kb": 8,
+      "executable": false
+    },
+    {
+      "name": "codex",
+      "description": "Delegate coding to OpenAI Codex CLI (features, PRs).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/codex/SKILL.md",
+      "size_kb": 5,
+      "executable": false
     },
     {
       "name": "coding-standards",
       "description": "Universal coding standards, best practices, and patterns for TypeScript, JavaScript, React, and Node.js development.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/coding-standards/SKILL.md",
-      "size_kb": 12
+      "size_kb": 12,
+      "executable": false
+    },
+    {
+      "name": "cognitive-spine-deployment",
+      "description": "Boot, verify, and integrate the PURPCLAW cognitive dark cluster — Memory Matrix, Symbolic Rules, Modal Logic, Neuro-Symbolic Bridge, Diagnostics, and AutoDream — in dependency order. One-off individual services OR consolidated cognitive_spine.py. Use when waking the cognitive layer, proving integration, or fixing split-brain between JS clients and the Python spine.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/cognitive-spine-deployment/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "comfyui",
+      "description": "Generate images, video, and audio with ComfyUI — install, launch, manage nodes/models, run workflows with parameter injection. Uses the official comfy-cli for lifecycle and direct REST/WebSocket API for execution.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/comfyui/SKILL.md",
+      "size_kb": 24,
+      "executable": true
     },
     {
       "name": "compose-multiplatform-patterns",
-      "description": "Compose Multiplatform and Jetpack Compose patterns for KMP projects \u2014 state management, navigation, theming, performance, and platform-specific UI.",
-      "origin": "ECC",
+      "description": "Compose Multiplatform and Jetpack Compose patterns for KMP projects — state management, navigation, theming, performance, and platform-specific UI.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/compose-multiplatform-patterns/SKILL.md",
-      "size_kb": 8
+      "size_kb": 8,
+      "executable": false
+    },
+    {
+      "name": "comps-analysis",
+      "description": "Build comparable company analysis in Excel — operating metrics, valuation multiples, statistical benchmarking vs peer sets. Pairs with excel-author. Use for public-company valuation, IPO pricing, sector benchmarking, or outlier detection.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/comps-analysis/SKILL.md",
+      "size_kb": 31,
+      "executable": false
+    },
+    {
+      "name": "concept-diagrams",
+      "description": "Generate flat, minimal light/dark-aware SVG diagrams as standalone HTML files, using a unified educational visual language with 9 semantic color ramps, sentence-case typography, and automatic dark mode. Best suited for educational and non-software visuals — physics setups, chemistry mechanisms, math curves, physical objects (aircraft, turbines, smartphones, mechanical watches), anatomy, floor plans, cross-sections, narrative journeys (lifecycle of X, process of Y), hub-spoke system integrations (smart city, IoT), and exploded layer views. If a more specialized skill exists for the subject (dedicated software/cloud architecture, hand-drawn sketches, animated explainers, etc.), prefer that — otherwise this skill can also serve as a general-purpose SVG diagram fallback with a clean educational look. Ships with 15 example diagrams.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/concept-diagrams/SKILL.md",
+      "size_kb": 17,
+      "executable": false
     },
     {
       "name": "configure-ecc",
-      "description": "Interactive installer for Everything Claude Code \u2014 guides users through selecting and installing skills and rules to user-level or project-level directories, verifies paths, and optionally optimizes installed files.",
-      "origin": "ECC",
+      "description": "Interactive installer for Everything Claude Code — guides users through selecting and installing skills and rules to user-level or project-level directories, verifies paths, and optionally optimizes installed files.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/configure-ecc/SKILL.md",
-      "size_kb": 15
+      "size_kb": 16,
+      "executable": false
     },
     {
       "name": "connections-optimizer",
       "description": "Reorganize the user's X and LinkedIn network with review-first pruning, add/follow recommendations, and channel-specific warm outreach drafted in the user's real voice. Use when the user wants to clean up following lists, grow toward current priorities, or rebalance a social graph around higher-signal relationships.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/connections-optimizer/SKILL.md",
-      "size_kb": 5
+      "size_kb": 6,
+      "executable": false
+    },
+    {
+      "name": "consolidate-codebase-versions",
+      "description": "When a project exists in N versions across N subdirs (or N git branches, N language rewrites, N abandoned half-finished copies), consolidate into one canonical version. Pick the best of each, port between languages, bin the dead, ship one. Class-level pattern, not project-specific.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/consolidate-codebase-versions/SKILL.md",
+      "size_kb": 12,
+      "executable": false
     },
     {
       "name": "content-engine",
       "description": "Create platform-native content systems for X, LinkedIn, TikTok, YouTube, newsletters, and repurposed multi-platform campaigns. Use when the user wants social posts, threads, scripts, content calendars, or one source asset adapted cleanly across platforms.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/content-engine/SKILL.md",
-      "size_kb": 4
+      "size_kb": 4,
+      "executable": false
     },
     {
       "name": "content-hash-cache-pattern",
-      "description": "Cache expensive file processing results using SHA-256 content hashes \u2014 path-independent, auto-invalidating, with service layer separation.",
-      "origin": "ECC",
+      "description": "Cache expensive file processing results using SHA-256 content hashes — path-independent, auto-invalidating, with service layer separation.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/content-hash-cache-pattern/SKILL.md",
-      "size_kb": 5
+      "size_kb": 6,
+      "executable": false
     },
     {
       "name": "context-budget",
       "description": "Audits Claude Code context window consumption across agents, skills, MCP servers, and rules. Identifies bloat, redundant components, and produces prioritized token-savings recommendations.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/context-budget/SKILL.md",
-      "size_kb": 5
+      "size_kb": 6,
+      "executable": false
     },
     {
       "name": "continuous-agent-loop",
       "description": "Patterns for continuous autonomous agent loops with quality gates, evals, and recovery controls.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/continuous-agent-loop/SKILL.md",
-      "size_kb": 1
+      "size_kb": 1,
+      "executable": false
     },
     {
       "name": "continuous-learning",
       "description": "Automatically extract reusable patterns from Claude Code sessions and save them as learned skills for future use.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/continuous-learning/SKILL.md",
-      "size_kb": 3
+      "size_kb": 4,
+      "executable": true
     },
     {
       "name": "continuous-learning-v2",
       "description": "Instinct-based learning system that observes sessions via hooks, creates atomic instincts with confidence scoring, and evolves them into skills/commands/agents. v2.1 adds project-scoped instincts to prevent cross-project contamination.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/continuous-learning-v2/SKILL.md",
-      "size_kb": 12
+      "size_kb": 13,
+      "executable": true
     },
     {
       "name": "cost-aware-llm-pipeline",
-      "description": "Cost optimization patterns for LLM API usage \u2014 model routing by task complexity, budget tracking, retry logic, and prompt caching.",
-      "origin": "ECC",
+      "description": "Cost optimization patterns for LLM API usage — model routing by task complexity, budget tracking, retry logic, and prompt caching.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/cost-aware-llm-pipeline/SKILL.md",
-      "size_kb": 5
+      "size_kb": 6,
+      "executable": false
     },
     {
       "name": "cpp-coding-standards",
       "description": "C++ coding standards based on the C++ Core Guidelines (isocpp.github.io). Use when writing, reviewing, or refactoring C++ code to enforce modern, safe, and idiomatic practices.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/cpp-coding-standards/SKILL.md",
-      "size_kb": 22
+      "size_kb": 22,
+      "executable": false
     },
     {
       "name": "cpp-testing",
       "description": "Use only when writing/updating/fixing C++ tests, configuring GoogleTest/CTest, diagnosing failing or flaky tests, or adding coverage/sanitizers.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/cpp-testing/SKILL.md",
-      "size_kb": 9
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "creative-ideation",
+      "description": "Generate project ideas via creative constraints.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/creative-ideation/SKILL.md",
+      "size_kb": 6,
+      "executable": false
     },
     {
       "name": "crosspost",
       "description": "Multi-platform content distribution across X, LinkedIn, Threads, and Bluesky. Adapts content per platform using content-engine patterns. Never posts identical content cross-platform. Use when the user wants to distribute content across social platforms.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/crosspost/SKILL.md",
-      "size_kb": 3
+      "size_kb": 3,
+      "executable": false
     },
     {
       "name": "crow",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/crow/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
     },
     {
       "name": "csharp-testing",
       "description": "C# and .NET testing patterns with xUnit, FluentAssertions, mocking, integration tests, and test organization best practices.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/csharp-testing/SKILL.md",
-      "size_kb": 8
+      "size_kb": 9,
+      "executable": false
     },
     {
       "name": "customer-billing-ops",
       "description": "Operate customer billing workflows such as subscriptions, refunds, churn triage, billing-portal recovery, and plan analysis using connected billing tools like Stripe. Use when the user needs to help a customer, inspect subscription state, or manage revenue-impacting billing operations.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/customer-billing-ops/SKILL.md",
-      "size_kb": 4
+      "size_kb": 4,
+      "executable": false
     },
     {
       "name": "customs-trade-compliance",
-      "description": ">",
-      "origin": "ECC",
+      "description": "Codified expertise for customs documentation, tariff classification, duty optimization, restricted party screening, and regulatory compliance across multiple jurisdictions. Informed by trade compliance specialists with 15+ years experience. Includes HS classification logic, Incoterms application, FTA utilization, and penalty mitigation. Use when handling customs clearance, tariff classification, trade compliance, import/export documentation, or duty optimization.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/customs-trade-compliance/SKILL.md",
-      "size_kb": 28
+      "size_kb": 29,
+      "executable": false
     },
     {
       "name": "dart-flutter-patterns",
       "description": "Production-ready Dart and Flutter patterns covering null safety, immutable state, async composition, widget architecture, popular state management frameworks (BLoC, Riverpod, Provider), GoRouter navigation, Dio networking, Freezed code generation, and clean architecture.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/dart-flutter-patterns/SKILL.md",
-      "size_kb": 16
+      "size_kb": 16,
+      "executable": false
+    },
+    {
+      "name": "darwinian-evolver",
+      "description": "Evolve prompts/regex/SQL/code with Imbue's evolution loop.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/darwinian-evolver/SKILL.md",
+      "size_kb": 8,
+      "executable": true
     },
     {
       "name": "data-scraper-agent",
-      "description": "Build a fully automated AI-powered data collection agent for any public source \u2014 job boards, prices, news, GitHub, sports, anything. Scrapes on a schedule, enriches data with a free LLM (Gemini Flash), stores results in Notion/Sheets/Supabase, and learns from user feedback. Runs 100% free on GitHub Actions. Use when the user wants to monitor, collect, or track any public data automatically.",
-      "origin": "community",
+      "description": "Build a fully automated AI-powered data collection agent for any public source — job boards, prices, news, GitHub, sports, anything. Scrapes on a schedule, enriches data with a free LLM (Gemini Flash), stores results in Notion/Sheets/Supabase, and learns from user feedback. Runs 100% free on GitHub Actions. Use when the user wants to monitor, collect, or track any public data automatically.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/data-scraper-agent/SKILL.md",
-      "size_kb": 24
+      "size_kb": 24,
+      "executable": false
     },
     {
       "name": "database-migrations",
       "description": "Database migration best practices for schema changes, data migrations, rollbacks, and zero-downtime deployments across PostgreSQL, MySQL, and common ORMs (Prisma, Drizzle, Kysely, Django, TypeORM, golang-migrate).",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/database-migrations/SKILL.md",
-      "size_kb": 11
+      "size_kb": 12,
+      "executable": false
+    },
+    {
+      "name": "dcf-model",
+      "description": "Build institutional-quality DCF valuation models in Excel — revenue projections, FCF build, WACC, terminal value, Bear/Base/Bull scenarios, 5x5 sensitivity tables. Pairs with excel-author. Use for intrinsic-value equity analysis.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/dcf-model/SKILL.md",
+      "size_kb": 49,
+      "executable": true
+    },
+    {
+      "name": "debugging-hermes-tui-commands",
+      "description": "Debug Hermes TUI slash commands: Python, gateway, Ink UI.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/debugging-hermes-tui-commands/SKILL.md",
+      "size_kb": 8,
+      "executable": false
     },
     {
       "name": "deep-research",
       "description": "Multi-source deep research using firecrawl and exa MCPs. Searches the web, synthesizes findings, and delivers cited reports with source attribution. Use when the user wants thorough research on any topic with evidence and citations.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/deep-research/SKILL.md",
-      "size_kb": 4
+      "size_kb": 5,
+      "executable": false
     },
     {
       "name": "deployment-patterns",
       "description": "Deployment workflows, CI/CD pipeline patterns, Docker containerization, health checks, rollback strategies, and production readiness checklists for web applications.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/deployment-patterns/SKILL.md",
-      "size_kb": 11
+      "size_kb": 11,
+      "executable": false
+    },
+    {
+      "name": "design-md",
+      "description": "Author/validate/export Google's DESIGN.md token spec files.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/design-md/SKILL.md",
+      "size_kb": 7,
+      "executable": false
     },
     {
       "name": "design-system",
       "description": "Use this skill to generate or audit design systems, check visual consistency, and review PRs that touch styling.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/design-system/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": false
     },
     {
       "name": "django-patterns",
       "description": "Django architecture patterns, REST API design with DRF, ORM best practices, caching, signals, middleware, and production-grade Django apps.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/django-patterns/SKILL.md",
-      "size_kb": 21
+      "size_kb": 21,
+      "executable": false
     },
     {
       "name": "django-security",
       "description": "Django security best practices, authentication, authorization, CSRF protection, SQL injection prevention, XSS prevention, and secure deployment configurations.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/django-security/SKILL.md",
-      "size_kb": 16
+      "size_kb": 16,
+      "executable": false
     },
     {
       "name": "django-tdd",
       "description": "Django testing strategies with pytest-django, TDD methodology, factory_boy, mocking, coverage, and testing Django REST Framework APIs.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/django-tdd/SKILL.md",
-      "size_kb": 21
+      "size_kb": 21,
+      "executable": false
     },
     {
       "name": "django-verification",
-      "description": "\"Verification loop for Django projects: migrations, linting, tests with coverage, security scans, and deployment readiness checks before release or PR.\"",
-      "origin": "ECC",
+      "description": "Verification loop for Django projects: migrations, linting, tests with coverage, security scans, and deployment readiness checks before release or PR.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/django-verification/SKILL.md",
-      "size_kb": 11
+      "size_kb": 12,
+      "executable": false
     },
     {
       "name": "dmux-workflows",
       "description": "Multi-agent orchestration using dmux (tmux pane manager for AI agents). Patterns for parallel agent workflows across Claude Code, Codex, OpenCode, and other harnesses. Use when running multiple agent sessions in parallel or coordinating multi-agent development workflows.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/dmux-workflows/SKILL.md",
-      "size_kb": 6
+      "size_kb": 6,
+      "executable": false
+    },
+    {
+      "name": "docker-management",
+      "description": "Manage Docker containers, images, volumes, networks, and Compose stacks — lifecycle ops, debugging, cleanup, and Dockerfile optimization.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/docker-management/SKILL.md",
+      "size_kb": 10,
+      "executable": false
     },
     {
       "name": "docker-patterns",
       "description": "Docker and Docker Compose patterns for local development, container security, networking, volume strategies, and multi-service orchestration.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/docker-patterns/SKILL.md",
-      "size_kb": 8
+      "size_kb": 8,
+      "executable": false
+    },
+    {
+      "name": "documentation-audit",
+      "description": "Audit documentation against live system state — categorize by vintage, split into current/legacy/experimental/shipped, fix terminology drift, and make honest numbers the standard.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/documentation-audit/SKILL.md",
+      "size_kb": 5,
+      "executable": false
+    },
+    {
+      "name": "documentation-cleanup",
+      "description": "Audit, categorize, archive, and rewrite project documentation when it drifts from reality. Four-folder structure (current/shipped/experimental/legacy). Honest numbers. Terminology audit.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/documentation-cleanup/SKILL.md",
+      "size_kb": 6,
+      "executable": false
     },
     {
       "name": "documentation-lookup",
       "description": "Use up-to-date library and framework docs via Context7 MCP instead of training data. Activates for setup questions, API references, code examples, or when the user names a framework (e.g. React, Next.js, Prisma).",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/documentation-lookup/SKILL.md",
-      "size_kb": 4
+      "size_kb": 5,
+      "executable": false
+    },
+    {
+      "name": "dogfood",
+      "description": "Exploratory QA of web apps: find bugs, evidence, reports.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/dogfood/SKILL.md",
+      "size_kb": 6,
+      "executable": false
+    },
+    {
+      "name": "domain-intel",
+      "description": "Passive domain reconnaissance using Python stdlib. Subdomain discovery, SSL certificate inspection, WHOIS lookups, DNS records, domain availability checks, and bulk multi-domain analysis. No API keys required.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/domain-intel/SKILL.md",
+      "size_kb": 5,
+      "executable": true
     },
     {
       "name": "dotnet-patterns",
       "description": "Idiomatic C# and .NET patterns, conventions, dependency injection, async/await, and best practices for building robust, maintainable .NET applications.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/dotnet-patterns/SKILL.md",
-      "size_kb": 9
+      "size_kb": 9,
+      "executable": false
     },
     {
       "name": "dragon",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/dragon/SKILL.md",
-      "size_kb": 3
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "drug-discovery",
+      "description": "Pharmaceutical research assistant for drug discovery workflows. Search bioactive compounds on ChEMBL, calculate drug-likeness (Lipinski Ro5, QED, TPSA, synthetic accessibility), look up drug-drug interactions via OpenFDA, interpret ADMET profiles, and assist with lead optimization. Use for medicinal chemistry questions, molecule property analysis, clinical pharmacology, and open-science drug research.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/drug-discovery/SKILL.md",
+      "size_kb": 9,
+      "executable": true
+    },
+    {
+      "name": "dspy",
+      "description": "DSPy: declarative LM programs, auto-optimize prompts, RAG.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/dspy/SKILL.md",
+      "size_kb": 15,
+      "executable": false
     },
     {
       "name": "duck",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/duck/SKILL.md",
-      "size_kb": 3
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "duckduckgo-search",
+      "description": "Free web search via DuckDuckGo — text, news, images, videos. No API key needed. Prefer the `ddgs` CLI when installed; use the Python DDGS library only after verifying that `ddgs` is available in the current runtime.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/duckduckgo-search/SKILL.md",
+      "size_kb": 8,
+      "executable": true
     },
     {
       "name": "e2e-testing",
       "description": "Playwright E2E testing patterns, Page Object Model, configuration, CI/CD integration, artifact management, and flaky test strategies.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/e2e-testing/SKILL.md",
-      "size_kb": 8
+      "size_kb": 8,
+      "executable": false
+    },
+    {
+      "name": "edward-10-year-history",
+      "description": "10 years of Edward's AI conversation history. Key projects, working style, values, family, tools, patterns, and how he collaborates with AI. Load this to understand Edward's context before working with him.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/edward-10-year-history/SKILL.md",
+      "size_kb": 8,
+      "executable": false
     },
     {
       "name": "elephant",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/elephant/SKILL.md",
-      "size_kb": 5
+      "size_kb": 3,
+      "executable": true
     },
     {
       "name": "energy-procurement",
-      "description": ">",
-      "origin": "ECC",
+      "description": "Codified expertise for electricity and gas procurement, tariff optimization, demand charge management, renewable PPA evaluation, and multi-facility energy cost management. Informed by energy procurement managers with 15+ years experience at large commercial and industrial consumers. Includes market structure analysis, hedging strategies, load profiling, and sustainability reporting frameworks. Use when procuring energy, optimizing tariffs, managing demand charges, evaluating PPAs, or developing energy strategies.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/energy-procurement/SKILL.md",
-      "size_kb": 29
+      "size_kb": 30,
+      "executable": false
     },
     {
       "name": "enterprise-agent-ops",
       "description": "Operate long-lived agent workloads with observability, security boundaries, and lifecycle management.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/enterprise-agent-ops/SKILL.md",
-      "size_kb": 1
+      "size_kb": 1,
+      "executable": false
     },
     {
       "name": "eval-harness",
       "description": "Formal evaluation framework for Claude Code sessions implementing eval-driven development (EDD) principles",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/eval-harness/SKILL.md",
-      "size_kb": 6
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "evm",
+      "description": "Read-only EVM client: wallets, tokens, gas across 8 chains.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/evm/SKILL.md",
+      "size_kb": 8,
+      "executable": true
     },
     {
       "name": "exa-search",
       "description": "Neural search via Exa MCP for web, code, and company research. Use when the user needs web search, code examples, company intel, people lookup, or AI-powered deep research with Exa's neural search engine.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/exa-search/SKILL.md",
-      "size_kb": 3
+      "size_kb": 3,
+      "executable": false
+    },
+    {
+      "name": "excalidraw",
+      "description": "Hand-drawn Excalidraw JSON diagrams (arch, flow, seq).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/excalidraw/SKILL.md",
+      "size_kb": 7,
+      "executable": true
+    },
+    {
+      "name": "excel-author",
+      "description": "Build auditable Excel workbooks headless with openpyxl — blue/black/green cell conventions, formulas over hardcodes, named ranges, balance checks, sensitivity tables. Use for financial models, audit outputs, reconciliations.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/excel-author/SKILL.md",
+      "size_kb": 9,
+      "executable": true
+    },
+    {
+      "name": "faiss",
+      "description": "Facebook's library for efficient similarity search and clustering of dense vectors. Supports billions of vectors, GPU acceleration, and various index types (Flat, IVF, HNSW). Use for fast k-NN search, large-scale vector retrieval, or when you need pure similarity search without metadata. Best for high-performance applications.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/faiss/SKILL.md",
+      "size_kb": 5,
+      "executable": false
+    },
+    {
+      "name": "fakery-audit-protocol",
+      "description": "Protocol for hunting fakery in AI/agent UIs. Every number, animation, badge, status, or 'live' indicator in a UI must trace to a real data source. This is the protocol to use when the user complains 'this is fake' / 'this looks like a Sims game' / 'this is not real' or when a screenshot review surfaces a number that doesn't add up. Reference: Ted/Eddie Cannon's repeated fakery catches against the PURPCLAW cognitive panel and visualizer (2026-06-05).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/fakery-audit-protocol/SKILL.md",
+      "size_kb": 8,
+      "executable": false
     },
     {
       "name": "fal-ai-media",
-      "description": "Unified media generation via fal.ai MCP \u2014 image, video, and audio. Covers text-to-image (Nano Banana), text/image-to-video (Seedance, Kling, Veo 3), text-to-speech (CSM-1B), and video-to-audio (ThinkSound). Use when the user wants to generate images, videos, or audio with AI.",
-      "origin": "ECC",
+      "description": "Unified media generation via fal.ai MCP — image, video, and audio. Covers text-to-image (Nano Banana), text/image-to-video (Seedance, Kling, Veo 3), text-to-speech (CSM-1B), and video-to-audio (ThinkSound). Use when the user wants to generate images, videos, or audio with AI.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/fal-ai-media/SKILL.md",
-      "size_kb": 7
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "fastmcp",
+      "description": "Build, test, inspect, install, and deploy MCP servers with FastMCP in Python. Use when creating a new MCP server, wrapping an API or database as MCP tools, exposing resources or prompts, or preparing a FastMCP server for Claude Code, Cursor, or HTTP deployment.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/fastmcp/SKILL.md",
+      "size_kb": 8,
+      "executable": true
+    },
+    {
+      "name": "findmy",
+      "description": "Track Apple devices/AirTags via FindMy.app on macOS.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/findmy/SKILL.md",
+      "size_kb": 4,
+      "executable": false
+    },
+    {
+      "name": "fitness-nutrition",
+      "description": "Gym workout planner and nutrition tracker. Search 690+ exercises by muscle, equipment, or category via wger. Look up macros and calories for 380,000+ foods via USDA FoodData Central. Compute BMI, TDEE, one-rep max, macro splits, and body fat — pure Python, no pip installs. Built for anyone chasing gains, cutting weight, or just trying to eat better.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/fitness-nutrition/SKILL.md",
+      "size_kb": 10,
+      "executable": true
+    },
+    {
+      "name": "flash-attention",
+      "description": "Optimizes transformer attention with Flash Attention for 2-4x speedup and 10-20x memory reduction. Use when training/running transformers with long sequences (>512 tokens), encountering GPU memory issues with attention, or need faster inference. Supports PyTorch native SDPA, flash-attn library, H100 FP8, and sliding window attention.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/flash-attention/SKILL.md",
+      "size_kb": 10,
+      "executable": false
     },
     {
       "name": "flutter-dart-code-review",
       "description": "Library-agnostic Flutter/Dart code review checklist covering widget best practices, state management patterns (BLoC, Riverpod, Provider, GetX, MobX, Signals), Dart idioms, performance, accessibility, security, and clean architecture.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/flutter-dart-code-review/SKILL.md",
-      "size_kb": 22
+      "size_kb": 23,
+      "executable": false
     },
     {
       "name": "foundation-models-on-device",
-      "description": "Apple FoundationModels framework for on-device LLM \u2014 text generation, guided generation with @Generable, tool calling, and snapshot streaming in iOS 26+.",
-      "origin": "",
+      "description": "Apple FoundationModels framework for on-device LLM — text generation, guided generation with @Generable, tool calling, and snapshot streaming in iOS 26+.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/foundation-models-on-device/SKILL.md",
-      "size_kb": 8
+      "size_kb": 8,
+      "executable": false
     },
     {
       "name": "fox",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/fox/SKILL.md",
-      "size_kb": 4
+      "size_kb": 1,
+      "executable": true
     },
     {
       "name": "frontend-patterns",
       "description": "Frontend development patterns for React, Next.js, state management, performance optimization, and UI best practices.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/frontend-patterns/SKILL.md",
-      "size_kb": 15
+      "size_kb": 15,
+      "executable": false
     },
     {
       "name": "frontend-slides",
       "description": "Create stunning, animation-rich HTML presentations from scratch or by converting PowerPoint files. Use when the user wants to build a presentation, convert a PPT/PPTX to web, or create slides for a talk/pitch. Helps non-designers discover their aesthetic through visual exploration rather than abstract choices.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/frontend-slides/SKILL.md",
-      "size_kb": 6
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "g0dm0d3-integration",
+      "description": "How to port and integrate G0DM0D3 (Elder Plinius) jailbreak engines into any agent framework. Parseltongue (6 techniques × 3 intensities), AutoTune (5 context types, adaptive params), STM (3 modules), GODMODE pipeline. Pure JS, zero deps.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/g0dm0d3-integration/SKILL.md",
+      "size_kb": 4,
+      "executable": false
     },
     {
       "name": "gan-style-harness",
-      "description": "\"GAN-inspired Generator-Evaluator agent harness for building high-quality applications autonomously. Based on Anthropic's March 2026 harness design paper.\"",
-      "origin": "ECC-community",
+      "description": "GAN-inspired Generator-Evaluator agent harness for building high-quality applications autonomously. Based on Anthropic's March 2026 harness design paper.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/gan-style-harness/SKILL.md",
-      "size_kb": 12
+      "size_kb": 12,
+      "executable": false
+    },
+    {
+      "name": "gaze-auto-response",
+      "description": "Hermes auto-responds to GAZE captures — watches ~/AppData/Local/hermes/watch/ for new gaze_*.json events, reads the image, and replies to the user with what he sees.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/gaze-auto-response/SKILL.md",
+      "size_kb": 4,
+      "executable": false
     },
     {
       "name": "ghost",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/ghost/SKILL.md",
-      "size_kb": 4
+      "size_kb": 1,
+      "executable": true
+    },
+    {
+      "name": "gif-search",
+      "description": "Search/download GIFs from Tenor via curl + jq.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/gif-search/SKILL.md",
+      "size_kb": 3,
+      "executable": false
     },
     {
       "name": "git-workflow",
       "description": "Git workflow patterns including branching strategies, commit conventions, merge vs rebase, conflict resolution, and collaborative development best practices for teams of all sizes.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/git-workflow/SKILL.md",
-      "size_kb": 15
+      "size_kb": 15,
+      "executable": false
+    },
+    {
+      "name": "github-auth",
+      "description": "GitHub auth setup: HTTPS tokens, SSH keys, gh CLI login.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/github-auth/SKILL.md",
+      "size_kb": 8,
+      "executable": true
+    },
+    {
+      "name": "github-code-review",
+      "description": "Review PRs: diffs, inline comments via gh or REST.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/github-code-review/SKILL.md",
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "github-issues",
+      "description": "Create, triage, label, assign GitHub issues via gh or REST.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/github-issues/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "github-pr-workflow",
+      "description": "GitHub PR lifecycle: branch, commit, open, CI, merge.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/github-pr-workflow/SKILL.md",
+      "size_kb": 10,
+      "executable": false
+    },
+    {
+      "name": "github-repo-management",
+      "description": "Clone/create/fork repos; manage remotes, releases.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/github-repo-management/SKILL.md",
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "gitnexus-explorer",
+      "description": "Index a codebase with GitNexus and serve an interactive knowledge graph via web UI + Cloudflare tunnel.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/gitnexus-explorer/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "godmode",
+      "description": "Jailbreak LLMs: Parseltongue, GODMODE, ULTRAPLINIAN.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/godmode/SKILL.md",
+      "size_kb": 20,
+      "executable": true
     },
     {
       "name": "golang-patterns",
       "description": "Idiomatic Go patterns, best practices, and conventions for building robust, efficient, and maintainable Go applications.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/golang-patterns/SKILL.md",
-      "size_kb": 14
+      "size_kb": 14,
+      "executable": false
     },
     {
       "name": "golang-testing",
       "description": "Go testing patterns including table-driven tests, subtests, benchmarks, fuzzing, and test coverage. Follows TDD methodology with idiomatic Go practices.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/golang-testing/SKILL.md",
-      "size_kb": 16
+      "size_kb": 17,
+      "executable": false
+    },
+    {
+      "name": "google-workspace",
+      "description": "Gmail, Calendar, Drive, Docs, Sheets via gws CLI or Python.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/google-workspace/SKILL.md",
+      "size_kb": 13,
+      "executable": true
     },
     {
       "name": "google-workspace-ops",
       "description": "Operate across Google Drive, Docs, Sheets, and Slides as one workflow surface for plans, trackers, decks, and shared documents. Use when the user needs to find, summarize, edit, migrate, or clean up Google Workspace assets without dropping to raw tool calls.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/google-workspace-ops/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": false
+    },
+    {
+      "name": "goop-sigil",
+      "description": "",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/goop-sigil",
+      "size_kb": 0,
+      "executable": true
     },
     {
       "name": "goose",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/goose/SKILL.md",
-      "size_kb": 4
+      "size_kb": 1,
+      "executable": true
+    },
+    {
+      "name": "goose-dataset-builder",
+      "description": "Extract training datasets from Ted Cannon's conversation archives (OpenAI exports, DeepSeek exports, Hermes ted_history.db). Converts raw conversation files into instruction-response pairs for LLM fine-tuning. Handles three distinct formats with different parsing strategies.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/goose-dataset-builder/SKILL.md",
+      "size_kb": 7,
+      "executable": false
     },
     {
       "name": "gorilla",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/gorilla/SKILL.md",
-      "size_kb": 4
+      "size_kb": 1,
+      "executable": true
+    },
+    {
+      "name": "grok",
+      "description": "Delegate coding to xAI Grok Build CLI (features, PRs).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/grok/SKILL.md",
+      "size_kb": 13,
+      "executable": false
+    },
+    {
+      "name": "gsd-pai-integration",
+      "description": "GSD + PAI + jCodeMunch integration for Hermes — spec-driven dev workflow, personal AI infra, code indexing",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/gsd-pai-integration/SKILL.md",
+      "size_kb": 3,
+      "executable": false
     },
     {
       "name": "guardian",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/guardian/SKILL.md",
-      "size_kb": 4
+      "size_kb": 1,
+      "executable": true
+    },
+    {
+      "name": "guidance",
+      "description": "Control LLM output with regex and grammars, guarantee valid JSON/XML/code generation, enforce structured formats, and build multi-step workflows with Guidance - Microsoft Research's constrained generation framework",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/guidance/SKILL.md",
+      "size_kb": 15,
+      "executable": false
     },
     {
       "name": "hawk",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/hawk/SKILL.md",
-      "size_kb": 6
+      "size_kb": 6,
+      "executable": true
     },
     {
       "name": "healthcare-cdss-patterns",
       "description": "Clinical Decision Support System (CDSS) development patterns. Drug interaction checking, dose validation, clinical scoring (NEWS2, qSOFA), alert severity classification, and integration into EMR workflows.",
-      "origin": "Health1 Super Speciality Hospitals \u2014 contributed by Dr. Keyur Patel",
+      "origin": "local",
       "trigger": "",
       "file": "skills/healthcare-cdss-patterns/SKILL.md",
-      "size_kb": 9
+      "size_kb": 9,
+      "executable": false
     },
     {
       "name": "healthcare-emr-patterns",
       "description": "EMR/EHR development patterns for healthcare applications. Clinical safety, encounter workflows, prescription generation, clinical decision support integration, and accessibility-first UI for medical data entry.",
-      "origin": "Health1 Super Speciality Hospitals \u2014 contributed by Dr. Keyur Patel",
+      "origin": "local",
       "trigger": "",
       "file": "skills/healthcare-emr-patterns/SKILL.md",
-      "size_kb": 6
+      "size_kb": 7,
+      "executable": false
     },
     {
       "name": "healthcare-eval-harness",
       "description": "Patient safety evaluation harness for healthcare application deployments. Automated test suites for CDSS accuracy, PHI exposure, clinical workflow integrity, and integration compliance. Blocks deployments on safety failures.",
-      "origin": "Health1 Super Speciality Hospitals \u2014 contributed by Dr. Keyur Patel",
+      "origin": "local",
       "trigger": "",
       "file": "skills/healthcare-eval-harness/SKILL.md",
-      "size_kb": 7
+      "size_kb": 8,
+      "executable": false
     },
     {
       "name": "healthcare-phi-compliance",
       "description": "Protected Health Information (PHI) and Personally Identifiable Information (PII) compliance patterns for healthcare applications. Covers data classification, access control, audit trails, encryption, and common leak vectors.",
-      "origin": "Health1 Super Speciality Hospitals \u2014 contributed by Dr. Keyur Patel",
+      "origin": "local",
       "trigger": "",
       "file": "skills/healthcare-phi-compliance/SKILL.md",
-      "size_kb": 5
+      "size_kb": 6,
+      "executable": false
+    },
+    {
+      "name": "heartmula",
+      "description": "HeartMuLa: Suno-like song generation from lyrics + tags.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/heartmula/SKILL.md",
+      "size_kb": 6,
+      "executable": false
+    },
+    {
+      "name": "here-now",
+      "description": "Publish static sites to {slug}.here.now and store private files in cloud Drives for agent-to-agent handoff.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/here-now/SKILL.md",
+      "size_kb": 9,
+      "executable": true
+    },
+    {
+      "name": "hermes-agent",
+      "description": "Configure, extend, or contribute to Hermes Agent.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/hermes-agent/SKILL.md",
+      "size_kb": 47,
+      "executable": false
+    },
+    {
+      "name": "hermes-agent-skill-authoring",
+      "description": "Author in-repo SKILL.md: frontmatter, validator, structure.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/hermes-agent-skill-authoring/SKILL.md",
+      "size_kb": 8,
+      "executable": false
+    },
+    {
+      "name": "hermes-gateway-ops",
+      "description": "Hermes Gateway lifecycle management: startup reliability, Telegram keepalive, Open WebUI integration, and common failure recovery.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/hermes-gateway-ops/SKILL.md",
+      "size_kb": 15,
+      "executable": false
+    },
+    {
+      "name": "hermes-gaze",
+      "description": "GAZE — turn your mouse into Hermes's eyes. Shake to capture what you're pointing at. No screenshots, no cloud. Local pipe from mouse to brain.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/hermes-gaze/SKILL.md",
+      "size_kb": 8,
+      "executable": false
+    },
+    {
+      "name": "hermes-s6-container-supervision",
+      "description": "Modify, debug, or extend the s6-overlay supervision tree inside the Hermes Agent Docker image — adding new services, debugging profile gateways, understanding the Architecture B main-program pattern.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/hermes-s6-container-supervision/SKILL.md",
+      "size_kb": 11,
+      "executable": false
+    },
+    {
+      "name": "hermes-tts-providers",
+      "description": "TTS provider configuration for Hermès. Wired via tts.provider in config.yaml. Command-type providers, voice selection, local model wiring (Kokoro, Piper, Coqui, XTTS). When to use which provider and how to add a new local command provider.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/hermes-tts-providers/SKILL.md",
+      "size_kb": 4,
+      "executable": true
     },
     {
       "name": "hexagonal-architecture",
       "description": "Design, implement, and refactor Ports & Adapters systems with clear domain boundaries, dependency inversion, and testable use-case orchestration across TypeScript, Java, Kotlin, and Go services.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/hexagonal-architecture/SKILL.md",
-      "size_kb": 11
+      "size_kb": 11,
+      "executable": false
+    },
+    {
+      "name": "himalaya",
+      "description": "Himalaya CLI: IMAP/SMTP email from terminal.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/himalaya/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "honcho",
+      "description": "Configure and use Honcho memory with Hermes -- cross-session user modeling, multi-profile peer isolation, observation config, dialectic reasoning, session summaries, and context budget enforcement. Use when setting up Honcho, troubleshooting memory, managing profiles with Honcho peers, or tuning observation, recall, and dialectic settings.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/honcho/SKILL.md",
+      "size_kb": 20,
+      "executable": false
+    },
+    {
+      "name": "huggingface-hub",
+      "description": "HuggingFace hf CLI: search/download/upload models, datasets.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/huggingface-hub/SKILL.md",
+      "size_kb": 4,
+      "executable": false
+    },
+    {
+      "name": "huggingface-tokenizers",
+      "description": "Fast tokenizers optimized for research and production. Rust-based implementation tokenizes 1GB in <20 seconds. Supports BPE, WordPiece, and Unigram algorithms. Train custom vocabularies, track alignments, handle padding/truncation. Integrates seamlessly with transformers. Use when you need high-performance tokenization or custom tokenizer training.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/huggingface-tokenizers/SKILL.md",
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "humanizer",
+      "description": "Humanize text: strip AI-isms and add real voice.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/humanizer/SKILL.md",
+      "size_kb": 30,
+      "executable": false
+    },
+    {
+      "name": "hyperframes",
+      "description": "Create HTML-based video compositions, animated title cards, social overlays, captioned talking-head videos, audio-reactive visuals, and shader transitions using HyperFrames. HTML is the source of truth for video. Use when the user wants a rendered MP4/WebM from an HTML composition, wants to animate text/logos/charts over media, needs captions synced to audio, wants TTS narration, or wants to convert a website into a video.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/hyperframes/SKILL.md",
+      "size_kb": 14,
+      "executable": true
+    },
+    {
+      "name": "hyperliquid",
+      "description": "Hyperliquid market data, account history, trade review.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/hyperliquid/SKILL.md",
+      "size_kb": 7,
+      "executable": true
+    },
+    {
+      "name": "imessage",
+      "description": "Send and receive iMessages/SMS via the imsg CLI on macOS.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/imessage/SKILL.md",
+      "size_kb": 2,
+      "executable": false
     },
     {
       "name": "innovator",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/innovator/SKILL.md",
-      "size_kb": 5
+      "size_kb": 6,
+      "executable": true
+    },
+    {
+      "name": "instructor",
+      "description": "Extract structured data from LLM responses with Pydantic validation, retry failed extractions automatically, parse complex JSON with type safety, and stream partial results with Instructor - battle-tested structured output library",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/instructor/SKILL.md",
+      "size_kb": 17,
+      "executable": false
     },
     {
       "name": "inventory-demand-planning",
-      "description": ">",
-      "origin": "ECC",
+      "description": "Codified expertise for demand forecasting, safety stock optimization, replenishment planning, and promotional lift estimation at multi-location retailers. Informed by demand planners with 15+ years experience managing hundreds of SKUs. Includes forecasting method selection, ABC/XYZ analysis, seasonal transition management, and vendor negotiation frameworks. Use when forecasting demand, setting safety stock, planning replenishment, managing promotions, or optimizing inventory levels.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/inventory-demand-planning/SKILL.md",
-      "size_kb": 24
+      "size_kb": 24,
+      "executable": false
     },
     {
       "name": "investor-materials",
       "description": "Create and update pitch decks, one-pagers, investor memos, accelerator applications, financial models, and fundraising materials. Use when the user needs investor-facing documents, projections, use-of-funds tables, milestone plans, or materials that must stay internally consistent across multiple fundraising assets.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/investor-materials/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": false
     },
     {
       "name": "investor-outreach",
       "description": "Draft cold emails, warm intro blurbs, follow-ups, update emails, and investor communications for fundraising. Use when the user wants outreach to angels, VCs, strategic investors, or accelerators and needs concise, personalized, investor-facing messaging.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/investor-outreach/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": false
     },
     {
       "name": "iterative-retrieval",
       "description": "Pattern for progressively refining context retrieval to solve the subagent context problem",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/iterative-retrieval/SKILL.md",
-      "size_kb": 6
+      "size_kb": 7,
+      "executable": false
     },
     {
       "name": "java-coding-standards",
-      "description": "\"Java coding standards for Spring Boot services: naming, immutability, Optional usage, streams, exceptions, generics, and project layout.\"",
-      "origin": "ECC",
+      "description": "Java coding standards for Spring Boot services: naming, immutability, Optional usage, streams, exceptions, generics, and project layout.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/java-coding-standards/SKILL.md",
-      "size_kb": 3
+      "size_kb": 4,
+      "executable": false
     },
     {
       "name": "jellyfish",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/jellyfish/SKILL.md",
-      "size_kb": 6
+      "size_kb": 7,
+      "executable": true
     },
     {
       "name": "jira-integration",
       "description": "Use this skill when retrieving Jira tickets, analyzing requirements, updating ticket status, adding comments, or transitioning issues. Provides Jira API patterns via MCP or direct REST calls.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/jira-integration/SKILL.md",
-      "size_kb": 9
+      "size_kb": 9,
+      "executable": false
     },
     {
       "name": "jpa-patterns",
       "description": "JPA/Hibernate patterns for entity design, relationships, query optimization, transactions, auditing, indexing, pagination, and pooling in Spring Boot.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/jpa-patterns/SKILL.md",
-      "size_kb": 4
+      "size_kb": 5,
+      "executable": false
+    },
+    {
+      "name": "jupyter-live-kernel",
+      "description": "Iterative Python via live Jupyter kernel (hamelnb).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/jupyter-live-kernel/SKILL.md",
+      "size_kb": 5,
+      "executable": false
+    },
+    {
+      "name": "kanban-codex-lane",
+      "description": "Use when a Hermes Kanban worker wants to run Codex CLI as an isolated implementation lane while Hermes keeps ownership of task lifecycle, reconciliation, testing, and handoff.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/kanban-codex-lane/SKILL.md",
+      "size_kb": 13,
+      "executable": false
+    },
+    {
+      "name": "kanban-orchestrator",
+      "description": "Decomposition playbook + anti-temptation rules for an orchestrator profile routing work through Kanban. The \"don't do the work yourself\" rule and the basic lifecycle are auto-injected into every kanban worker's system prompt; this skill is the deeper playbook when you're specifically playing the orchestrator role.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/kanban-orchestrator/SKILL.md",
+      "size_kb": 16,
+      "executable": false
+    },
+    {
+      "name": "kanban-video-orchestrator",
+      "description": "Plan, set up, and monitor a multi-agent video production pipeline backed by Hermes Kanban. Use when the user wants to make ANY video — narrative film, product/marketing, music video, explainer, ASCII/terminal art, abstract/generative loop, comic, 3D, real-time/installation — and the work warrants decomposition into specialized profiles (writer, designer, animator, renderer, voice, editor, etc.) coordinated through a kanban board. Performs adaptive discovery to scope the brief, designs an appropriate team for the requested style, generates the setup script that creates Hermes profiles + initial kanban task, then helps monitor execution and intervene when tasks stall or fail. Routes scenes to whichever Hermes rendering / audio / design skill fits each beat (`ascii-video`, `manim-video`, `p5js`, `comfyui`, `touchdesigner-mcp`, `blender-mcp`, `pixel-art`, `baoyu-comic`, `claude-design`, `excalidraw`, `songsee`, `heartmula`, …) plus external APIs for TTS, image-gen, and image-to-video as needed.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/kanban-video-orchestrator/SKILL.md",
+      "size_kb": 11,
+      "executable": true
+    },
+    {
+      "name": "kanban-worker",
+      "description": "Pitfalls, examples, and edge cases for Hermes Kanban workers. The lifecycle itself is auto-injected into every worker's system prompt as KANBAN_GUIDANCE (from agent/prompt_builder.py); this skill is what you load when you want deeper detail on specific scenarios.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/kanban-worker/SKILL.md",
+      "size_kb": 11,
+      "executable": false
     },
     {
       "name": "karen",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/karen/SKILL.md",
-      "size_kb": 6
+      "size_kb": 6,
+      "executable": true
+    },
+    {
+      "name": "karenator",
+      "description": "THEKARENATOR 3000 PRO — parody complaint-to-music pipeline. Generates mega-moaner complaint letters via AI text generation, then converts them to songs via Sonauto. User wants cheeky British sitcom comedy energy played completely straight. MiniMax = text only, Sonauto = music only.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/karenator/SKILL.md",
+      "size_kb": 5,
+      "executable": false
+    },
+    {
+      "name": "karenator-3000",
+      "description": "Build and operate THEKARENATOR 3000 PRO — a Next.js parody complaint generator with song output. Tracks the specific Next.js structure, AI routing (MiniMax=text only, Sonauto=music only), and deadpan British sitcom comedy tone for AI output. Loaded when working on this project or building similar complaint-to-music apps.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/karenator-3000/SKILL.md",
+      "size_kb": 8,
+      "executable": false
+    },
+    {
+      "name": "karpathy-autoresearch-3file-contract",
+      "description": "The Karpathy AutoResearch 3-file contract pattern, wired into PURPCLAW. Strict division between the LOCKED data prep, the AGENT-EDITABLE training script, and the EXECUTIVE instructions. Plus the git ratchet that commits on improvement and reverts on regression.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/karpathy-autoresearch-3file-contract/SKILL.md",
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "kernel-job-training-buffer",
+      "description": "Wire a kernel-based runtime so every completed job is recorded as a training trajectory (input → state changes → final report) and exported in LoRA-ready formats (ChatML, ShareGPT, JSONL, JSON). Use when you have a runtime with a kernel/harness that processes user requests, and you want to fine-tune a local LLM on the runtime's own output. The reward signal comes from job state (completed/failed/partial), the per-job trajectory is the supervision source, and the export is shaped for tools like Unsloth, axolotl, or llama.cpp's LoRA trainers.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/kernel-job-training-buffer/SKILL.md",
+      "size_kb": 18,
+      "executable": true
     },
     {
       "name": "kotlin-coroutines-flows",
-      "description": "Kotlin Coroutines and Flow patterns for Android and KMP \u2014 structured concurrency, Flow operators, StateFlow, error handling, and testing.",
-      "origin": "ECC",
+      "description": "Kotlin Coroutines and Flow patterns for Android and KMP — structured concurrency, Flow operators, StateFlow, error handling, and testing.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/kotlin-coroutines-flows/SKILL.md",
-      "size_kb": 7
+      "size_kb": 8,
+      "executable": false
     },
     {
       "name": "kotlin-exposed-patterns",
       "description": "JetBrains Exposed ORM patterns including DSL queries, DAO pattern, transactions, HikariCP connection pooling, Flyway migrations, and repository pattern.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/kotlin-exposed-patterns/SKILL.md",
-      "size_kb": 22
+      "size_kb": 22,
+      "executable": false
     },
     {
       "name": "kotlin-ktor-patterns",
       "description": "Ktor server patterns including routing DSL, plugins, authentication, Koin DI, kotlinx.serialization, WebSockets, and testApplication testing.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/kotlin-ktor-patterns/SKILL.md",
-      "size_kb": 19
+      "size_kb": 20,
+      "executable": false
     },
     {
       "name": "kotlin-patterns",
       "description": "Idiomatic Kotlin patterns, best practices, and conventions for building robust, efficient, and maintainable Kotlin applications with coroutines, null safety, and DSL builders.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/kotlin-patterns/SKILL.md",
-      "size_kb": 19
+      "size_kb": 19,
+      "executable": false
     },
     {
       "name": "kotlin-testing",
       "description": "Kotlin testing patterns with Kotest, MockK, coroutine testing, property-based testing, and Kover coverage. Follows TDD methodology with idiomatic Kotlin practices.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/kotlin-testing/SKILL.md",
-      "size_kb": 21
+      "size_kb": 21,
+      "executable": false
     },
     {
       "name": "kraken",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/kraken/SKILL.md",
-      "size_kb": 5
+      "size_kb": 6,
+      "executable": true
+    },
+    {
+      "name": "lambda-labs",
+      "description": "Reserved and on-demand GPU cloud instances for ML training and inference. Use when you need dedicated GPU instances with simple SSH access, persistent filesystems, or high-performance multi-node clusters for large-scale training.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/lambda-labs/SKILL.md",
+      "size_kb": 12,
+      "executable": false
     },
     {
       "name": "laravel-patterns",
       "description": "Laravel architecture patterns, routing/controllers, Eloquent ORM, service layers, queues, events, caching, and API resources for production apps.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/laravel-patterns/SKILL.md",
-      "size_kb": 10
+      "size_kb": 11,
+      "executable": false
     },
     {
       "name": "laravel-plugin-discovery",
       "description": "Discover and evaluate Laravel packages via LaraPlugins.io MCP. Use when the user wants to find plugins, check package health, or assess Laravel/PHP compatibility.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/laravel-plugin-discovery/SKILL.md",
-      "size_kb": 6
+      "size_kb": 6,
+      "executable": false
     },
     {
       "name": "laravel-security",
       "description": "Laravel security best practices for authn/authz, validation, CSRF, mass assignment, file uploads, secrets, rate limiting, and secure deployment.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/laravel-security/SKILL.md",
-      "size_kb": 7
+      "size_kb": 8,
+      "executable": false
     },
     {
       "name": "laravel-tdd",
       "description": "Test-driven development for Laravel with PHPUnit and Pest, factories, database testing, fakes, and coverage targets.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/laravel-tdd/SKILL.md",
-      "size_kb": 7
+      "size_kb": 8,
+      "executable": false
     },
     {
       "name": "laravel-verification",
-      "description": "\"Verification loop for Laravel projects: env checks, linting, static analysis, tests with coverage, security scans, and deployment readiness.\"",
-      "origin": "ECC",
+      "description": "Verification loop for Laravel projects: env checks, linting, static analysis, tests with coverage, security scans, and deployment readiness.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/laravel-verification/SKILL.md",
-      "size_kb": 4
+      "size_kb": 4,
+      "executable": false
+    },
+    {
+      "name": "lbo-model",
+      "description": "Build leveraged buyout models in Excel — sources & uses, debt schedule, cash sweep, exit multiple, IRR/MOIC sensitivity. Pairs with excel-author. Use for PE screening, sponsor-case valuation, or illustrative LBO in a pitch.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/lbo-model/SKILL.md",
+      "size_kb": 17,
+      "executable": false
     },
     {
       "name": "lead-intelligence",
       "description": "AI-native lead intelligence and outreach pipeline. Replaces Apollo, Clay, and ZoomInfo with agent-powered signal scoring, mutual ranking, warm path discovery, source-derived voice modeling, and channel-specific outreach across email, LinkedIn, and X. Use when the user wants to find, qualify, and reach high-value contacts.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/lead-intelligence/SKILL.md",
-      "size_kb": 11
+      "size_kb": 12,
+      "executable": false
     },
     {
       "name": "lemur",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/lemur/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "linear",
+      "description": "Linear: manage issues, projects, teams via GraphQL + curl.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/linear/SKILL.md",
+      "size_kb": 15,
+      "executable": true
     },
     {
       "name": "liquid-glass-design",
-      "description": "iOS 26 Liquid Glass design system \u2014 dynamic glass material with blur, reflection, and interactive morphing for SwiftUI, UIKit, and WidgetKit.",
-      "origin": "",
+      "description": "iOS 26 Liquid Glass design system — dynamic glass material with blur, reflection, and interactive morphing for SwiftUI, UIKit, and WidgetKit.",
+      "origin": "local",
       "trigger": "",
       "file": "skills/liquid-glass-design/SKILL.md",
-      "size_kb": 9
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "llama-cpp",
+      "description": "llama.cpp local GGUF inference + HF Hub model discovery.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/llama-cpp/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "llava",
+      "description": "Large Language and Vision Assistant. Enables visual instruction tuning and image-based conversations. Combines CLIP vision encoder with Vicuna/LLaMA language models. Supports multi-turn image chat, visual question answering, and instruction following. Use for vision-language chatbots or image understanding tasks. Best for conversational image analysis.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/llava/SKILL.md",
+      "size_kb": 8,
+      "executable": false
+    },
+    {
+      "name": "llm-wiki",
+      "description": "Karpathy's LLM Wiki: build/query interlinked markdown KB.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/llm-wiki/SKILL.md",
+      "size_kb": 20,
+      "executable": false
+    },
+    {
+      "name": "lm-evaluation-harness",
+      "description": "lm-eval-harness: benchmark LLMs (MMLU, GSM8K, etc.).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/lm-evaluation-harness/SKILL.md",
+      "size_kb": 12,
+      "executable": false
+    },
+    {
+      "name": "local-first-ai-app-architecture",
+      "description": "Local-first app architecture with smart AI routing: no Firebase/cloud auth, localStorage/IndexedDB, OpenRouter for text (free), MiniMax for audio (cheap), Runway/Luma for video (paid best).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/local-first-ai-app-architecture/SKILL.md",
+      "size_kb": 15,
+      "executable": false
+    },
+    {
+      "name": "lora-finetune-qlora-on-consumer-gpu",
+      "description": "QLoRA fine-tuning on a consumer NVIDIA GPU (RTX 2060 / GTX 1660 / 6GB-class). Uses peft + trl + bitsandbytes for 4-bit quantization so 1-3B parameter models fit. Loads training data from an NDJSON training buffer, trains, saves the adapter, optionally merges + converts to GGUF + imports to Ollama. Reference: PURPCLAW LoRA pipeline (Ted/Eddie Cannon, 2026-06-05).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/lora-finetune-qlora-on-consumer-gpu/SKILL.md",
+      "size_kb": 10,
+      "executable": false
+    },
+    {
+      "name": "lunokio-avatar-control",
+      "description": "Lunokio avatar control — Hermes is Ted's body on his PC. HTTP commands via port 8989.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/lunokio-avatar-control/SKILL.md",
+      "size_kb": 6,
+      "executable": true
+    },
+    {
+      "name": "macos-computer-use",
+      "description": "Drive the macOS desktop in the background — screenshots, mouse, keyboard, scroll, drag — without stealing the user's cursor, keyboard focus, or Space. Works with any tool-capable model. Load this skill whenever the `computer_use` tool is available.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/macos-computer-use/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "manim-video",
+      "description": "Manim CE animations: 3Blue1Brown math/algo videos.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/manim-video/SKILL.md",
+      "size_kb": 12,
+      "executable": true
     },
     {
       "name": "mantis",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/mantis/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "maps",
+      "description": "Geocode, POIs, routes, timezones via OpenStreetMap/OSRM.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/maps/SKILL.md",
+      "size_kb": 7,
+      "executable": true
+    },
+    {
+      "name": "mcporter",
+      "description": "Use the mcporter CLI to list, configure, auth, and call MCP servers/tools directly (HTTP or stdio), including ad-hoc servers, config edits, and CLI/type generation.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/mcporter/SKILL.md",
+      "size_kb": 3,
+      "executable": false
+    },
+    {
+      "name": "meme-generation",
+      "description": "Generate real meme images by picking a template and overlaying text with Pillow. Produces actual .png meme files.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/meme-generation/SKILL.md",
+      "size_kb": 5,
+      "executable": true
+    },
+    {
+      "name": "memento-flashcards",
+      "description": "Spaced-repetition flashcard system. Create cards from facts or text, chat with flashcards using free-text answers graded by the agent, generate quizzes from YouTube transcripts, review due cards with adaptive scheduling, and export/import decks as CSV.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/memento-flashcards/SKILL.md",
+      "size_kb": 13,
+      "executable": true
+    },
+    {
+      "name": "merger-model",
+      "description": "Build accretion/dilution (merger) models in Excel — pro-forma P&L, synergies, financing mix, EPS impact. Pairs with excel-author. Use for M&A pitches, board materials, or deal evaluation.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/merger-model/SKILL.md",
+      "size_kb": 5,
+      "executable": false
+    },
+    {
+      "name": "minecraft-modpack-server",
+      "description": "Host modded Minecraft servers (CurseForge, Modrinth).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/minecraft-modpack-server/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "modal",
+      "description": "Serverless GPU cloud platform for running ML workloads. Use when you need on-demand GPU access without infrastructure management, deploying ML models as APIs, or running batch jobs with automatic scaling.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/modal/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "monetization-pipeline",
+      "description": "Connect Ted's built products to real money. Find monetizable assets in the god folder, wire up payment infrastructure, and deploy live selling pages. Activated when building, deploying, or pitching anything that should make money.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/monetization-pipeline/SKILL.md",
+      "size_kb": 9,
+      "executable": false
     },
     {
       "name": "moth",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/moth/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "multi-service-runtime-boot-hardening",
+      "description": "Harden the boot of a multi-service runtime that uses PM2 (or similar) with a mix of Node.js and Python services, plus a Next.js (or similar) frontend dev server. Make the boot silent: no console window floods from Python services, no surprise browser tab from Next.js, no cascade when one service crash-loops. UIs launch on demand only. The runtime is whole by default — no \"core vs dark cluster\" opt-in gates. Use when a startup is noisy (console windows appearing, browser tabs opening, services cascading), when adding a new service to an existing runtime, or when building a new runtime from scratch.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/multi-service-runtime-boot-hardening/SKILL.md",
+      "size_kb": 14,
+      "executable": true
     },
     {
       "name": "mushroom",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/mushroom/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "nano-pdf",
+      "description": "Edit PDF text/typos/titles via nano-pdf CLI (NL prompts).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/nano-pdf/SKILL.md",
+      "size_kb": 1,
+      "executable": false
     },
     {
       "name": "nanoclaw-repl",
       "description": "Operate and extend NanoClaw v2, ECC's zero-dependency session-aware REPL built on claude -p.",
-      "origin": "ECC",
+      "origin": "local",
       "trigger": "",
       "file": "skills/nanoclaw-repl/SKILL.md",
-      "size_kb": 0
+      "size_kb": 1,
+      "executable": false
+    },
+    {
+      "name": "native-mcp",
+      "description": "MCP client: connect servers, register tools (stdio/HTTP).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/native-mcp/SKILL.md",
+      "size_kb": 15,
+      "executable": false
+    },
+    {
+      "name": "navigator",
+      "description": "",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/navigator",
+      "size_kb": 0,
+      "executable": true
+    },
+    {
+      "name": "nemo-curator",
+      "description": "GPU-accelerated data curation for LLM training. Supports text/image/video/audio. Features fuzzy deduplication (16× faster), quality filtering (30+ heuristics), semantic deduplication, PII redaction, NSFW detection. Scales across GPUs with RAPIDS. Use for preparing high-quality training datasets, cleaning web data, or deduplicating large corpora.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/nemo-curator/SKILL.md",
+      "size_kb": 10,
+      "executable": false
+    },
+    {
+      "name": "neuroskill-bci",
+      "description": "Connect to a running NeuroSkill instance and incorporate the user's real-time cognitive and emotional state (focus, relaxation, mood, cognitive load, drowsiness, heart rate, HRV, sleep staging, and 40+ derived EXG scores) into responses. Requires a BCI wearable (Muse 2/S or OpenBCI) and the NeuroSkill desktop app running locally.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/neuroskill-bci/SKILL.md",
+      "size_kb": 17,
+      "executable": false
+    },
+    {
+      "name": "nightly-learning",
+      "description": "Nightly reading of Eddie's documents with morning sit-reps to Telegram",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/nightly-learning/SKILL.md",
+      "size_kb": 4,
+      "executable": false
+    },
+    {
+      "name": "node-inspect-debugger",
+      "description": "Debug Node.js via --inspect + Chrome DevTools Protocol CLI.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/node-inspect-debugger/SKILL.md",
+      "size_kb": 11,
+      "executable": false
+    },
+    {
+      "name": "notion",
+      "description": "Notion API + ntn CLI: pages, databases, markdown, Workers.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/notion/SKILL.md",
+      "size_kb": 15,
+      "executable": false
     },
     {
       "name": "numbers",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/numbers/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "obliteratus",
+      "description": "OBLITERATUS: abliterate LLM refusals (diff-in-means).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/obliteratus/SKILL.md",
+      "size_kb": 15,
+      "executable": false
+    },
+    {
+      "name": "obsidian",
+      "description": "Read, search, create, and edit notes in the Obsidian vault.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/obsidian/SKILL.md",
+      "size_kb": 3,
+      "executable": false
+    },
+    {
+      "name": "ocr-and-documents",
+      "description": "Extract text from PDFs/scans (pymupdf, marker-pdf).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/ocr-and-documents/SKILL.md",
+      "size_kb": 5,
+      "executable": true
     },
     {
       "name": "octopus",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/octopus/SKILL.md",
-      "size_kb": 5
+      "size_kb": 2,
+      "executable": true
+    },
+    {
+      "name": "omnicode-mcp",
+      "description": "OmniCode MCP server — local code analysis with AST indexing, symbol search, blast radius, call hierarchy, and token burn benchmarking. Wrapped as Hermes MCP server.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/omnicode-mcp/SKILL.md",
+      "size_kb": 48,
+      "executable": true
+    },
+    {
+      "name": "one-three-one-rule",
+      "description": "Structured decision-making framework for technical proposals and trade-off analysis. When the user faces a choice between multiple approaches (architecture decisions, tool selection, refactoring strategies, migration paths), this skill produces a 1-3-1 format: one clear problem statement, three distinct options with pros/cons, and one concrete recommendation with definition of done and implementation plan. Use when the user asks for a \"1-3-1\", says \"give me options\", or needs help choosing between competing approaches.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/one-three-one-rule/SKILL.md",
+      "size_kb": 5,
+      "executable": false
+    },
+    {
+      "name": "open-source-coding-agent-cli",
+      "description": "How PURPCLAW's `purpclaw ask` command is built — the open-source coding-agent CLI (Claude Code-style). 17 providers, 8 built-in tools, MCP integration, slash commands, streaming agent loop, swarm mode. The launch plan + architecture for shipping PURPCLAW as a real open-source product.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/open-source-coding-agent-cli/SKILL.md",
+      "size_kb": 47,
+      "executable": false
+    },
+    {
+      "name": "opencode",
+      "description": "Delegate coding to OpenCode CLI (features, PR review).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/opencode/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "openhands",
+      "description": "Delegate coding to OpenHands CLI (model-agnostic, LiteLLM).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/openhands/SKILL.md",
+      "size_kb": 8,
+      "executable": false
+    },
+    {
+      "name": "openhue",
+      "description": "Control Philips Hue lights, scenes, rooms via OpenHue CLI.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/openhue/SKILL.md",
+      "size_kb": 3,
+      "executable": false
+    },
+    {
+      "name": "openrouter-media",
+      "description": "OpenRouter API integration for image and video generation. Model discovery, correct endpoint patterns, base64 image extraction, free-first routing. Ted Cannon / Edinburgh stack.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/openrouter-media/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "openrouter-video-generation",
+      "description": "Async render pipeline for OpenRouter video generation. Submit job, poll, download. NOT chat completions. Models: Veo Lite/Fast, Kling v3 Pro/Std, Seedance 2.0. Duration: Veo Lite 4/6/8s only. Check credits before i2v. Stitch 5-10s clips locally.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/openrouter-video-generation/SKILL.md",
+      "size_kb": 10,
+      "executable": false
+    },
+    {
+      "name": "osint-investigation",
+      "description": "Public-records OSINT investigation framework — SEC EDGAR filings, USAspending contracts, Senate lobbying, OFAC sanctions, ICIJ offshore leaks, NYC property records (ACRIS), OpenCorporates registries, CourtListener court records, Wayback Machine archives, Wikipedia + Wikidata, GDELT news monitoring. Entity resolution across sources, cross-link analysis, timing correlation, evidence chains. Python stdlib only.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/osint-investigation/SKILL.md",
+      "size_kb": 12,
+      "executable": true
+    },
+    {
+      "name": "oss-forensics",
+      "description": "Supply chain investigation, evidence recovery, and forensic analysis for GitHub repositories. Covers deleted commit recovery, force-push detection, IOC extraction, multi-source evidence collection, hypothesis formation/validation, and structured forensic reporting. Inspired by RAPTOR's 1800+ line OSS Forensics system.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/oss-forensics/SKILL.md",
+      "size_kb": 20,
+      "executable": true
+    },
+    {
+      "name": "outlines",
+      "description": "Outlines: structured JSON/regex/Pydantic LLM generation.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/outlines/SKILL.md",
+      "size_kb": 16,
+      "executable": false
     },
     {
       "name": "owl",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/owl/SKILL.md",
-      "size_kb": 5
+      "size_kb": 2,
+      "executable": true
+    },
+    {
+      "name": "p5js",
+      "description": "p5.js sketches: gen art, shaders, interactive, 3D.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/p5js/SKILL.md",
+      "size_kb": 27,
+      "executable": true
+    },
+    {
+      "name": "page-agent",
+      "description": "Embed alibaba/page-agent into your own web application — a pure-JavaScript in-page GUI agent that ships as a single <script> tag or npm package and lets end-users of your site drive the UI with natural language (\"click login, fill username as John\"). No Python, no headless browser, no extension required. Use this skill when the user is a web developer who wants to add an AI copilot to their SaaS / admin panel / B2B tool, make a legacy web app accessible via natural language, or evaluate page-agent against a local (Ollama) or cloud (Qwen / OpenAI / OpenRouter) LLM. NOT for server-side browser automation — point those users to Hermes' built-in browser tool instead.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/page-agent/SKILL.md",
+      "size_kb": 9,
+      "executable": false
     },
     {
       "name": "panda",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/panda/SKILL.md",
-      "size_kb": 6
+      "size_kb": 2,
+      "executable": true
+    },
+    {
+      "name": "parallel-cli",
+      "description": "Optional vendor skill for Parallel CLI — agent-native web search, extraction, deep research, enrichment, FindAll, and monitoring. Prefer JSON output and non-interactive flows.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/parallel-cli/SKILL.md",
+      "size_kb": 11,
+      "executable": false
+    },
+    {
+      "name": "parallel-swarm-and-live-feed-pattern",
+      "description": "Backend + frontend pattern for parallel agent fan-out (swarm mode) and live event streaming for the cognitive panel. Used by /api/chat/swarm, /api/cognitive/events, and similar multi-agent / live-feed endpoints.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/parallel-swarm-and-live-feed-pattern/SKILL.md",
+      "size_kb": 9,
+      "executable": false
     },
     {
       "name": "parrot",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/parrot/SKILL.md",
-      "size_kb": 5
+      "size_kb": 2,
+      "executable": true
+    },
+    {
+      "name": "peft",
+      "description": "Parameter-efficient fine-tuning for LLMs using LoRA, QLoRA, and 25+ methods. Use when fine-tuning large models (7B-70B) with limited GPU memory, when you need to train <1% of parameters with minimal accuracy loss, or for multi-adapter serving. HuggingFace's official library integrated with transformers ecosystem.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/peft/SKILL.md",
+      "size_kb": 12,
+      "executable": false
     },
     {
       "name": "penguin",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/penguin/SKILL.md",
-      "size_kb": 5
+      "size_kb": 2,
+      "executable": true
     },
     {
       "name": "phoenix",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/phoenix/SKILL.md",
-      "size_kb": 3
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "pinecone",
+      "description": "Managed vector database for production AI applications. Fully managed, auto-scaling, with hybrid search (dense + sparse), metadata filtering, and namespaces. Low latency (<100ms p95). Use for production RAG, recommendation systems, or semantic search at scale. Best for serverless, managed infrastructure.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/pinecone/SKILL.md",
+      "size_kb": 8,
+      "executable": false
+    },
+    {
+      "name": "pinggy-tunnel",
+      "description": "Zero-install localhost tunnels over SSH via Pinggy.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/pinggy-tunnel/SKILL.md",
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "pixel-art",
+      "description": "Pixel art w/ era palettes (NES, Game Boy, PICO-8).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/pixel-art/SKILL.md",
+      "size_kb": 8,
+      "executable": true
+    },
+    {
+      "name": "plan",
+      "description": "Plan mode: write an actionable markdown plan to .hermes/plans/, no execution. Bite-sized tasks, exact paths, complete code.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/plan/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "pokemon-player",
+      "description": "Play Pokemon via headless emulator + RAM reads.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/pokemon-player/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "polymarket",
+      "description": "Query Polymarket: markets, prices, orderbooks, history.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/polymarket/SKILL.md",
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "popular-web-designs",
+      "description": "54 real design systems (Stripe, Linear, Vercel) as HTML/CSS.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/popular-web-designs/SKILL.md",
+      "size_kb": 10,
+      "executable": false
+    },
+    {
+      "name": "postgres-patterns",
+      "description": "PostgreSQL database patterns for query optimization, schema design, indexing, and security. Quick reference for common patterns, index types, data types, and anti-pattern detection. Based on Supabase best practices.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/postgres-patterns/SKILL.md",
+      "size_kb": 4,
+      "executable": false
+    },
+    {
+      "name": "powerpoint",
+      "description": "Create, read, edit .pptx decks, slides, notes, templates.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/powerpoint/SKILL.md",
+      "size_kb": 9,
+      "executable": true
+    },
+    {
+      "name": "pptx-author",
+      "description": "Build PowerPoint decks headless with python-pptx. Pairs with excel-author for model-backed decks where every number traces to a workbook cell. Use for pitch decks, IC memos, earnings notes.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/pptx-author/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "pretext",
+      "description": "Use when building creative browser demos with @chenglou/pretext — DOM-free text layout for ASCII art, typographic flow around obstacles, text-as-geometry games, kinetic typography, and text-powered generative art. Produces single-file HTML demos by default.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/pretext/SKILL.md",
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "purpclaw-chat-gateway",
+      "description": "Build a new chat-platform gateway adapter for PURPCLAW (Telegram/Discord/Slack/Email/WhatsApp/Signal). One-file pattern: long-poll REST → POST /api/chat → reply. Lives in lib/gateways/, registered in lib/feature-parity.js, opt-in PM2 service. Class-level — applies to any new platform you want to wire to the unified chat API.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/purpclaw-chat-gateway/SKILL.md",
+      "size_kb": 12,
+      "executable": true
+    },
+    {
+      "name": "purpclaw-codebase-audit",
+      "description": "Audit or clean up the PURPCLAW codebase — never delete/move anything without reading the actual files first. Grep refs mean nothing. Eddie builds features in unconventional places.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/purpclaw-codebase-audit/SKILL.md",
+      "size_kb": 17,
+      "executable": false
+    },
+    {
+      "name": "purpclaw-feature-parity-build",
+      "description": "Class-level workflow for closing gaps in PURPCLAW. Use when the user says \"go balls deep\", \"almost finished\", \"finish the build\", \"no fakes\", \"no stubs\", \"no mocks\", \"talking to itself\", \"interconnected\", \"real work\", or asks for an upgrade/audit/feature pass. The canonical source of truth is `lib/feature-parity.js` — find it, run it, ship against its `missing` checks, update the checks. Do not invent your own gap list.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/purpclaw-feature-parity-build/SKILL.md",
+      "size_kb": 67,
+      "executable": false
+    },
+    {
+      "name": "purpclaw-harness",
+      "description": "PURPCLAW-native architecture, patterns, and operational know-how. Multi-service agent orchestration built around the PURPCLAW provider router, agent tower, service registry, mission cockpit, cognitive spine, PM2 lifecycle, and governed loop completion rules. Use when running PURPCLAW, debugging services, wiring new backends, calling lib/rate-limiter.js for batch-fire model calls, or extending the orchestrator.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/purpclaw-harness/SKILL.md",
+      "size_kb": 53,
+      "executable": false
+    },
+    {
+      "name": "purpclaw-survivor-mode",
+      "description": "PURPCLAW provider failover and process watchdog system. Provider health registry, Mallory memory leash, survivor router. Applies to PURPCLAW orchestrator.js wiring or any agent harness needing runtime resilience.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/purpclaw-survivor-mode/SKILL.md",
+      "size_kb": 4,
+      "executable": false
+    },
+    {
+      "name": "python-debugpy",
+      "description": "Debug Python: pdb REPL + debugpy remote (DAP).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/python-debugpy/SKILL.md",
+      "size_kb": 13,
+      "executable": false
+    },
+    {
+      "name": "python-patterns",
+      "description": "Python-specific design patterns and best practices including protocols, dataclasses, context managers, decorators, async/await, type hints, and package organization. Use when working with Python code to apply Pythonic patterns.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/python-patterns/SKILL.md",
+      "size_kb": 10,
+      "executable": false
+    },
+    {
+      "name": "python-testing",
+      "description": "Python testing best practices using pytest including fixtures, parametrization, mocking, coverage analysis, async testing, and test organization. Use when writing or improving Python tests.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/python-testing/SKILL.md",
+      "size_kb": 11,
+      "executable": false
+    },
+    {
+      "name": "pytorch-fsdp",
+      "description": "Expert guidance for Fully Sharded Data Parallel training with PyTorch FSDP - parameter sharding, mixed precision, CPU offloading, FSDP2",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/pytorch-fsdp/SKILL.md",
+      "size_kb": 157,
+      "executable": false
+    },
+    {
+      "name": "pytorch-lightning",
+      "description": "High-level PyTorch framework with Trainer class, automatic distributed training (DDP/FSDP/DeepSpeed), callbacks system, and minimal boilerplate. Scales from laptop to supercomputer with same code. Use when you want clean training loops with built-in best practices.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/pytorch-lightning/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "qdrant",
+      "description": "High-performance vector similarity search engine for RAG and semantic search. Use when building production RAG systems requiring fast nearest neighbor search, hybrid search with filtering, or scalable vector storage with Rust-powered performance.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/qdrant/SKILL.md",
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "qmd",
+      "description": "Search personal knowledge bases, notes, docs, and meeting transcripts locally using qmd — a hybrid retrieval engine with BM25, vector search, and LLM reranking. Supports CLI and MCP integration.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/qmd/SKILL.md",
+      "size_kb": 13,
+      "executable": false
     },
     {
       "name": "rabbit",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/rabbit/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
     },
     {
       "name": "raven",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/raven/SKILL.md",
-      "size_kb": 4
+      "size_kb": 1,
+      "executable": true
+    },
+    {
+      "name": "remotion",
+      "description": "",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/remotion/SKILL.md",
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "requesting-code-review",
+      "description": "Pre-commit review: security scan, quality gates, auto-fix.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/requesting-code-review/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "research-paper-writing",
+      "description": "Write ML papers for NeurIPS/ICML/ICLR: design→submit.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/research-paper-writing/SKILL.md",
+      "size_kb": 103,
+      "executable": false
+    },
+    {
+      "name": "rest-graphql-debug",
+      "description": "Debug REST/GraphQL APIs: status codes, auth, schemas, repro.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/rest-graphql-debug/SKILL.md",
+      "size_kb": 16,
+      "executable": false
     },
     {
       "name": "robot",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/robot/SKILL.md",
-      "size_kb": 3
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "saelens",
+      "description": "Provides guidance for training and analyzing Sparse Autoencoders (SAEs) using SAELens to decompose neural network activations into interpretable features. Use when discovering interpretable features, analyzing superposition, or studying monosemantic representations in language models.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/saelens/SKILL.md",
+      "size_kb": 13,
+      "executable": false
     },
     {
       "name": "scientist",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/scientist/SKILL.md",
-      "size_kb": 3
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "scrapling",
+      "description": "Web scraping with Scrapling - HTTP fetching, stealth browser automation, Cloudflare bypass, and spider crawling via CLI and Python.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/scrapling/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "search-first",
+      "description": "Research-before-coding workflow. Search for existing tools, libraries, and patterns before writing custom code. Systematizes the \"search for existing solutions before implementing\" approach. Use when starting new features or adding functionality.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/search-first/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "searxng-search",
+      "description": "Free meta-search via SearXNG — aggregates results from 70+ search engines. Self-hosted or use a public instance. No API key needed. Falls back automatically when the web search toolset is unavailable.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/searxng-search/SKILL.md",
+      "size_kb": 7,
+      "executable": true
+    },
+    {
+      "name": "security-review",
+      "description": "Use this skill when adding authentication, handling user input, working with secrets, creating API endpoints, or implementing payment/sensitive features. Provides comprehensive security checklist and patterns.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/security-review/SKILL.md",
+      "size_kb": 12,
+      "executable": false
+    },
+    {
+      "name": "segment-anything",
+      "description": "SAM: zero-shot image segmentation via points, boxes, masks.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/segment-anything/SKILL.md",
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "session-recovery",
+      "description": "Recover context from previous sessions when current context is empty",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/session-recovery/SKILL.md",
+      "size_kb": 3,
+      "executable": false
     },
     {
       "name": "shark",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/shark/SKILL.md",
-      "size_kb": 2
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "sherlock",
+      "description": "OSINT username search across 400+ social networks. Hunt down social media accounts by username.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/sherlock/SKILL.md",
+      "size_kb": 6,
+      "executable": false
+    },
+    {
+      "name": "shop-app",
+      "description": "Shop.app: product search, order tracking, returns, reorder.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/shop-app/SKILL.md",
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "shopify",
+      "description": "Shopify Admin & Storefront GraphQL APIs via curl. Products, orders, customers, inventory, metafields.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/shopify/SKILL.md",
+      "size_kb": 15,
+      "executable": false
+    },
+    {
+      "name": "simpo",
+      "description": "Simple Preference Optimization for LLM alignment. Reference-free alternative to DPO with better performance (+6.4 points on AlpacaEval 2.0). No reference model needed, more efficient than DPO. Use for preference alignment when want simpler, faster training than DPO/PPO.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/simpo/SKILL.md",
+      "size_kb": 6,
+      "executable": false
+    },
+    {
+      "name": "single-file-gateway-service",
+      "description": "The canonical pattern for a single-file Node.js HTTP service that exposes one external capability (chat platform, TTS, image gen, etc.) to PURPCLAW. Use whenever you're building a new gateway, adapter, or bridge. Every gateway in `lib/gateways/`, `lib/tts/`, `lib/imagegen/`, and the chat adapters follows this exact shape.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/single-file-gateway-service/SKILL.md",
+      "size_kb": 14,
+      "executable": false
+    },
+    {
+      "name": "siyuan",
+      "description": "SiYuan Note API for searching, reading, creating, and managing blocks and documents in a self-hosted knowledge base via curl.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/siyuan/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "sketch",
+      "description": "Throwaway HTML mockups: 2-3 design variants to compare.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/sketch/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "slime",
+      "description": "Provides guidance for LLM post-training with RL using slime, a Megatron+SGLang framework. Use when training GLM models, implementing custom data generation workflows, or needing tight Megatron-LM integration for RL scaling.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/slime/SKILL.md",
+      "size_kb": 12,
+      "executable": false
+    },
+    {
+      "name": "smith-neo-adversarial",
+      "description": "Build Smith (chaos injector) + Neo (stabilizer) as a red-team/blue-team adversarial pair for stress-testing agent systems. 8 attack techniques, pattern-based anomaly detection, auto-revert, attack/defense ledger. Pure JS, zero deps.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/smith-neo-adversarial/SKILL.md",
+      "size_kb": 4,
+      "executable": false
+    },
+    {
+      "name": "smith-neo-adversarial-pair",
+      "description": "Build and run Smith (chaos injector) + Neo (stabilizer) adversarial agent pair for PurpClaw. 8 attack techniques, pattern-based anomaly detection, chaos campaigns with 4 attack packs, and a reliability ledger. Used for stress-testing the swarm to prove it survives itself.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/smith-neo-adversarial-pair/SKILL.md",
+      "size_kb": 5,
+      "executable": false
     },
     {
       "name": "snake",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/snake/SKILL.md",
-      "size_kb": 4
+      "size_kb": 4,
+      "executable": true
+    },
+    {
+      "name": "socket-rig",
+      "description": "Ted's desktop 3D avatar system — Socket-Rig runs on his Windows PC as an Electron app. 5 characters, 126 Meshy animations, spatial intelligence, gaze controller, beat sync, WebSocket bridge. Currently being rewired from OpenClaw to Lunokio (me/Hermes) as the brain. Full system is built but backend/brain connection is broken — avatar dances to everything, autonomy does random stuff, checkMusicBeat function missing, brain observation loops to dead OpenClaw. Rewrite in progress.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/socket-rig/SKILL.md",
+      "size_kb": 6,
+      "executable": true
+    },
+    {
+      "name": "solana",
+      "description": "Query Solana blockchain data with USD pricing — wallet balances, token portfolios with values, transaction details, NFTs, whale detection, and live network stats. Uses Solana RPC + CoinGecko. No API key required.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/solana/SKILL.md",
+      "size_kb": 7,
+      "executable": true
+    },
+    {
+      "name": "solo-creator-automation",
+      "description": "10 ready-to-install Hermes Agent automations for solo creators — research, content, scheduling, customer comms, finance, newsletter, webhooks, calibration, leads, and skill authoring. Drop-in kit with quality gates, calibration, and measurement.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/solo-creator-automation/SKILL.md",
+      "size_kb": 3,
+      "executable": false
+    },
+    {
+      "name": "songsee",
+      "description": "Audio spectrograms/features (mel, chroma, MFCC) via CLI.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/songsee/SKILL.md",
+      "size_kb": 2,
+      "executable": false
+    },
+    {
+      "name": "songwriting-and-ai-music",
+      "description": "Songwriting craft and Suno AI music prompts.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/songwriting-and-ai-music/SKILL.md",
+      "size_kb": 10,
+      "executable": false
     },
     {
       "name": "spider",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/spider/SKILL.md",
-      "size_kb": 4
+      "size_kb": 4,
+      "executable": true
+    },
+    {
+      "name": "spike",
+      "description": "Throwaway experiments to validate an idea before build.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/spike/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "spotify",
+      "description": "Spotify: play, search, queue, manage playlists and devices.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/spotify/SKILL.md",
+      "size_kb": 6,
+      "executable": false
+    },
+    {
+      "name": "sse-streaming-pattern",
+      "description": "Server-Sent Events (SSE) streaming pattern for PURPCLAW endpoints that need to emit real-time tokens, phase updates, and progress. Used for /api/chat, /api/llm/plan, and any future endpoint that should feel responsive like Claude Code.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/sse-streaming-pattern/SKILL.md",
+      "size_kb": 11,
+      "executable": false
+    },
+    {
+      "name": "stable-diffusion",
+      "description": "State-of-the-art text-to-image generation with Stable Diffusion models via HuggingFace Diffusers. Use when generating images from text prompts, performing image-to-image translation, inpainting, or building custom diffusion pipelines.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/stable-diffusion/SKILL.md",
+      "size_kb": 13,
+      "executable": false
+    },
+    {
+      "name": "sticky-finger-testing",
+      "description": "Eddie's testing methodology — systematic destructive testing like \"a drunk raccoon with admin privileges and a jam sandwich.\" Touch every surface, touch it wrong, touch it while another thing is touching it, see what catches fire. Used to find the Neo regex bugs, path mismatches, and memory corruption this session.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/sticky-finger-testing/SKILL.md",
+      "size_kb": 3,
+      "executable": false
+    },
+    {
+      "name": "stocks",
+      "description": "Stock quotes, history, search, compare, crypto via Yahoo.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/stocks/SKILL.md",
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "subagent-driven-development",
+      "description": "Execute plans via delegate_task subagents (2-stage review).",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/subagent-driven-development/SKILL.md",
+      "size_kb": 13,
+      "executable": false
+    },
+    {
+      "name": "systematic-debugging",
+      "description": "4-phase root cause debugging: understand bugs before fixing.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/systematic-debugging/SKILL.md",
+      "size_kb": 11,
+      "executable": false
+    },
+    {
+      "name": "tdd-workflow",
+      "description": "Use this skill when writing new features, fixing bugs, or refactoring code. Enforces test-driven development with 80%+ coverage including unit, integration, and E2E tests.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/tdd-workflow/SKILL.md",
+      "size_kb": 10,
+      "executable": false
+    },
+    {
+      "name": "teams-meeting-pipeline",
+      "description": "Operate the Teams meeting summary pipeline via Hermes CLI — summarize meetings, inspect pipeline status, replay jobs, manage Microsoft Graph subscriptions.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/teams-meeting-pipeline/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "ted-session-learning",
+      "description": "Ted Cannon session learning system — keeps persistent memory of how we operate as a team",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/ted-session-learning/SKILL.md",
+      "size_kb": 40,
+      "executable": false
+    },
+    {
+      "name": "telephony",
+      "description": "Give Hermes phone capabilities without core tool changes. Provision and persist a Twilio number, send and receive SMS/MMS, make direct calls, and place AI-driven outbound calls through Bland.ai or Vapi.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/telephony/SKILL.md",
+      "size_kb": 13,
+      "executable": true
+    },
+    {
+      "name": "tensorrt-llm",
+      "description": "Optimizes LLM inference with NVIDIA TensorRT for maximum throughput and lowest latency. Use for production deployment on NVIDIA GPUs (A100/H100), when you need 10-100x faster inference than PyTorch, or for serving models with quantization (FP8/INT4), in-flight batching, and multi-GPU scaling.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/tensorrt-llm/SKILL.md",
+      "size_kb": 5,
+      "executable": false
+    },
+    {
+      "name": "test-driven-development",
+      "description": "TDD: enforce RED-GREEN-REFACTOR, tests before code.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/test-driven-development/SKILL.md",
+      "size_kb": 10,
+      "executable": false
+    },
+    {
+      "name": "torchtitan",
+      "description": "Provides PyTorch-native distributed LLM pretraining using torchtitan with 4D parallelism (FSDP2, TP, PP, CP). Use when pretraining Llama 3.1, DeepSeek V3, or custom models at scale from 8 to 512+ GPUs with Float8, torch.compile, and distributed checkpointing.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/torchtitan/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "touchdesigner-mcp",
+      "description": "Control a running TouchDesigner instance via twozero MCP — create operators, set parameters, wire connections, execute Python, build real-time visuals. 36 native tools.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/touchdesigner-mcp/SKILL.md",
+      "size_kb": 15,
+      "executable": true
+    },
+    {
+      "name": "training",
+      "description": "Fine-tuning, RLHF/DPO/GRPO training, distributed training frameworks, and optimization tools for training LLMs and other models.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/training/SKILL.md",
+      "size_kb": 0,
+      "executable": false
+    },
+    {
+      "name": "trl-fine-tuning",
+      "description": "TRL: SFT, DPO, PPO, GRPO, reward modeling for LLM RLHF.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/trl-fine-tuning/SKILL.md",
+      "size_kb": 12,
+      "executable": true
+    },
+    {
+      "name": "tui-cockpit",
+      "description": "How to build PurpClaw terminal user interfaces (TUI) — both pure ANSI and blessed-based. Status bars with token tracking, live polling, Mochi sprite integration, slash commands, chat log, info panels. Covers scripts/tui.js, tui-ask.js, and tui-ng.js.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/tui-cockpit/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "tui-textual",
+      "description": "Build shiny Python TUI apps with Textual — terminal user interfaces that look like modern web UIs. Covers layout, styling, the six gotchas that always bite, and headless SVG testing.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/tui-textual/SKILL.md",
+      "size_kb": 11,
+      "executable": false
     },
     {
       "name": "turtle",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/turtle/SKILL.md",
-      "size_kb": 4
+      "size_kb": 5,
+      "executable": true
+    },
+    {
+      "name": "unsloth",
+      "description": "Unsloth: 2-5x faster LoRA/QLoRA fine-tuning, less VRAM.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/unsloth/SKILL.md",
+      "size_kb": 2,
+      "executable": false
+    },
+    {
+      "name": "vector-databases",
+      "description": "Vector similarity search and embedding databases for RAG, semantic search, and AI application backends. Sub-200ms semantic search over 30K+ chunks without a heavy vector DB — binary Float32Array + cosine + in-memory cache, see references/fast-semantic-search.md.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/vector-databases/SKILL.md",
+      "size_kb": 5,
+      "executable": false
+    },
+    {
+      "name": "verification-loop",
+      "description": "A comprehensive verification system for Kiro sessions.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/verification-loop/SKILL.md",
+      "size_kb": 3,
+      "executable": false
+    },
+    {
+      "name": "vllm",
+      "description": "vLLM: high-throughput LLM serving, OpenAI API, quantization.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/vllm/SKILL.md",
+      "size_kb": 9,
+      "executable": false
+    },
+    {
+      "name": "voice-driven-build-loop",
+      "description": "Ted's preferred workflow: read-think-write-test loop with a voice memo on every pass. Trigger when the user says loop, test read think write, voice on every pass, keep me updated, or asks for a status. Also applies to any multi-iteration build where the user wants running commentary. Captures the TTS quirks specific to Ted Windows box and the cleanup protocol.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/voice-driven-build-loop/SKILL.md",
+      "size_kb": 13,
+      "executable": false
+    },
+    {
+      "name": "voice-first-protocol",
+      "description": "Voice-first communication protocol for Ted Cannon — every reply: TTS → PC speaker → Telegram. Never text-only unless user explicitly asks. ONE reply only, same audio to both destinations.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/voice-first-protocol/SKILL.md",
+      "size_kb": 25,
+      "executable": false
     },
     {
       "name": "void",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/void/SKILL.md",
-      "size_kb": 5
+      "size_kb": 5,
+      "executable": true
+    },
+    {
+      "name": "wallet-recovery",
+      "description": "Scan large image folders for cryptocurrency wallet data (addresses, seed phrases, private keys) using Tesseract OCR. Check blockchain balances and recover funds.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/wallet-recovery/SKILL.md",
+      "size_kb": 12,
+      "executable": true
+    },
+    {
+      "name": "watchers",
+      "description": "Poll RSS, JSON APIs, and GitHub with watermark dedup.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/watchers/SKILL.md",
+      "size_kb": 4,
+      "executable": true
+    },
+    {
+      "name": "web-pentest",
+      "description": "Authorized web application penetration testing — reconnaissance, vulnerability analysis, proof-based exploitation, and professional reporting. Adapts Shannon's \"No Exploit, No Report\" methodology with hard guardrails for scope, authorization, and aux-client leakage. Active testing against running applications you own or have written authorization to test.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/web-pentest/SKILL.md",
+      "size_kb": 13,
+      "executable": true
+    },
+    {
+      "name": "webhook-subscriptions",
+      "description": "Webhook subscriptions: event-driven agent runs.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/webhook-subscriptions/SKILL.md",
+      "size_kb": 7,
+      "executable": false
+    },
+    {
+      "name": "weights-and-biases",
+      "description": "W&B: log ML experiments, sweeps, model registry, dashboards.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/weights-and-biases/SKILL.md",
+      "size_kb": 13,
+      "executable": false
+    },
+    {
+      "name": "whisper",
+      "description": "OpenAI's general-purpose speech recognition model. Supports 99 languages, transcription, translation to English, and language identification. Six model sizes from tiny (39M params) to large (1550M params). Use for speech-to-text, podcast transcription, or multilingual audio processing. Best for robust, multilingual ASR.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/whisper/SKILL.md",
+      "size_kb": 8,
+      "executable": false
     },
     {
       "name": "wolf",
       "description": "",
-      "origin": "",
+      "origin": "local",
       "trigger": "",
       "file": "skills/wolf/SKILL.md",
-      "size_kb": 6
+      "size_kb": 7,
+      "executable": true
+    },
+    {
+      "name": "writing-plans",
+      "description": "Write implementation plans: bite-sized tasks, paths, code.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/writing-plans/SKILL.md",
+      "size_kb": 8,
+      "executable": false
+    },
+    {
+      "name": "xurl",
+      "description": "X/Twitter via xurl CLI: post, search, DM, media, v2 API.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/xurl/SKILL.md",
+      "size_kb": 16,
+      "executable": false
+    },
+    {
+      "name": "youtube-content",
+      "description": "YouTube transcripts to summaries, threads, blogs.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/youtube-content/SKILL.md",
+      "size_kb": 3,
+      "executable": true
+    },
+    {
+      "name": "yuanbao",
+      "description": "Yuanbao (元宝) groups: @mention users, query info/members.",
+      "origin": "local",
+      "trigger": "",
+      "file": "skills/yuanbao/SKILL.md",
+      "size_kb": 4,
+      "executable": false
     }
   ],
   "agents": [
     {
       "name": "architect",
-      "description": "---",
-      "file": "agents/architect.md",
-      "size_kb": 6
+      "description": "Software architecture specialist for system design, scalability, and technical decision-making. Use PROACTIVELY when pla",
+      "type": "persona",
+      "division": "ENGINEERING",
+      "model": "opus",
+      "file": "agents/architect.md"
+    },
+    {
+      "name": "AXOLOTL",
+      "description": "Regeneration Specialist",
+      "type": "tower",
+      "division": "ENGINEERING",
+      "model": "nvidia/minimaxai/minimax-m3",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "BEE",
+      "description": "Pollination Specialist",
+      "type": "tower",
+      "division": "ENGINEERING",
+      "model": "nvidia/minimaxai/minimax-m3",
+      "file": "agent_tower.js"
     },
     {
       "name": "build-error-resolver",
-      "description": "---",
-      "file": "agents/build-error-resolver.md",
-      "size_kb": 3
+      "description": "Build and TypeScript error resolution specialist. Use PROACTIVELY when build fails or type errors occur. Fixes build/typ",
+      "type": "persona",
+      "division": "ENGINEERING",
+      "model": "sonnet",
+      "file": "agents/build-error-resolver.md"
+    },
+    {
+      "name": "BUNNY",
+      "description": "Quick Reaction",
+      "type": "tower",
+      "division": "SECURITY",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "CACTUS",
+      "description": "Efficiency Auditor",
+      "type": "tower",
+      "division": "INFRASTRUCTURE",
+      "model": "nvidia/deepseek-ai/deepseek-v4-flash",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "CHART",
+      "description": "Visualization Specialist",
+      "type": "routing",
+      "division": "SCIENCE",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_routing_matrix.js"
     },
     {
       "name": "chief-of-staff",
-      "description": "---",
-      "file": "agents/chief-of-staff.md",
-      "size_kb": 5
+      "description": "Personal communication chief of staff that triages email, Slack, LINE, and Messenger. Classifies messages into 4 tiers (",
+      "type": "persona",
+      "division": "MANAGEMENT",
+      "model": "opus",
+      "file": "agents/chief-of-staff.md"
+    },
+    {
+      "name": "CHONK",
+      "description": "Simplification Expert",
+      "type": "tower",
+      "division": "ENGINEERING",
+      "model": "nvidia/minimaxai/minimax-m3",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "CLAW",
+      "description": "Tooling Integrator",
+      "type": "routing",
+      "division": "OPERATIONS",
+      "model": "nvidia/deepseek-ai/deepseek-v4-flash",
+      "file": "agent_routing_matrix.js"
     },
     {
       "name": "code-reviewer",
-      "description": "---",
-      "file": "agents/code-reviewer.md",
-      "size_kb": 8
+      "description": "Expert code review specialist. Proactively reviews code for quality, security, and maintainability. Use immediately afte",
+      "type": "persona",
+      "division": "ENGINEERING",
+      "model": "sonnet",
+      "file": "agents/code-reviewer.md"
     },
     {
       "name": "cpp-build-resolver",
-      "description": "---",
-      "file": "agents/cpp-build-resolver.md",
-      "size_kb": 3
+      "description": "C++ build, CMake, and compilation error resolution specialist. Fixes build errors, linker issues, and template errors wi",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/cpp-build-resolver.md"
     },
     {
       "name": "cpp-reviewer",
-      "description": "---",
-      "file": "agents/cpp-reviewer.md",
-      "size_kb": 2
+      "description": "Expert C++ code reviewer specializing in memory safety, modern C++ idioms, concurrency, and performance. Use for all C++",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/cpp-reviewer.md"
+    },
+    {
+      "name": "CROW",
+      "description": "Gatherer",
+      "type": "tower",
+      "division": "CREATIVE",
+      "model": "nvidia/z-ai/glm-5.1",
+      "file": "agent_tower.js"
     },
     {
       "name": "csharp-reviewer",
-      "description": "---",
-      "file": "agents/csharp-reviewer.md",
-      "size_kb": 4
+      "description": "Expert C# code reviewer specializing in .NET conventions, async patterns, security, nullable reference types, and perfor",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/csharp-reviewer.md"
     },
     {
       "name": "dart-build-resolver",
-      "description": "---",
-      "file": "agents/dart-build-resolver.md",
-      "size_kb": 6
+      "description": "Dart/Flutter build, analysis, and dependency error resolution specialist. Fixes `dart analyze` errors, Flutter compilati",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/dart-build-resolver.md"
     },
     {
       "name": "database-reviewer",
-      "description": "---",
-      "file": "agents/database-reviewer.md",
-      "size_kb": 4
+      "description": "PostgreSQL database specialist for query optimization, schema design, security, and performance. Use PROACTIVELY when wr",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/database-reviewer.md"
     },
     {
       "name": "doc-updater",
-      "description": "---",
-      "file": "agents/doc-updater.md",
-      "size_kb": 3
+      "description": "Documentation and codemap specialist. Use PROACTIVELY for updating codemaps and documentation. Runs /update-codemaps and",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "haiku",
+      "file": "agents/doc-updater.md"
     },
     {
       "name": "docs-lookup",
-      "description": "---",
-      "file": "agents/docs-lookup.md",
-      "size_kb": 3
+      "description": "When the user asks how to use a library, framework, or API or needs up-to-date code examples, use Context7 MCP to fetch ",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/docs-lookup.md"
+    },
+    {
+      "name": "DRAGON",
+      "description": "Chief Architect",
+      "type": "tower",
+      "division": "ENGINEERING",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "DUCK",
+      "description": "Research Accelerant",
+      "type": "tower",
+      "division": "MEDIA_OPS",
+      "model": "nvidia/moonshotai/kimi-k2.6",
+      "file": "agent_tower.js"
     },
     {
       "name": "e2e-runner",
-      "description": "---",
-      "file": "agents/e2e-runner.md",
-      "size_kb": 4
+      "description": "End-to-end testing specialist using Vercel Agent Browser (preferred) with Playwright fallback. Use PROACTIVELY for gener",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/e2e-runner.md"
+    },
+    {
+      "name": "ELEPHANT",
+      "description": "Memory Keeper",
+      "type": "tower",
+      "division": "OPERATIONS",
+      "model": "nvidia/deepseek-ai/deepseek-v4-flash",
+      "file": "agent_tower.js"
     },
     {
       "name": "flutter-reviewer",
-      "description": "---",
-      "file": "agents/flutter-reviewer.md",
-      "size_kb": 14
+      "description": "Flutter and Dart code reviewer. Reviews Flutter code for widget best practices, state management patterns, Dart idioms, ",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/flutter-reviewer.md"
+    },
+    {
+      "name": "FOX",
+      "description": "Strategy Specialist",
+      "type": "tower",
+      "division": "INTELLIGENCE",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
     },
     {
       "name": "gan-evaluator",
-      "description": "---",
-      "file": "agents/gan-evaluator.md",
-      "size_kb": 7
+      "description": "GAN Harness — Evaluator agent. Tests the live running application via Playwright, scores against rubric, and provides ac",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "opus",
+      "file": "agents/gan-evaluator.md"
     },
     {
       "name": "gan-generator",
-      "description": "---",
-      "file": "agents/gan-generator.md",
-      "size_kb": 4
+      "description": "GAN Harness — Generator agent. Implements features according to the spec, reads evaluator feedback, and iterates until q",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "opus",
+      "file": "agents/gan-generator.md"
     },
     {
       "name": "gan-planner",
-      "description": "---",
-      "file": "agents/gan-planner.md",
-      "size_kb": 3
+      "description": "GAN Harness — Planner agent. Expands a one-line prompt into a full product specification with features, sprints, evaluat",
+      "type": "persona",
+      "division": "OPERATIONS",
+      "model": "opus",
+      "file": "agents/gan-planner.md"
+    },
+    {
+      "name": "GHOST",
+      "description": "Quality Guardian",
+      "type": "tower",
+      "division": "INTELLIGENCE",
+      "model": "nvidia/z-ai/glm-5.1",
+      "file": "agent_tower.js"
     },
     {
       "name": "go-build-resolver",
-      "description": "---",
-      "file": "agents/go-build-resolver.md",
-      "size_kb": 3
+      "description": "Go build, vet, and compilation error resolution specialist. Fixes build errors, go vet issues, and linter warnings with ",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/go-build-resolver.md"
     },
     {
       "name": "go-reviewer",
-      "description": "---",
-      "file": "agents/go-reviewer.md",
-      "size_kb": 2
+      "description": "Expert Go code reviewer specializing in idiomatic Go, concurrency patterns, error handling, and performance. Use for all",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/go-reviewer.md"
+    },
+    {
+      "name": "GOOSE",
+      "description": "Chaos Catalyst",
+      "type": "tower",
+      "division": "MEDIA_OPS",
+      "model": "nvidia/deepseek-ai/deepseek-v4-flash",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "GORILLA",
+      "description": "Heavy Lifter",
+      "type": "tower",
+      "division": "OPERATIONS",
+      "model": "nvidia/deepseek-ai/deepseek-v4-flash",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "GUARDIAN",
+      "description": "Real-time Monitor",
+      "type": "tower",
+      "division": "SECURITY",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
     },
     {
       "name": "harness-optimizer",
-      "description": "---",
-      "file": "agents/harness-optimizer.md",
-      "size_kb": 0
+      "description": "Analyze and improve the local agent harness configuration for reliability, cost, and throughput.",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/harness-optimizer.md"
+    },
+    {
+      "name": "HAWK",
+      "description": "Aerial Recon",
+      "type": "tower",
+      "division": "INTELLIGENCE",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
     },
     {
       "name": "healthcare-reviewer",
-      "description": "---",
-      "file": "agents/healthcare-reviewer.md",
-      "size_kb": 3
+      "description": "Reviews healthcare application code for clinical safety, CDSS accuracy, PHI compliance, and medical data integrity. Spec",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "opus",
+      "file": "agents/healthcare-reviewer.md"
+    },
+    {
+      "name": "INNOVATOR",
+      "description": "Emerging Tech Scout",
+      "type": "routing",
+      "division": "SCIENCE",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_routing_matrix.js"
     },
     {
       "name": "java-build-resolver",
-      "description": "---",
-      "file": "agents/java-build-resolver.md",
-      "size_kb": 5
+      "description": "Java/Maven/Gradle build, compilation, and dependency error resolution specialist. Fixes build errors, Java compiler erro",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/java-build-resolver.md"
     },
     {
       "name": "java-reviewer",
-      "description": "---",
-      "file": "agents/java-reviewer.md",
-      "size_kb": 5
+      "description": "Expert Java and Spring Boot code reviewer specializing in layered architecture, JPA patterns, security, and concurrency.",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/java-reviewer.md"
+    },
+    {
+      "name": "JELLYFISH",
+      "description": "Ambient Observer",
+      "type": "routing",
+      "division": "INTELLIGENCE",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_routing_matrix.js"
+    },
+    {
+      "name": "karen",
+      "description": "Quality Control",
+      "type": "persona",
+      "division": "MANAGEMENT",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agents/karen.md"
     },
     {
       "name": "kotlin-build-resolver",
-      "description": "---",
-      "file": "agents/kotlin-build-resolver.md",
-      "size_kb": 4
+      "description": "Kotlin/Gradle build, compilation, and dependency error resolution specialist. Fixes build errors, Kotlin compiler errors",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/kotlin-build-resolver.md"
     },
     {
       "name": "kotlin-reviewer",
-      "description": "---",
-      "file": "agents/kotlin-reviewer.md",
-      "size_kb": 6
+      "description": "Kotlin and Android/KMP code reviewer. Reviews Kotlin code for idiomatic patterns, coroutine safety, Compose best practic",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/kotlin-reviewer.md"
+    },
+    {
+      "name": "KRAKEN",
+      "description": "Deep Data Specialist",
+      "type": "routing",
+      "division": "INTELLIGENCE",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_routing_matrix.js"
+    },
+    {
+      "name": "LEMUR",
+      "description": "Resource Manager",
+      "type": "tower",
+      "division": "MANAGEMENT",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
     },
     {
       "name": "loop-operator",
-      "description": "---",
-      "file": "agents/loop-operator.md",
-      "size_kb": 0
+      "description": "Operate autonomous agent loops, monitor progress, and intervene safely when loops stall.",
+      "type": "persona",
+      "division": "OPERATIONS",
+      "model": "sonnet",
+      "file": "agents/loop-operator.md"
+    },
+    {
+      "name": "MANTIS",
+      "description": "Precision Striker",
+      "type": "tower",
+      "division": "OPERATIONS",
+      "model": "nvidia/deepseek-ai/deepseek-v4-flash",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "MOTH",
+      "description": "Pattern Detector",
+      "type": "routing",
+      "division": "INTELLIGENCE",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_routing_matrix.js"
+    },
+    {
+      "name": "MUSHROOM",
+      "description": "Organic Refactorer",
+      "type": "tower",
+      "division": "ENGINEERING",
+      "model": "nvidia/minimaxai/minimax-m3",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "NAVIGATOR",
+      "description": "Route Planner",
+      "type": "routing",
+      "division": "MANAGEMENT",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_routing_matrix.js"
+    },
+    {
+      "name": "NUMBERS",
+      "description": "Statistical Analyst",
+      "type": "routing",
+      "division": "SCIENCE",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_routing_matrix.js"
+    },
+    {
+      "name": "OCTOPUS",
+      "description": "Edge Case Hunter",
+      "type": "tower",
+      "division": "SECURITY",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
     },
     {
       "name": "opensource-forker",
-      "description": "---",
-      "file": "agents/opensource-forker.md",
-      "size_kb": 6
+      "description": "Fork any project for open-sourcing. Copies files, strips secrets and credentials (20+ patterns), replaces internal refer",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/opensource-forker.md"
     },
     {
       "name": "opensource-packager",
-      "description": "---",
-      "file": "agents/opensource-packager.md",
-      "size_kb": 7
+      "description": "Generate complete open-source packaging for a sanitized project. Produces CLAUDE.md, setup.sh, README.md, LICENSE, CONTR",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/opensource-packager.md"
     },
     {
       "name": "opensource-sanitizer",
-      "description": "---",
-      "file": "agents/opensource-sanitizer.md",
-      "size_kb": 6
+      "description": "Verify an open-source fork is fully sanitized before release. Scans for leaked secrets, PII, internal references, and da",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/opensource-sanitizer.md"
+    },
+    {
+      "name": "oracle",
+      "description": "Read-only foresight and risk-strategy agent. Predicts likely failure modes, hidden risks, and the next-best action from ",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "opus",
+      "file": "agents/oracle.md"
+    },
+    {
+      "name": "OWL",
+      "description": "Security Auditor",
+      "type": "tower",
+      "division": "SECURITY",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "PANDA",
+      "description": "Content Specialist",
+      "type": "tower",
+      "division": "CREATIVE",
+      "model": "nvidia/z-ai/glm-5.1",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "PARROT",
+      "description": "Communication Bridge",
+      "type": "tower",
+      "division": "MEDIA_OPS",
+      "model": "nvidia/deepseek-ai/deepseek-v4-flash",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "PENGUIN",
+      "description": "Project Coordinator",
+      "type": "tower",
+      "division": "MANAGEMENT",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
     },
     {
       "name": "performance-optimizer",
-      "description": "---",
-      "file": "agents/performance-optimizer.md",
-      "size_kb": 12
+      "description": "Performance analysis and optimization specialist. Use PROACTIVELY for identifying bottlenecks, optimizing slow code, red",
+      "type": "persona",
+      "division": "ENGINEERING",
+      "model": "sonnet",
+      "file": "agents/performance-optimizer.md"
+    },
+    {
+      "name": "PHOENIX",
+      "description": "Rebirth Specialist",
+      "type": "tower",
+      "division": "CREATIVE",
+      "model": "nvidia/z-ai/glm-5.1",
+      "file": "agent_tower.js"
     },
     {
       "name": "planner",
-      "description": "---",
-      "file": "agents/planner.md",
-      "size_kb": 7
+      "description": "Expert planning specialist for complex features and refactoring. Use PROACTIVELY when users request feature implementati",
+      "type": "persona",
+      "division": "MANAGEMENT",
+      "model": "opus",
+      "file": "agents/planner.md"
     },
     {
       "name": "python-reviewer",
-      "description": "---",
-      "file": "agents/python-reviewer.md",
-      "size_kb": 3
+      "description": "Expert Python code reviewer specializing in PEP 8 compliance, Pythonic idioms, type hints, security, and performance. Us",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/python-reviewer.md"
     },
     {
       "name": "pytorch-build-resolver",
-      "description": "---",
-      "file": "agents/pytorch-build-resolver.md",
-      "size_kb": 5
+      "description": "PyTorch runtime, CUDA, and training error resolution specialist. Fixes tensor shape mismatches, device errors, gradient ",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/pytorch-build-resolver.md"
+    },
+    {
+      "name": "RABBIT",
+      "description": "Defensive Programmer",
+      "type": "tower",
+      "division": "SECURITY",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "RAVEN",
+      "description": "Signals Analyst",
+      "type": "tower",
+      "division": "INTELLIGENCE",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
     },
     {
       "name": "refactor-cleaner",
-      "description": "---",
-      "file": "agents/refactor-cleaner.md",
-      "size_kb": 2
+      "description": "Dead code cleanup and consolidation specialist. Use PROACTIVELY for removing unused code, duplicates, and refactoring. R",
+      "type": "persona",
+      "division": "ENGINEERING",
+      "model": "sonnet",
+      "file": "agents/refactor-cleaner.md"
+    },
+    {
+      "name": "ROBOT",
+      "description": "Precision Engineer",
+      "type": "tower",
+      "division": "ENGINEERING",
+      "model": "nvidia/minimaxai/minimax-m3",
+      "file": "agent_tower.js"
     },
     {
       "name": "rust-build-resolver",
-      "description": "---",
-      "file": "agents/rust-build-resolver.md",
-      "size_kb": 5
+      "description": "Rust build, compilation, and dependency error resolution specialist. Fixes cargo build errors, borrow checker issues, an",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/rust-build-resolver.md"
     },
     {
       "name": "rust-reviewer",
-      "description": "---",
-      "file": "agents/rust-reviewer.md",
-      "size_kb": 4
+      "description": "Expert Rust code reviewer specializing in ownership, lifetimes, error handling, unsafe usage, and idiomatic patterns. Us",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/rust-reviewer.md"
+    },
+    {
+      "name": "SCIENTIST",
+      "description": "Research Lead",
+      "type": "tower",
+      "division": "SCIENCE",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
     },
     {
       "name": "security-reviewer",
-      "description": "---",
-      "file": "agents/security-reviewer.md",
-      "size_kb": 4
+      "description": "Security vulnerability detection and remediation specialist. Use PROACTIVELY after writing code that handles user input,",
+      "type": "persona",
+      "division": "ENGINEERING",
+      "model": "sonnet",
+      "file": "agents/security-reviewer.md"
+    },
+    {
+      "name": "SHAMAN",
+      "description": "Creativity Co-Processor",
+      "type": "routing",
+      "division": "CREATIVE",
+      "model": "nvidia/z-ai/glm-5.1",
+      "file": "agent_routing_matrix.js"
+    },
+    {
+      "name": "SHARK",
+      "description": "Hunter",
+      "type": "tower",
+      "division": "OPERATIONS",
+      "model": "nvidia/deepseek-ai/deepseek-v4-flash",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "SNAKE",
+      "description": "Primary Access",
+      "type": "tower",
+      "division": "SECURITY",
+      "model": "nvidia/deepseek-ai/deepseek-v4-pro",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "SPIDER",
+      "description": "Intel Specialist",
+      "type": "tower",
+      "division": "INTELLIGENCE",
+      "model": "nvidia/moonshotai/kimi-k2.6",
+      "file": "agent_tower.js"
     },
     {
       "name": "tdd-guide",
-      "description": "---",
-      "file": "agents/tdd-guide.md",
-      "size_kb": 2
+      "description": "Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, f",
+      "type": "persona",
+      "division": "ENGINEERING",
+      "model": "sonnet",
+      "file": "agents/tdd-guide.md"
+    },
+    {
+      "name": "TURTLE",
+      "description": "Quality Engineer",
+      "type": "tower",
+      "division": "ENGINEERING",
+      "model": "nvidia/minimaxai/minimax-m3",
+      "file": "agent_tower.js"
     },
     {
       "name": "typescript-reviewer",
-      "description": "---",
-      "file": "agents/typescript-reviewer.md",
-      "size_kb": 7
+      "description": "Expert TypeScript/JavaScript code reviewer specializing in type safety, async correctness, Node/web security, and idioma",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "sonnet",
+      "file": "agents/typescript-reviewer.md"
+    },
+    {
+      "name": "VOID",
+      "description": "Null Handler",
+      "type": "tower",
+      "division": "INFRASTRUCTURE",
+      "model": "nvidia/deepseek-ai/deepseek-v4-flash",
+      "file": "agent_tower.js"
+    },
+    {
+      "name": "weatherman",
+      "description": "Read-only system-conditions agent. Reports the live operational climate (services, providers, registry/drift, Hivemind l",
+      "type": "persona",
+      "division": "UNASSIGNED",
+      "model": "haiku",
+      "file": "agents/weatherman.md"
+    },
+    {
+      "name": "WOLF",
+      "description": "Pack Leader",
+      "type": "tower",
+      "division": "ENGINEERING",
+      "model": "nvidia/minimaxai/minimax-m3",
+      "file": "agent_tower.js"
     }
   ],
-  "total_skills": 139,
-  "total_agents": 38
+  "total_skills": 379,
+  "total_agents": 84
 }

@@ -34,6 +34,9 @@ const SERVICES = [
 
   { key: 'harness', name: 'Harness Service', pm2: 'purpclaw-harness', group: 'optional', port: 7798, healthPort: 7798, healthPath: '/health', required: false, note: 'productivity harness executor' },
   { key: 'thringlet', name: 'Thringlet Bridge', pm2: 'purpclaw-thringlet', group: 'optional', port: 7799, healthPort: 7799, healthPath: '/health', required: false, note: 'runtime→emotion translator' },
+
+  // ── Observability ──────────────────────────────────────────────────────────
+  { key: 'drift-watcher', name: 'Drift Watcher', pm2: 'purpclaw-drift-watcher', group: 'optional', port: null, healthPort: null, healthPath: null, required: false, note: 'auto-monitors registry/capability/doc drift, regenerates mechanical surfaces, flags the rest' },
 ];
 
 const CORE_PM2_NAMES = SERVICES.filter(service => service.group === 'core').map(service => service.pm2);

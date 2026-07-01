@@ -1,0 +1,178 @@
+{
+  "s_1io623io": {
+    "mode": "council",
+    "topic": "podcast format for PURPCLAW",
+    "turns": 3,
+    "participants": [
+      "goose",
+      "maverick",
+      "hermes"
+    ],
+    "arena_winner": null,
+    "duck": "the duck approves",
+    "ts": "2026-06-29T15:26:31.397Z"
+  },
+  "s_5ufnkeqb": {
+    "mode": "directors_cut",
+    "topic": null,
+    "turns": 5,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is not panicking. the duck has seen worse.",
+    "ts": "2026-06-29T15:26:39.551Z"
+  },
+  "s_ot9j14cl": {
+    "mode": "after_hours",
+    "topic": null,
+    "turns": 9,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is nervous about the goose energy levels.",
+    "ts": "2026-06-29T15:54:34.529Z"
+  },
+  "s_xo6hdajv": {
+    "mode": "after_hours",
+    "topic": null,
+    "turns": null,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is nervous about the goose energy levels.",
+    "ts": "2026-06-29T15:56:05.225Z"
+  },
+  "s_7z2r6roz": {
+    "mode": "news",
+    "topic": "evening report",
+    "turns": null,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is not panicking. the duck has seen worse.",
+    "ts": "2026-06-29T15:56:22.228Z"
+  },
+  "s_n42uebgu": {
+    "mode": "council",
+    "topic": "provider outage and security incident",
+    "turns": null,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is not panicking. the duck has seen worse.",
+    "ts": "2026-06-29T15:56:22.541Z"
+  },
+  "s_e0q7ay4b": {
+    "mode": "council",
+    "topic": "provider outage and security incident",
+    "turns": null,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is not panicking. the duck has seen worse.",
+    "ts": "2026-06-29T15:56:30.330Z"
+  },
+  "s_uzod8cbc": {
+    "mode": "council",
+    "topic": "provider outage and security incident",
+    "turns": 4,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is not panicking. the duck has seen worse.",
+    "ts": "2026-06-29T15:57:16.877Z"
+  },
+  "s_zc7ngibo": {
+    "mode": "after_hours",
+    "topic": null,
+    "turns": 8,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is concerned about the security posture.",
+    "ts": "2026-06-29T15:58:17.158Z"
+  },
+  "s_s41xhjrl": {
+    "mode": "news",
+    "topic": "evening report",
+    "turns": 3,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is not panicking. the duck has seen worse.",
+    "ts": "2026-06-29T15:58:17.168Z"
+  },
+  "s_9n9nhja6": {
+    "mode": "news",
+    "topic": "evening report",
+    "turns": 2,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is not panicking. the duck has seen worse.",
+    "ts": "2026-06-29T15:58:53.454Z"
+  },
+  "s_qashtx8o": {
+    "mode": "after_hours",
+    "topic": null,
+    "turns": 4,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is concerned about the security posture.",
+    "ts": "2026-06-29T15:59:48.714Z"
+  },
+  "s_7c2rr9w5": {
+    "mode": "council",
+    "topic": "incident response",
+    "turns": 4,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is not panicking. the duck has seen worse.",
+    "ts": "2026-06-29T15:59:48.833Z"
+  },
+  "s_cin3yemk": {
+    "mode": "after_hours",
+    "topic": null,
+    "turns": 4,
+    "participants": [],
+    "arena_winner": null,
+    "duck": "the duck is concerned about the security posture.",
+    "ts": "2026-06-29T16:00:00.014Z"
+  },
+  "s_ex0bthrm": {
+    "mode": "after_hours",
+    "topic": null,
+    "turns": 5,
+    "participants": [
+      "hermes",
+      "goose",
+      "maverick",
+      "smith",
+      "neo"
+    ],
+    "arena_winner": null,
+    "duck": "the duck is concerned about the security posture.",
+    "ts": "2026-06-29T16:08:01.275Z"
+  },
+  "s_46d4exyd": {
+    "mode": "after_hours",
+    "topic": null,
+    "turns": 7,
+    "participants": [
+      "hermes",
+      "goose",
+      "maverick",
+      "smith",
+      "memory"
+    ],
+    "arena_winner": null,
+    "duck": "the duck is concerned about the security posture.",
+    "ts": "2026-06-29T16:08:20.457Z"
+  },
+  "s_grq5cihq": {
+    "mode": "after_hours",
+    "topic": null,
+    "turns": 9,
+    "participants": [
+      "hermes",
+      "goose",
+      "maverick",
+      "smith",
+      "memory",
+      "phoenix"
+    ],
+    "arena_winner": null,
+    "duck": "the duck is concerned about the security posture.",
+    "ts": "2026-06-29T16:11:04.618Z"
+  }
+}

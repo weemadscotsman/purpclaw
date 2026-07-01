@@ -1,0 +1,50 @@
+{
+  "schema": "purpclaw.hivemind.skill.v1",
+  "kind": "antiskill",
+  "skill_id": "anti-avoid-failed-timeout-orchestrator-pattern-timeout-orchestrator-agent-spa-5207a524",
+  "title": "Avoid failed timeout_orchestrator pattern: timeout_orchestrator agent_spawn orchestrator spawn timed",
+  "description": "TimeoutError: agent idle timeout (30s) exceeded",
+  "task_type": "agent_spawn",
+  "intent": "timeout_orchestrator",
+  "trigger_terms": [
+    "timeout_orchestrator",
+    "agent_spawn",
+    "orchestrator",
+    "spawn",
+    "timed",
+    "out",
+    "agent_idle_timeout",
+    "exceeded"
+  ],
+  "steps": [],
+  "avoid": [
+    "TimeoutError: agent idle timeout (30s) exceeded",
+    "Use a different route, smaller scope, or more verification before repeating."
+  ],
+  "source_trace_ids": [
+    "loop-timeout_orchestrator-fail-1782756821612-39-q6e4"
+  ],
+  "success_count": 0,
+  "failure_count": 1,
+  "usage_count": 0,
+  "score": 0.55,
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "failed_execution",
+    "spring_rank": 8,
+    "spring_label": "Poisoned Well",
+    "verification": [
+      "[object Object]"
+    ],
+    "trust_score": 0,
+    "repeatability": 0,
+    "freshness": 1,
+    "evaluated_at": "2026-06-29T18:13:42.089Z"
+  },
+  "created_at": "2026-06-29T18:13:42.089Z",
+  "updated_at": "2026-06-29T18:13:42.089Z",
+  "last_used_at": null,
+  "deprecated": false,
+  "spring_rank": 8,
+  "trust_score": 0
+}

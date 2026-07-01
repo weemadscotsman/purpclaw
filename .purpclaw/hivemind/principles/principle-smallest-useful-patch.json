@@ -1,0 +1,10 @@
+{
+  "schema": "purpclaw.spring.principle.v1",
+  "id": "principle-smallest-useful-patch",
+  "title": "Smallest useful patch first",
+  "statement": "Prefer the smallest safe change that satisfies the task and produces evidence.",
+  "spring_rank": 1,
+  "trust_score": 0.98,
+  "created_at": "2026-06-28T22:13:14.159Z",
+  "updated_at": "2026-06-28T22:13:14.159Z"
+}

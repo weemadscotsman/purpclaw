@@ -1,0 +1,21 @@
+{
+  "schema": "purpclaw.hivemind.promotion-rules.v1",
+  "min_success_count": 2,
+  "min_score": 0.75,
+  "require_tests_passed": false,
+  "require_evidence": true,
+  "allow_partial": false,
+  "reject_if_rollback": true,
+  "reject_if_destructive": true,
+  "max_files_touched": 16,
+  "max_error_count": 0,
+  "max_skills_loaded": 3,
+  "decay_half_life_days": 45,
+  "autoskill": true,
+  "antiskills": true,
+  "doctrine_min_success_count": 7,
+  "doctrine_min_score": 0.93,
+  "spring_min_trust": 0.72,
+  "max_promotable_spring_rank": 2,
+  "spring_doctrine_enabled": true
+}

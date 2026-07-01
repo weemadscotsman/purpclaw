@@ -1,0 +1,244 @@
+{
+  "schema": "purpclaw.workflow-registry.v1",
+  "updated": "2026-06-29",
+  "levels": [
+    {
+      "level": 0,
+      "id": "tiny-fix",
+      "requires": ["patch", "affected check"],
+      "skips": ["brief", "prd", "architecture"]
+    },
+    {
+      "level": 1,
+      "id": "bug",
+      "requires": ["reproduction", "patch", "regression check"],
+      "skips": ["prd unless behavior changes"]
+    },
+    {
+      "level": 2,
+      "id": "feature",
+      "requires": ["brief", "acceptance criteria", "tests"],
+      "skips": ["full product ceremony"]
+    },
+    {
+      "level": 3,
+      "id": "module",
+      "requires": ["brief", "architecture", "stories", "tests", "review"],
+      "skips": []
+    },
+    {
+      "level": 4,
+      "id": "product",
+      "requires": ["brief", "prd", "ux map", "architecture", "epics", "test plan"],
+      "skips": []
+    },
+    {
+      "level": 5,
+      "id": "enterprise-system",
+      "requires": ["brief", "prd", "architecture", "risk review", "contracts", "ops plan", "security review"],
+      "skips": []
+    }
+  ],
+  "workflows": [
+    {
+      "id": "discovery.brainstorm",
+      "name": "Brainstorm Project Direction",
+      "phase": "discovery",
+      "requiredInputs": ["user intent"],
+      "outputs": ["project.json", "vision.md", "goals.md"],
+      "agents": ["oracle", "goose", "memory"],
+      "next": ["discovery.research", "planning.prd"],
+      "command": "purpclaw workflow discovery.brainstorm"
+    },
+    {
+      "id": "discovery.research",
+      "name": "Research and Evidence Sweep",
+      "phase": "discovery",
+      "requiredInputs": ["project brief or question"],
+      "outputs": ["evidence.md", "constraints.md"],
+      "agents": ["research", "spider", "duck", "truth-scanner"],
+      "next": ["planning.prd"],
+      "command": "purpclaw research \"<question>\""
+    },
+    {
+      "id": "planning.prd",
+      "name": "Create PRD",
+      "phase": "planning",
+      "requiredInputs": ["project.json or vision.md"],
+      "outputs": ["prd.md", "acceptance_criteria.md"],
+      "agents": ["oracle", "pm", "planner"],
+      "next": ["planning.ux", "solution.architecture"],
+      "command": "purpclaw workflow planning.prd"
+    },
+    {
+      "id": "planning.ux",
+      "name": "Create UX Map",
+      "phase": "planning",
+      "requiredInputs": ["prd.md", "UI requirement"],
+      "outputs": ["screen_inventory.md", "ux-spec.md"],
+      "agents": ["ux", "architect", "truth-scanner"],
+      "next": ["solution.architecture"],
+      "command": "purpclaw workflow planning.ux"
+    },
+    {
+      "id": "solution.architecture",
+      "name": "Create Architecture",
+      "phase": "solutioning",
+      "requiredInputs": ["prd.md", "feature_registry.json"],
+      "outputs": ["architecture.md", "contracts/"],
+      "agents": ["architect", "oracle", "smith"],
+      "next": ["solution.architecture-validate", "solution.epics"],
+      "command": "purpclaw workflow solution.architecture"
+    },
+    {
+      "id": "solution.architecture-validate",
+      "name": "Validate Architecture",
+      "phase": "solutioning",
+      "requiredInputs": ["architecture.md"],
+      "outputs": ["architecture_validation.md"],
+      "agents": ["smith", "neo", "truth-scanner"],
+      "next": ["solution.epics", "solution.test-design"],
+      "command": "purpclaw workflow solution.architecture-validate"
+    },
+    {
+      "id": "solution.epics",
+      "name": "Break Down Epics and Stories",
+      "phase": "solutioning",
+      "requiredInputs": ["prd.md", "architecture.md"],
+      "outputs": ["stories/", "implementation_plan.md"],
+      "agents": ["pm", "planner", "architect"],
+      "next": ["solution.test-design", "implementation.story-create"],
+      "command": "purpclaw workflow solution.epics"
+    },
+    {
+      "id": "solution.test-design",
+      "name": "Design Test Strategy",
+      "phase": "solutioning",
+      "requiredInputs": ["stories/", "architecture.md"],
+      "outputs": ["test-plan.md", "tests/"],
+      "agents": ["smith", "neo", "tdd-guide"],
+      "next": ["implementation.story-create"],
+      "command": "purpclaw workflow solution.test-design"
+    },
+    {
+      "id": "implementation.story-create",
+      "name": "Create Implementation Story",
+      "phase": "implementation",
+      "requiredInputs": ["stories/", "test-plan.md"],
+      "outputs": ["story packet"],
+      "agents": ["pm", "planner", "hermes"],
+      "next": ["implementation.story-develop"],
+      "command": "purpclaw workflow implementation.story-create"
+    },
+    {
+      "id": "implementation.story-develop",
+      "name": "Develop Story",
+      "phase": "implementation",
+      "requiredInputs": ["story packet", "tests"],
+      "outputs": ["code changes", "test results"],
+      "agents": ["hermes", "builder"],
+      "next": ["implementation.code-review"],
+      "command": "purpclaw run \"<story task>\""
+    },
+    {
+      "id": "implementation.code-review",
+      "name": "Review and Verify Story",
+      "phase": "implementation",
+      "requiredInputs": ["code changes", "test results"],
+      "outputs": ["review.md", "verification evidence", "handoff update"],
+      "agents": ["smith", "neo", "code-reviewer"],
+      "next": ["runtime.weather-report"],
+      "command": "purpclaw workflow implementation.code-review"
+    },
+    {
+      "id": "runtime.weather-report",
+      "name": "Read System Weather",
+      "phase": "runtime",
+      "requiredInputs": ["repo state"],
+      "outputs": ["weather report"],
+      "agents": ["weatherman"],
+      "next": ["runtime.oracle-forecast"],
+      "command": "purpclaw weather"
+    },
+    {
+      "id": "runtime.oracle-forecast",
+      "name": "Ask Oracle for Next Best Move",
+      "phase": "runtime",
+      "requiredInputs": ["weather report", "artifact state"],
+      "outputs": ["next action", "avoid list"],
+      "agents": ["oracle"],
+      "next": ["discovery.brainstorm", "planning.prd", "solution.architecture", "implementation.story-create"],
+      "command": "purpclaw next"
+    },
+    {
+      "id": "runtime.council",
+      "name": "Council Decision Session",
+      "phase": "runtime",
+      "requiredInputs": ["question", "weather", "memory"],
+      "outputs": ["decision", "votes", "action plan"],
+      "agents": ["oracle", "weatherman", "architect", "pm", "ux", "smith", "neo", "memory", "hermes"],
+      "next": ["implementation.story-create", "runtime.oracle-forecast"],
+      "command": "purpclaw council \"<question>\""
+    },
+    {
+      "id": "council.review",
+      "name": "Council Review Session",
+      "phase": "runtime",
+      "requiredInputs": ["review target", "weather", "artifact state", "memory"],
+      "outputs": ["review decision", "risks", "evidence gaps", "action plan"],
+      "agents": ["oracle", "weatherman", "smith", "neo", "memory", "hermes"],
+      "next": ["council.decide", "implementation.code-review", "runtime.oracle-forecast"],
+      "command": "purpclaw council review \"<target>\""
+    },
+    {
+      "id": "council.decide",
+      "name": "Council Decision Protocol",
+      "phase": "runtime",
+      "requiredInputs": ["decision question", "options", "weather", "memory"],
+      "outputs": ["decision", "votes", "dissent", "confidence", "next command"],
+      "agents": ["oracle", "weatherman", "pm", "architect", "smith", "neo", "memory", "hermes"],
+      "next": ["implementation.story-create", "runtime.oracle-forecast"],
+      "command": "purpclaw council decide \"<question>\""
+    },
+    {
+      "id": "council.architecture",
+      "name": "Council Architecture Session",
+      "phase": "runtime",
+      "requiredInputs": ["architecture question", "current architecture", "constraints", "weather"],
+      "outputs": ["architecture decision", "tradeoffs", "contracts to update", "validation plan"],
+      "agents": ["oracle", "architect", "smith", "neo", "memory", "hermes"],
+      "next": ["solution.architecture", "solution.architecture-validate", "implementation.story-create"],
+      "command": "purpclaw council architecture \"<question>\""
+    },
+    {
+      "id": "council.ui-consolidation",
+      "name": "Council UI Consolidation Session",
+      "phase": "runtime",
+      "requiredInputs": ["UI question", "UI freeze rules", "route/component inventory", "weather"],
+      "outputs": ["canonical shell decision", "duplicate purge plan", "migration order", "verification plan"],
+      "agents": ["oracle", "weatherman", "ux", "architect", "smith", "neo", "memory", "hermes"],
+      "next": ["planning.ux", "solution.architecture-validate", "implementation.story-create"],
+      "command": "purpclaw council ui-consolidation \"<question>\""
+    },
+    {
+      "id": "council.weather",
+      "name": "Council Weather Briefing",
+      "phase": "runtime",
+      "requiredInputs": ["weather report", "drift report", "provider/build state"],
+      "outputs": ["operational warning", "safe-to-build decision", "avoid list", "next command"],
+      "agents": ["weatherman", "oracle", "smith", "neo", "memory"],
+      "next": ["runtime.oracle-forecast", "council.decide", "implementation.story-create"],
+      "command": "purpclaw council weather"
+    },
+    {
+      "id": "runtime.export-pack",
+      "name": "Export Planning Pack",
+      "phase": "runtime",
+      "requiredInputs": ["brief/prd/architecture/stories/test plan"],
+      "outputs": ["purp_exports/"],
+      "agents": ["hermes", "memory"],
+      "next": ["runtime.oracle-forecast"],
+      "command": "purpclaw pack planning"
+    }
+  ]
+}

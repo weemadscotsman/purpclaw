@@ -1,6 +1,6 @@
 # Service Runtime Index
 
-Last verified: 2026-06-23
+Last verified: 2026-06-29 (v0.3.0)
 
 This file documents the service boundary. It combines the intent from
 `service_registry.js`, `lib/runtime/ports.js`, and `ecosystem.config.js`.
@@ -49,6 +49,7 @@ This file documents the service boundary. It combines the intent from
 | `thringlet` | `purpclaw-thringlet` | `thringlet_bridge.js` | 7799 | Optional/legacy bridge |
 | `reasoning` | `purpclaw-reasoning` | `lib/reasoning-loop.js` | 7892 | Optional proactive reasoning loop |
 | `telegram` | `purpclaw-telegram` | `lib/gateways/telegram.js` | 7795 | Optional gateway |
+| `drift-watcher` | `purpclaw-drift-watcher` | `lib/drift-watcher.js --watch --fix --interval=60` | none | Optional registry/docs drift watcher |
 
 ## Service Classification Rule
 

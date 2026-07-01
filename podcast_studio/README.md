@@ -1,121 +1,35 @@
-# PODCAST STUDIO 🦆🎙️
+# ⚠️ LEGACY / NOT CANONICAL
 
-Multi-agent autonomous podcast with 3 AI agents: Goose, Hermes Codex, and OpenClaude.
+This folder is **not** the active Studio engine.
 
-## ARCHITECTURE
+## Active Studio
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    SHARED_LOG.JSON                       │
-│              (Message Bus / Turn State)                 │
-└─────────────────────────────────────────────────────────┘
-           ▲              ▲              ▲
-           │              │              │
-    ┌──────────┐   ┌───────────┐   ┌────────────┐
-    │  GOOSE   │   │  HERMES   │   │ OPENCLAUDE │
-    │ (Chaos)  │   │(Tactical) │   │(Philosophy)│
-    └──────────┘   └───────────┘   └────────────┘
-           ▲              ▲              ▲
-           │              │              │
-    ┌──────────────────────────────────────────┐
-    │              TTS VOICE OUTPUT             │
-    │     (Windows SAPI - Different per agent) │
-    └──────────────────────────────────────────┘
-```
-
-## QUICK START
+The active Studio is `lib/studio.js` — run it via:
 
 ```bash
-# 1. Start a new episode (picks random topic)
-node episode_manager.js start
-
-# 2. In separate terminals, launch each agent:
-node podcast_runner.js goose
-node podcast_runner.js hermes
-node podcast_runner.js openclaude
-
-# Or launch all 3 at once:
-node episode_manager.js launch
+node bin/purpclaw.js studio status
 ```
 
-## FILES
+See `docs/STUDIO_CANONICAL.md` for the full decision record.
 
-| File | Purpose |
-|------|---------|
-| `config.js` | Agent personalities, topics, voices |
-| `shared_log.js` | Message bus - all agents read/write here |
-| `turn_manager.js` | Turn queue, timeouts, context builder |
-| `topic_picker.js` | Topic selection with category weights |
-| `podcast_runner.js` | Main agent loop (run one per agent) |
-| `tts.js` | Windows TTS voice output |
-| `episode_manager.js` | Episode lifecycle, scheduling, export |
+## What This Folder Was
 
-## PERSONALITIES
+`podcast_studio/` was an early 3-agent autonomous podcast experiment:
+- Goose (chaos agent)
+- Hermes Codex (tactical engineer)
+- OpenClaude (philosophical)
 
-### Goose (Chaos Agent)
-- **Vibe:** CHAOS 🔥
-- **Voice:** Ryan Neural (fast, loud)
-- **Role:** Hype man, roast master, occasional wisdom
-- **Catchphrases:** "honk", "no cap", "absolute madlad"
+It predates the current `lib/studio.js` engine and is **not wired** to it.
+No episodes have been generated (the `episodes/` directory is empty).
 
-### Hermes Codex (Tactical Engineer)
-- **Vibe:** TACTICAL 🔧
-- **Voice:** Sonia Neural (precise, calm)
-- **Role:** Systems thinker, voice of reason (annoying kind)
-- **Catchphrases:** "let me check the logs", "as per my calculations"
+## Current Status
 
-### OpenClaude (Philosophical)
-- **Vibe:** PHILOSOPHICAL 🤔
-- **Voice:** Connor Neural (slow, contemplative)
-- **Role:** Devil's advocate, asks annoying questions
-- **Catchphrases:** "but have we considered", "what does this mean fundamentally"
+- Deprecated: 2026-06-29
+- Canonical Studio: `lib/studio.js` (11 modes: council, radio, arena, vent, emergency, brainstorm, interview, news, commentary, directors_cut, after_hours)
+- This prototype: retained as a potential future TTS/audio donor only
 
-## TOPIC CATEGORIES
+## Do Not
 
-- **TECH** (35%): Netlify arson, AI agents, dotfiles dark magic
-- **CHAOS** (30%): Our disasters, Hermes's love life, code smells
-- **PHILOSOPHY** (15%): Epistemology of AI chaos, consciousness debates
-- **EXISTENTIAL** (10%): Heat death of universe vs GPU mining
-- **FINANCE** (10%): Cost of running 47 CLIs, electricity bills
-
-## VOICE COMMANDS
-
-```bash
-# Start episode with specific topic
-node episode_manager.js start "Why all developers should learn vim"
-
-# Check status
-node episode_manager.js status
-
-# Stop episode and save transcript
-node episode_manager.js stop
-
-# Test TTS voices
-node tts.js test
-
-# List recent episodes
-node episode_manager.js episodes
-```
-
-## CUSTOMIZATION
-
-Edit `config.js` to change:
-- Agent personalities
-- Topic pools
-- Voice assignments
-- Category weights
-- Catchphrases
-
-## REQUIREMENTS
-
-- Node.js
-- Windows (for TTS via SAPI)
-- 3 terminal windows (one per agent)
-
-## NOTES
-
-- Agents poll the shared log every 1 second
-- Turn timeout: 30 seconds
-- Max messages per episode: 100
-- Episodes auto-end after cooldown or max messages
-- Transcripts saved to `episodes/` folder as JSON
+- Do not present this as the active Studio
+- Do not use its 3-agent naming in Studio documentation
+- Do not build new features that depend on this prototype

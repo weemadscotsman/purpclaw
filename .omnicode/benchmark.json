@@ -1,0 +1,258 @@
+{
+  "benchmark_version": "2.0.0",
+  "generated_at": "2026-06-01T23:45:44.581Z",
+  "repo_path": "E:\\god folder\\02_ACTIVE_PROJECTS\\PURPCLAW",
+  "raw": {
+    "discovered_source_files": 1857,
+    "raw_bytes": 14957147,
+    "raw_tokens_estimated": 3739287,
+    "scanner": {
+      "discoveredFiles": 2270,
+      "indexedCandidates": 1857,
+      "sourceBytes": 14957147,
+      "skippedDirs": 22,
+      "skippedFiles": 0,
+      "generatedSkipped": 0,
+      "oversizedSkipped": 0,
+      "maxFilesHit": false,
+      "maxBytesHit": false,
+      "timeLimitHit": false,
+      "scanMs": 1248,
+      "stopReason": null,
+      "excludedDirs": [
+        {
+          "dir": "__pycache__",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": ".archive",
+          "reason": "dot-directory"
+        },
+        {
+          "dir": ".git",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": ".kiro",
+          "reason": "dot-directory"
+        },
+        {
+          "dir": ".next",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": ".omnicode",
+          "reason": "dot-directory"
+        },
+        {
+          "dir": "bin",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "build",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "node_modules",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "tests\\e2e\\node_modules",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "no-spaghett\\.next",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "no-spaghett\\node_modules",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "no-spaghett\\packages\\core\\dist",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "no-spaghett\\packages\\core\\node_modules",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "no-spaghett\\packages\\cli\\dist",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "no-spaghett\\packages\\cli\\node_modules",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "no-spaghett\\assets\\.aistudio",
+          "reason": "dot-directory"
+        },
+        {
+          "dir": "eval\\__pycache__",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "eval\\benches\\__pycache__",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "docs\\releases",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "companion-chorus\\node_modules",
+          "reason": "dependency/build/vcs cache"
+        },
+        {
+          "dir": "agent_work\\.snapshots",
+          "reason": "dot-directory"
+        }
+      ]
+    }
+  },
+  "index": {
+    "scannedFiles": 433,
+    "newlyIndexed": 3,
+    "totalIndexedFiles": 2261,
+    "symbolsExtracted": 0,
+    "blindspotsDetected": 1831,
+    "staleRemoved": 1828,
+    "scanMs": 209,
+    "scanStopReason": "complete",
+    "maxFilesHit": false,
+    "maxBytesHit": false,
+    "timeLimitHit": false,
+    "sourceBytesScanned": 4498174,
+    "skippedDirs": 22,
+    "skippedFiles": 0,
+    "generatedSkipped": 0,
+    "filesSkippedFromParse": 1828,
+    "skippedByReason": {
+      "unsupported_ext": 1828
+    },
+    "filesDiscovered": 2270,
+    "filesIndexed": 3,
+    "minifiedSkipped": 0,
+    "largeFilesSkipped": 0,
+    "parseFailures": 0,
+    "workersUsed": 7,
+    "partialIndex": false,
+    "resume": {
+      "enabled": true,
+      "startedAt": 0,
+      "processedThisRun": 433,
+      "nextCursor": 433,
+      "total": 433,
+      "state": "complete"
+    },
+    "archive": null,
+    "indexed_files": 2261,
+    "symbols": 4838,
+    "graph_edges": 15936,
+    "blindspots": 1978,
+    "blindspot_rate": 0.8748
+  },
+  "resolution": {
+    "files_accounted": 2261,
+    "unknown_files": 0,
+    "source_files": 423,
+    "source_resolution_coverage": 88.18,
+    "unresolved_source_files": 1,
+    "runtime_required_files": 49,
+    "artifacts_classified": 1836,
+    "blocking_repair_gaps": 50,
+    "by_state": {
+      "resolved_full": 359,
+      "requires_runtime": 49,
+      "resolved_partial": 25,
+      "resolved_metadata": 1820,
+      "unsafe_excluded": 2,
+      "resolver_missing": 1,
+      "generated_excluded": 5
+    }
+  },
+  "operations": [
+    {
+      "operation": "index",
+      "baseline_bytes": 14957147,
+      "payload_bytes": 803,
+      "reduction_percent": 99.9946313290897,
+      "reduction_display": "99.994631%",
+      "baseline_tokens_estimated": 3739287,
+      "payload_tokens_estimated": 201,
+      "measurement": "exact_bytes",
+      "measurement_type": "measured_payload_bytes_vs_measured_source_bytes",
+      "formula": "(baseline_bytes - payload_bytes) / baseline_bytes",
+      "notes": "Index output payload measured. Indexing compute is not a model-token cost."
+    },
+    {
+      "operation": "repo_map",
+      "baseline_bytes": 14957147,
+      "payload_bytes": 20755,
+      "reduction_percent": 99.86123690567459,
+      "reduction_display": "99.861237%",
+      "baseline_tokens_estimated": 3739287,
+      "payload_tokens_estimated": 5189,
+      "measurement": "exact_bytes",
+      "measurement_type": "measured_payload_bytes_vs_measured_source_bytes",
+      "formula": "(baseline_bytes - payload_bytes) / baseline_bytes",
+      "notes": ""
+    },
+    {
+      "operation": "file_outline",
+      "baseline_bytes": 172640,
+      "payload_bytes": 2318,
+      "reduction_percent": 98.65732159406858,
+      "reduction_display": "98.657322%",
+      "baseline_tokens_estimated": 43160,
+      "payload_tokens_estimated": 580,
+      "measurement": "exact_bytes",
+      "measurement_type": "measured_payload_bytes_vs_measured_parseable_source_file_bytes",
+      "formula": "(baseline_bytes - payload_bytes) / baseline_bytes",
+      "notes": "Selector: largest parseable source/test/route file with symbols (public\\new-master-ui\\panels.jsx)."
+    },
+    {
+      "operation": "search_symbols",
+      "baseline_bytes": 14957147,
+      "payload_bytes": 1050,
+      "reduction_percent": 99.99297994463784,
+      "reduction_display": "99.992980%",
+      "baseline_tokens_estimated": 3739287,
+      "payload_tokens_estimated": 263,
+      "measurement": "exact_bytes",
+      "measurement_type": "measured_payload_bytes_vs_measured_source_bytes",
+      "formula": "(baseline_bytes - payload_bytes) / baseline_bytes",
+      "notes": ""
+    },
+    {
+      "operation": "spaghetti_report",
+      "baseline_bytes": 14957147,
+      "payload_bytes": 21516,
+      "reduction_percent": 99.85614903697878,
+      "reduction_display": "99.856149%",
+      "baseline_tokens_estimated": 3739287,
+      "payload_tokens_estimated": 5379,
+      "measurement": "exact_bytes",
+      "measurement_type": "measured_payload_bytes_vs_measured_source_bytes",
+      "formula": "(baseline_bytes - payload_bytes) / baseline_bytes",
+      "notes": "Baseline = full source bytes (the alternative to a graph review is reading the source)."
+    }
+  ],
+  "cumulative": {
+    "baseline_bytes": 60001228,
+    "payload_bytes": 46442,
+    "reduction_percent": 99.92259825082247,
+    "reduction_display": "99.922598%",
+    "baseline_tokens_estimated": 15000307,
+    "payload_tokens_estimated": 11611,
+    "warm_query_average_bytes": 11410
+  },
+  "anomalies": [
+    "scan_stop:complete",
+    "high_blindspot_rate:87.5%",
+    "largest_file_skipped_artifact:yolov8n.pt:6549796",
+    "file_outline_selector:source_only"
+  ],
+  "elapsed_ms": 26737
+}

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CockpitShell } from '../components/CockpitShell';
 
 // Real data, one shell. The legacy static /ui bundle is archived; this page
 // renders the tower from /api/mission-data inside CockpitShell.
@@ -86,7 +85,7 @@ export default function SkyscraperPage() {
   const visible = division === 'all' ? floors : floors.filter(f => f.div === division);
 
   return (
-    <CockpitShell title="Abliterator · 3D Agent Tower">
+    <>
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <div style={{
           padding: '8px 14px',
@@ -158,6 +157,6 @@ export default function SkyscraperPage() {
           </div>
         </div>
       </div>
-    </CockpitShell>
+    </>
   );
 }

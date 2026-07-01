@@ -1,0 +1,58 @@
+{
+  "schema": "purpclaw.surface-capabilities.v1",
+  "version": "0.3.0",
+  "updated": "2026-06-29",
+  "rule": "If CLI can do it, every surface must at least see it. If Web can click it, CLI must be able to prove it.",
+  "capabilities": {
+    "auto_research": {
+      "cli": true,
+      "tui": false,
+      "web": true,
+      "mobile": false,
+      "actions": {
+        "status":   { "cli": true, "tui": false, "web": true,  "mobile": false },
+        "runOnce":  { "cli": true, "tui": false, "web": false, "mobile": false },
+        "loop":     { "cli": true, "tui": false, "web": false, "mobile": false },
+        "reset":    { "cli": true, "tui": false, "web": false, "mobile": false },
+        "prepare":  { "cli": true, "tui": false, "web": false, "mobile": false },
+        "queue":    { "cli": true, "tui": false, "web": true,  "mobile": false },
+        "stop":     { "cli": true, "tui": false, "web": true,  "mobile": false },
+        "resume":   { "cli": true, "tui": false, "web": true,  "mobile": false },
+        "logs":     { "cli": true, "tui": false, "web": true,  "mobile": false }
+      }
+    },
+    "auto_evolve": {
+      "cli": true,
+      "tui": false,
+      "web": true,
+      "mobile": false,
+      "actions": {
+        "pass":        { "cli": true, "tui": false, "web": true,  "mobile": false },
+        "forge":       { "cli": true, "tui": false, "web": false, "mobile": false },
+        "status":      { "cli": true, "tui": false, "web": true,  "mobile": false },
+        "approve":     { "cli": true, "tui": false, "web": false, "mobile": false },
+        "reject":      { "cli": true, "tui": false, "web": false, "mobile": false },
+        "history":     { "cli": true, "tui": false, "web": false, "mobile": false },
+        "regressions": { "cli": true, "tui": false, "web": false, "mobile": false }
+      }
+    },
+    "timeline": {
+      "cli": true,
+      "tui": false,
+      "web": true,
+      "mobile": false,
+      "actions": {
+        "record":   { "cli": true, "tui": false, "web": true, "mobile": false },
+        "recent":   { "cli": true, "tui": false, "web": true, "mobile": false },
+        "patterns": { "cli": true, "tui": false, "web": false, "mobile": false },
+        "weave":    { "cli": true, "tui": false, "web": false, "mobile": false },
+        "recall":   { "cli": true, "tui": false, "web": true,  "mobile": false }
+      }
+    }
+  },
+  "next_actions": [
+    "Wire TUI panel to lib/actions/*.js (parity closes tui: false → true)",
+    "Build mobile-web shell (parity closes mobile: false → true)",
+    "Wire all `web: true` actions to actual Web UI buttons in app/evolution/page.tsx"
+  ]
+}

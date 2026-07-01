@@ -1,0 +1,54 @@
+{
+  "schema": "purpclaw.spring.doctrine.v1",
+  "doctrine_id": "doctrine-apply-proven-build-provider-workflow-build-provider-code-generation-veri",
+  "title": "Doctrine from build_provider: Apply proven build_provider workflow: build_provider code_generation verified lib llm-provider",
+  "statement": "When handling apply, proven, build_provider, workflow, code_generation, verified, lib, llm-provider, prefer the verified workflow: Inspect likely files first: lib/llm-provider.js, lib/providers/provider_0.js, tests/test_provider.ts, lib/providers/provider_1.js, lib/providers/provider_2.js, lib/providers/provider_3.js, lib/providers/provider_4.js, lib/providers/provider_5.js -> Use proven tools: write_file, edit_file, bash, test_runner -> Run targeted commands/checks: verified build_provider -> Make the smallest safe change that satisfies the task..",
+  "source": "hivemind_promotion",
+  "source_trace_ids": [
+    "rank1-build_provider-1782753633125-1-ew49",
+    "rank1-build_provider-1782753633125-2-f4ar",
+    "rank1-build_provider-1782753633125-3-fgqo",
+    "rank1-build_provider-1782753633125-4-xo4t",
+    "rank1-build_provider-1782753633125-5-77eu",
+    "rank1-build_provider-1782753633125-6-rrvb",
+    "rank1-build_provider-1782753633125-7-g72g",
+    "rank1-build_provider-1782753633125-8-1wqr"
+  ],
+  "evidence": [
+    "rank1-build_provider-1782753633125-1-ew49",
+    "rank1-build_provider-1782753633125-2-f4ar",
+    "rank1-build_provider-1782753633125-3-fgqo",
+    "rank1-build_provider-1782753633125-4-xo4t",
+    "rank1-build_provider-1782753633125-5-77eu",
+    "rank1-build_provider-1782753633125-6-rrvb",
+    "rank1-build_provider-1782753633125-7-g72g",
+    "rank1-build_provider-1782753633125-8-1wqr"
+  ],
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "verified_execution",
+    "spring_rank": 1,
+    "spring_label": "Pure Spring",
+    "verification": [
+      "rank1-build_provider-1782753633125-1-ew49",
+      "rank1-build_provider-1782753633125-2-f4ar",
+      "rank1-build_provider-1782753633125-3-fgqo",
+      "rank1-build_provider-1782753633125-4-xo4t",
+      "rank1-build_provider-1782753633125-5-77eu",
+      "rank1-build_provider-1782753633125-6-rrvb",
+      "rank1-build_provider-1782753633125-7-g72g",
+      "rank1-build_provider-1782753633125-8-1wqr"
+    ],
+    "trust_score": 0.653,
+    "repeatability": 0.95,
+    "freshness": 0.25,
+    "evaluated_at": "2026-06-29T18:13:41.743Z"
+  },
+  "origin": "verified_execution",
+  "spring_rank": 1,
+  "trust_score": 0.653,
+  "confidence": 0.653,
+  "created_at": "2026-06-29T18:13:41.743Z",
+  "updated_at": "2026-06-29T18:13:41.743Z",
+  "immutable": true
+}

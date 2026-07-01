@@ -1,0 +1,65 @@
+{
+  "schema": "purpclaw.hivemind.trace.v1",
+  "run_id": "loop-partial_work-ambig-1782756821614-48-ibqr",
+  "task": "Ambiguous result for partial_work",
+  "source": "hivemind-loop-test",
+  "agent": "test_agent",
+  "model": "test_model",
+  "provider": "test",
+  "intent": "partial_work",
+  "job_type": "code_generation",
+  "route_intent": "partial_work",
+  "started_at": "2026-06-29T18:12:56.614Z",
+  "ended_at": "2026-06-29T18:13:41.614Z",
+  "duration_ms": 20000,
+  "tools_used": [
+    "bash",
+    "grep"
+  ],
+  "tool_calls": [
+    {
+      "name": "bash",
+      "args_hash": "sha256:test",
+      "output_summary": "partial"
+    }
+  ],
+  "files_touched": [
+    "src/ambiguous_file.kt"
+  ],
+  "commands": [
+    "grep partial"
+  ],
+  "verification_gates": [
+    "gate_lint"
+  ],
+  "gate_results": [
+    {
+      "gate": "gate_lint",
+      "passed": true
+    }
+  ],
+  "outcome": "partial",
+  "tests_passed": null,
+  "rollback": false,
+  "destructive": false,
+  "tokens": 800,
+  "evidence": [],
+  "status": "partial",
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "unverified_ai_output",
+    "spring_rank": 7,
+    "spring_label": "Stagnant River",
+    "verification": [
+      "gate:gate_lint:fail"
+    ],
+    "trust_score": 0.196,
+    "repeatability": 0.2,
+    "freshness": 1,
+    "evaluated_at": "2026-06-29T18:13:41.614Z"
+  },
+  "spring_rank": 7,
+  "trust_score": 0.196,
+  "score": 0.31202499999999994,
+  "updated_at": "2026-06-29T18:13:41.650Z"
+}

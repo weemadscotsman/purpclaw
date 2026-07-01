@@ -1,0 +1,53 @@
+{
+  "schema": "purpclaw.drift-watcher.v1",
+  "scanned_at": "2026-07-01T11:15:40.995Z",
+  "summary": {
+    "checks": 5,
+    "drifted": 1,
+    "autofixable": 0,
+    "needs_review": 1
+  },
+  "checks": [
+    {
+      "id": "registry",
+      "severity": "ok",
+      "autofixable": true,
+      "drift": false,
+      "detail": "registry/index.json: 379/84 skills/agents; live: 379/84 (drift +0/+0)",
+      "fix": "npm run sync:registry"
+    },
+    {
+      "id": "version",
+      "severity": "ok",
+      "autofixable": true,
+      "drift": false,
+      "detail": "build #49 current — no unstamped changes",
+      "fix": "npm run stamp"
+    },
+    {
+      "id": "capability",
+      "severity": "medium",
+      "autofixable": false,
+      "drift": true,
+      "detail": "1 registry conflict(s): services: Services declared in service_registry.js but missing from ecosystem.config.js: purpclaw-thringlet",
+      "fix": "review service_registry.js vs lib/capability-registry.js (needs human)"
+    },
+    {
+      "id": "docs",
+      "severity": "ok",
+      "autofixable": false,
+      "drift": false,
+      "detail": "docs skill-counts within tolerance of live (379)",
+      "fix": "update the doc prose (needs human — prose is not auto-edited)"
+    },
+    {
+      "id": "liveweb",
+      "severity": "ok",
+      "autofixable": false,
+      "drift": false,
+      "detail": "live web not reachable — catalog has 22 (skip)",
+      "fix": ""
+    }
+  ],
+  "autofixes": []
+}

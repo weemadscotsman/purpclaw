@@ -217,6 +217,34 @@ try {
   console.log('[COORDINATOR] cognitive-client.js unavailable — cognitive services disabled');
 }
 
+let HIVEMIND = null;
+try {
+  HIVEMIND = require('./lib/hivemind');
+  console.log('[COORDINATOR] Hivemind loaded — swarm missions get skill injection + traces');
+} catch (e) {
+  console.log('[COORDINATOR] Hivemind unavailable:', e.message);
+}
+
+// Pipeline-registry on the swarm path. Without this, swarm missions were INVISIBLE
+// to the spine (the orchestrator registered, the coordinator never did) — so a
+// delegated mission would run with zero progress feedback ("BRO WHATS GOING ON").
+// Now every mission is a tracked job: callable → logged → finishable → visible.
+let pipelineReg = null;
+try {
+  pipelineReg = require('./lib/pipeline-registry');
+  console.log('[COORDINATOR] Pipeline registry loaded — swarm missions now on the spine');
+} catch (e) {
+  console.log('[COORDINATOR] pipeline-registry unavailable — missions will not be tracked');
+}
+// Null-safe wrappers so a missing/registry error never breaks a mission.
+const reg = {
+  start: (s) => { try { return pipelineReg && pipelineReg.start(s); } catch { return null; } },
+  step:  (id, n) => { try { pipelineReg && id && pipelineReg.step(id, n); } catch {} },
+  tool:  (id, c) => { try { pipelineReg && id && pipelineReg.tool(id, c); } catch {} },
+  output:(id, p, m) => { try { pipelineReg && id && pipelineReg.output(id, p, m); } catch {} },
+  finish:(id, r) => { try { pipelineReg && id && pipelineReg.finish(id, r); } catch {} },
+};
+
 // === CONFIG ===
 const PORT = parseInt(process.env.COORDINATOR_PORT || '7898', 10);
 const TOWER_PORT = parseInt(process.env.TOWER_PORT || '7790', 10);
@@ -636,6 +664,41 @@ async function coordinateMission(missionId, task, options = {}) {
   };
 
   missions.set(missionId, mission);
+
+  // Hivemind: accept context from orchestrator when present; otherwise build it
+  // here so direct /api/coordinate calls still compound. One learning layer, no
+  // duplicated brain goo.
+  if (HIVEMIND) {
+    try {
+      const supplied = options.hivemind || null;
+      const ctx = supplied || HIVEMIND.loadRuntimeContext(task, { intent: options.intent || 'swarm', jobType: options.intent || 'swarm', limit: 3 });
+      mission.hivemind = ctx;
+      mission.hivemindSkills = ctx.skills || [];
+      mission.hivemindAntiSkills = ctx.antiskills || [];
+      mission.hivemindPromptBlock = ctx.promptBlock || '';
+      if (supplied && supplied.traceId) {
+        mission.hivemindTraceId = supplied.traceId;
+        try { HIVEMIND.recordEvent(supplied.traceId, 'swarm.mission.attached', { missionId, skills: mission.hivemindSkills.map(s => s.skill_id) }); } catch (_) {}
+      } else {
+        const trace = HIVEMIND.startTrace({ mission_id: missionId, workflow_id: missionId, task, source: 'swarm_coordinator', intent: options.intent || 'swarm', job_type: options.intent || 'swarm', evidence: mission.hivemindSkills.length ? [`skills_loaded:${mission.hivemindSkills.length}`] : [] });
+        mission.hivemindTraceId = trace.run_id;
+      }
+    } catch (e) {
+      mission.hivemindError = e.message;
+      log(missionId, `[HIVEMIND] mission context failed: ${e.message}`);
+    }
+  }
+
+  // Register the mission on the spine so it is visible/finishable from /api/pipeline.
+  mission.pipelineJobId = reg.start({
+    job_id: missionId,
+    pipeline_name: 'swarm.mission',
+    lane: 'SWARM',
+    project: options.project || 'purpclaw',
+    risk: options.risk || 'normal',
+    title: task.substring(0, 120),
+  }) || missionId;
+  reg.step(mission.pipelineJobId, 'decomposing');
   log(missionId, `Starting mission for task: "${task.substring(0, 80)}..."`);
   publishEvent('swarm.coordinator.started', { missionId, task });
 
@@ -702,6 +765,7 @@ async function coordinateMission(missionId, task, options = {}) {
     }));
 
     mission.status = 'running';
+    reg.step(mission.pipelineJobId, `running: ${mission.subtasks.length} lanes`);
     log(missionId, `Decomposed into ${mission.subtasks.length} execution lanes.`);
     publishEvent('swarm.coordinator.decomposed', { missionId, subtasks: mission.subtasks });
 
@@ -751,6 +815,8 @@ async function coordinateMission(missionId, task, options = {}) {
           subtask.status = 'running';
           subtask.startedAt = new Date().toISOString();
           subtask.attempts++;
+          reg.step(mission.pipelineJobId, `${subtask.agent}: ${subtask.text.substring(0, 50)}`);
+          reg.tool(mission.pipelineJobId, { tool: `dispatch:${subtask.agent}`, ok: true, detail: subtask.domain });
           log(missionId, `Dispatching ${subtask.agent} on domain [${subtask.domain}] (subtask text: "${subtask.text.substring(0, 60)}...")`);
           publishEvent('swarm.coordinator.subtask.running', { missionId, subtask });
 
@@ -824,7 +890,20 @@ async function coordinateMission(missionId, task, options = {}) {
                 spawnResult = await towerRequest('POST', '/api/spawn/await', {
                   agentName: subtask.agent,
                   task: fullTaskDesc,
-                  options: { workflowId: missionId, intent: options.intent || 'swarm', teamId: missionId, role: 'member', deferContextWrite: true, sandboxDir: (mission.sandbox && mission.sandbox.path) || undefined },
+                  options: {
+                    workflowId: missionId,
+                    intent: options.intent || 'swarm',
+                    teamId: missionId,
+                    role: 'member',
+                    deferContextWrite: true,
+                    sandboxDir: (mission.sandbox && mission.sandbox.path) || undefined,
+                    hivemind: mission.hivemind ? {
+                      traceId: mission.hivemindTraceId || null,
+                      skills: mission.hivemindSkills || [],
+                      antiskills: mission.hivemindAntiSkills || [],
+                      promptBlock: mission.hivemindPromptBlock || ''
+                    } : null
+                  },
                   timeoutMs: 120000
                 });
               } else {
@@ -848,6 +927,7 @@ async function coordinateMission(missionId, task, options = {}) {
                 subtask.endTime = new Date().toISOString();
                 subtask.durationMs = Date.now() - attemptStartedAt;
                 success = true;
+                reg.tool(mission.pipelineJobId, { tool: `done:${subtask.agent}`, ok: true, detail: `${subtask.durationMs}ms` });
                 mission.metrics.completedSubtasks++;
                 if (subtask.attempts === 1) mission.metrics.passAt1++;
                 if (subtask.attempts <= 3) mission.metrics.passAt3++;
@@ -912,6 +992,7 @@ async function coordinateMission(missionId, task, options = {}) {
               } else {
                 subtask.status = 'failed';
                 subtask.endTime = new Date().toISOString();
+                reg.tool(mission.pipelineJobId, { tool: `fail:${subtask.agent}`, ok: false, detail: compactText(err.message, 140) });
                 mission.metrics.failedSubtasks++;
                 await rememberLesson(mission, subtask, false);
                 mission.metrics.memoryLessons++;
@@ -1039,6 +1120,37 @@ Synthesize the contributions into the final cohesive answer.`;
     // it will bubble to the catch block and mark the mission as failed.
     finalizeMissionSandbox(mission.sandbox, missionId, true);
 
+    // Record the synthesis as the mission's output, then finish the spine job.
+    // A mission with zero completed subtasks finishes as failed, not fake-green.
+    reg.output(mission.pipelineJobId, `mission:${missionId}`, {
+      type: 'synthesis',
+      summary: compactText(mission.synthesis?.summary || '', 200),
+      status: mission.metrics.failedSubtasks > 0 ? 'partial' : 'ok',
+    });
+    reg.finish(mission.pipelineJobId, {
+      status: mission.metrics.completedSubtasks > 0 ? 'complete' : 'failed',
+      summary: `${mission.metrics.completedSubtasks}/${mission.subtasks.length} lanes done, ${mission.metrics.failedSubtasks} failed`,
+    });
+
+    if (HIVEMIND && mission.hivemindTraceId) {
+      try {
+        HIVEMIND.finishTrace(mission.hivemindTraceId, {
+          mission_id: missionId,
+          workflow_id: missionId,
+          task,
+          source: 'swarm_coordinator',
+          outcome: 'success',
+          duration_ms: mission.metrics.durationMs,
+          toolCalls: mission.subtasks.flatMap(s => Array.isArray(s.toolCalls) ? s.toolCalls : []),
+          files_touched: mission.synthesis?.filesModified || [],
+          diff_summary: mission.synthesis?.summary || '',
+          evidence: ['mission_completed', `${mission.metrics.completedSubtasks}/${mission.subtasks.length} lanes completed`],
+          tests_passed: mission.synthesis?.validationStatus === 'COMPLETED' ? true : null
+        });
+        HIVEMIND.tryPromote(mission.hivemindTraceId);
+      } catch (e) { log(missionId, `[HIVEMIND] mission finish failed: ${e.message}`); }
+    }
+
     publishEvent('swarm.coordinator.complete', { missionId, synthesis: mission.synthesis });
 
     // State cleanup (keeping the result)
@@ -1051,6 +1163,7 @@ Synthesize the contributions into the final cohesive answer.`;
     mission.error = err.message;
     mission.endTime = new Date().toISOString();
     mission.metrics.durationMs = Date.now() - mission.metrics.startedAtMs;
+    reg.finish(mission.pipelineJobId, { status: 'failed', summary: compactText(err.message, 160) });
     log(missionId, `Mission failed: ${err.message}`);
 
     // Discard sandbox on failure
@@ -1058,6 +1171,23 @@ Synthesize the contributions into the final cohesive answer.`;
       finalizeMissionSandbox(mission.sandbox, missionId, false);
     } catch (cleanErr) {
       log(missionId, `Error during sandbox cleanup on failure: ${cleanErr.message}`);
+    }
+
+    if (HIVEMIND && mission.hivemindTraceId) {
+      try {
+        HIVEMIND.finishTrace(mission.hivemindTraceId, {
+          mission_id: missionId,
+          workflow_id: missionId,
+          task,
+          source: 'swarm_coordinator',
+          outcome: 'failed',
+          duration_ms: mission.metrics.durationMs,
+          error: err.message,
+          evidence: ['mission_failed'],
+          rollback: true
+        });
+        HIVEMIND.tryPromote(mission.hivemindTraceId);
+      } catch (e) { log(missionId, `[HIVEMIND] mission failure trace failed: ${e.message}`); }
     }
 
     publishEvent('swarm.coordinator.failed', { missionId, error: err.message });

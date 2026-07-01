@@ -4,6 +4,153 @@ Curated record of meaningful changes. Append at the bottom; never rewrite histor
 
 ---
 
+## v0.3.4 (2026-06-30) - AWAKEN MILESTONE COMPLETE
+
+### P6.1 — UI smoke receipt (complete)
+All 10 acceptance criteria verified:
+- /awaken loads clean (HTTP 200)
+- Status endpoint returns 5 feeds: Runtime, Growth, Companions, STRESS, Self-Improving
+- Unknown values render null (not green, not -1) — fixed research_queue_length, pending_evolution_proposals, skill_forge_count, mutations_applied sentinels
+- Partial values render WARNING (Shaman=PARTIAL confirmed)
+- Hold-to-start 2-second ring animation confirmed
+- Invalid mode rejected with HTTP 400 + clear error message — fixed silent fallback to 'work'
+- Stop writes .STOP file — confirmed on disk
+- Mobile layout via flex-wrap on mode selector confirmed
+- Evidence path shown in ActivePanel only (correct)
+- Zero JS console errors
+
+### Root file consolidation (complete)
+- 155 loose files moved to scripts/ tree (cognitive/, swarm/, tasks/, one-off/, archive/companion/, archive/patches/, archive/memory/, archive/installers/, archive/build/, archive/old-docs/)
+- 4 Python services restored to root (ecosystem.config.js references): cognitive_spine.py, voice_stt.py, yolo_service.py, simple_bridge.py
+- thringlet_bridge.js zombie removed from ecosystem.config.js (file never existed)
+- ecosystem.config.js fully verified: 26 PM2 services, 0 broken references
+- Root now exactly 32 canonical files
+- docs/ collisions resolved: root version kept where larger/newer, duplicates archived
+
+### P0–P5 — Already complete (see CHANGELOG v0.3.3)
+
+### P6 — AWAKEN UI button (complete)
+- `app/api/awaken/status/route.ts` — reads all 4 feeds: growth, companion_cognitive, stress, self_improving
+- `app/api/awaken/start/route.ts` — spawns `purpclaw awaken --mode X` detached child process
+- `app/api/awaken/stop/route.ts` — writes `.STOP` file to signal active AWAKEN run
+- `app/awaken/page.tsx` — full red button UI with hold-to-press, mode selector, 5-tab feed panel
+
+### UI features
+- Giant red button with 2-second hold-to-confirm interaction
+- Mode selector: watch / work / monster / ritual
+- 5 tabbed feed panels: Runtime / Growth / Companions / STRESS / Self-Improving
+- All structured fields from AWAKEN_GROWTH_FEED_SPEC rendered as truth cards
+- Never shows fake green — unknown = UNKNOWN, partial = WARNING
+- Stop with confirmation gate
+- Auto-polls /api/awaken/status every 3 seconds
+- Mobile layout works
+
+### Shaman path fix
+- `shaman_prompts.js` and `shaman_evaluator.js` are at project root, not `lib/`
+- Status route now checks root paths correctly → shaman_status: `partial`
+
+### Awakened at
+- `http://localhost:3000/awaken`
+
+### Layer separation (doctrine fix)
+- Separated "Autonomous Growth Layer" from "Execution Improvement Layer"
+- Autonomous Growth = system discovers patterns, proposes mutations, evolves capabilities
+- Execution Improvement = agent learns from corrections, preferences, reflections, heartbeat
+- New doctrine: "If AWAKEN cannot see the growth loops, the machine is awake but not learning."
+
+### P4 — Autonomous Growth Layer audit (complete)
+- `docs/audit/AUTONOMOUS_GROWTH_LAYER_AUDIT_2026-06-29.md` — 11 components, 3,066 lines
+- `docs/design/AUTONOMOUS_GROWTH_LAYER_SPEC_2026-06-29.md` — component map, capability contract, mutation safety
+- `docs/design/AWAKEN_GROWTH_FEED_SPEC_2026-06-29.md` — GROWTH section for AWAKEN report
+
+### Component classifications
+| Component | Status |
+|---|---|
+| Auto Research | LOADED (orchestrator at E:/training, state not wired) |
+| Self-Evolution Loop | LOADED (3 historical ticks, not running) |
+| Auto Evolve / Mutator | LOADED (0 mutations, proposals dir missing) |
+| Skill Forge | LOADED (0 forged skills) |
+| Donor Archaeology | ACTIVE (1 pending proposal) |
+| Idle Engine | ACTIVE (927 sessions, 355 cycles) |
+| Gate Pipeline | ACTIVE (5 gates, quarantine) |
+| Drift Watcher | LOADED (manual run, no scheduled loop) |
+| Model Sentinel | DOC_ONLY (script exists) |
+| Grow Health | LOADED (aggregator, not in AWAKEN) |
+| AWAKEN Integration | PARTIAL (preflight wired, feed not surfaced) |
+
+### Backlog from P4
+- Wire AutoResearch state to agent_work/
+- Create agent_work/evolution/proposals/ directory
+- Surface GROWTH feed in AWAKEN report
+- Schedule Drift Watcher as cron
+- Move autoresearch orchestrator into PURPCLAW repo
+- Verify Model Sentinel last-run time
+
+### AWAKEN — The Big Red Button
+- Built `lib/awaken/` module: awaken-state, awaken-permissions, awaken-events, awaken-preflight, awaken-loop
+- `purpclaw awaken` CLI: 4 modes (watch/work/monster/ritual), preflight, status, stop
+- 13 preflight checks: files, Node.js, git, disk, service health, training data, evidence, evolution, idle engine, awaken state
+- Core loop: snapshot world state → scan 83 items → badge findings (clean/warning/error) → companion reactions → safe writes → evidence
+- Companion reactions: Mochi wakes, Chorus enters mode, Weatherman reports pressure, Duck watches
+- Outputs: events.jsonl (append-only), runs/<run_id>/report.md, evidence/<run_id>_findings.json
+- All HTTP probes use explicit error handlers — ECONNREFUSED cannot crash the loop
+- Awaken-events.js is fully standalone (no eventbus dependency)
+- WMIC fix for Win11 — uses PowerShell for E: drive space check
+
+### AWAKEN scan findings (2026-06-29)
+- 83 items scanned, 27 clean, 35 warnings, 0 errors
+- Preflight honest: git dirty (edits in progress), services offline (stack not running)
+
+### STRESS Pack Accounting — Round 2
+- `enforceExactFileProof` — FIXED (evidence fabrication backdoor removed)
+- OBLITERATUS — Still theatrical (hardcoded scanPoints), UI removed (theatre without audience)
+- Ship Patch #1 (operator-auth fail-closed) — Wired
+- Orchestrator hardening — Shipped (267-line file, BoundedMap present)
+- Provider count grew: 17 → 21
+- New subsystems since STRESS: AWAKEN, 95 souls, 21 providers, 27 services
+
+### CLI additions
+- `purpclaw awaken` — Big Red Button (watch/work/monster/ritual modes)
+- `purpclaw awaken preflight` — preflight check only
+- `purpclaw awaken status` — current state
+- `purpclaw awaken stop` — abort active run
+
+### Bug fixes
+- HTTP health probes: added explicit `req.on('error')` handlers — ECONNREFUSED no longer crashes the process
+- E: drive space check: WMIC unavailable on Win11 — now uses PowerShell
+- Run directory creation: `fs.mkdirSync` with `recursive: true` before writing report.md
+
+### New architecture
+- Promoted PURPCLAW from agent-framework framing to a local-first AI organisation runtime.
+- Added canonical docs for the current 0.3.0 shape: identity, governance, workflow, Studio, ecology, and evolution layers.
+- Added full folder integration audit at `docs/audit/FOLDER_INTEGRATION_AUDIT_2026-06-29.md`.
+
+### Identity and governance
+- Soul Registry now contains 95 souls.
+- Soul Interviews now contain 95 interview records.
+- Council Mode supports dynamic attendance, domain chairs, votes, reputation, and bounded interrupts.
+- Podcast Studio is treated as the Council/Studio substrate rather than a separate entertainment toy.
+
+### Studio ecology
+- Studio has 11 behavioural modes.
+- Added or documented Timeline, Presence, Residue, meeting memory, private conversations, world state, and ambient life as institutional continuity layers.
+- Recorded the repair direction: make Timeline the shared operational event spine.
+
+### Evolution
+- Confirmed AutoResearch already exists and routes through `lib/commands/autoresearch.js` to `E:/training/lib/autoresearch-orchestrator.js`.
+- Wired Donor Archaeology into the existing Auto-Evolve mutator queue instead of building a second evolution engine.
+- Added donor promotion gate: no candidate becomes integrated without behavioural law, destination, rejected mechanics, validation note, and Timeline event.
+- Queued donor proposal `mut_mqzfx4n6_byc9q4` from `ambient_tension_from_environment`; it remains pending and was not auto-approved.
+
+### Docs
+- Rewrote `README.md`, `ARCHITECTURE.md`, `STATUS.md`, `QUICKSTART.md`, and `DOCS_INDEX.md` for 0.3.0.
+- Marked stale/high-risk docs that still need reconciliation.
+
+### Version
+- 0.2.0 -> 0.3.0
+
+---
+
 ## v0.2.0 (2026-06-23) — Auto provider routing, one-door provider gateway, stack hardening
 
 ### New abilities

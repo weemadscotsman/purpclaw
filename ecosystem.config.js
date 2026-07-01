@@ -55,7 +55,7 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },
@@ -67,7 +67,7 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },
@@ -103,6 +103,12 @@ module.exports = {
     {
       name: 'purpclaw-tower',
       script: './agent_tower.js',
+      // kill_timeout 5s→15s (2026-06-23): tower was found crash-looping 116×
+      // with EADDRINUSE on :7790 because a prior instance hadn't released the
+      // socket before pm2 forked the replacement → zombie port-holder. Same
+      // remedy as the orchestrator below: give SIGTERM time to fully reap the
+      // old process before the new one tries to bind.
+      kill_timeout: 15000,
       env: {
         TMPDIR: "E:\\purp-temp",
         // Tower cap raised 48 → 100 to support Kimi K2.6 swarm fanout
@@ -129,7 +135,6 @@ module.exports = {
       },
       exec_mode: 'fork',
       wait_ready: false,
-      kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 5000,
       max_memory_restart: '1G',
@@ -156,7 +161,7 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },
@@ -172,7 +177,7 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },
@@ -184,22 +189,12 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },
-    {
-      name: 'purpclaw-thringlet',
-      script: './thringlet_bridge.js',
-      exec_mode: 'fork',
-      wait_ready: false,
-      kill_timeout: 5000,
-      max_restarts: 50,
-      restart_delay: 10000,
-      max_memory: '64MB',
-      autorestart: true,
-      windowsHide: true
-    },
+    // REMOVED 2026-06-30: thringlet_bridge.js does not exist.
+    // Thringlet colony runs as Next.js API route (app/api/thringlets/) via Bridge service.
     {
       name: 'purpclaw-nextjs',
       script: './node_modules/next/dist/bin/next',
@@ -235,7 +230,7 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },
@@ -265,7 +260,7 @@ module.exports = {
     },
     {
       name: 'purpclaw-chorus',
-      script: './companion-chorus/bridge.js',
+      script: './apps/companion-chorus/bridge.js',
       env: {
         TMPDIR: "E:\\purp-temp",
         MINIMAX_API_KEY: MINIMAX_API_KEY,
@@ -278,7 +273,7 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },
@@ -303,7 +298,23 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
+      autorestart: true,
+      windowsHide: true
+    },
+    {
+      // Drift watcher daemon — monitors registry/version/capability/doc drift,
+      // auto-fixes the mechanically-regenerable surfaces (registry, build stamps),
+      // flags the rest for review. Runs a scan every 5 minutes.
+      name: 'purpclaw-drift-watcher',
+      script: './lib/drift-watcher.js',
+      args: '--watch --fix --interval=300',
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 50,
+      restart_delay: 15000,
+      max_memory_restart: '128M',
       autorestart: true,
       windowsHide: true
     },
@@ -315,7 +326,7 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },
@@ -327,7 +338,7 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },
@@ -346,7 +357,7 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },
@@ -365,7 +376,7 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 15000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },
@@ -407,7 +418,7 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 15000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },
@@ -448,7 +459,11 @@ module.exports = {
       },
       exec_mode: 'fork',
       wait_ready: false,
-      kill_timeout: 10000,
+      // kill_timeout 10s→15s (2026-06-23): cognitive was found crash-looping
+      // 697× with WinError 10048 on :7880 — a lingering instance held the
+      // socket on rebind. Python on Windows is slow to release sockets after
+      // SIGTERM; 15s lets the old process fully exit before the rebind.
+      kill_timeout: 15000,
       max_restarts: 50,
       restart_delay: 10000,
       max_memory_restart: '1G',
@@ -479,7 +494,7 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
-      max_memory: '64MB',
+      max_memory_restart: '256M',
       autorestart: true,
       windowsHide: true
     },

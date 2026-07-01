@@ -1,0 +1,132 @@
+{
+  "schema": "purpclaw.presence.v1",
+  "version": "0.1.0",
+  "updated": "2026-06-29T16:18:11.955Z",
+  "rooms": {
+    "council_chamber": {
+      "id": "council_chamber",
+      "name": "Council Chamber",
+      "purpose": "Formal decisions, votes, architecture, delegation.",
+      "default_atmosphere": "formal",
+      "locations": [
+        "Council Chamber"
+      ],
+      "objects": [
+        "long table",
+        "chair notes",
+        "vote ledger"
+      ],
+      "traditions": [],
+      "current_occupants": [],
+      "recent_visitors": [],
+      "atmosphere": "crisis residue",
+      "last_activity": null
+    },
+    "tea_room": {
+      "id": "tea_room",
+      "name": "Tea Room",
+      "purpose": "After-hours residue, informal conversations, quiet decompression.",
+      "default_atmosphere": "warm",
+      "locations": [
+        "Tea Room"
+      ],
+      "objects": [
+        "kettle",
+        "warm mug",
+        "biscuit tin"
+      ],
+      "traditions": [
+        "Goose mentions snacks before anyone asks."
+      ],
+      "current_occupants": [],
+      "recent_visitors": [
+        "hermes",
+        "goose",
+        "maverick",
+        "smith",
+        "memory",
+        "phoenix",
+        "neo"
+      ],
+      "atmosphere": "crisis residue",
+      "last_activity": "2026-06-29T16:11:04.619Z"
+    },
+    "studio": {
+      "id": "studio",
+      "name": "Studio",
+      "purpose": "Broadcast modes, Director incidents, commentary, ambient life.",
+      "default_atmosphere": "performative",
+      "locations": [
+        "Studio"
+      ],
+      "objects": [
+        "microphones",
+        "live transcript",
+        "director switchboard"
+      ],
+      "traditions": [],
+      "current_occupants": [],
+      "recent_visitors": [],
+      "atmosphere": "crisis residue",
+      "last_activity": "2026-06-29T16:11:17.222Z"
+    },
+    "archive": {
+      "id": "archive",
+      "name": "Archive",
+      "purpose": "Origin stories, memories, records, cultural continuity.",
+      "default_atmosphere": "quiet",
+      "locations": [
+        "Archive"
+      ],
+      "objects": [
+        "timeline ledger",
+        "soul interviews",
+        "old decisions"
+      ],
+      "traditions": [
+        "Origin stories are recorded before they become explanations."
+      ],
+      "current_occupants": [],
+      "recent_visitors": [],
+      "atmosphere": "crisis residue",
+      "last_activity": "2026-06-29T16:05:11.165Z"
+    },
+    "war_room": {
+      "id": "war_room",
+      "name": "War Room",
+      "purpose": "Critical incidents, outages, security events, urgent coordination.",
+      "default_atmosphere": "tense",
+      "locations": [
+        "War Room"
+      ],
+      "objects": [
+        "incident board",
+        "provider status",
+        "red markers"
+      ],
+      "traditions": [],
+      "current_occupants": [],
+      "recent_visitors": [],
+      "atmosphere": "alert",
+      "last_activity": null
+    },
+    "roof": {
+      "id": "roof",
+      "name": "Roof",
+      "purpose": "Reflection, solitude, unresolved questions.",
+      "default_atmosphere": "still",
+      "locations": [
+        "Roof"
+      ],
+      "objects": [
+        "one chair",
+        "empty cup"
+      ],
+      "traditions": [],
+      "current_occupants": [],
+      "recent_visitors": [],
+      "atmosphere": "crisis residue",
+      "last_activity": null
+    }
+  }
+}

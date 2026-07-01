@@ -309,7 +309,7 @@ export interface MissionData {
 // considers opt-in (voice, vision, ui); backoff on health-probe failure is
 // longer for them so a missing optional service doesn't spam the wire.
 // Aligned 1:1 to the backend source of truth (lib/system-manifest.js →
-// service_registry.js): exactly the registered services, correct ports.
+// service_registry.js): exactly the 22 registered services, correct ports.
 // Removed phantoms that aren't registered (No Spaghett, Speech-To-Text,
 // Terminal Fly) and duplicate entries (Thringlet/Harness were listed twice),
 // and fixed Mission Control UI (was 3000 → real 3030) so it stops showing
@@ -319,7 +319,7 @@ export interface MissionData {
 //   Voice Bridge:     path /health -> /api/bridge/state  (real health endpoint)
 //   YOLO Service:     path /health -> /                  (no /health — POST /detect only)
 //   Avatar Bridge:    path /health -> /                  (no /health — POST /command only)
-//   Vision Monitor:   port 7781 -> 7889                  (was conflicting with voice_coordinator TCP 7781)
+//   Vision Monitor:   port 7781 -> 7788                  (was conflicting with voice_coordinator TCP 7781)
 //   Voice Ingress:    port -1 -> 7896                    (STT runs on 7896)
 //   Companion Chorus: port -1 -> 7797                    (slack gateway default)
 // Ports verified against ecosystem.config.js + source audit.
@@ -333,28 +333,24 @@ const SERVICE_CONFIG = [
   { name: 'Swarm Coordinator',   port: 7898, path: '/health',             key: 'coordinator',      optional: false, note: 'multi-agent swarm mission dispatcher' },
   { name: 'Gatekeeper',          port: 7791, path: '/health',             key: 'gatekeeper',       optional: false, note: 'safety gate for risky ops' },
   { name: 'Metrics Aggregator',  port: 7890, path: '/health',             key: 'metrics',          optional: false, note: 'service health + per-host stats' },
-  { name: 'Knowledge Pool',      port: 7885, path: '/health',             key: 'pool',             optional: false, note: 'routing table and canonical memory feed' },
-  { name: 'Worker Service',      port: 7897, path: '/health',             key: 'workers',          optional: false, note: 'overflow worker lane for remote/local agent task dispatch' },
-  { name: 'Context Bus',         port: 7881, path: '/health',             key: 'context-bus',      optional: false, note: 'inter-service context handoff' },
+  { name: 'Knowledge Pool',      port: 7885, path: '/health',             key: 'pool',             optional: true,  note: 'routing table' },
+  { name: 'Context Bus',         port: 7881, path: '/health',             key: 'context',          optional: false, note: 'inter-service context handoff' },
   { name: 'Mission Control UI',  port: 3030, path: '/',                   key: 'nextjs',           optional: false, note: 'the Next.js frontend itself' },
-  { name: 'GOOP Broker',         port: 7895, path: '/health',             key: 'goop',             optional: true,  note: 'default-deny API broker behind the GOOP / Bridge surface' },
   // ── Voice ──────────────────────────────────────────────────────────────────
   { name: 'Voice Coordinator',   port: 8781, path: '/health',             key: 'voice-coordinator', optional: true, note: 'voice/text command router (TCP on 7781, HTTP health on 8781)' },
   { name: 'Voice Bridge',        port: 7792, path: '/health',             key: 'voice-bridge',     optional: true,  note: 'browser voice socket bridge; connects to TCP :7778' },
-  { name: 'Speech-To-Text',      port: 7896, path: '/health',             key: 'stt',              optional: true,  note: 'local faster-whisper STT HTTP service' },
-  { name: 'Voice Ingress',       port: 7896, path: '/listen/stream',      key: 'voice-ingress',    optional: true,  note: 'daemon subscribes to STT stream and dispatches transcripts' },
+  { name: 'Voice Ingress',       port: 7896, path: '/',                   key: 'voice-ingress',    optional: true,  note: 'STT ingress; no HTTP health — outbound client only' },
   // ── Cognitive ──────────────────────────────────────────────────────────────
-  { name: 'Cognitive Spine',     port: 7880, path: '/cognitive/health',   key: 'cognitive',        optional: false, note: 'memory+rules+modal+neuro+diagnostics+autodream in one process' },
-  { name: 'Reasoning Loop',      port: 7892, path: '/health',             key: 'reasoning',        optional: false, note: 'proactive heartbeat tick' },
+  { name: 'Cognitive Spine',     port: 7880, path: '/cognitive/health',   key: 'cognitive',        optional: true,  note: 'memory+rules+modal+neuro+diagnostics+autodream in one process' },
+  { name: 'Reasoning Loop',      port: 7892, path: '/health',             key: 'reasoning',        optional: true,  note: 'proactive heartbeat tick' },
   // ── Vision ───────────────────────────────────────────────────────────────
-  { name: 'Vision Monitor',      port: 7889, path: '/health',             key: 'vision',           optional: true,  note: 'screen/camera monitor; moved to 7889 (was 7781, conflicted with voice TCP)' },
+  { name: 'Vision Monitor',      port: 7788, path: '/health',             key: 'vision',           optional: true,  note: 'screen/camera monitor; moved to 7788 (was 7781, conflicted with voice TCP)' },
   { name: 'YOLO Service',        port: 7779, path: '/',                   key: 'yolo',             optional: true,  note: 'object detection; no /health — POST /detect only' },
   // ── Companions / Avatar / Harness ───────────────────────────────────────
   { name: 'Companion Chorus',    port: 7797, path: '/',                   key: 'chorus',           optional: true,  note: 'companion reaction bridge; no HTTP health — EventBus client only' },
-  { name: 'Telegram Gateway',    port: 7795, path: '/health',             key: 'telegram',         optional: true,  note: 'Telegram adapter; health works even when token is not configured' },
   // Avatar Bridge (7777) removed 2026-06-20 — physical avatar/body retired by operator.
   // Stop probing a corpse; it was the source of the constant red `:7777 fetch failed` in the trace.
-  { name: 'Harness Service',      port: 7798, path: '/health',             key: 'harness',          optional: false, note: 'autonomous plan→execute→judge→synthesize' },
+  { name: 'Harness Service',      port: 7798, path: '/health',             key: 'harness',          optional: true,  note: 'autonomous plan→execute→judge→synthesize' },
   { name: 'Thringlet Bridge',    port: 7799, path: '/health',             key: 'thringlet',        optional: true,  note: 'runtime→emotion translator; feeds pvx :5000' },
 ];
 
@@ -415,7 +411,7 @@ export function useMissionData(): MissionData {
       } catch {}
     };
     load();
-    const t = setInterval(load, 4000);
+    const t = setInterval(load, 30_000);
     return () => { cancelled = true; clearInterval(t); };
   }, []);
   const [manifest, setManifest] = useState<MissionData['manifest']>(null);
@@ -451,7 +447,7 @@ export function useMissionData(): MissionData {
       } catch { /* manifest unavailable — header falls back to live counts */ }
     };
     pull();
-    const t = setInterval(pull, 60_000);
+    const t = setInterval(pull, 15_000);
     return () => { alive = false; clearInterval(t); };
   }, []);
 
@@ -520,7 +516,7 @@ export function useMissionData(): MissionData {
       } catch {}
     };
     fetchEvolution();
-    const interval = setInterval(fetchEvolution, 60000);
+    const interval = setInterval(fetchEvolution, 30_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -620,7 +616,7 @@ export function useMissionData(): MissionData {
       } catch {}
     };
     fetchKernelJobs();
-    const interval = setInterval(fetchKernelJobs, 10000);
+    const interval = setInterval(fetchKernelJobs, 15_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -628,7 +624,7 @@ export function useMissionData(): MissionData {
   useEffect(() => {
     const checkServices = async () => {
       const now = Date.now();
-      const results = await Promise.all(
+      const results = await Promise.allSettled(
         SERVICE_CONFIG.map(async (cfg) => {
           const failureCount = serviceFailuresRef.current[cfg.key] || 0;
           const fastRecover = ['voice-coordinator', 'voice-bridge', 'stt'].includes(cfg.key);
@@ -670,12 +666,16 @@ export function useMissionData(): MissionData {
           }
         })
       );
-      setServices(results);
+      setServices(
+        results.map((r: any) =>
+          r.status === 'fulfilled' ? r.value : { ...r.value, status: 'offline' as const }
+        )
+      );
       setFetchedAt(Date.now());
     };
 
     checkServices();
-    const interval = setInterval(checkServices, 10000);
+    const interval = setInterval(checkServices, 15_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -943,7 +943,7 @@ export function useMissionData(): MissionData {
       } catch {}
     };
     fetchAgents();
-    const interval = setInterval(fetchAgents, 10000);
+    const interval = setInterval(fetchAgents, 15_000);
     return () => clearInterval(interval);
   }, []);
 
@@ -960,18 +960,30 @@ export function useMissionData(): MissionData {
       } catch {}
     };
     fetchPipeline();
-    const interval = setInterval(fetchPipeline, 10000);
+    const interval = setInterval(fetchPipeline, 15_000);
     return () => clearInterval(interval);
   }, []);
 
-  // Poll diagnostics through the consolidated cognitive spine.
+  // Poll diagnostics
   useEffect(() => {
+    setDiagnostics({
+      findings: [{
+        severity: 'INFO',
+        description: 'Autonomous Diagnostics is available as an on-demand cognitive lens; default mission runtime avoids noisy offline polling.',
+        confidence: 100,
+        agent: 'mission-control',
+      }],
+      voteTally: {},
+      leadingCause: 'on-demand',
+    });
+    return;
+
     const fetchDiagnostics = async () => {
       if (diagFailureRef.current >= 2) {
         setDiagnostics({
           findings: [{
             severity: 'INFO',
-            description: 'Cognitive spine diagnostics are offline or unreachable on :7880',
+            description: 'Autonomous Diagnostics service is offline or not started on :7786',
             confidence: 100,
             agent: 'mission-control',
           }],
@@ -982,13 +994,8 @@ export function useMissionData(): MissionData {
       }
       try {
         const [diagRes, voteRes] = await Promise.all([
-          fetch(proxyUrl(7880, '/diagnostics/diagnose'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ source: 'mission-control' }),
-            signal: AbortSignal.timeout(4000),
-          }),
-          fetch(proxyUrl(7880, '/diagnostics/vote'), { signal: AbortSignal.timeout(2000) }),
+          fetch(proxyUrl(7786, '/diagnose'), { signal: AbortSignal.timeout(4000) }),
+          fetch(proxyUrl(7786, '/vote'), { signal: AbortSignal.timeout(2000) }),
         ]);
         if (diagRes.ok) {
           const diagProxy = await diagRes.json();
@@ -1003,8 +1010,8 @@ export function useMissionData(): MissionData {
           }
           setDiagnostics({
             findings: allFindings,
-            voteTally: voteData.vote_tally || voteData.tally || {},
-            leadingCause: voteData.leading_cause || voteData.leading || null,
+            voteTally: voteData.tally || {},
+            leadingCause: voteData.leading || null,
           });
           diagFailureRef.current = 0;
         }
@@ -1013,7 +1020,7 @@ export function useMissionData(): MissionData {
       }
     };
     fetchDiagnostics();
-    const interval = setInterval(fetchDiagnostics, 6000);
+    const interval = setInterval(fetchDiagnostics, 20_000);
     return () => clearInterval(interval);
   }, []);
 

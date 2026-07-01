@@ -6,7 +6,6 @@
 // All data comes straight from the spine proxies — UI truth == backend truth.
 
 import { useEffect, useState, useCallback } from 'react';
-import { CockpitShell } from '../components/CockpitShell';
 
 const LIGHT: Record<string, string> = { green: '#34d399', amber: '#fbbf24', red: '#fb7185', purple: '#c084fc' };
 
@@ -55,7 +54,7 @@ export default function SpinePage() {
   const mono = { fontFamily: 'JetBrains Mono, monospace', fontSize: 11 } as const;
 
   return (
-    <CockpitShell title="Spine · Control-Plane Truth">
+    <>
       <div style={{ padding: 16, overflowY: 'auto', height: '100%', color: '#e5e0f0' }}>
         {err && <div style={{ color: '#fb7185', ...mono, marginBottom: 8 }}>spine unreachable: {err}</div>}
 
@@ -121,6 +120,6 @@ export default function SpinePage() {
           </Card>
         </div>
       </div>
-    </CockpitShell>
+    </>
   );
 }

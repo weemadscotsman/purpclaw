@@ -1,0 +1,68 @@
+{
+  "schema": "purpclaw.hivemind.skill.v1",
+  "kind": "skill",
+  "skill_id": "apply-proven-build-provider-workflow-build-provider-code-generation-veri-e170ea42",
+  "title": "Apply proven build_provider workflow: build_provider code_generation verified lib llm-provider",
+  "description": "Promoted from 8 successful PURPCLAW trace(s).",
+  "task_type": "code_generation",
+  "intent": "build_provider",
+  "trigger_terms": [
+    "build_provider",
+    "code_generation",
+    "verified",
+    "lib",
+    "llm-provider",
+    "providers",
+    "tests",
+    "test_provider",
+    "provider_0",
+    "provider_1",
+    "provider_2",
+    "provider_3"
+  ],
+  "steps": [
+    "Inspect likely files first: lib/llm-provider.js, lib/providers/provider_0.js, tests/test_provider.ts, lib/providers/provider_1.js, lib/providers/provider_2.js, lib/providers/provider_3.js, lib/providers/provider_4.js, lib/providers/provider_5.js",
+    "Use proven tools: write_file, edit_file, bash, test_runner",
+    "Run targeted commands/checks: verified build_provider",
+    "Make the smallest safe change that satisfies the task.",
+    "Capture evidence: tool calls, output, tests or explicit verification."
+  ],
+  "avoid": [
+    "Do not expand scope beyond the task without evidence.",
+    "Do not rewrite unrelated files just because the model feels artistic.",
+    "Do not skip verification when a cheap verification path exists."
+  ],
+  "source_trace_ids": [
+    "rank1-build_provider-1782753633125-1-ew49",
+    "rank1-build_provider-1782753633125-2-f4ar",
+    "rank1-build_provider-1782753633125-3-fgqo",
+    "rank1-build_provider-1782753633125-4-xo4t",
+    "rank1-build_provider-1782753633125-5-77eu",
+    "rank1-build_provider-1782753633125-6-rrvb",
+    "rank1-build_provider-1782753633125-7-g72g",
+    "rank1-build_provider-1782753633125-8-1wqr"
+  ],
+  "success_count": 8,
+  "failure_count": 0,
+  "usage_count": 0,
+  "score": 0.9939999999999999,
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "verified_execution",
+    "spring_rank": 1,
+    "spring_label": "Pure Spring",
+    "verification": [
+      "[object Object]"
+    ],
+    "trust_score": 0.705,
+    "repeatability": 0.95,
+    "freshness": 1,
+    "evaluated_at": "2026-06-29T18:13:41.729Z"
+  },
+  "created_at": "2026-06-29T17:20:33.218Z",
+  "updated_at": "2026-06-29T18:13:41.730Z",
+  "last_used_at": null,
+  "deprecated": false,
+  "spring_rank": 1,
+  "trust_score": 0.705
+}

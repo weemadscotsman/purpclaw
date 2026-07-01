@@ -11,12 +11,14 @@ This is the route map for the Next.js cockpit in `app/`.
 | `/` | `app/page.tsx` | Root; redirects to `/mission` |
 | `/abliterator` | `app/abliterator/page.tsx` | Redact/purge/forget UI |
 | `/agents` | `app/agents/page.tsx` | Agent view |
+| `/awaken` | `app/awaken/page.tsx` | AWAKEN growth and activation cockpit |
 | `/bridge` | `app/bridge/page.tsx` | Bridge UI |
 | `/cockpit` | `app/cockpit/page.tsx` | Cockpit view |
 | `/dash` | `app/dash/page.tsx` | Dashboard view |
 | `/evolution` | `app/evolution/page.tsx` | Self-evolution controls |
 | `/frameworks` | `app/frameworks/page.tsx` | AI agent framework landscape and pattern atlas |
 | `/inline` | `app/inline/page.tsx` | Inline UI |
+| `/inline/inline` | `app/inline/inline/page.tsx` | Nested inline workspace |
 | `/memory` | `app/memory/page.tsx` | Memory recall and weave UI |
 | `/mission` | `app/mission/page.tsx` | Main Mission Control cockpit |
 | `/mission/harness` | `app/mission/harness/page.tsx` | Harness UI |
@@ -32,6 +34,7 @@ This is the route map for the Next.js cockpit in `app/`.
 | `/system-map` | `app/system-map/page.tsx` | Live system map and 3D stack |
 | `/ui` | `app/ui/route.ts` | UI route adapter |
 | `/ui/[...path]` | `app/ui/[...path]/route.ts` | UI catch-all adapter |
+| `/voice` | `app/voice/page.tsx` | Voice interface |
 
 Archived pages under `app/_archive/` are not active navigation targets.
 
@@ -39,20 +42,32 @@ Archived pages under `app/_archive/` are not active navigation targets.
 
 | Route | Methods | Owner/Purpose |
 |---|---|---|
+| `/api/action` | GET, POST | Surface capability action planner/dispatcher |
 | `/api/agent-scores` | GET | Agent score data |
 | `/api/api-mega-list` | GET, POST | API list/search adapter |
+| `/api/awaken/start` | POST | AWAKEN growth loop start adapter |
+| `/api/awaken/status` | GET | AWAKEN state and recent run status |
+| `/api/awaken/stop` | POST | AWAKEN growth loop stop adapter |
+| `/api/benchmark/ledger` | GET | Benchmark ledger adapter |
 | `/api/benchmark/odysseus` | GET | Odysseus scorecard adapter |
 | `/api/bridge` | GET, POST | Bridge operations |
+| `/api/capabilities` | GET | Surface capability catalog |
 | `/api/chat` | GET, POST | Main chat route |
 | `/api/chat/swarm` | GET, POST | Swarm chat route |
+| `/api/companion-chorus/roster` | GET | Companion chorus roster adapter |
 | `/api/computer-use` | GET, POST | Computer-use route, mutating POST is operator-gated |
 | `/api/delegation/status` | GET | Delegation board status adapter |
 | `/api/discover` | GET, POST | Discovery route |
 | `/api/event-timeline` | GET | Event timeline |
+| `/api/evolution/research` | GET | Self-evolution research file index |
+| `/api/evolution/skills` | GET | Self-evolution skill inventory |
 | `/api/evolution/status` | GET | Self-evolution status adapter |
+| `/api/evolution/steering` | GET | Self-evolution steering state |
 | `/api/eventbus/stream` | GET, HEAD | Same-origin EventBus stream adapter |
+| `/api/features` | GET | Feature/surface verification catalog |
 | `/api/gatekeeper-status` | GET, POST | Gatekeeper status/actions |
 | `/api/governance/policy` | GET, POST | Governance policy read/write, mutating POST is operator-gated |
+| `/api/governor/status` | GET | Usage governor status |
 | `/api/harness/start` | POST, OPTIONS | Harness mission start |
 | `/api/harness/status` | GET, OPTIONS | Harness status |
 | `/api/harness/missions` | GET, OPTIONS | Harness mission list |
@@ -60,6 +75,7 @@ Archived pages under `app/_archive/` are not active navigation targets.
 | `/api/harness/missions/[id]/abort` | POST, OPTIONS | Harness mission abort |
 | `/api/harness/missions/[id]/stream` | GET, OPTIONS | Harness mission stream |
 | `/api/harness-benchmarks` | GET | Harness benchmark list |
+| `/api/health` | GET | Web/API health probe |
 | `/api/heartbeat` | GET | Cockpit heartbeat |
 | `/api/host-telemetry` | GET | Host CPU/memory/process telemetry |
 | `/api/internal/check` | GET, POST | Internal check route |
@@ -92,6 +108,7 @@ Archived pages under `app/_archive/` are not active navigation targets.
 | `/api/providers` | GET, POST | Provider list/config |
 | `/api/registry` | GET | Registry view |
 | `/api/research/group` | GET, POST | Group research route |
+| `/api/rules/refusal-weights` | GET | Refusal weight rule adapter |
 | `/api/sampler` | GET | Sampler status/data |
 | `/api/service-proxy` | GET, POST, PATCH, DELETE, OPTIONS | Service-boundary proxy; do not use for same-origin Next routes |
 | `/api/sessions` | GET, POST | Chat session list/save |
@@ -113,6 +130,7 @@ Archived pages under `app/_archive/` are not active navigation targets.
 | `/api/whoami` | GET, POST | Identity route |
 | `/api/stack-whoami` | GET | Full stack identity/capability summary |
 | `/api/spine-health` | GET | Cognitive spine health proxy |
+| `/api/status` | GET | Web/API status summary |
 | `/api/pulse` | GET | Live stack heartbeat / notifications feed |
 | `/api/yo` | GET | Liveness ping |
 

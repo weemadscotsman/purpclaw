@@ -1,0 +1,217 @@
+{
+  "summary": {
+    "total_py_files": 67,
+    "py_files_in_pm2": 4,
+    "py_files_orphaned": 21,
+    "py_files_dead": 20,
+    "port_collisions": 3,
+    "js_to_py_call_sites": 10
+  },
+  "pm2_python_services": {
+    "cognitive_spine.py": "7880",
+    "yolo_service.py": "7779",
+    "simple_bridge.py": "7777",
+    "voice_stt.py": "7896"
+  },
+  "port_ownership": {
+    "443": [
+      {
+        "file": "skills/domain-intel/scripts/domain_intel.py",
+        "doc": null
+      }
+    ],
+    "7777": [
+      {
+        "file": "simple_bridge.py",
+        "doc": null
+      }
+    ],
+    "7778": [
+      {
+        "file": "lcd_bridge_server.py",
+        "doc": null
+      },
+      {
+        "file": "lcd_log_monitor.py",
+        "doc": null
+      }
+    ],
+    "7779": [
+      {
+        "file": "yolo_service.py",
+        "doc": null
+      }
+    ],
+    "7780": [
+      {
+        "file": "memory_matrix.py",
+        "doc": null
+      },
+      {
+        "file": "docs/legacy/ghostbusters-2026-06-06/memory_matrix.py",
+        "doc": null
+      }
+    ],
+    "7782": [
+      {
+        "file": "music_analysis_service.py",
+        "doc": null
+      }
+    ],
+    "7880": [
+      {
+        "file": "cognitive_spine.py",
+        "doc": null
+      },
+      {
+        "file": "memory_matrix_v2.py",
+        "doc": null
+      }
+    ],
+    "7895": [
+      {
+        "file": "autoDream.py",
+        "doc": null
+      }
+    ],
+    "9999": [
+      {
+        "file": "simple_bridge.py",
+        "doc": null
+      }
+    ]
+  },
+  "js_to_python_calls": [
+    {
+      "from": "lib/commands/training.js",
+      "calls": "autoDream.py",
+      "via": "spawnSync('python', ['autoDream.py', '--once'])",
+      "line": 143
+    },
+    {
+      "from": "lib/commands/autoresearch.js",
+      "calls": "prepare.py",
+      "via": "spawnSync('python', [prepare.py])",
+      "line": 60
+    },
+    {
+      "from": "lib/deep-audit.js",
+      "calls": "audit script",
+      "via": "spawnSync('python', [audit_script])",
+      "line": 86
+    },
+    {
+      "from": "lib/stt/gateway.js",
+      "calls": "STT transcribe script",
+      "via": "spawn(python, [TRANSCRIBE_SCRIPT])",
+      "line": 73
+    },
+    {
+      "from": "lib/tts/gateway.js",
+      "calls": "kokoro_tts.py",
+      "via": "spawn('python', [KOKORO_SCRIPT])",
+      "line": 83
+    },
+    {
+      "from": "lib/vector/providers/faissProvider.js",
+      "calls": "faiss_sidecar.py",
+      "via": "spawn(pythonBin, [sidecarPath])",
+      "line": 36
+    },
+    {
+      "from": "lib/memory-client.js",
+      "calls": "cognitive_spine.py:7880",
+      "via": "HTTP fetch",
+      "line": 26
+    },
+    {
+      "from": "app/api/heartbeat/route.ts",
+      "calls": "cognitive_spine.py:7880",
+      "via": "HTTP fetch /cognitive/health",
+      "line": 61
+    },
+    {
+      "from": "app/api/mochi-action/route.ts",
+      "calls": "cognitive_spine.py:7880",
+      "via": "HTTP fetch /autodream",
+      "line": 8
+    },
+    {
+      "from": "app/hooks/useCognitiveServices.ts",
+      "calls": "cognitive_spine.py:7880",
+      "via": "comment in code",
+      "line": 28
+    }
+  ],
+  "collisions": [
+    {
+      "port": "7778",
+      "type": "multi-py-claim",
+      "files": [
+        "lcd_bridge_server.py",
+        "lcd_log_monitor.py"
+      ]
+    },
+    {
+      "port": "7780",
+      "type": "multi-py-claim",
+      "files": [
+        "memory_matrix.py",
+        "docs/legacy/ghostbusters-2026-06-06/memory_matrix.py"
+      ]
+    },
+    {
+      "port": "7880",
+      "type": "multi-py-claim",
+      "files": [
+        "cognitive_spine.py",
+        "memory_matrix_v2.py"
+      ]
+    }
+  ],
+  "missing_from_pm2": [
+    "autoDream.py",
+    "autonomous_diagnostics.py",
+    "boston_analysis.py",
+    "create_db.py",
+    "diag_audio.py",
+    "find_pulse.py",
+    "gacha.py",
+    "lcd_bridge_server.py",
+    "lcd_log_monitor.py",
+    "mem_guard.py",
+    "memory_matrix.py",
+    "memory_matrix_v2.py",
+    "mimi_speak.py",
+    "modal_logic_engine.py",
+    "music_analysis_service.py",
+    "neuro_symbolic_bridge.py",
+    "symbolic_rules_engine.py",
+    "scripts/lora-train.py",
+    "scripts/lora-eval.py",
+    "scripts/phoenix_smoke.py",
+    "scripts/smoke_test.py"
+  ],
+  "dead_code_candidates": [
+    "autonomous_diagnostics.py",
+    "boston_analysis.py",
+    "create_db.py",
+    "diag_audio.py",
+    "find_pulse.py",
+    "gacha.py",
+    "lcd_bridge_server.py",
+    "lcd_log_monitor.py",
+    "mem_guard.py",
+    "memory_matrix.py",
+    "memory_matrix_v2.py",
+    "mimi_speak.py",
+    "modal_logic_engine.py",
+    "music_analysis_service.py",
+    "neuro_symbolic_bridge.py",
+    "symbolic_rules_engine.py",
+    "scripts/lora-train.py",
+    "scripts/lora-eval.py",
+    "scripts/phoenix_smoke.py",
+    "scripts/smoke_test.py"
+  ]
+}

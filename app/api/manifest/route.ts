@@ -34,8 +34,25 @@ export async function GET() {
       // try next target
     }
   }
+  // Return empty-but-valid shape so the UI still renders when backend is down.
+  // Panels will show N/A / empty state instead of crashing.
   return NextResponse.json(
-    { ok: false, error: 'manifest unavailable (orchestrator :7784 / api :7780 unreachable)' },
-    { status: 503 }
+    {
+      ok: true,
+      degraded: true,
+      message: 'backend services offline — UI rendering with empty state',
+      agents: [],
+      services: [],
+      logs: [],
+      jobs: [],
+      apiConnected: false,
+      towerConnected: false,
+      orchestratorConnected: false,
+      eventBusConnected: false,
+    },
+    {
+      status: 200,
+      headers: { 'access-control-allow-origin': '*', 'cache-control': 'no-store' },
+    }
   );
 }

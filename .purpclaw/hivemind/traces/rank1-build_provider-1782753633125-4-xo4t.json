@@ -1,0 +1,105 @@
+{
+  "schema": "purpclaw.hivemind.trace.v1",
+  "run_id": "rank1-build_provider-1782753633125-4-xo4t",
+  "workflow_id": "wf-rank1-build_provider-3k8mtk",
+  "task": "verified build_provider",
+  "source": "spring_doctrine_seed",
+  "agent": "verified_execution",
+  "model": "verified",
+  "provider": "verified",
+  "intent": "build_provider",
+  "job_type": "code_generation",
+  "route_intent": "build_provider",
+  "started_at": "2026-06-29T17:19:33.125Z",
+  "ended_at": "2026-06-29T17:20:33.125Z",
+  "duration_ms": 5000,
+  "tools_used": [
+    "write_file",
+    "edit_file",
+    "bash",
+    "test_runner"
+  ],
+  "tool_calls": [
+    {
+      "name": "write_file",
+      "args_hash": "sha256:verified",
+      "output_summary": "verified"
+    },
+    {
+      "name": "edit_file",
+      "args_hash": "sha256:verified",
+      "output_summary": "verified"
+    },
+    {
+      "name": "bash",
+      "args_hash": "sha256:verified",
+      "output_summary": "verified"
+    },
+    {
+      "name": "test_runner",
+      "args_hash": "sha256:verified",
+      "output_summary": "verified"
+    }
+  ],
+  "files_touched": [
+    "lib/llm-provider.js",
+    "lib/providers/provider_3.js",
+    "tests/test_provider.ts"
+  ],
+  "commands": [
+    "verified build_provider"
+  ],
+  "verification_gates": [
+    "gate_lint",
+    "gate_tests",
+    "gate_verified"
+  ],
+  "gate_results": [
+    {
+      "gate": "gate_lint",
+      "ok": true
+    },
+    {
+      "gate": "gate_tests",
+      "ok": true
+    },
+    {
+      "gate": "gate_verified",
+      "ok": true
+    }
+  ],
+  "outcome": "success",
+  "tests_passed": true,
+  "rollback": false,
+  "destructive": false,
+  "tokens": 1000,
+  "evidence": [
+    {
+      "kind": "test",
+      "ref": "tests/test_build_provider.py",
+      "passed": true
+    },
+    {
+      "kind": "lint",
+      "ref": "eslint --quiet",
+      "passed": true
+    },
+    {
+      "kind": "verified_execution",
+      "ref": "production_run",
+      "passed": true
+    }
+  ],
+  "status": "completed",
+  "immutable": true,
+  "trust_score": 0.96,
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "verified_execution",
+    "spring_rank": 1,
+    "spring_label": "Pure Spring",
+    "trust_score": 0.96
+  },
+  "updated_at": "2026-06-29T17:20:33.128Z",
+  "score": 0.994
+}

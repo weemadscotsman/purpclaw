@@ -1,7 +1,7 @@
 'use client';
 // Wrapped in CockpitShell — one shared chrome (UI consolidation).
 import dynamic from 'next/dynamic';
-import { CockpitShell } from '../components/CockpitShell';
+
 
 // BridgePanel uses fetch + useState — must be client-only.
 const BridgePanel = dynamic(() => import('../components/BridgePanel'), {
@@ -15,10 +15,10 @@ const BridgePanel = dynamic(() => import('../components/BridgePanel'), {
 
 export default function BridgePage() {
   return (
-    <CockpitShell title="GOOP Playground · API Broker & Bridge">
+    <>
       <div className="h-full min-h-0 overflow-hidden">
         <BridgePanel />
       </div>
-    </CockpitShell>
+    </>
   );
 }

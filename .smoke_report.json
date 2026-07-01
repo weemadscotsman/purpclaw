@@ -1,0 +1,815 @@
+{
+  "summary": {
+    "pass": 95,
+    "fail": 0,
+    "skip": 10,
+    "warn": 10
+  },
+  "results": [
+    {
+      "category": "svc-core",
+      "name": "Unified API:7780/api/health",
+      "status": "pass",
+      "detail": "302B",
+      "ms": 5
+    },
+    {
+      "category": "svc-core",
+      "name": "EventBus:7782/health",
+      "status": "pass",
+      "detail": "94B",
+      "ms": 0
+    },
+    {
+      "category": "svc-core",
+      "name": "State Store:7783/health",
+      "status": "pass",
+      "detail": "220B",
+      "ms": 0
+    },
+    {
+      "category": "svc-core",
+      "name": "Orchestrator:7784/api/health",
+      "status": "pass",
+      "detail": "80B",
+      "ms": 0
+    },
+    {
+      "category": "svc-core",
+      "name": "Agent Tower:7790/tower/status",
+      "status": "pass",
+      "detail": "11296B",
+      "ms": 1
+    },
+    {
+      "category": "svc-core",
+      "name": "Gatekeeper:7791/health",
+      "status": "pass",
+      "detail": "129B",
+      "ms": 1
+    },
+    {
+      "category": "svc-core",
+      "name": "Context Bus:7881/health",
+      "status": "pass",
+      "detail": "56B",
+      "ms": 0
+    },
+    {
+      "category": "svc-core",
+      "name": "Knowledge Pool:7885/health",
+      "status": "pass",
+      "detail": "105B",
+      "ms": 0
+    },
+    {
+      "category": "svc-core",
+      "name": "Metrics:7890/health",
+      "status": "pass",
+      "detail": "195B",
+      "ms": 0
+    },
+    {
+      "category": "svc-core",
+      "name": "Workers:7897/health",
+      "status": "pass",
+      "detail": "214B",
+      "ms": 0
+    },
+    {
+      "category": "svc-core",
+      "name": "Coordinator:7898/health",
+      "status": "pass",
+      "detail": "66B",
+      "ms": 0
+    },
+    {
+      "category": "svc-core",
+      "name": "Next.js UI:3030/api/health",
+      "status": "pass",
+      "detail": "303B",
+      "ms": 5
+    },
+    {
+      "category": "svc-opt",
+      "name": "Cognitive Spine:7880/cognitive/health",
+      "status": "skip",
+      "detail": "offline",
+      "ms": 2000
+    },
+    {
+      "category": "svc-opt",
+      "name": "GOOP Broker:7895/health",
+      "status": "skip",
+      "detail": "offline",
+      "ms": 2000
+    },
+    {
+      "category": "svc-opt",
+      "name": "STT:7896/health",
+      "status": "skip",
+      "detail": "offline",
+      "ms": 2000
+    },
+    {
+      "category": "svc-opt",
+      "name": "YOLO:7779/health",
+      "status": "skip",
+      "detail": "offline",
+      "ms": 2000
+    },
+    {
+      "category": "svc-opt",
+      "name": "Vision:7889/health",
+      "status": "skip",
+      "detail": "offline",
+      "ms": 2000
+    },
+    {
+      "category": "svc-opt",
+      "name": "Voice Coord:7781/health",
+      "status": "skip",
+      "detail": "offline",
+      "ms": 2000
+    },
+    {
+      "category": "svc-opt",
+      "name": "Voice Bridge:7792/health",
+      "status": "skip",
+      "detail": "offline",
+      "ms": 1999
+    },
+    {
+      "category": "svc-opt",
+      "name": "Telegram:7795/health",
+      "status": "skip",
+      "detail": "offline",
+      "ms": 2000
+    },
+    {
+      "category": "svc-opt",
+      "name": "Harness:7798/health",
+      "status": "skip",
+      "detail": "offline",
+      "ms": 2000
+    },
+    {
+      "category": "svc-opt",
+      "name": "Avatar:7777/health",
+      "status": "skip",
+      "detail": "offline",
+      "ms": 2000
+    },
+    {
+      "category": "api-7780",
+      "name": "/api/health",
+      "status": "pass",
+      "detail": "302B",
+      "ms": 2
+    },
+    {
+      "category": "api-7780",
+      "name": "/api/tower/status",
+      "status": "pass",
+      "detail": "16647B",
+      "ms": 3
+    },
+    {
+      "category": "api-7780",
+      "name": "/api/tower/agents",
+      "status": "pass",
+      "detail": "12713B",
+      "ms": 2
+    },
+    {
+      "category": "api-7780",
+      "name": "/api/swarm",
+      "status": "pass",
+      "detail": "2409B",
+      "ms": 1
+    },
+    {
+      "category": "api-7780",
+      "name": "/api/memory/stats",
+      "status": "warn",
+      "detail": "HTTP 404",
+      "ms": 1
+    },
+    {
+      "category": "spawn",
+      "name": "POST /api/swarm/spawn",
+      "status": "pass",
+      "detail": "127B",
+      "ms": 12
+    },
+    {
+      "category": "orch",
+      "name": "/api/health",
+      "status": "pass",
+      "detail": "80B",
+      "ms": 1
+    },
+    {
+      "category": "orch",
+      "name": "/api/workflows",
+      "status": "pass",
+      "detail": "2B",
+      "ms": 1
+    },
+    {
+      "category": "api-get",
+      "name": "/api/health",
+      "status": "pass",
+      "detail": "302B JSON",
+      "ms": 10
+    },
+    {
+      "category": "api-get",
+      "name": "/api/heartbeat",
+      "status": "pass",
+      "detail": "209B JSON",
+      "ms": 5567
+    },
+    {
+      "category": "api-get",
+      "name": "/api/stack-whoami",
+      "status": "pass",
+      "detail": "1241B JSON",
+      "ms": 2050
+    },
+    {
+      "category": "api-get",
+      "name": "/api/pulse",
+      "status": "pass",
+      "detail": "5347B JSON",
+      "ms": 6
+    },
+    {
+      "category": "api-get",
+      "name": "/api/services",
+      "status": "pass",
+      "detail": "8607B JSON",
+      "ms": 1813
+    },
+    {
+      "category": "api-get",
+      "name": "/api/providers",
+      "status": "pass",
+      "detail": "8946B JSON",
+      "ms": 15
+    },
+    {
+      "category": "api-get",
+      "name": "/api/models",
+      "status": "pass",
+      "detail": "312B JSON",
+      "ms": 3
+    },
+    {
+      "category": "api-get",
+      "name": "/api/registry",
+      "status": "pass",
+      "detail": "21450B JSON",
+      "ms": 4
+    },
+    {
+      "category": "api-get",
+      "name": "/api/mochi",
+      "status": "pass",
+      "detail": "417B JSON",
+      "ms": 5
+    },
+    {
+      "category": "api-get",
+      "name": "/api/personality",
+      "status": "pass",
+      "detail": "1696B JSON",
+      "ms": 9
+    },
+    {
+      "category": "api-get",
+      "name": "/api/spine-health",
+      "status": "pass",
+      "detail": "460B JSON",
+      "ms": 6
+    },
+    {
+      "category": "api-get",
+      "name": "/api/manifest",
+      "status": "pass",
+      "detail": "85328B JSON",
+      "ms": 16
+    },
+    {
+      "category": "api-get",
+      "name": "/api/llm-status",
+      "status": "pass",
+      "detail": "327B JSON",
+      "ms": 7
+    },
+    {
+      "category": "api-get",
+      "name": "/api/settings",
+      "status": "pass",
+      "detail": "24050B JSON",
+      "ms": 14
+    },
+    {
+      "category": "api-get",
+      "name": "/api/setup",
+      "status": "pass",
+      "detail": "1916B JSON",
+      "ms": 4
+    },
+    {
+      "category": "api-get",
+      "name": "/api/gatekeeper-status",
+      "status": "pass",
+      "detail": "129B JSON",
+      "ms": 3
+    },
+    {
+      "category": "api-get",
+      "name": "/api/governor/status",
+      "status": "pass",
+      "detail": "3437B JSON",
+      "ms": 5
+    },
+    {
+      "category": "api-get",
+      "name": "/api/evolution/status",
+      "status": "pass",
+      "detail": "36B JSON",
+      "ms": 4
+    },
+    {
+      "category": "api-get",
+      "name": "/api/delegation/status",
+      "status": "pass",
+      "detail": "3380B JSON",
+      "ms": 3
+    },
+    {
+      "category": "api-get",
+      "name": "/api/host-telemetry",
+      "status": "pass",
+      "detail": "128B JSON",
+      "ms": 133
+    },
+    {
+      "category": "api-get",
+      "name": "/api/event-timeline",
+      "status": "pass",
+      "detail": "32776B JSON",
+      "ms": 5
+    },
+    {
+      "category": "api-get",
+      "name": "/api/preprompt",
+      "status": "pass",
+      "detail": "2675B JSON",
+      "ms": 3
+    },
+    {
+      "category": "api-get",
+      "name": "/api/sessions",
+      "status": "pass",
+      "detail": "4330B JSON",
+      "ms": 4
+    },
+    {
+      "category": "api-get",
+      "name": "/api/llm-ledger",
+      "status": "pass",
+      "detail": "8892B JSON",
+      "ms": 6
+    },
+    {
+      "category": "api-get",
+      "name": "/api/api-mega-list",
+      "status": "pass",
+      "detail": "925B JSON",
+      "ms": 3
+    },
+    {
+      "category": "api-get",
+      "name": "/api/whoami",
+      "status": "pass",
+      "detail": "62B JSON",
+      "ms": 3
+    },
+    {
+      "category": "api-get",
+      "name": "/api/yo",
+      "status": "pass",
+      "detail": "129B JSON",
+      "ms": 3
+    },
+    {
+      "category": "api-get",
+      "name": "/api/kernel/jobs",
+      "status": "pass",
+      "detail": "40B JSON",
+      "ms": 3
+    },
+    {
+      "category": "api-get",
+      "name": "/api/llm-config",
+      "status": "pass",
+      "detail": "111B JSON",
+      "ms": 4
+    },
+    {
+      "category": "api-get",
+      "name": "/api/output",
+      "status": "pass",
+      "detail": "77308B JSON",
+      "ms": 7
+    },
+    {
+      "category": "api-get",
+      "name": "/api/api-mega-list",
+      "status": "pass",
+      "detail": "925B JSON",
+      "ms": 3
+    },
+    {
+      "category": "api-get",
+      "name": "/api/registry",
+      "status": "pass",
+      "detail": "21450B JSON",
+      "ms": 2
+    },
+    {
+      "category": "api-get",
+      "name": "/api/discover",
+      "status": "warn",
+      "detail": "HTTP 400",
+      "ms": 3
+    },
+    {
+      "category": "api-get",
+      "name": "/api/service-proxy",
+      "status": "warn",
+      "detail": "HTTP 400",
+      "ms": 4
+    },
+    {
+      "category": "api-post",
+      "name": "/api/discover",
+      "status": "pass",
+      "detail": "1844B",
+      "ms": 10
+    },
+    {
+      "category": "api-post",
+      "name": "/api/discover",
+      "status": "pass",
+      "detail": "720B",
+      "ms": 9
+    },
+    {
+      "category": "api-post",
+      "name": "/api/chat",
+      "status": "pass",
+      "detail": "1149B",
+      "ms": 17136
+    },
+    {
+      "category": "webui",
+      "name": "/",
+      "status": "pass",
+      "detail": "307 5463B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/mission",
+      "status": "pass",
+      "detail": "200 31721B",
+      "ms": 3
+    },
+    {
+      "category": "webui",
+      "name": "/cockpit",
+      "status": "pass",
+      "detail": "307 5923B",
+      "ms": 3
+    },
+    {
+      "category": "webui",
+      "name": "/dash",
+      "status": "pass",
+      "detail": "307 5914B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/swarm",
+      "status": "pass",
+      "detail": "200 26036B",
+      "ms": 3
+    },
+    {
+      "category": "webui",
+      "name": "/omni",
+      "status": "pass",
+      "detail": "200 19447B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/memory",
+      "status": "pass",
+      "detail": "200 26416B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/providers",
+      "status": "pass",
+      "detail": "200 21546B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/skyscraper",
+      "status": "pass",
+      "detail": "200 20592B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/settings",
+      "status": "pass",
+      "detail": "200 7204B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/spine",
+      "status": "pass",
+      "detail": "200 22453B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/evolution",
+      "status": "pass",
+      "detail": "200 22324B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/frameworks",
+      "status": "pass",
+      "detail": "200 37730B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/inline",
+      "status": "pass",
+      "detail": "200 19755B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/pipeline",
+      "status": "pass",
+      "detail": "200 8307B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/preprompt",
+      "status": "pass",
+      "detail": "200 19884B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/voice",
+      "status": "pass",
+      "detail": "200 22631B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/agents",
+      "status": "pass",
+      "detail": "200 27968B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/bridge",
+      "status": "pass",
+      "detail": "200 19294B",
+      "ms": 3
+    },
+    {
+      "category": "webui",
+      "name": "/mochi",
+      "status": "pass",
+      "detail": "200 10192B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/abliterator",
+      "status": "pass",
+      "detail": "200 27269B",
+      "ms": 3
+    },
+    {
+      "category": "webui",
+      "name": "/mission/harness",
+      "status": "pass",
+      "detail": "200 25594B",
+      "ms": 2
+    },
+    {
+      "category": "webui",
+      "name": "/system-map",
+      "status": "pass",
+      "detail": "200 59337B",
+      "ms": 2
+    },
+    {
+      "category": "sse",
+      "name": "/api/eventbus/stream",
+      "status": "pass",
+      "detail": "6916B",
+      "ms": 7
+    },
+    {
+      "category": "cli",
+      "name": "status",
+      "status": "warn",
+      "detail": "timeout 15s",
+      "ms": 45056
+    },
+    {
+      "category": "cli",
+      "name": "doctor",
+      "status": "pass",
+      "detail": "exit 0, 1200b",
+      "ms": 6559
+    },
+    {
+      "category": "cli",
+      "name": "doctors",
+      "status": "pass",
+      "detail": "exit 0, 1200b",
+      "ms": 1666
+    },
+    {
+      "category": "cli",
+      "name": "whoami",
+      "status": "pass",
+      "detail": "exit 0, 1200b",
+      "ms": 2322
+    },
+    {
+      "category": "cli",
+      "name": "agents",
+      "status": "warn",
+      "detail": "exit 0, 1200b",
+      "ms": 171
+    },
+    {
+      "category": "cli",
+      "name": "profiles",
+      "status": "pass",
+      "detail": "exit 0, 1200b",
+      "ms": 131
+    },
+    {
+      "category": "cli",
+      "name": "workflows",
+      "status": "pass",
+      "detail": "exit 0, 107b",
+      "ms": 126
+    },
+    {
+      "category": "cli",
+      "name": "llm",
+      "status": "pass",
+      "detail": "exit 0, 1200b",
+      "ms": 162
+    },
+    {
+      "category": "cli",
+      "name": "model",
+      "status": "pass",
+      "detail": "exit 0, 308b",
+      "ms": 131
+    },
+    {
+      "category": "cli",
+      "name": "model list",
+      "status": "warn",
+      "detail": "timeout 15s",
+      "ms": 45016
+    },
+    {
+      "category": "cli",
+      "name": "llm providers",
+      "status": "warn",
+      "detail": "timeout 15s",
+      "ms": 45017
+    },
+    {
+      "category": "cli",
+      "name": "architecture",
+      "status": "pass",
+      "detail": "exit 0, 1200b",
+      "ms": 1958
+    },
+    {
+      "category": "cli",
+      "name": "architecture services",
+      "status": "warn",
+      "detail": "timeout 15s",
+      "ms": 45020
+    },
+    {
+      "category": "cli",
+      "name": "architecture flow",
+      "status": "warn",
+      "detail": "timeout 15s",
+      "ms": 45016
+    },
+    {
+      "category": "cli",
+      "name": "overview",
+      "status": "pass",
+      "detail": "exit 0, 1200b",
+      "ms": 102
+    },
+    {
+      "category": "cli",
+      "name": "policies",
+      "status": "pass",
+      "detail": "exit 0, 459b",
+      "ms": 105
+    },
+    {
+      "category": "cli",
+      "name": "introspect",
+      "status": "pass",
+      "detail": "exit 0, 414b",
+      "ms": 126
+    },
+    {
+      "category": "cli",
+      "name": "registry",
+      "status": "warn",
+      "detail": "exit 0, 1200b",
+      "ms": 120
+    },
+    {
+      "category": "cli",
+      "name": "queue",
+      "status": "pass",
+      "detail": "exit 0, 113b",
+      "ms": 123
+    },
+    {
+      "category": "cli",
+      "name": "dream",
+      "status": "pass",
+      "detail": "exit 0, 184b",
+      "ms": 30130
+    },
+    {
+      "category": "rt-core",
+      "name": "import realtime_core",
+      "status": "pass",
+      "detail": "file=realtime_core.pyd",
+      "ms": 0
+    },
+    {
+      "category": "rt-core",
+      "name": "ring 500 push + 500 pop",
+      "status": "pass",
+      "detail": "thrash ok",
+      "ms": 0
+    },
+    {
+      "category": "rt-core",
+      "name": "cosine top-1 self-match",
+      "status": "pass",
+      "detail": "top=('k50', 1.0)",
+      "ms": 42
+    },
+    {
+      "category": "rt-core",
+      "name": "decay_all + evict (got 100)",
+      "status": "pass",
+      "detail": "",
+      "ms": 42
+    }
+  ]
+}

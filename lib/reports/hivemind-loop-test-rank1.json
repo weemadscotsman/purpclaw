@@ -1,0 +1,31 @@
+{
+  "started_at": "2026-06-29T17:20:33.124Z",
+  "rank": 1,
+  "provenance": "verified_execution",
+  "immutable": true,
+  "trust_score_per_trace": 0.96,
+  "traces_generated": 15,
+  "traces_saved": 15,
+  "clusters_formed": 3,
+  "skills_promoted": 6,
+  "doctrines_promoted": 1,
+  "weak_traces_gated": 1,
+  "expected_doctrines": 1,
+  "skill_loader_round_trip": [],
+  "failures": [],
+  "spring_verdicts": {
+    "rank1_ok": 10,
+    "rank1_blocked": 0,
+    "rank2_ok": 5,
+    "rank2_blocked": 0
+  },
+  "doctrines_promoted_total": 1,
+  "skill_loader_hits": 6,
+  "skill_loader_total": 6,
+  "ended_at": "2026-06-29T17:20:33.528Z",
+  "doctrine_gate_holds": true,
+  "doctrine_promotion_works": true,
+  "weak_gated": true,
+  "loop_closes": true,
+  "rank1_loop_closes": true
+}

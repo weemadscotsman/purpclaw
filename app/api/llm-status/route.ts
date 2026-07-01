@@ -4,7 +4,7 @@ import path from 'path';
 // L1 fix: use the canonical projectPath() helper instead of process.cwd()
 // so the worktree dev server (which has a different cwd) can still find
 // the real agent_work/ directory at the canonical root.
-import { projectPath } from '@/lib/runtime/project-paths';
+import { projectPath } from '../../../lib/runtime/project-paths';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';

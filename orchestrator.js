@@ -39,6 +39,17 @@ try {
   console.log('[ORCHESTRATOR] locked_interfaces.js not available - no tool restrictions');
 }
 
+// Hivemind: trace every workflow, promote successful patterns into skills,
+// and inject proven skills into future runtime context. Optional by design: if
+// the module is absent or broken, the stack still boots. No more glass-jaw AI opera.
+let HIVEMIND = null;
+try {
+  HIVEMIND = require('./lib/hivemind');
+  console.log('[ORCHESTRATOR] Hivemind layer loaded');
+} catch (e) {
+  console.log('[ORCHESTRATOR] Hivemind unavailable - continuing without continual-learning hooks:', e.message);
+}
+
 // Ports
 const ORCHESTRATOR_PORT = 7784;
 const EVENTBUS_PORT = 7782;
@@ -858,6 +869,30 @@ async function executeWorkflow(workflowId, workflowInput) {
   };
 
   activeWorkflows.set(workflowId, workflow);
+
+  // Hivemind runtime hook: load relevant proven skills before the mission runs,
+  // and open a trace so this run can become future skill/doctrine material.
+  if (HIVEMIND) {
+    try {
+      const hm = isRetryAttempt && priorWorkflow?.hivemind
+        ? priorWorkflow.hivemind
+        : HIVEMIND.startWorkflowTrace(workflow);
+      workflow.hivemind = hm;
+      workflow.hivemindTraceId = hm.trace?.run_id || hm.run_id || null;
+      workflow.hivemindSkills = hm.skills || [];
+      workflow.hivemindAntiSkills = hm.antiskills || [];
+      if (workflow.hivemindTraceId) {
+        HIVEMIND.recordWorkflowStage(workflow, 'loaded', {
+          skills: workflow.hivemindSkills.map(s => s.skill_id),
+          antiskills: workflow.hivemindAntiSkills.map(s => s.skill_id),
+        });
+      }
+    } catch (e) {
+      workflow.hivemindError = e.message;
+      log(`[HIVEMIND] load/start failed for ${workflowId}: ${e.message}`);
+    }
+  }
+
   if (!isRetryAttempt) {
     SWARM_MEMORY.session.totalTasks++;
   }
@@ -891,6 +926,7 @@ async function executeWorkflow(workflowId, workflowInput) {
   try {
     // Stage 1: Parse
     workflow.status = 'routing';
+    if (HIVEMIND) { try { HIVEMIND.recordWorkflowStage(workflow, 'parse', { parsed: workflow.parsed }); } catch (_) {} }
     const validated = validateCommand(workflow.parsed);
 
     if (!validated.valid) {
@@ -900,8 +936,10 @@ async function executeWorkflow(workflowId, workflowInput) {
     // Stage 2: Route & Validate
     workflow.status = 'executing';
     workflow.steps.total = workflow.parsed.useTeam ? 3 : 2;
+    if (HIVEMIND) { try { HIVEMIND.recordWorkflowStage(workflow, 'route', { intent: workflow.parsed.intent, target: workflow.parsed.target }); } catch (_) {} }
 
     await executeWorkflowSteps(workflow);
+    if (HIVEMIND) { try { HIVEMIND.recordWorkflowStage(workflow, 'execute', { status: workflow.status }); } catch (_) {} }
 
   } catch (e) {
     workflow.error = e.message;
@@ -1032,6 +1070,16 @@ async function completeWorkflow(workflowId, duration) {
 
   log(`Workflow ${workflowId} completed in ${duration}ms: ${workflow.result?.substring?.(0, 80) || workflow.result}`);
 
+  if (HIVEMIND) {
+    try {
+      const trace = HIVEMIND.finishWorkflowTrace(workflow, { outcome: 'success', duration_ms: duration });
+      if (trace) workflow.hivemindTrace = { run_id: trace.run_id, score: trace.score, outcome: trace.outcome };
+    } catch (e) {
+      workflow.hivemindFinishError = e.message;
+      log(`[HIVEMIND] finish failed for ${workflowId}: ${e.message}`);
+    }
+  }
+
   // Stream result if needed
   if (workflow.streamId && activeStreams.has(workflow.streamId)) {
     streamResult(workflow.streamId, { type: 'completed', workflow });
@@ -1095,6 +1143,16 @@ async function failWorkflow(workflowId, duration) {
   });
 
   log(`Workflow ${workflowId} FAILED after ${duration}ms: ${workflow.error}`);
+
+  if (HIVEMIND) {
+    try {
+      const trace = HIVEMIND.finishWorkflowTrace(workflow, { outcome: 'failed', duration_ms: duration, error: workflow.error });
+      if (trace) workflow.hivemindTrace = { run_id: trace.run_id, score: trace.score, outcome: trace.outcome };
+    } catch (e) {
+      workflow.hivemindFinishError = e.message;
+      log(`[HIVEMIND] failure trace failed for ${workflowId}: ${e.message}`);
+    }
+  }
 
   if (workflow.streamId && activeStreams.has(workflow.streamId)) {
     streamResult(workflow.streamId, { type: 'failed', error: workflow.error });
@@ -1419,7 +1477,15 @@ async function dispatchSwarmMission(task, workflow) {
         task,
         workflowId: workflow?.id,
         intent: 'swarm_mission',
-        options: { urgent: workflow?.parsed?.urgent || false }
+        options: {
+          urgent: workflow?.parsed?.urgent || false,
+          hivemind: workflow?.hivemind ? {
+            traceId: workflow.hivemindTraceId || null,
+            skills: workflow.hivemindSkills || [],
+            antiskills: workflow.hivemindAntiSkills || [],
+            promptBlock: workflow.hivemind.promptBlock || ''
+          } : null
+        }
       }),
       signal: ac.signal
     });
@@ -1660,7 +1726,8 @@ function getMetrics() {
       completed: completedWorkflows.size,
       queueDepth: taskQueue.size()
     },
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    hivemind: HIVEMIND ? { status: HIVEMIND.status(), spring: HIVEMIND.springStatus() } : { ok: false }
   };
 }
 
@@ -1841,6 +1908,89 @@ function startHttpServer() {
     if (url.pathname === '/api/status' && req.method === 'GET') {
       res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
       res.end(JSON.stringify(getMetrics()));
+      return;
+    }
+
+    // Hivemind runtime API — file-backed, no extra daemon.
+    if (url.pathname === '/api/hivemind/status' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+      res.end(JSON.stringify(HIVEMIND ? HIVEMIND.status() : { ok: false, error: 'hivemind unavailable' }));
+      return;
+    }
+
+    if (url.pathname === '/api/hivemind/spring' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+      res.end(JSON.stringify(HIVEMIND ? HIVEMIND.springStatus() : { ok: false, error: 'hivemind unavailable' }));
+      return;
+    }
+    if (url.pathname === '/api/hivemind/doctrine' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+      res.end(JSON.stringify(HIVEMIND ? HIVEMIND.listDoctrines() : []));
+      return;
+    }
+    if (url.pathname === '/api/hivemind/principles' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+      res.end(JSON.stringify(HIVEMIND ? HIVEMIND.listPrinciples() : []));
+      return;
+    }
+    if (url.pathname === '/api/hivemind/validate' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', () => {
+        try {
+          const payload = body ? JSON.parse(body) : {};
+          const result = HIVEMIND ? HIVEMIND.validateRecord(payload.record || payload, payload.rules || {}) : { error: 'hivemind unavailable' };
+          res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify(result));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+      return;
+    }
+
+    if (url.pathname === '/api/hivemind/skills' && req.method === 'GET') {
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+      res.end(JSON.stringify(HIVEMIND ? HIVEMIND.listSkills({ includeDeprecated: url.searchParams.get('all') === '1' }) : []));
+      return;
+    }
+    if (url.pathname === '/api/hivemind/traces' && req.method === 'GET') {
+      const limit = parseInt(url.searchParams.get('limit') || '50', 10);
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+      res.end(JSON.stringify(HIVEMIND ? HIVEMIND.listTraces(limit) : []));
+      return;
+    }
+    if (url.pathname === '/api/hivemind/load' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', () => {
+        try {
+          const payload = JSON.parse(body || '{}');
+          const ctx = HIVEMIND ? HIVEMIND.loadRuntimeContext(payload.task || '', payload.options || {}) : null;
+          res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify(ctx || { skills: [], antiskills: [], promptBlock: '' }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+      return;
+    }
+    if (url.pathname === '/api/hivemind/promote' && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => body += chunk);
+      req.on('end', () => {
+        try {
+          const payload = body ? JSON.parse(body) : {};
+          const result = HIVEMIND ? HIVEMIND.promote(payload) : { error: 'hivemind unavailable' };
+          res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify(result));
+        } catch (e) {
+          res.writeHead(500, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
       return;
     }
 

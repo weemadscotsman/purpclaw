@@ -1,0 +1,37 @@
+{
+  "schema": "purpclaw.hivemind.trace.v1",
+  "run_id": "rank2-debug_lint-1782753633125-12-1bdc",
+  "task": "Rank-2 trace for debug_lint",
+  "source": "hivemind_test",
+  "agent": "test_agent",
+  "model": "test",
+  "intent": "debug_lint",
+  "job_type": "static_analysis",
+  "started_at": "2026-06-29T17:20:33.125Z",
+  "ended_at": "2026-06-29T17:20:33.125Z",
+  "duration_ms": 5000,
+  "tools_used": [
+    "write_file"
+  ],
+  "files_touched": [
+    "src/x.ts"
+  ],
+  "commands": [
+    "echo debug_lint"
+  ],
+  "outcome": "success",
+  "tests_passed": true,
+  "rollback": false,
+  "destructive": false,
+  "tokens": 1000,
+  "evidence": [
+    {
+      "kind": "test",
+      "ref": "test",
+      "passed": true
+    }
+  ],
+  "status": "completed",
+  "updated_at": "2026-06-29T17:20:33.136Z",
+  "score": 1
+}

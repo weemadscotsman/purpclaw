@@ -1,0 +1,98 @@
+{
+  "schema": "purpclaw.hivemind.trace.v1",
+  "run_id": "loop-refactor_module-ok-1782756821612-30-c6jx",
+  "workflow_id": "wf-refactor_module-t771u5",
+  "task": "Refactor module 7: extract helper, rename, simplify",
+  "source": "hivemind-loop-test",
+  "agent": "test_agent",
+  "model": "test_model",
+  "provider": "test",
+  "intent": "refactor_module",
+  "job_type": "code_modification",
+  "route_intent": "refactor_module",
+  "started_at": "2026-06-29T18:12:41.612Z",
+  "ended_at": "2026-06-29T18:13:41.612Z",
+  "duration_ms": 11920,
+  "tools_used": [
+    "read_file",
+    "write_file",
+    "bash"
+  ],
+  "tool_calls": [
+    {
+      "name": "read_file",
+      "args_hash": "sha256:test",
+      "output_summary": "ok"
+    },
+    {
+      "name": "write_file",
+      "args_hash": "sha256:test",
+      "output_summary": "ok"
+    },
+    {
+      "name": "bash",
+      "args_hash": "sha256:test",
+      "output_summary": "ok"
+    }
+  ],
+  "files_touched": [
+    "src/module_7.ts",
+    "src/module_7_helpers.ts"
+  ],
+  "commands": [
+    "echo refactor_module",
+    "test code_modification"
+  ],
+  "verification_gates": [
+    "gate_lint",
+    "gate_tests"
+  ],
+  "gate_results": [
+    {
+      "gate": "gate_lint",
+      "passed": true
+    },
+    {
+      "gate": "gate_tests",
+      "passed": true
+    }
+  ],
+  "outcome": "success",
+  "tests_passed": true,
+  "rollback": false,
+  "destructive": false,
+  "tokens": 3090,
+  "evidence": [
+    {
+      "kind": "test",
+      "ref": "tests/test_refactor_module.py",
+      "passed": true
+    },
+    {
+      "kind": "lint",
+      "ref": "eslint --quiet",
+      "passed": true
+    }
+  ],
+  "status": "completed",
+  "spring": {
+    "schema": "purpclaw.spring.provenance.v1",
+    "origin": "verified_execution",
+    "spring_rank": 1,
+    "spring_label": "Pure Spring",
+    "verification": [
+      "tests_passed",
+      "[object Object]",
+      "gate:gate_lint:fail",
+      "gate:gate_tests:fail"
+    ],
+    "trust_score": 0.78,
+    "repeatability": 0.2,
+    "freshness": 1,
+    "evaluated_at": "2026-06-29T18:13:41.612Z"
+  },
+  "spring_rank": 1,
+  "trust_score": 0.78,
+  "score": 0.8394999999999999,
+  "updated_at": "2026-06-29T18:13:41.637Z"
+}

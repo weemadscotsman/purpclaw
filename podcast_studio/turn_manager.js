@@ -4,7 +4,7 @@
  */
 
 const sharedLog = require('./shared_log');
-const { PODCAST_AGENTS } = require('./config');
+const { PODCAST_AGENTS, describeWorldview } = require('./config');
 
 // Turn timeout in ms (45 seconds - gives time for TTS)
 const TURN_TIMEOUT = 45000;
@@ -73,6 +73,7 @@ YOU ARE: ${agent?.name} (${agent?.role})
 PERSONALITY: ${agent?.personality}
 VIBE: ${agent?.vibe}
 CATCHPHRASES: ${agent?.catchphrases?.join(', ')}
+${describeWorldview(agent)}
 
 RECENT CONVERSATION:
 ${chatHistory}
@@ -84,7 +85,7 @@ INSTRUCTIONS:
 - Respond naturally to the conversation flow
 - Keep response to 2-4 sentences max
 - Use your catchphrases occasionally
-- Roast others when appropriate
+- Banter or roast others only when it exposes a real assumption, blind spot, or competing value
 - Ask questions to keep conversation going
 `.trim();
 
