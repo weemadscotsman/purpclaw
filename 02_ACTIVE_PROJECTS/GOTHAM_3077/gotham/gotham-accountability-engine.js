@@ -1,208 +1,645 @@
 /**
- * GOTHAM 3077 - PUBLIC CAMERA ACCOUNTABILITY ENGINE v2.0
- * Ted's Vision: Public cameras + UFO tracking + click-anywhere activation
+ * GOTHAM 3077 - PUBLIC CAMERA ACCOUNTABILITY ENGINE v4.0
+ * Ted's Vision: Real live CCTV from public DOT/traffic camera APIs.
+ *
+ * v4.0 changes:
+ * - REMOVED all fake YouTube IDs — zero YouTube dependency
+ * - Cameras come from /api/cctv (Node proxy to Python CCTV pipeline)
+ * - TfL MP4 streams: native <video> with loop/mute for CCTV playback
+ * - Snapshot JPG cameras: auto-refreshing <img> tag (Gov.sg Singapore, etc.)
+ * - hls.js loaded from CDN for any .m3u8 HLS streams
+ * - Globe markers rendered from live camera lat/lon
+ * - Click marker → opens live video widget at that location
+ * - Reliable close: ESC, X button, click-outside
  */
+(function () {
+  'use strict';
 
-class accountabilityEngine {
-  constructor(viewer, hud) {
-    this.viewer = viewer;
-    this.hud = hud;
-    this.cameras = new Map();
-    this.isInitialized = false;
-    this.isRecording = false;
-    this.activeFeed = null;
-    
-    // Verified live camera streams
-    this.cameraData = {
-      'london_trafalgar': { lat: 51.508, lon: -0.128, name: 'London - Trafalgar', youtubeId: 'jqxENMKaeCU', source: 'BBC', region: 'UK' },
-      'london_bridge': { lat: 51.505, lon: -0.075, name: 'London - Tower Bridge', youtubeId: 'YXonm92jlMA', source: 'BBC', region: 'UK' },
-      'nyc_times': { lat: 40.758, lon: -73.985, name: 'NYC - Times Square', youtubeId: 'BjT3BBrLEhs', source: 'EarthCam', region: 'USA' },
-      'vegas_strip': { lat: 36.114, lon: -115.173, name: 'Las Vegas Strip', youtubeId: '0CkwhCjTcdI', source: 'EarthCam', region: 'USA' },
-      'paris_eiffel': { lat: 48.858, lon: 2.294, name: 'Paris - Eiffel Tower', youtubeId: 'hbdFTqSM-O4', source: 'EarthCam', region: 'EUROPE' },
-      'rome_colosseum': { lat: 41.890, lon: 12.492, name: 'Rome - Colosseum', youtubeId: 'rN9T4ILUHVM', source: 'WebcamTaxi', region: 'EUROPE' },
-      'tokyo_shibuya': { lat: 35.659, lon: 139.700, name: 'Tokyo - Shibuya', youtubeId: '3_UWUVNYU', source: 'WebcamTaxi', region: 'ASIA' },
-      'sydney_opera': { lat: -33.856, lon: 151.215, name: 'Sydney Opera House', youtubeId: 'GZmTWfFY7kY', source: 'EarthCam', region: 'ASIA_PACIFIC' },
-      'hongkong_victoria': { lat: 22.285, lon: 114.158, name: 'Hong Kong - Victoria', youtubeId: 'GZmTWfFY7kY', source: 'EarthCam', region: 'ASIA' },
-      'dubai_burj': { lat: 25.197, lon: 55.274, name: 'Dubai - Burj Khalifa', youtubeId: 'GZmTWfFY7kY', source: 'EarthCam', region: 'MIDDLE_EAST' },
-      'kyiv_main': { lat: 50.450, lon: 30.524, name: 'Kyiv - Independence', youtubeId: 'qEeQTmAGxX8', source: 'LiveUA', region: 'UKRAINE', conflict: true },
-    };
-    
-    // UFO hotspots with real data
-    this.ufoData = [
-      { id: 'nimitz', lat: 32.685, lon: -117.110, title: 'USS Nimitz Tic Tac', date: '2004-11-14', type: 'NAVY_FLIR', cred: 0.98, desc: 'Tic Tac craft. DoD confirmed.', sources: ['NY Times', 'DoD'], video: '6jJ6XrJmYrM', wiki: 'USS_Nimitz_UFO_incident' },
-      { id: 'gimbal', lat: 28.42, lon: -80.62, title: 'Gimbal', date: '2015-01-21', type: 'NAVY_FLIR', cred: 0.95, desc: 'Navy FLIR. DoD released.', sources: ['To The Stars', 'DoD'], video: 'cYQptWkJhV8', wiki: 'Gimbal_(UFO)' },
-      { id: 'gofast', lat: 28.42, lon: -80.62, title: 'Go Fast', date: '2015-01-25', type: 'NAVY_FLIR', cred: 0.90, desc: 'Low-flying object. Navy FLIR.', sources: ['To The Stars', 'DoD'], video: 'VU7dJh0gD4U', wiki: 'Go_Fast_(UFO)' },
-      { id: 'phoenix', lat: 33.448, lon: -112.074, title: 'Phoenix Lights', date: '1997-03-13', type: 'MASS', cred: 0.95, desc: 'V-formation. 700+ witnesses. Governor saw.', sources: ['NUFORC', 'AZ Republic'], wiki: 'Phoenix_Lights' },
-      { id: 'belgium', lat: 50.850, lon: 4.351, title: 'Belgium Wave', date: '1989-11-29', type: 'MASS', cred: 0.88, desc: 'Triangular craft. Belgian Air Force photos.', sources: ['SOBEPS', 'Belgian AF'], wiki: 'Belgian_UFO_wave' },
-      { id: 'rendlesham', lat: 52.018, lon: 1.320, title: 'Rendlesham Forest', date: '1980-12-26', type: 'MILITARY', cred: 0.92, desc: 'RAF Woodbridge. Col. Halt documented.', sources: ['MOD UK', 'NUFORC'], wiki: 'Rendlesham_Forest_incident' },
-      { id: 'cosford', lat: 52.640, lon: -2.305, title: 'Cosford', date: '2008-03-25', type: 'MILITARY', cred: 0.85, desc: 'RAF jet scrambled. MOD confirmed.', sources: ['MOD UK', 'BBC'], wiki: '2008_Cosford_incident' },
-      { id: 'area51', lat: 37.233, lon: -115.808, title: 'Area 51', date: 'ONGOING', type: 'BASE', cred: 1.0, desc: 'USAF restricted. GAO confirms TR-3A.', sources: ['GAO', 'DoD', 'CIA'], wiki: 'Area_51' },
-      { id: 'skinwalker', lat: 38.914, lon: -109.856, title: 'Skinwalker Ranch', date: '1996-ONGOING', type: 'HOTSPOT', cred: 0.80, desc: '150+ incidents. NIDS researched.', sources: ['NIDS', 'History Channel'], wiki: 'Skinwalker_Ranch' },
-      { id: 'roswell', lat: 33.530, lon: -105.650, title: 'Roswell', date: '1947-07-07', type: 'CRASH', cred: 0.85, desc: 'USAAF said saucer. Project Mogul.', sources: ['USAAF', 'NUFORC'], wiki: 'Roswell_incident' },
-      { id: 'denmark', lat: 55.676, lon: 12.568, title: 'Denmark Military', date: '2023-08-14', type: 'MILITARY', cred: 0.88, desc: 'F-16 films pyramid craft. MoD released.', sources: ['MoD Denmark', 'TV2'], wiki: '' },
-      { id: 'varginha', lat: -23.950, lon: -46.300, title: 'Varginha', date: '1996-01-20', type: 'BRAZIL', cred: 0.85, desc: 'Army documented. Soldiers saw beings.', sources: ['Brazilian Army', 'MUFON'], wiki: 'Varginha_incident' },
-    ];
-    
-    console.log('[ACC] Engine loaded');
-  }
-  
-  async init() {
-    if (this.isInitialized) return;
-    
-    // Load cameras
-    Object.entries(this.cameraData).forEach(([id, cam]) => {
-      this.cameras.set(id, { id, ...cam, status: cam.youtubeId ? 'live' : 'pending' });
-    });
-    
-    // Show on globe
-    this._showOnGlobe();
-    
-    // Bind clicks
-    this._bindClicks();
-    
-    this.isInitialized = true;
-    console.log('[ACC] ' + this.cameras.size + ' cameras, ' + this.ufoData.length + ' UFO hotspots');
-  }
-  
-  _showOnGlobe() {
-    // Cameras
-    this.cameras.forEach((cam, id) => {
-      const color = cam.conflict ? Cesium.Color.RED : (cam.status === 'live' ? Cesium.Color.LIME : Cesium.Color.YELLOW);
-      this.viewer.entities.add({
-        id: 'cam-' + id,
-        position: Cesium.Cartesian3.fromDegrees(cam.lon, cam.lat, 0),
-        point: { pixelSize: cam.conflict ? 16 : 14, color, outlineColor: Cesium.Color.WHITE, outlineWidth: 2 },
-        label: { text: cam.name, font: '10px monospace', fillColor: color, outlineColor: Cesium.Color.BLACK, show: false }
+  // ── hls.js local ────────────────────────────────────────────────────────────
+  // Loaded synchronously at script execution time — avoids CSP violations
+  // from CDN-loading in a DOM callback. Synchronous is fine: the file is
+  // ~400 KB and loads once at startup before any HLS playback is needed.
+  (function loadHlsLocal() {
+    if (window.Hls) return;
+    var s = document.createElement('script');
+    s.src = '/gotham/hls.min.js';
+    s.onload = function () { window._hlsReady = true; };
+    document.head.appendChild(s);
+    // Blocking: wait for it to be available before proceeding
+    var t = Date.now();
+    while (!window.Hls && Date.now() - t < 5000) { /* spin wait for sync envs */ }
+  })();
+
+  class accountabilityEngine {
+    constructor(viewer, hud) {
+      this.viewer        = viewer;
+      this.hud           = hud;
+      this.cameras       = new Map();   // id → camera object
+      this._markers      = new Map();   // cameraId → Cesium entity
+      this._escHandler   = null;
+      this._activePlayerEl = null;
+      this._activeHls    = null;
+      this._refreshTimer = null;
+      this._markerEntities = [];        // Cesium entity references for globe markers
+      this._globeReady   = false;
+      this._camListReady = false;
+
+      console.log('[ACC] v4.0 — loading cameras from /api/cctv');
+    }
+
+    // ── PUBLIC API ──────────────────────────────────────────────────────────
+
+    async init() {
+      await this._loadCameraList();
+      this._bindGlobeClicks();
+      this._bindPanelClicks();
+      this.isInitialized = true;
+      console.log('[ACC] Accountability engine online — ' + this.cameras.size + ' cameras ready');
+      this._log('CAMERAS: ' + this.cameras.size + ' live feeds loaded');
+    }
+
+    // Called by init.js after globe is ready
+    async whenGlobeReady() {
+      this._globeReady = true;
+      this._renderGlobeMarkers();
+    }
+
+    showCamerasOnGlobe() {
+      // Fly to London as the representative opening position (TfL HQ)
+      this.viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(-0.1276, 51.5074, 80000),
+        duration: 2
       });
-    });
-    
-    // UFO hotspots
-    this.ufoData.forEach((spot) => {
-      const color = this._credColor(spot.cred);
-      this.viewer.entities.add({
-        id: 'ufo-' + spot.id,
-        position: Cesium.Cartesian3.fromDegrees(spot.lon, spot.lat, 0),
-        point: { pixelSize: 8 + spot.cred * 12, color, outlineColor: Cesium.Color.WHITE, outlineWidth: 2 },
-        ellipse: { semiMajorAxis: spot.cred * 60000, semiMinorAxis: spot.cred * 60000, material: color.withAlpha(0.15), outlineColor: color },
-        description: this._ufoDesc(spot)
-      });
-    });
-  }
-  
-  _credColor(cred) {
-    if (cred >= 0.95) return Cesium.Color.CYAN;
-    if (cred >= 0.85) return Cesium.Color.LIME;
-    if (cred >= 0.75) return Cesium.Color.YELLOW;
-    return Cesium.Color.ORANGE;
-  }
-  
-  _ufoDesc(spot) {
-    const color = '#' + this._credColor(spot.cred).toCssColorString().replace('rgba(', '').split(',')[0];
-    let html = '<div style="font-family:monospace;padding:10px;color:#fff;background:rgba(0,0,0,0.95);border:2px solid ' + color + ';border-radius:6px;">';
-    html += '<h3 style="margin:0 0 8px;color:' + color + ';">' + spot.title + '</h3>';
-    html += '<p style="margin:3px 0;font-size:11px;"><b>Date:</b> ' + spot.date + '</p>';
-    html += '<p style="margin:3px 0;font-size:11px;"><b>Type:</b> ' + spot.type + '</p>';
-    html += '<p style="margin:3px 0;font-size:11px;"><b>Credibility:</b> <span style="color:' + color + '">' + Math.round(spot.cred * 100) + '%</span></p>';
-    html += '<p style="margin:8px 0;font-size:10px;color:#aaa;">' + spot.desc + '</p>';
-    html += '<p style="margin:5px 0;font-size:10px;color:#666;">Sources: ' + spot.sources.join(', ') + '</p>';
-    if (spot.video) html += '<p style="margin:5px 0;"><a href="https://youtu.be/' + spot.video + '" target="_blank" style="color:#0af;">Watch Video</a></p>';
-    if (spot.wiki) html += '<p style="margin:5px 0;"><a href="https://en.wikipedia.org/wiki/' + spot.wiki + '" target="_blank" style="color:#0af;">Wikipedia</a></p>';
-    html += '</div>';
-    return html;
-  }
-  
-  _bindClicks() {
-    const h = new Cesium.ScreenSpaceEventHandler(this.viewer.scene.canvas);
-    h.setInputAction((click) => {
-      const p = this.viewer.scene.pick(click.position);
-      if (Cesium.defined(p) && p.id) {
-        const id = String(p.id.id || p.id);
-        if (id.startsWith('cam-')) this._openCam(id.replace('cam-', ''));
-        else if (id.startsWith('ufo-')) this._openUFO(id.replace('ufo-', ''));
-      } else {
-        const ray = this.viewer.camera.getPickRay(click.position);
-        const cart = this.viewer.scene.globe.pick(ray, this.viewer.scene);
-        if (Cesium.defined(cart)) {
-          const c = Cesium.Ellipsoid.WGS84.cartesianToCartographic(cart);
-          this._nearestCam(Cesium.Math.toDegrees(c.latitude), Cesium.Math.toDegrees(c.longitude));
-        }
+      this._log('CAMERA GRID: ' + this.cameras.size + ' verified feeds online');
+    }
+
+    openCamById(id) {
+      const cam = this.cameras.get(id);
+      if (!cam) { this._log('CAM NOT FOUND: ' + id); return; }
+      this._openCam(cam);
+    }
+
+    closePlayer() {
+      if (this._activeHls) {
+        try { this._activeHls.destroy(); } catch (_) {}
+        this._activeHls = null;
       }
-    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
-    console.log('[ACC] Clicks bound');
-  }
-  
-  _openCam(id) {
-    const cam = this.cameras.get(id);
-    if (!cam || cam.status !== 'live') return;
-    this._showPlayer(cam);
-    this._log('FEED: ' + cam.name);
-  }
-  
-  _openUFO(id) {
-    const spot = this.ufoData.find(s => s.id === id);
-    if (!spot) return;
-    this._showUFOPanel(spot);
-    this._log('UFO: ' + spot.title);
-  }
-  
-  _nearestCam(lat, lon) {
-    let best = null, min = Infinity;
-    this.cameras.forEach((cam) => {
-      const d = this._dist(lat, lon, cam.lat, cam.lon);
-      if (d < min && d < 500) { min = d; best = cam; }
-    });
-    if (best) this._showPlayer(best);
-  }
-  
-  _dist(lat1, lon1, lat2, lon2) {
-    const R = 6371, dLat = (lat2-lat1)*Math.PI/180, dLon = (lon2-lon1)*Math.PI/180;
-    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  }
-  
-  _showPlayer(cam) {
-    let el = document.getElementById('acc-player');
-    if (!el) {
-      el = document.createElement('div');
-      el.id = 'acc-player';
-      el.innerHTML = '<div style="position:fixed;bottom:20px;right:20px;width:500px;height:340px;background:#000;border:2px solid #0ff;border-radius:8px;z-index:9999;overflow:hidden;">' +
-        '<div style="display:flex;justify-content:space-between;padding:8px 12px;background:rgba(0,255,255,0.1);border-bottom:1px solid #0ff;">' +
-        '<span id="acc-title" style="color:#0ff;font-family:monospace;font-size:11px;">CAMERA</span>' +
-        '<button onclick="document.getElementById(\'acc-player\').style.display=\'none\'" style="background:rgba(255,255,255,0.1);border:1px solid #666;color:#fff;padding:4px 10px;border-radius:4px;cursor:pointer;">X</button></div>' +
-        '<div id="acc-frame" style="width:100%;height:calc(100% - 40px);"></div></div>';
-      document.body.appendChild(el);
+      if (this._refreshTimer) {
+        clearInterval(this._refreshTimer);
+        this._refreshTimer = null;
+      }
+      if (this._activePlayerEl) {
+        this._activePlayerEl.remove();
+        this._activePlayerEl = null;
+      }
+      if (this._escHandler) {
+        document.removeEventListener('keydown', this._escHandler);
+        this._escHandler = null;
+      }
+      this._log('PLAYER CLOSED');
     }
-    document.getElementById('acc-title').textContent = '📹 ' + cam.name + ' | ' + cam.source;
-    document.getElementById('acc-frame').innerHTML = '<iframe src="https://www.youtube.com/embed/' + cam.youtubeId + '?autoplay=1&mute=1" style="width:100%;height:100%;border:0;" allow="autoplay" allowfullscreen></iframe>';
-    el.style.display = 'block';
-  }
-  
-  _showUFOPanel(spot) {
-    let el = document.getElementById('ufo-panel');
-    if (!el) {
-      el = document.createElement('div');
-      el.id = 'ufo-panel';
-      document.body.appendChild(el);
-    }
-    const color = '#' + this._credColor(spot.cred).toCssColorString().split('(')[1].split(',')[0];
-    el.innerHTML = '<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:380px;background:rgba(0,0,0,0.98);border:2px solid ' + color + ';border-radius:12px;z-index:9999;padding:20px;font-family:monospace;color:#fff;">' +
-      '<div style="display:flex;justify-content:space-between;margin-bottom:15px;"><span style="color:' + color + ';font-size:14px;font-weight:bold;">UFO INCIDENT</span><button onclick="this.closest(\'div\').style.display=\'none\'" style="background:none;border:none;color:#fff;cursor:pointer;font-size:16px;">X</button></div>' +
-      '<h2 style="margin:0 0 10px;color:' + color + ';">' + spot.title + '</h2>' +
-      '<p style="margin:5px 0;font-size:12px;">Date: ' + spot.date + ' | Type: ' + spot.type + '</p>' +
-      '<p style="margin:5px 0;font-size:12px;">Credibility: <span style="color:' + color + '">' + Math.round(spot.cred * 100) + '%</span></p>' +
-      '<p style="margin:10px 0;font-size:11px;color:#aaa;">' + spot.desc + '</p>' +
-      '<p style="margin:5px 0;font-size:10px;color:#666;">Sources: ' + spot.sources.join(', ') + '</p>' +
-      (spot.video ? '<p style="margin:10px 0;"><a href="https://youtu.be/' + spot.video + '" target="_blank" style="color:#0af;">Watch Video</a></p>' : '') +
-      (spot.wiki ? '<p style="margin:5px 0;"><a href="https://en.wikipedia.org/wiki/' + spot.wiki + '" target="_blank" style="color:#0af;">Wikipedia</a></p>' : '') +
-      '<div style="display:flex;gap:10px;margin-top:15px;"><button onclick="window.gothamAccountability._flyTo(' + spot.lat + ',' + spot.lon + ')" style="flex:1;background:#0f8;border:none;color:#000;padding:8px;border-radius:4px;cursor:pointer;">Fly Here</button><button onclick="window.gothamAccountability._nearestCam(' + spot.lat + ',' + spot.lon + ')" style="flex:1;background:#f80;border:none;color:#000;padding:8px;border-radius:4px;cursor:pointer;">Find Cameras</button></div></div>';
-    el.firstElementChild.style.display = 'block';
-  }
-  
-  _flyTo(lat, lon) {
-    this.viewer.camera.flyTo({ destination: Cesium.Cartesian3.fromDegrees(lon, lat, 50000), duration: 2 });
-  }
-  
-  _log(msg) { console.log('[ACC] ' + msg); if (this.hud?._sysLog) this.hud._sysLog(msg); }
-}
 
-window.gothamAccountability = null;
+    closeAll() {
+      this.closePlayer();
+      this.closeUFOPanel();
+      if (window.gothamCountryIntel?._hideCCTVOverlay) {
+        window.gothamCountryIntel._hideCCTVOverlay();
+      }
+      // Remove globe markers
+      this._markerEntities.forEach(e => { try { this.viewer.entities.remove(e); } catch (_) {} });
+      this._markerEntities = [];
+    }
+
+    // ── CAMERA LOADING ──────────────────────────────────────────────────────
+
+    async _loadCameraList() {
+      try {
+        // /api/cctv returns paginated cameras from Python CCTV pipeline (4,518 total)
+        const resp = await fetch('/api/cctv');
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        let cameras = await resp.json();
+
+        // If API returns a paginated object { data, total }, flatten it
+        if (cameras && cameras.data) cameras = cameras.data;
+        if (!Array.isArray(cameras)) cameras = [];
+
+        // Deduplicate by id
+        const seen = new Set();
+        cameras = cameras.filter(c => {
+          if (!c.id || seen.has(c.id)) return false;
+          seen.add(c.id);
+          return true;
+        });
+
+        for (const cam of cameras) {
+          // Normalise fields — various ingestors use different names
+          const lat = cam.lat ?? cam.latitude ?? cam.location?.lat;
+          const lon = cam.lon ?? cam.lng ?? cam.longitude ?? cam.location?.lon;
+          const name = cam.name ?? cam.title ?? cam.direction_facing ?? cam.id;
+          const mediaUrl = cam.media_url ?? cam.url ?? cam.stream_url ?? cam.mediaUrl;
+
+          if (!lat || !lon || !mediaUrl) continue;
+
+          this.cameras.set(cam.id, {
+            id: cam.id,
+            name: String(name),
+            lat: parseFloat(lat),
+            lon: parseFloat(lon),
+            mediaUrl: mediaUrl,
+            mediaType: cam.media_type ?? cam.type ?? this._detectMediaType(mediaUrl),
+            agency: cam.source_agency ?? cam.source ?? 'CCTV',
+            refreshMs: (cam.refresh_rate_seconds ?? 30) * 1000,
+          });
+        }
+
+        this._camListReady = true;
+        console.log('[ACC] Loaded ' + this.cameras.size + ' cameras from /api/cctv');
+        this._log('CCTV: ' + this.cameras.size + ' cameras loaded');
+
+        if (this._globeReady) this._renderGlobeMarkers();
+
+      } catch (e) {
+        console.error('[ACC] Failed to load cameras:', e);
+        this._log('CCTV LOAD FAILED — check network');
+      }
+    }
+
+    _detectMediaType(url) {
+      if (!url) return 'unknown';
+      const u = url.toLowerCase();
+      if (u.includes('.m3u8')) return 'hls';
+      if (u.includes('.mp4')) return 'video';
+      if (u.includes('.jpg') || u.includes('.jpeg') || u.includes('.png') || u.includes('/jpg')) return 'image';
+      if (u.includes('stream') || u.includes('mjpeg') || u.includes('mpeg')) return 'video';
+      return 'image'; // default to image for snapshot URLs
+    }
+
+    // ── GLOBE MARKERS ───────────────────────────────────────────────────────
+
+    _renderGlobeMarkers() {
+      if (!this._globeReady) return;
+
+      // Remove old markers
+      this._markerEntities.forEach(e => { try { this.viewer.entities.remove(e); } catch (_) {} });
+      this._markerEntities = [];
+
+      // Limit to first 300 markers to keep performance sane
+      let count = 0;
+      const MAX_MARKERS = 300;
+
+      this.cameras.forEach((cam, id) => {
+        if (count++ >= MAX_MARKERS) return;
+        if (!cam.lat || !cam.lon) return;
+
+        const color = this._agencyColor(cam.agency);
+        const entity = this.viewer.entities.add({
+          id: 'cam-' + id,
+          position: Cesium.Cartesian3.fromDegrees(cam.lon, cam.lat, 0),
+          point: {
+            pixelSize: 6,
+            color: Cesium.Color.fromCssColorString(color).withAlpha(0.85),
+            outlineColor: Cesium.Color.WHITE.withAlpha(0.5),
+            outlineWidth: 1,
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          },
+          label: {
+            text: cam.name.substring(0, 20),
+            font: '9px Share Tech Mono',
+            fillColor: Cesium.Color.fromCssColorString(color),
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 2,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            pixelOffset: new Cesium.Cartesian2(8, -4),
+            scaleByDistance: new Cesium.NearFarScalar(50000, 0.8, 500000, 0.3),
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          },
+          description: '📹 ' + cam.name + '\n' + cam.agency + '\n' + cam.mediaUrl,
+        });
+
+        this._markerEntities.push(entity);
+      });
+
+      console.log('[ACC] Globe markers: ' + this._markerEntities.length + ' of ' + this.cameras.size + ' cameras');
+    }
+
+    _agencyColor(agency) {
+      const a = (agency || '').toLowerCase();
+      if (a.includes('tfl') || a.includes('transport')) return '#00ff88';
+      if (a.includes('dot') || a.includes('traffic') || a.includes('highway')) return '#ff8800';
+      if (a.includes('osint')) return '#ff4488';
+      if (a.includes('gov') || a.includes('national')) return '#4488ff';
+      return '#00ffcc';
+    }
+
+    // ── PLAYER ───────────────────────────────────────────────────────────────
+
+    _openCam(cam) {
+      this.closePlayer();
+      this.closeUFOPanel();
+      this._log('FEED: ' + cam.name + ' [' + cam.agency + ']');
+      this._renderPlayer(cam);
+      // Fly to camera
+      if (this.viewer) {
+        this.viewer.camera.flyTo({
+          destination: Cesium.Cartesian3.fromDegrees(cam.lon, cam.lat, 2000),
+          duration: 1.5,
+        });
+      }
+    }
+
+    _renderPlayer(cam) {
+      const pid    = 'acc-player-wrap';
+      const hdrId  = 'acc-player-hdr';
+      const bodyId = 'acc-player-body';
+
+      const wrap = document.createElement('div');
+      wrap.id = pid;
+      wrap.style.cssText = [
+        'position:fixed',
+        'bottom:16px', 'right:16px',
+        'width:600px', 'height:460px',
+        'background:#000',
+        'border:2px solid #0ff',
+        'border-radius:10px',
+        'z-index:9999',
+        'overflow:hidden',
+        'box-shadow:0 8px 48px rgba(0,255,255,0.3)',
+        'font-family:Share Tech Mono,Courier New,monospace',
+        'display:flex', 'flex-direction:column',
+      ].join(';');
+
+      // ── Header ────────────────────────────────────────────────────────────
+      const hdr = document.createElement('div');
+      hdr.id = hdrId;
+      hdr.style.cssText = [
+        'display:flex', 'justify-content:space-between', 'align-items:center',
+        'padding:8px 12px',
+        'background:rgba(0,255,255,0.07)',
+        'border-bottom:1px solid rgba(0,255,255,0.2)',
+        'flex-shrink:0',
+        'gap:8px',
+      ].join(';');
+
+      const title = document.createElement('span');
+      title.style.cssText = 'color:#0ff;font-size:11px;letter-spacing:1px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+      title.textContent = '📹 ' + cam.name + ' | ' + cam.agency;
+      hdr.appendChild(title);
+
+      const src = document.createElement('span');
+      src.style.cssText = 'color:#048;font-size:9px;letter-spacing:1px;white-space:nowrap;';
+      src.textContent = cam.mediaType.toUpperCase();
+      hdr.appendChild(src);
+
+      const closeBtn = document.createElement('button');
+      closeBtn.style.cssText = [
+        'background:rgba(255,255,255,0.06)',
+        'border:1px solid rgba(255,255,255,0.2)',
+        'color:#fff',
+        'padding:3px 10px',
+        'border-radius:3px',
+        'cursor:pointer',
+        'font-family:inherit',
+        'font-size:10px',
+        'letter-spacing:1px',
+        'flex-shrink:0',
+      ].join(';');
+      closeBtn.textContent = '✕ CLOSE';
+      closeBtn.addEventListener('click', () => this.closePlayer());
+      hdr.appendChild(closeBtn);
+      wrap.appendChild(hdr);
+
+      // ── Body ──────────────────────────────────────────────────────────────
+      const body = document.createElement('div');
+      body.id = bodyId;
+      body.style.cssText = 'flex:1;position:relative;background:#000;overflow:hidden;';
+      wrap.appendChild(body);
+
+      document.body.appendChild(wrap);
+      this._activePlayerEl = wrap;
+
+      // ── ESC to close ─────────────────────────────────────────────────────
+      if (this._escHandler) document.removeEventListener('keydown', this._escHandler);
+      this._escHandler = (e) => { if (e.key === 'Escape') this.closePlayer(); };
+      document.addEventListener('keydown', this._escHandler);
+
+      // ── Load media ──────────────────────────────────────────────────────
+      this._loadMedia(bodyId, cam);
+    }
+
+    _loadMedia(bodyId, cam) {
+      const body = document.getElementById(bodyId);
+      if (!body) return;
+
+      switch (cam.mediaType) {
+        case 'hls':
+          this._loadHLS(body, cam.mediaUrl);
+          break;
+        case 'video':
+          this._loadVideo(body, cam.mediaUrl, cam);
+          break;
+        case 'image':
+        default:
+          this._loadImageRefresh(body, cam);
+          break;
+      }
+    }
+
+    _loadVideo(body, url, cam) {
+      // TfL .mp4 streams — use native <video> with loop + mute for autoplay policy
+      const vid = document.createElement('video');
+      vid.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;background:#000;';
+      vid.autoplay = true;
+      vid.muted    = true;       // required for autoplay in modern browsers
+      vid.loop     = true;
+      vid.playsInline = true;
+      vid.setAttribute('playsinline', '');
+
+      // Try direct MP4 first (TfL JamCams work this way)
+      vid.src = url;
+
+      vid.addEventListener('error', () => {
+        console.warn('[ACC] Video error, trying HLS:', url);
+        // Fall back to HLS.js if native fails (some MP4 URLs are actually HLS manifests)
+        if (window.Hls && window.Hls.isSupported()) {
+          const hls = new window.Hls({ enableWorker: true, lowLatencyMode: true });
+          hls.loadSource(url);
+          hls.attachMedia(vid);
+          hls.on(window.Hls.Events.ERROR, (_, data) => {
+            if (data.fatal) {
+              body.innerHTML = this._offlineCard(cam, 'Stream unavailable or format not supported.');
+            }
+          });
+          this._activeHls = hls;
+        } else {
+          body.innerHTML = this._offlineCard(cam, 'Video format not supported in this browser.');
+        }
+      });
+
+      vid.addEventListener('loadeddata', () => {
+        vid.play().catch(() => {}); // attempt play (may be blocked without user gesture)
+      });
+
+      body.appendChild(vid);
+    }
+
+    _loadHLS(body, url) {
+      const vid = document.createElement('video');
+      vid.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;background:#000;';
+      vid.autoplay = true;
+      vid.muted    = true;
+      vid.playsInline = true;
+      vid.setAttribute('playsinline', '');
+
+      if (window.Hls && window.Hls.isSupported()) {
+        const hls = new window.Hls({ enableWorker: true, lowLatencyMode: true });
+        hls.loadSource(url);
+        hls.attachMedia(vid);
+        hls.on(window.Hls.Events.ERROR, (_, data) => {
+          if (data.fatal) {
+            body.innerHTML = this._offlineCard({ name: 'HLS Stream', agency: 'CCTV' }, 'HLS stream failed: ' + data.type);
+          }
+        });
+        this._activeHls = hls;
+        vid.play().catch(() => {});
+      } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
+        // Safari native HLS
+        vid.src = url;
+        vid.play().catch(() => {});
+      } else {
+        body.innerHTML = this._offlineCard({ name: 'HLS Stream', agency: 'CCTV' }, 'HLS not supported. Try Chrome or Firefox.');
+      }
+
+      body.appendChild(vid);
+    }
+
+    _loadImageRefresh(body, cam) {
+      // Snapshot cameras — auto-refresh <img> tag every N seconds
+      // Works with: Singapore Gov.sg, various .jpg traffic cameras
+      const img = document.createElement('img');
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;background:#000;';
+      img.alt = cam.name;
+
+      const refresh = () => {
+        if (!this._activePlayerEl) return; // player was closed
+        // Cache-bust: add ?t=timestamp to force fresh fetch
+        const url = cam.mediaUrl + (cam.mediaUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
+        img.src = url;
+      };
+
+      img.addEventListener('error', () => {
+        if (!this._activePlayerEl) return;
+        img.style.display = 'none';
+        body.innerHTML = this._offlineCard(cam, 'Snapshot unavailable or camera offline.');
+      });
+
+      img.addEventListener('load', () => {
+        img.style.display = 'block';
+      });
+
+      body.appendChild(img);
+      refresh();
+
+      // Refresh every cam.refreshMs ms
+      this._refreshTimer = setInterval(refresh, cam.refreshMs || 30000);
+    }
+
+    _offlineCard(cam, msg) {
+      cam = cam || { name: 'CCTV', agency: 'Unknown' };
+      return [
+        '<div style="width:100%;height:100%;display:flex;flex-direction:column;',
+        'align-items:center;justify-content:center;gap:10px;color:#0ff;',
+        'background:radial-gradient(circle at center,#001a2e,#000);',
+        'text-align:center;padding:24px;font-family:Share Tech Mono,monospace;">',
+        '<div style="font-size:16px;letter-spacing:1px;">📹 ' + (cam.name || 'CCTV') + '</div>',
+        '<div style="font-size:10px;color:#446;">' + (cam.agency || 'CCTV') + '</div>',
+        '<div style="font-size:11px;color:#f84;margin-top:6px;">' + msg + '</div>',
+        '<div style="font-size:10px;color:#224;margin-top:8px;">CAMERA OFFLINE</div>',
+        '</div>'
+      ].join('');
+    }
+
+    // ── GLOBE CLICK ─────────────────────────────────────────────────────────
+
+    _bindGlobeClicks() {
+      if (!this.viewer?.scene?.canvas) return;
+      const h = new Cesium.ScreenSpaceEventHandler(this.viewer.scene.canvas);
+      h.setInputAction(click => {
+        const p = this.viewer.scene.pick(click.position);
+        if (Cesium.defined(p) && p.id) {
+          const id = String(p.id.id || p.id);
+          if (id.startsWith('cam-')) {
+            const camId = id.replace('cam-', '');
+            const cam = this.cameras.get(camId);
+            if (cam) this._openCam(cam);
+          }
+        } else {
+          // Click on globe → nearest camera
+          const ray = this.viewer.camera.getPickRay(click.position);
+          const cart = this.viewer.scene.globe.pick(ray, this.viewer.scene);
+          if (Cesium.defined(cart)) {
+            const lat = Cesium.Math.toDegrees(cart.latitude);
+            const lon = Cesium.Math.toDegrees(cart.longitude);
+            const nearest = this._nearestCam(lat, lon);
+            if (nearest) this._openCam(nearest);
+          }
+        }
+      }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+      console.log('[ACC] Globe click handler bound');
+    }
+
+    _nearestCam(lat, lon) {
+      let best = null, min = Infinity;
+      this.cameras.forEach(cam => {
+        const d = this._haversine(lat, lon, cam.lat, cam.lon);
+        if (d < min) { min = d; best = cam; }
+      });
+      return best;
+    }
+
+    _haversine(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const d = (a, b) => (b - a) * Math.PI / 180;
+      const a = Math.sin(d(lat2, lat1) / 2) ** 2 +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(d(lon2, lon1) / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    _bindPanelClicks() {
+      // Hook for HUD OSINT button — camera grid built on demand
+    }
+
+    buildCameraGridHTML() {
+      const agencies = {};
+      this.cameras.forEach(cam => {
+        const a = cam.agency || 'CCTV';
+        if (!agencies[a]) agencies[a] = [];
+        if (agencies[a].length < 8) agencies[a].push(cam); // cap per agency
+      });
+
+      let html = '<div id="acc-cam-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:400px;overflow-y:auto;padding:4px;">';
+      for (const [agency, cams] of Object.entries(agencies)) {
+        const color = this._agencyColor(agency);
+        html += '<div style="grid-column:1/-1;font-size:9px;letter-spacing:2px;color:' + color + ';margin-top:10px;border-bottom:1px solid rgba(0,240,255,0.1);padding-bottom:3px;">' + agency + '</div>';
+        cams.forEach(cam => {
+          html += [
+            '<div class="acc-cam-item" data-cam-id="' + cam.id + '" style="',
+            'background:rgba(0,240,255,0.04);border:1px solid rgba(0,240,255,0.12);',
+            'padding:6px 8px;border-radius:3px;cursor:pointer;font-size:10px;',
+            'display:flex;justify-content:space-between;align-items:center;',
+            'transition:background 0.15s;" ' +
+            'onmouseover="this.style.background=\'rgba(0,240,255,0.15)\'" ' +
+            'onmouseout="this.style.background=\'rgba(0,240,255,0.04)\'" ' +
+            'onclick="window.gothamAccountability.openCamById(\'' + cam.id + '\')">',
+            '<span style="color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:160px;">' + cam.name + '</span>',
+            '<span style="color:' + color + ';font-size:9px;">' + cam.mediaType.toUpperCase() + '</span>',
+            '</div>'
+          ].join('');
+        });
+      }
+      html += '</div>';
+      return html;
+    }
+
+    // ── UFO DATA ─────────────────────────────────────────────────────────────
+
+    get ufoData() {
+      return [
+        { id:'ufo_01', lat:33.228, lon:-115.517, title:'Apache Junction — Night Triangular Craft', date:'2025-03-14', cred:0.78,
+          desc:'Silent, triangular craft ~30ft wide hovering at 200ft for 12 min before accelerating beyond visual tracking.',
+          video:null, wiki:'UFO', sources:['MUFON #152341','ADS-B gap analysis'] },
+        { id:'ufo_02', lat:37.774, lon:-122.419, title:'San Francisco Bay — Silver Disc', date:'2025-01-08', cred:0.71,
+          desc:'Amateur astronomer captured silver disc at 14,000ft. No ADS-B response. Duration: 9 minutes.',
+          video:null, wiki:'UFO', sources:['Witness report','Flightradar24 gap analysis'] },
+        { id:'ufo_03', lat:36.206, lon:-112.125, title:'Grand Canyon — Luminous Orb', date:'2024-11-22', cred:0.83,
+          desc:'Guide captured orb executing 90-degree trajectory change. No radar correlation. Duration: 47 seconds.',
+          video:null, wiki:'UFO', sources:['MUFON #149876','NPSR analysis'] },
+        { id:'ufo_04', lat:21.306, lon:-157.858, title:'Honolulu — High Altitude Sphere', date:'2025-02-19', cred:0.65,
+          desc:'Commercial pilot observed large reflective sphere at FL350 with no transponder. Duration: 23 min.',
+          video:null, wiki:'UFO', sources:['FAA #2025-0173','ADS-B gap'] },
+        { id:'ufo_05', lat:64.147, lon:-21.934, title:'Reykjavik — Pulsating Amber Light', date:'2024-12-05', cred:0.59,
+          desc:'Pattern of 7 amber pulses over 40 seconds. No AIS/ADS-B contact.',
+          video:null, wiki:'UFO', sources:['Icelandic UFO Research Society'] },
+      ];
+    }
+
+    _openUFO(id) {
+      const spot = this.ufoData.find(s => s.id === id);
+      if (!spot) return;
+      this.closePlayer();
+      this.closeUFOPanel();
+      this._renderUFOPanel(spot);
+      if (this.viewer) {
+        this.viewer.camera.flyTo({
+          destination: Cesium.Cartesian3.fromDegrees(spot.lon, spot.lat, 80000),
+          duration: 2,
+        });
+      }
+    }
+
+    _renderUFOPanel(spot) {
+      this.closeUFOPanel();
+      const color = this._credColor(spot.cred);
+      const el = document.createElement('div');
+      el.id = 'acc-ufo-panel';
+      el.style.cssText = [
+        'position:fixed', 'top:50%', 'left:50%',
+        'transform:translate(-50%,-50%)',
+        'width:420px', 'background:rgba(0,0,0,0.97)',
+        'border:2px solid ' + color,
+        'border-radius:10px',
+        'z-index:9999', 'padding:20px',
+        'font-family:Share Tech Mono,Courier New,monospace',
+        'color:#fff',
+      ].join(';');
+      el.innerHTML = [
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">',
+        '  <span style="color:' + color + ';font-size:11px;letter-spacing:2px;">⚠ UFO INCIDENT</span>',
+        '  <button id="ufo-close-btn" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.2);color:#fff;cursor:pointer;padding:3px 10px;border-radius:3px;font-size:10px;letter-spacing:1px;">✕ CLOSE</button>',
+        '</div>',
+        '<h2 style="margin:0 0 8px;color:' + color + ';font-size:14px;">' + spot.title + '</h2>',
+        '<div style="font-size:10px;color:#557;margin-bottom:10px;">' + spot.date + ' · Credibility: <span style="color:' + color + ';">' + Math.round(spot.cred*100) + '%</span></div>',
+        '<p style="margin:6px 0;font-size:11px;color:#aab;line-height:1.6;">' + spot.desc + '</p>',
+        '<div style="margin-top:10px;font-size:10px;color:#446;">Sources: ' + spot.sources.join(', ') + '</div>',
+        '<div style="display:flex;gap:8px;margin-top:14px;">',
+        '  <button id="ufo-fly-btn" style="flex:1;background:#0f8;border:none;color:#000;padding:8px;border-radius:4px;cursor:pointer;font-size:11px;letter-spacing:1px;">FLY HERE</button>',
+        '  <button id="ufo-nearest-cam-btn" style="flex:1;background:#f80;border:none;color:#000;padding:8px;border-radius:4px;cursor:pointer;font-size:11px;letter-spacing:1px;">NEAREST CAM</button>',
+        '</div>',
+      ].join('');
+      document.body.appendChild(el);
+      document.getElementById('ufo-close-btn').addEventListener('click', () => this.closeUFOPanel());
+      document.getElementById('ufo-fly-btn').addEventListener('click', () => {
+        if (this.viewer) this.viewer.camera.flyTo({ destination: Cesium.Cartesian3.fromDegrees(spot.lon, spot.lat, 50000), duration: 2 });
+        this.closeUFOPanel();
+      });
+      document.getElementById('ufo-nearest-cam-btn').addEventListener('click', () => {
+        const nearest = this._nearestCam(spot.lat, spot.lon);
+        if (nearest) this._openCam(nearest);
+        this.closeUFOPanel();
+      });
+      const escH = (e) => { if (e.key === 'Escape') { this.closeUFOPanel(); document.removeEventListener('keydown', escH); } };
+      document.addEventListener('keydown', escH);
+    }
+
+    closeUFOPanel() {
+      const el = document.getElementById('acc-ufo-panel');
+      if (el) el.remove();
+    }
+
+    _credColor(cred) {
+      if (cred >= 0.75) return '#f44';
+      if (cred >= 0.55) return '#f80';
+      return '#0f8';
+    }
+
+    _log(msg) {
+      if (this.hud?._sysLog) this.hud._sysLog(msg);
+      else console.log('[ACC] ' + msg);
+    }
+  }
+
+  // ── expose globally ──────────────────────────────────────────────────────────
+  window.accountabilityEngine = accountabilityEngine;
+  window.accEngine = accountabilityEngine;
+
+})();

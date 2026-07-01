@@ -11,6 +11,274 @@
     <!-- Polyfill and Global Config -->
     <script>
         window.CESIUM_BASE_URL = '/js/';
+        (function() {
+            function clamp(min, value, max) {
+                return Math.max(min, Math.min(max, value));
+            }
+
+            function px(value) {
+                return Math.round(value) + 'px';
+            }
+
+            function setStyles(id, styles) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                Object.keys(styles).forEach(function(key) {
+                    el.style[key] = styles[key];
+                });
+            }
+
+            function getGothamViewportSize() {
+                var vv = window.visualViewport;
+                // Try visualViewport first, fall back to window dimensions
+                // Use offsetWidth/clientWidth as backup for cross-browser accuracy
+                var w = Math.round((vv && vv.width) || window.innerWidth || document.documentElement.clientWidth || 1920);
+                var h = Math.round((vv && vv.height) || window.innerHeight || document.documentElement.clientHeight || 1080);
+
+                // NOTE: a previous "4K TV fix" forced the physical SCREEN/avail size
+                // whenever the monitor was larger than the window. That stretched the
+                // globe + HUD to the full monitor width on ANY non-maximized or resized
+                // window (the common case), so the globe overflowed and never centered and
+                // the left panel was pushed off-screen. We now trust the actual visible
+                // viewport (visualViewport, then innerWidth) so the shell adapts to ANY
+                // browser shape and size and the globe always centers within the window.
+
+                return { w: Math.max(320, w), h: Math.max(240, h), dpr: window.devicePixelRatio || 1 };
+            }
+
+            function forceBox(el, w, h) {
+                if (!el) return;
+                el.style.position = 'fixed';
+                el.style.left = '0px';
+                el.style.top = '0px';
+                el.style.right = 'auto';
+                el.style.bottom = 'auto';
+                el.style.width = px(w);
+                el.style.height = px(h);
+                el.style.minWidth = px(w);
+                el.style.minHeight = px(h);
+                el.style.maxWidth = px(w);
+                el.style.maxHeight = px(h);
+                el.style.margin = '0';
+                el.style.transformOrigin = '0 0';
+            }
+
+            function applyGothamResponsiveShell() {
+                if (!document.body || !document.documentElement) return;
+                var vp = getGothamViewportSize();
+                var w = vp.w;
+                var h = vp.h;
+                var dpr = vp.dpr;
+                var compact = w < 1180 || h < 760 || dpr > 1.35;
+                var mobile = w < 720;
+                var scale = clamp(0.68, Math.min(w / 1920, h / 1080) * (compact ? 1.22 : 1.08), 1);
+                var sideW = mobile ? clamp(240, w * 0.82, 320) : clamp(180, w * (compact ? 0.18 : 0.20), 380);
+                var sideReserve = mobile ? 0 : sideW;
+                var gap = mobile ? 0 : clamp(6, w * 0.01, 18);
+                var topH = mobile ? clamp(52, h * 0.07, 60) : clamp(66, h * (compact ? 0.11 : 0.13), 140);
+                var bottomH = mobile ? clamp(112, h * 0.18, 150) : clamp(120, h * (compact ? 0.22 : 0.28), 320);
+                var middleLeft = sideReserve + gap;
+                var middleRight = sideReserve + gap;
+                var middleW = Math.max(0, w - middleLeft - middleRight);
+
+                document.documentElement.style.setProperty('--ghud-ui-scale', scale.toFixed(3));
+                document.documentElement.style.setProperty('--app-w', w + 'px');
+                document.documentElement.style.setProperty('--app-h', h + 'px');
+                document.documentElement.style.setProperty('--ghud-side-active', sideReserve + 'px');
+                document.documentElement.style.setProperty('--ghud-top-h', topH + 'px');
+                document.documentElement.style.setProperty('--ghud-bottom-h', bottomH + 'px');
+                document.body.classList.toggle('gotham-compact-ui', compact);
+                document.body.classList.toggle('gotham-mobile-ui', mobile);
+                document.documentElement.style.width = px(w);
+                document.documentElement.style.height = px(h);
+                document.documentElement.style.overflow = 'hidden';
+                document.body.style.position = 'fixed';
+                document.body.style.inset = '0';
+                document.body.style.width = px(w);
+                document.body.style.height = px(h);
+                document.body.style.minWidth = px(w);
+                document.body.style.minHeight = px(h);
+                document.body.style.margin = '0';
+                document.body.style.overflow = 'hidden';
+
+                // Cinematic intro: add first-load class once
+                if (!document.body.classList.contains('gotham-first-load-done')) {
+                  document.body.classList.add('gotham-first-load');
+                  document.body.classList.add('gotham-first-load-done');
+                  setTimeout(function() {
+                    document.body.classList.remove('gotham-first-load');
+                  }, 2200);
+                }
+
+                forceBox(document.getElementById('viewport-wrapper'), w, h);
+                forceBox(document.getElementById('cesiumContainer'), w, h);
+                forceBox(document.getElementById('viewport-overlay'), w, h);
+                forceBox(document.getElementById('viewport-crosshairs'), w, h);
+
+                setStyles('gotham-hud-left', {
+                    width: px(sideW),
+                    height: px(h),
+                    left: '0px',
+                    top: '0px'
+                });
+                setStyles('gotham-hud-right', {
+                    width: px(sideW),
+                    height: px(h),
+                    right: '0px',
+                    top: '0px'
+                });
+                setStyles('gotham-hud-top', {
+                    left: px(middleLeft),
+                    right: px(middleRight),
+                    top: '0px',
+                    width: px(middleW),
+                    height: px(topH)
+                });
+                setStyles('gotham-hud-bottom', {
+                    left: px(middleLeft),
+                    right: px(middleRight),
+                    bottom: '0px',
+                    width: px(middleW),
+                    height: px(bottomH)
+                });
+
+                clearTimeout(window._gothamResizeTimer);
+                window._gothamResizeTimer = setTimeout(function() {
+                    try {
+                        var vp = getGothamViewportSize();
+                        var w = vp.w;
+                        var h = vp.h;
+                        var dpr = vp.dpr;
+                        var viewerEl = document.querySelector('#cesiumContainer .cesium-viewer');
+                        var widgetBox = document.querySelector('#cesiumContainer .cesium-viewer-cesiumWidgetContainer');
+                        var widgetEl = document.querySelector('#cesiumContainer .cesium-widget');
+                        var canvasEl = document.querySelector('#cesiumContainer canvas, .cesium-widget canvas');
+                        [viewerEl, widgetBox, widgetEl].forEach(function(el) { forceBox(el, w, h); });
+                        if (canvasEl) {
+                            forceBox(canvasEl, w, h);
+                            // 4K TV FIX: Set canvas buffer size to physical pixels
+                            // This prevents the clipping that happens when
+                            // CSS size doesn't match canvas buffer size
+                            var physW = Math.max(1, Math.round(w * dpr));
+                            var physH = Math.max(1, Math.round(h * dpr));
+                            canvasEl.width = physW;
+                            canvasEl.height = physH;
+                            // Also set style size to match (critical for high-DPI)
+                            canvasEl.style.width = px(w);
+                            canvasEl.style.height = px(h);
+                        }
+                        // Force Cesium to resize its render target
+                        window.gothamViewer?.resize?.();
+                        window.gothamViewer?.scene?.requestRender?.();
+                    } catch (e) {
+                        console.warn('[GOTHAM] resize skipped:', e.message);
+                    }
+                }, 60);
+            }
+            window.applyGothamResponsiveShell = applyGothamResponsiveShell;
+            window.addEventListener('resize', applyGothamResponsiveShell);
+            window.addEventListener('orientationchange', applyGothamResponsiveShell);
+            window.addEventListener('pageshow', applyGothamResponsiveShell);
+            window.addEventListener('focus', applyGothamResponsiveShell);
+            // Also listen to visualViewport events for mobile/pinch-zoom
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', applyGothamResponsiveShell);
+                window.visualViewport.addEventListener('scroll', applyGothamResponsiveShell);
+            }
+            // 4K TV FIX: Also trigger on devicePixelRatio change (DPI scaling changes)
+            (function() {
+                var lastDPR = window.devicePixelRatio || 1;
+                setInterval(function() {
+                    var curDPR = window.devicePixelRatio || 1;
+                    if (curDPR !== lastDPR) {
+                        lastDPR = curDPR;
+                        console.log('[GOTHAM] DPR change detected: ' + curDPR);
+                        applyGothamResponsiveShell();
+                    }
+                }, 500);
+            })();
+            document.addEventListener('DOMContentLoaded', applyGothamResponsiveShell);
+            window.addEventListener('load', applyGothamResponsiveShell);
+            // Immediately apply once on script parse (before images load)
+            setTimeout(applyGothamResponsiveShell, 0);
+            var lastShellSize = '';
+            var lastVP = { w: 0, h: 0, dpr: 0 };
+            setInterval(function() {
+                var vp = getGothamViewportSize();
+                var key = [
+                    vp.w,
+                    vp.h,
+                    vp.dpr,
+                    window.screen?.width,
+                    window.screen?.height,
+                    window.screen?.availWidth,
+                    window.screen?.availHeight
+                ].join('x');
+                if (key !== lastShellSize) {
+                    lastShellSize = key;
+                    lastVP = { w: vp.w, h: vp.h, dpr: vp.dpr };
+                    applyGothamResponsiveShell();
+                }
+            }, 250);
+
+            // Extra: detect monitor changes (moving windows between screens doesn't always fire resize)
+            // Force full re-apply when screen dimensions change even without a resize event
+            var lastScreenDim = window.screen?.width + 'x' + window.screen?.height;
+            var lastScreenAvail = (window.screen?.availWidth || 0) + 'x' + (window.screen?.availHeight || 0);
+            var lastWindowW = window.outerWidth;
+            var lastWindowH = window.outerHeight;
+            var lastInnerW = window.innerWidth;
+            var lastInnerH = window.innerHeight;
+            var lastDPR = window.devicePixelRatio || 1;
+            setInterval(function() {
+                var cur = window.screen?.width + 'x' + window.screen?.height;
+                var curAvail = (window.screen?.availWidth || 0) + 'x' + (window.screen?.availHeight || 0);
+                var curW = window.outerWidth;
+                var curH = window.outerHeight;
+                var curInnerW = window.innerWidth;
+                var curInnerH = window.innerHeight;
+                var curDPR = window.devicePixelRatio || 1;
+                var screenChanged = cur !== lastScreenDim || curAvail !== lastScreenAvail;
+                var windowResized = curW !== lastWindowW || curH !== lastWindowH;
+                var viewportScaled = curInnerW !== lastInnerW || curInnerH !== lastInnerH;
+                var dprChanged = curDPR !== lastDPR;
+                if (screenChanged || windowResized || viewportScaled || dprChanged) {
+                    lastScreenDim = cur;
+                    lastScreenAvail = curAvail;
+                    lastWindowW = curW;
+                    lastWindowH = curH;
+                    lastInnerW = curInnerW;
+                    lastInnerH = curInnerH;
+                    lastDPR = curDPR;
+                    console.log('[GOTHAM] Viewport change detected: screen=' + cur + ' avail=' + curAvail + ' dpr=' + curDPR);
+                    // Full reset — use innerWidth/innerHeight which reflect the new viewport
+                    var vp = getGothamViewportSize();
+                    applyGothamResponsiveShell();
+                    document.body.style.position = 'fixed';
+                    document.body.style.left = '0px';
+                    document.body.style.top = '0px';
+                    document.body.style.width = px(vp.w);
+                    document.body.style.height = px(vp.h);
+                    document.body.style.minWidth = px(vp.w);
+                    document.body.style.minHeight = px(vp.h);
+                    document.body.style.margin = '0px';
+                    document.body.style.overflow = 'hidden';
+                    document.documentElement.style.width = px(vp.w);
+                    document.documentElement.style.height = px(vp.h);
+                    document.documentElement.style.overflow = 'hidden';
+                    try { window.gothamViewer?.resize?.(); } catch(e) {}
+                    try { window.gothamViewer?.scene?.requestRender?.(); } catch(e) {}
+                }
+            }, 300);
+
+            // Also: re-detect viewport on window focus (catches some monitor switches)
+            window.addEventListener('focus', function() {
+                var vp = getGothamViewportSize();
+                document.documentElement.style.width = px(vp.w);
+                document.documentElement.style.height = px(vp.h);
+                try { window.gothamViewer?.resize?.(); } catch(e) {}
+            });
+        })();
         
         // FORCE UNREGISTER OLD SERVICE WORKERS
         if ('serviceWorker' in navigator) {
@@ -43,8 +311,8 @@
     <script src="/gotham/gotham-event-bus.js?v=1774390000"></script>
     <script src="/gotham/gotham-cache.js?v=1774390000"></script>
     <script src="/gotham/gotham-spatial.js?v=1774390000"></script>
-    <script src="/gotham/gotham-shaders.js?v=1774390000"></script>
-    <script src="/gotham/gotham-hud.js?v=1774390000"></script>
+    <script src="/gotham/gotham-shaders-v40.js?v=1776521497"></script>
+    <script src="/gotham/gotham-hud.js?v=1778586100"></script>
     <script src="/gotham/gotham-roads.js?v=1774390000"></script>
     <script src="/gotham/gotham-sector-manager.js?v=1774390000"></script>
     <script src="/gotham/gotham-world-influence.js?v=1774390000"></script>
@@ -52,13 +320,13 @@
     <script src="/gotham/gotham-environment-sampler.js?v=1774390000"></script>
     <script src="/gotham/gotham-agent-memory.js?v=1774390000"></script>
     <script src="/gotham/gotham-behavior-graph.js?v=1774390000"></script>
-    <script src="/gotham/gotham-task-system.js?v=1774390000"></script>
+    <script src="/gotham/gotham-task-system.js?v=1779000001"></script>
     <script src="/gotham/gotham-world-state.js?v=1774390000"></script>
     <script src="/gotham/gotham-simulation-engine.js?v=1774390000"></script>
     <script src="/gotham/gotham-agent-system.js?v=1774390000"></script>
     <script src="/gotham/gotham-agent-integration.js?v=1774390000"></script>
     <script src="/gotham/gotham-performance-monitor.js?v=1774390000"></script>
-    <script src="/gotham/gotham-autonomous-kernel.js?v=1774390000"></script>
+    <script src="/gotham/gotham-autonomous-kernel.js?v=1779000001"></script>
     <script src="/gotham/gotham-prediction-engine.js?v=1774390000"></script>
     <script src="/gotham/gotham-satellite-coverage.js?v=1774390000"></script>
     <script src="/gotham/gotham-event-engine.js?v=1774390000"></script>
@@ -69,25 +337,56 @@
     <script src="/gotham/gotham-navigation-graph.js?v=1774390000"></script>
     <script src="/gotham/gotham-scenario-engine.js?v=1774390000"></script>
     <script src="/gotham/gotham-github-marketplace.js?v=1774390000"></script>
-    <script src="/gotham/gotham-viewport.js?v=1774390000"></script>
+    <script src="/gotham/gotham-viewport.js?v=1778605000"></script>
     <script src="/gotham/gotham-zoom-manager.js?v=1774390000"></script>
     <script src="/gotham/gotham-pathfinding.js?v=1774390000"></script>
     <script src="/gotham/trajectory-fields.js?v=1774390000"></script>
-    <script src="/gotham/gotham-3077-system.js?v=1774390000"></script>
-    <script src="/gotham/worldview-complete.js?v=1774390000"></script>
+    <script src="/gotham/gotham-3077-system.js?v=1778604501"></script>
+    <script src="/gotham/worldview-bridge.js?v=1779000001"></script>
+    <script src="/gotham/worldview-complete.js?v=1779000001"></script>
 
-    <!-- MISSING CORE SYSTEMS - NOW WIRED UP -->
+    <!-- CORE SYSTEMS v2 — Agent infrastructure + HER -->
+    <script src="/gotham/gotham-agent-registry.js?v=1779000001"></script>
+    <script src="/gotham/gotham-evidence-store.js?v=1779000001"></script>
+    <script src="/gotham/gotham-tool-adapter.js?v=1779000001"></script>
+    <script src="/gotham/gotham-permission-gate.js?v=1779000001"></script>
+    <script src="/gotham/gotham-evaluator.js?v=1779000001"></script>
+    <script src="/gotham/gotham-meta-agent.js?v=1779000002"></script>
+
+    <!-- MISSING CORE SYSTEMS — already wired -->
     <script src="/gotham/gotham-goal-stack.js?v=1774390000"></script>
     <script src="/gotham/gotham-knowledge-base.js?v=1774390000"></script>
-    <script src="/gotham/gotham-shadowbroker-bridge.js?v=1774390000"></script>
+    <script src="/gotham/gotham-shadowbroker-bridge.js?v=1776523600"></script>
     <script src="/gotham/gotham-osint-overlay.js?v=1774400000"></script>
+    <script src="/gotham/gotham-intelligence-backend.js?v=1774400000"></script>
+    <script src="/gotham/gotham-country-intel.js?v=1774400000"></script>
     <script src="/gotham/gotham-agent-telemetry.js?v=1774390000"></script>
     <script src="/gotham/gotham-tile-scenarios.js?v=1774390000"></script>
     <script src="/gotham/worker-data-processor.js?v=1774390000"></script>
-    <script src="/gotham-emotional-engine.js?v=1774390000"></script>
-    <script src="/gotham-nlp-manager.js?v=1774390000"></script>
-    <script src="/gotham-agent-system-upgrade.js?v=1774390000"></script>
-    <script src="/worldview-bridge.js?v=1774390000"></script>
+    <script src="/gotham/gotham-accountability-engine.js?v=1779200000"></script>
+    <!-- RESTORED: Staged + libs modules -->
+    <script src="/gotham/gotham-sequential-loader.js?v=1779000001"></script>
+    <script src="/gotham/gotham-tile-persistence.js?v=1779000001"></script>
+    <script src="/gotham/gotham-tile-worker.js?v=1779000001"></script>
+    <script src="/gotham/gotham-state-bridge.js?v=1779000001"></script>
+    <script src="/gotham/gotham-world-export.js?v=1779000001"></script>
+    <script src="/gotham/gotham-hud-enhanced.js?v=1779000001"></script>
+    <script src="/gotham/gotham-timeline-engine.js?v=1779000001"></script>
+    <script src="/gotham/gotham-agent-system-upgrade.js?v=1779000001"></script>
+    <script src="/gotham/gotham-emotional-engine.js?v=1779000001"></script>
+    <script src="/gotham/gotham-airspace-manager.js?v=1779000001"></script>
+    <script src="/gotham/gotham-nlp-manager.js?v=1779000001"></script>
+    <script src="/gotham/gotham-parallax.js?v=1779000001"></script>
+    <script src="/gotham/gotham-visual-effects.js?v=1779000001"></script>
+    <script src="/gotham/gotham-news-panel.js?v=1779000001"></script>
+    <script src="/gotham/gotham-state-diffing.js?v=1779000001"></script>
+    <script src="/gotham/gotham-trade-economy.js?v=1779000001"></script>
+    <script src="/gotham/worldmonitor_integration.js?v=1779000001"></script>
+
+    <!-- Phase 2 Modules -->
+    <script src="/gotham/gotham-cctv-projector.js?v=1774390000"></script>
+    <script src="/gotham/gotham-panels-expanded.js?v=1774390000"></script>
+    <script src="/gotham/gotham-credits.js?v=1774390000"></script>
 
     <!-- Chaos Monitor -->
     <script src="/chaos-monitor/chaos-monitor.js?v=1774390000"></script>
@@ -98,27 +397,66 @@
     <script src="/chaos-monitor/chaos-init.js?v=1774390000"></script>
 
     <!-- GOTHAM 3077 BOOT SEQUENCE - CREATES ALL HUD PANELS -->
-    <script src="/gotham/gotham-init.js?v=1774390000"></script>
+    <script src="/gotham/gotham-demo-director.js?v=1779000001"></script>
+    <script src="/gotham/gotham-init.js?v=1778603300"></script>
+
+    <!-- OMNI-EYE Status + Mode System -->
+    <script src="/gotham/gotham-omni-eye-status.js?v=1779000001"></script>
 
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         html, body {
-            width: 100%; height: 100%;
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100dvh;
+            min-width: 100vw;
+            min-height: 100dvh;
             overflow: hidden;
             background: #05080c;
             font-family: 'Share Tech Mono', 'Courier New', monospace;
         }
         
-        #cesiumContainer { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
+        #viewport-wrapper,
+        #cesiumContainer,
+        #cesiumContainer .cesium-viewer,
+        #cesiumContainer .cesium-viewer-cesiumWidgetContainer,
+        #cesiumContainer .cesium-widget {
+            position: fixed !important;
+            inset: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            min-width: 100% !important;
+            min-height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            overflow: hidden !important;
+        }
+
+        #cesiumContainer {
             display: block !important;
             visibility: visible !important;
             background: #000;
+            z-index: 1;
+        }
+
+        /* 4K TV FIX: Canvas must match CSS dimensions exactly */
+        #cesiumContainer canvas,
+        .cesium-widget canvas {
+            width: 100% !important;
+            height: 100% !important;
+            max-width: 100% !important;
+            max-height: 100% !important;
+            display: block !important;
+            /* Force pixel-perfect sizing */
+            box-sizing: border-box;
+        }
+
+        /* Also force widget container to fill the container */
+        #cesiumContainer .cesium-viewer-cesiumWidgetContainer {
+            width: 100% !important;
+            height: 100% !important;
         }
     
     .cesium-viewer-bottom, .cesium-viewer-toolbar, .cesium-widget-credits { 
@@ -132,18 +470,22 @@
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         color: #00f0ff; transition: opacity 1s ease-out;
     }
-    #boot-content { width: 600px; padding: 40px; border: 1px solid rgba(0,240,255,0.2); background: rgba(0,240,255,0.02); position: relative; }
-    #boot-logo { font-size: 42px; font-weight: bold; letter-spacing: 10px; margin-bottom: 5px; text-shadow: 0 0 20px rgba(0,240,255,0.5); text-align: center; }
-    #boot-sub { font-size: 12px; letter-spacing: 4px; color: #88aaff; margin-bottom: 30px; text-align: center; }
+    #boot-content {
+        width: 90vw; max-width: 1400px; height: 85vh;
+        display: flex; flex-direction: column; justify-content: center;
+        padding: 60px; border: 1px solid rgba(0,240,255,0.2); background: rgba(0,240,255,0.02); position: relative;
+    }
+    #boot-logo { font-size: 120px; font-weight: bold; letter-spacing: 20px; margin-bottom: 10px; text-shadow: 0 0 40px rgba(0,240,255,0.8); text-align: center; }
+    #boot-sub { font-size: 18px; letter-spacing: 8px; color: #88aaff; margin-bottom: 50px; text-align: center; }
     #boot-terminal {
-        height: 180px; overflow-y: auto; font-size: 10px; color: #4488aa;
-        line-height: 1.6; border-top: 1px solid rgba(0,240,255,0.1); padding-top: 15px;
+        flex: 1; min-height: 220px; overflow-y: auto; font-size: 14px; color: #4488aa;
+        line-height: 1.8; border-top: 1px solid rgba(0,240,255,0.1); padding-top: 20px;
         scrollbar-width: none;
     }
     #boot-terminal::-webkit-scrollbar { display: none; }
-    #boot-progress-wrap { width: 100%; height: 2px; background: rgba(0,240,255,0.1); margin-top: 25px; position: relative; }
-    #boot-progress-bar { width: 0%; height: 100%; background: #00f0ff; box-shadow: 0 0 10px #00f0ff; transition: width 0.2s; }
-    .boot-status { position: absolute; right: 0; top: -18px; font-size: 9px; color: #00f0ff; }
+    #boot-progress-wrap { width: 100%; height: 6px; background: rgba(0,240,255,0.1); margin-top: 30px; position: relative; border-radius: 3px; }
+    #boot-progress-bar { width: 0%; height: 100%; background: #00f0ff; box-shadow: 0 0 20px #00f0ff; transition: width 0.2s; border-radius: 3px; }
+    .boot-status { position: absolute; right: 0; top: -22px; font-size: 11px; color: #00f0ff; }
 
     @keyframes scanline { 0% { transform: translateY(-100%) } 100% { transform: translateY(100%) } }
     .boot-scanline { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, transparent, rgba(0,240,255,0.05), transparent); pointer-events: none; animation: scanline 4s linear infinite; }
@@ -158,11 +500,40 @@
 
             <div id="boot-terminal">
                 <div>[ SYSTEM ] INITIALIZING KERNEL...</div>
+                <div style="margin-top:14px;color:#334455;font-size:11px;letter-spacing:2px;">SYSTEM MODE: <span style="color:#00f0ff;">OMNI-EYE COMMAND DECK</span></div>
             </div>
 
             <div id="boot-progress-wrap">
                 <div id="boot-progress-bar"></div>
                 <div id="boot-status-text" class="boot-status">BOOTING: 0%</div>
+            </div>
+
+            <!-- Quick Mode Selector -->
+            <div id="boot-mode-bar" style="display:flex;gap:6px;margin-top:20px;flex-wrap:wrap;justify-content:center;">
+                <button onclick="document.getElementById('omni-boot-modes')||1 && activateMode && activateMode('optical')" style="background:rgba(0,240,255,0.1);border:1px solid #00f0ff55;color:#00f0ff;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;padding:6px 12px;cursor:pointer;border-radius:3px;">OPTICAL MATRIX</button>
+                <button onclick="document.getElementById('omni-boot-modes')||1 && activateMode && activateMode('signal')" style="background:rgba(0,255,136,0.1);border:1px solid #00ff8855;color:#00ff88;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;padding:6px 12px;cursor:pointer;border-radius:3px;">SIGNAL WEAVE</button>
+                <button onclick="document.getElementById('omni-boot-modes')||1 && activateMode && activateMode('threat')" style="background:rgba(255,68,136,0.1);border:1px solid #ff448855;color:#ff4488;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;padding:6px 12px;cursor:pointer;border-radius:3px;">THREAT BLOOM</button>
+                <button onclick="document.getElementById('omni-boot-modes')||1 && activateMode && activateMode('cryo')" style="background:rgba(136,204,255,0.1);border:1px solid #88ccff55;color:#88ccff;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;padding:6px 12px;cursor:pointer;border-radius:3px;">CRYO NOISE</button>
+                <button onclick="document.getElementById('omni-boot-modes')||1 && activateMode && activateMode('ghost')" style="background:rgba(170,170,204,0.1);border:1px solid #aaaacc55;color:#aaaacc;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;padding:6px 12px;cursor:pointer;border-radius:3px;">GHOST GRID</button>
+                <button onclick="document.getElementById('omni-boot-modes')||1 && activateMode && activateMode('pulse')" style="background:rgba(255,221,0,0.1);border:1px solid #ffdd0055;color:#ffdd00;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;padding:6px 12px;cursor:pointer;border-radius:3px;">PULSE SWEEP</button>
+            </div>
+
+            <!-- Demo Director Controls -->
+            <div id="boot-demo-bar" style="display:flex;flex-direction:column;gap:5px;margin-top:16px;align-items:center;">
+                <div style="font-size:8px;letter-spacing:3px;color:#334455;text-align:center;">// DEMO DIRECTOR</div>
+                <div style="display:flex;gap:5px;flex-wrap:wrap;justify-content:center;">
+                    <button onclick="window._startDemo('full')"      style="background:rgba(0,240,255,0.08);border:1px solid rgba(0,240,255,0.35);color:#00f0ff;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 10px;cursor:pointer;border-radius:3px;">FULL SWEEP</button>
+                    <button onclick="window._startDemo('investor')" style="background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.35);color:#00ff88;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 10px;cursor:pointer;border-radius:3px;">INVESTOR</button>
+                    <button onclick="window._startDemo('technical')" style="background:rgba(136,204,255,0.08);border:1px solid rgba(136,204,255,0.35);color:#88ccff;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 10px;cursor:pointer;border-radius:3px;">TECHNICAL</button>
+                    <button onclick="window._startDemo('cinematic')" style="background:rgba(255,68,136,0.08);border:1px solid rgba(255,68,136,0.35);color:#ff4488;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 10px;cursor:pointer;border-radius:3px;">CINEMATIC</button>
+                    <button onclick="window._startDemo('silent')"   style="background:rgba(170,170,204,0.08);border:1px solid rgba(170,170,204,0.35);color:#aaaacc;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;padding:5px 10px;cursor:pointer;border-radius:3px;">SILENT</button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div style="margin-top:24px;text-align:center;font-size:9px;color:#334455;letter-spacing:2px;line-height:1.8;">
+                GOTHAM 3077 // OMNI-EYE<br>
+                Global incident intelligence prototype · CANN.ON.AI experimental systems
             </div>
         </div>
     </div>
@@ -181,6 +552,7 @@
     <div id="toggle-right" class="panel-toggle-tab" title="Toggle right panel (R)">R</div>
     <div id="toggle-top" class="panel-toggle-tab" title="Toggle top panel (T)">TOP</div>
     <div id="toggle-bottom" class="panel-toggle-tab" title="Toggle bottom panel (B)">BTM</div>
+    <div id="toggle-focus" class="panel-toggle-tab" title="Fullscreen globe focus (F)">FULL</div>
 
     <script>
     (function() {
@@ -194,47 +566,244 @@
         var btn = document.getElementById(p[0]);
         var panel = document.getElementById(p[1]);
         if (btn && panel) {
-          btn.addEventListener('click', function() { panel.classList.toggle('collapsed'); });
-          btn.addEventListener('touchend', function(e) { e.preventDefault(); panel.classList.toggle('collapsed'); });
+          btn.addEventListener('click', function() {
+            if (document.body.classList.contains('gotham-mobile-ui') && (panel.id === 'gotham-hud-left' || panel.id === 'gotham-hud-right')) {
+              panel.classList.toggle('mobile-open');
+            } else {
+              panel.classList.toggle('collapsed');
+            }
+            // Keep --ghud-side-active set to panel width even when collapsed,
+            // so bottom HUD doesn't collapse with it
+            var side = panel.id === 'gotham-hud-left' || panel.id === 'gotham-hud-right' ? panel : null;
+            if (side) {
+              var style = getComputedStyle(document.documentElement);
+              var sideW = parseFloat(style.getPropertyValue('--ghud-side-w')) || 320;
+              document.documentElement.style.setProperty('--ghud-side-active', sideW + 'px');
+            }
+            setTimeout(function() { window.gothamViewer?.resize?.(); }, 50);
+          });
+          btn.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            if (document.body.classList.contains('gotham-mobile-ui') && (panel.id === 'gotham-hud-left' || panel.id === 'gotham-hud-right')) {
+              panel.classList.toggle('mobile-open');
+            } else {
+              panel.classList.toggle('collapsed');
+            }
+            var side = panel.id === 'gotham-hud-left' || panel.id === 'gotham-hud-right' ? panel : null;
+            if (side) {
+              var style = getComputedStyle(document.documentElement);
+              var sideW = parseFloat(style.getPropertyValue('--ghud-side-w')) || 320;
+              document.documentElement.style.setProperty('--ghud-side-active', sideW + 'px');
+            }
+            setTimeout(function() { window.gothamViewer?.resize?.(); }, 50);
+          });
         }
       });
+      var focus = document.getElementById('toggle-focus');
+      if (focus) {
+        focus.addEventListener('click', function() {
+          document.body.classList.toggle('gotham-focus-mode');
+          focus.textContent = document.body.classList.contains('gotham-focus-mode') ? 'HUD' : 'FULL';
+          setTimeout(function() {
+            window.applyGothamResponsiveShell?.();
+            window.gothamViewer?.resize?.();
+            window.gothamViewer?.scene?.requestRender?.();
+          }, 80);
+        });
+      }
       // Keyboard: H = toggle all panels
       document.addEventListener('keydown', function(e) {
         if (e.target.matches('input,textarea')) return;
         if (e.code === 'KeyH') {
           pairs.forEach(function(p) { document.getElementById(p[1])?.classList.toggle('collapsed'); });
+          setTimeout(function() { window.applyGothamResponsiveShell?.(); window.gothamViewer?.resize?.(); }, 50);
         }
+        if (e.code === 'KeyF') document.getElementById('toggle-focus')?.click();
       });
     })();
     </script>
 
     <style>
+      :root {
+        --ghud-side-w: min(20vw, 380px);
+        --ghud-side-min: 220px;
+        --ghud-top-h: min(13vh, 140px);
+        --ghud-bottom-h: min(28vh, 320px);
+        --ghud-gap: min(1vw, 18px);
+        --ghud-ui-scale: 1;
+        --ghud-side-active: max(var(--ghud-side-min), var(--ghud-side-w));
+      }
+
+      html,
+      body {
+        position: fixed !important;
+        inset: 0 !important;
+        width: var(--app-w, 100%) !important;
+        height: var(--app-h, 100%) !important;
+        min-width: var(--app-w, 100%) !important;
+        min-height: var(--app-h, 100%) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+      }
+
+      #viewport-wrapper,
+      #viewport-overlay,
+      #viewport-crosshairs,
+      #cesiumContainer,
+      #cesiumContainer .cesium-viewer,
+      #cesiumContainer .cesium-viewer-cesiumWidgetContainer,
+      #cesiumContainer .cesium-widget,
+      #cesiumContainer canvas,
+      .cesium-viewer,
+      .cesium-widget,
+      .cesium-widget canvas {
+        position: fixed !important;
+        inset: 0 auto auto 0 !important;
+        width: var(--app-w, 100%) !important;
+        height: var(--app-h, 100%) !important;
+        min-width: var(--app-w, 100%) !important;
+        min-height: var(--app-h, 100%) !important;
+        max-width: var(--app-w, 100%) !important;
+        max-height: var(--app-h, 100%) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        transform-origin: 0 0 !important;
+      }
+
+      #cesiumContainer {
+        overflow: hidden !important;
+        z-index: 1 !important;
+      }
+
       .gotham-sidebar {
-        position: fixed; width: 380px; height: 100vh;
+        position: fixed; width: var(--ghud-side-active); height: 100dvh;
         background: rgba(3,5,8,0.98); border: 1px solid rgba(0,240,255,0.15);
         z-index: 9990; backdrop-filter: blur(40px); 
         font-family: "Share Tech Mono", monospace; color: #e0e0e0; overflow: hidden;
         display: flex; flex-direction: column; box-shadow: 0 0 100px rgba(0,0,0,1);
         transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
       }
+      #gotham-hud-left > *,
+      #gotham-hud-right > *,
+      #gotham-hud-top > *,
+      #gotham-hud-bottom > * {
+        transform: scale(var(--ghud-ui-scale));
+        transform-origin: top left;
+      }
+      #gotham-hud-right > * { transform-origin: top right; }
+      #gotham-hud-bottom > * { transform-origin: bottom left; }
       #gotham-hud-left { left: 0; top: 0; border-right: 2px solid #00f0ff; transform: translateX(0); }
       #gotham-hud-left.collapsed { transform: translateX(-100%); }
       #gotham-hud-right { right: 0; top: 0; border-left: 2px solid #ff00ff; transform: translateX(0); }
       #gotham-hud-right.collapsed { transform: translateX(100%); }
       #gotham-hud-bottom {
-        position: fixed; bottom: 0; left: 50%; width: 1200px; height: 320px;
-        transform: translate(-50%, 0);
+        position: fixed;
+        bottom: 0;
+        left: calc(var(--ghud-side-active) + var(--ghud-gap));
+        right: calc(var(--ghud-side-active) + var(--ghud-gap));
+        width: auto;
+        max-width: none;
+        height: var(--ghud-bottom-h);
         background: rgba(3,5,8,0.98); border: 1px solid rgba(0,240,255,0.15);
-        z-index: 9995; backdrop-filter: blur(40px); display: flex; padding: 15px; gap: 20px; border-radius: 12px 12px 0 0;
+        z-index: 9995; backdrop-filter: blur(40px); display: flex; padding: clamp(8px, 1.2vw, 15px); gap: var(--ghud-gap); border-radius: 12px 12px 0 0;
+        transform: none;
+        overflow: hidden;
       }
-      #gotham-hud-bottom.collapsed { transform: translate(-50%, 100%); }
+      #gotham-hud-bottom.collapsed { transform: translateY(100%); }
       #gotham-hud-top {
-        position: fixed; top: 0; left: 50%; width: 90%; max-width: 1400px; height: 140px;
-        transform: translate(-50%, 0);
+        position: fixed;
+        top: 0;
+        left: calc(var(--ghud-side-active) + var(--ghud-gap));
+        right: calc(var(--ghud-side-active) + var(--ghud-gap));
+        width: auto;
+        max-width: none;
+        height: var(--ghud-top-h);
+        transform: none;
         background: rgba(3,5,8,0.98); border: 1px solid rgba(0,240,255,0.15);
         z-index: 9996; backdrop-filter: blur(40px); display: flex; flex-direction: column; border-radius: 0 0 12px 12px;
+        overflow: hidden;
       }
-      #gotham-hud-top.collapsed { transform: translate(-50%, -100%); }
+      #gotham-hud-top.collapsed { transform: translateY(-100%); }
+
+      body.gotham-focus-mode #gotham-hud-left,
+      body.gotham-focus-mode #gotham-hud-right,
+      body.gotham-focus-mode #gotham-hud-top,
+      body.gotham-focus-mode #gotham-hud-bottom {
+        transform: translateY(0);
+      }
+      body.gotham-focus-mode #gotham-hud-left { transform: translateX(calc(-100% + 38px)); }
+      body.gotham-focus-mode #gotham-hud-right { transform: translateX(calc(100% - 38px)); }
+      body.gotham-focus-mode #gotham-hud-top { transform: translateY(calc(-100% + 38px)); }
+      body.gotham-focus-mode #gotham-hud-bottom { transform: translateY(calc(100% - 38px)); }
+      body.gotham-focus-mode .panel-content,
+      body.gotham-focus-mode #gotham-hud-top > div,
+      body.gotham-focus-mode #gotham-hud-bottom > div {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      /* ── Cinematic Intro Animation ── */
+      @keyframes gotham-intro {
+        0%   { opacity: 0; transform: scale(0.7); }
+        20%  { opacity: 1; transform: scale(1.05); }
+        40%  { transform: scale(1); }
+        70%  { opacity: 1; }
+        100% { opacity: 0; }
+      }
+      @keyframes panel-slide-in {
+        from { transform: translateX(-100%); opacity: 0; }
+        to   { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes panel-slide-in-right {
+        from { transform: translateX(100%); opacity: 0; }
+        to   { transform: translateX(0); opacity: 1; }
+      }
+      @keyframes panel-slide-in-top {
+        from { transform: translateY(-100%); opacity: 0; }
+        to   { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes panel-slide-in-bottom {
+        from { transform: translateY(100%); opacity: 0; }
+        to   { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes globe-reveal {
+        0%   { opacity: 0; transform: scale(0.4) rotateX(30deg); }
+        50%  { opacity: 1; transform: scale(1.1) rotateX(0deg); }
+        100% { opacity: 1; transform: scale(1) rotateX(0deg); }
+      }
+      @keyframes glow-pulse {
+        0%, 100% { box-shadow: 0 0 8px rgba(0,240,255,0.4), inset 0 0 8px rgba(0,240,255,0.05); }
+        50%       { box-shadow: 0 0 20px rgba(0,240,255,0.7), inset 0 0 15px rgba(0,240,255,0.15); }
+      }
+      @keyframes crosshair-pulse {
+        0%, 100% { opacity: 0.85; }
+        50%       { opacity: 1; }
+      }
+
+      /* Apply intro animations on first load */
+      body.gotham-first-load #viewport-overlay { animation: globe-reveal 1.5s ease-out forwards; }
+      body.gotham-first-load #gotham-hud-left  { animation: panel-slide-in 0.6s 0.3s ease-out both; }
+      body.gotham-first-load #gotham-hud-right { animation: panel-slide-in-right 0.6s 0.4s ease-out both; }
+      body.gotham-first-load #gotham-hud-top   { animation: panel-slide-in-top 0.6s 0.5s ease-out both; }
+      body.gotham-first-load #gotham-hud-bottom { animation: panel-slide-in-bottom 0.6s 0.6s ease-out both; }
+
+      /* Glow pulse on sidebar panels */
+      #gotham-hud-left, #gotham-hud-right {
+        animation: glow-pulse 3s ease-in-out infinite;
+      }
+      #gotham-hud-left.collapsed, #gotham-hud-right.collapsed {
+        animation: none;
+      }
+
+      /* Crosshair glow pulse */
+      #viewport-crosshairs { animation: crosshair-pulse 2.5s ease-in-out infinite; }
+
+      /* ── OSINT result highlight glow ── */
+      .osint-result-highlight {
+        animation: glow-pulse 1.5s ease-in-out 3;
+      }
 
       /* Panel toggle tabs */
       .panel-toggle-tab {
@@ -249,17 +818,110 @@
       #toggle-right { right: 0; top: 50%; transform: translateY(-50%); border-radius: 6px 0 0 6px; writing-mode: vertical-rl; }
       #toggle-top { top: 0; left: 50%; transform: translateX(-50%); border-radius: 0 0 6px 6px; }
       #toggle-bottom { bottom: 0; left: 50%; transform: translateX(-50%); border-radius: 6px 6px 0 0; }
+      #toggle-focus { top: 8px; right: 8px; border-radius: 6px; z-index: 10001; }
+
+      body.gotham-compact-ui {
+        --ghud-side-w: 18vw;
+        --ghud-side-min: 180px;
+        --ghud-gap: 6px;
+        --ghud-top-h: min(11vh, 92px);
+        --ghud-bottom-h: min(24vh, 180px);
+      }
+      body.gotham-compact-ui #gotham-hud-top,
+      body.gotham-compact-ui #gotham-hud-bottom {
+        left: calc(var(--ghud-side-w) + var(--ghud-gap));
+        right: calc(var(--ghud-side-w) + var(--ghud-gap));
+      }
+      body.gotham-compact-ui .panel-block { padding: 10px 12px; }
+      body.gotham-compact-ui .section-header { margin-bottom: 6px; letter-spacing: 2px; }
+      body.gotham-compact-ui .btn-toggle {
+        min-height: 22px;
+        padding: 5px 3px;
+        line-height: 1.15;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+
+      body.gotham-mobile-ui {
+        --ghud-side-w: 0px;
+        --ghud-side-min: 0px;
+        --ghud-side-active: 0px;
+        --ghud-top-h: 78px;
+        --ghud-bottom-h: 140px;
+      }
+      body.gotham-mobile-ui #gotham-hud-top,
+      body.gotham-mobile-ui #gotham-hud-bottom {
+        left: 0;
+        right: 0;
+        width: 100vw;
+      }
+      body.gotham-mobile-ui #gotham-hud-top {
+        height: 58px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        align-items: flex-start;
+        padding: 6px 54px 6px 8px;
+        gap: 6px;
+        scrollbar-width: none;
+      }
+      body.gotham-mobile-ui #gotham-hud-top::-webkit-scrollbar { display: none; }
+      body.gotham-mobile-ui #gotham-hud-top .panel-block {
+        min-width: max-content;
+        padding: 4px 8px;
+        border-bottom: 0;
+      }
+      body.gotham-mobile-ui #gotham-hud-top .section-header,
+      body.gotham-mobile-ui #gotham-hud-top .sub-header {
+        display: none;
+      }
+      body.gotham-mobile-ui #gotham-hud-top .btn-toggle {
+        min-width: 34px;
+        min-height: 38px;
+        padding: 4px 2px;
+        font-size: 8px;
+        line-height: 1.05;
+      }
+      body.gotham-mobile-ui #gotham-hud-left,
+      body.gotham-mobile-ui #gotham-hud-right {
+        width: min(82vw, 300px);
+      }
+      body.gotham-mobile-ui #gotham-hud-left:not(.collapsed) { transform: translateX(-100%); }
+      body.gotham-mobile-ui #gotham-hud-right:not(.collapsed) { transform: translateX(100%); }
+      body.gotham-mobile-ui #gotham-hud-left.mobile-open { transform: translateX(0); }
+      body.gotham-mobile-ui #gotham-hud-right.mobile-open { transform: translateX(0); }
+      body.gotham-mobile-ui .panel-content {
+        padding-bottom: 8px;
+      }
 
       /* Mobile responsiveness */
-      @media (max-width: 1024px) {
-        .gotham-sidebar { width: 300px; }
-        #gotham-hud-bottom { width: 95%; height: 250px; }
-        #gotham-hud-top { width: 95%; height: 120px; }
+      @media (max-width: 1280px) {
+        :root {
+          --ghud-side-w: clamp(240px, 28vw, 340px);
+          --ghud-top-h: clamp(78px, 11vh, 120px);
+          --ghud-bottom-h: clamp(140px, 24vh, 250px);
+        }
+        #gotham-hud-top,
+        #gotham-hud-bottom {
+          left: calc(var(--ghud-side-w) + 8px);
+          right: calc(var(--ghud-side-w) + 8px);
+        }
       }
       @media (max-width: 768px) {
-        .gotham-sidebar { width: 85vw; }
-        #gotham-hud-bottom { width: 100%; height: 200px; border-radius: 12px 12px 0 0; }
-        #gotham-hud-top { width: 100%; height: 100px; }
+        :root {
+          --ghud-side-w: min(46vw, 220px);
+          --ghud-top-h: clamp(72px, 13vh, 100px);
+          --ghud-bottom-h: clamp(128px, 26vh, 200px);
+        }
+        #gotham-hud-left,
+        #gotham-hud-right { width: var(--ghud-side-w); }
+        #gotham-hud-top,
+        #gotham-hud-bottom {
+          left: 0;
+          right: 0;
+          width: 100vw;
+          border-radius: 0;
+        }
+        #gotham-hud-bottom { border-radius: 12px 12px 0 0; }
         .btn-toggle { font-size: 8px; padding: 6px 0; }
         .section-header { font-size: 9px; letter-spacing: 2px; }
       }
@@ -285,13 +947,17 @@
             // Buffer data until entity system is ready
             window._gothamDataBuffer = [];
             window._gothamDataReady = false;
+            var MAX_BUFFER_SIZE = 50;
 
             function dispatchData(data) {
                 if (window._gothamDataReady && window.gothamSystem) {
                     // System ready - dispatch directly
                     window.dispatchEvent(new CustomEvent('gotham-data', { detail: data }));
                 } else {
-                    // System not ready - buffer it
+                    // System not ready - buffer it (bounded)
+                    if (window._gothamDataBuffer.length >= MAX_BUFFER_SIZE) {
+                        window._gothamDataBuffer.shift();
+                    }
                     window._gothamDataBuffer.push(data);
                     console.log('[GOTHAM] Buffered data snapshot (' + window._gothamDataBuffer.length + ' pending)');
                 }
@@ -315,9 +981,11 @@
             };
 
             function connect() {
-                var host = window.location.hostname + ":3002";
-                var ws = new WebSocket('ws://' + host);
+                var protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                var host = window.location.host || (window.location.hostname + ":3002");
+                var ws = new WebSocket(protocol + '//' + host);
                 window._gothamWS = ws;
+                window.gothamWS = ws;
 
                 ws.onopen = function() {
                     console.log('[GOTHAM] WebSocket connected');
