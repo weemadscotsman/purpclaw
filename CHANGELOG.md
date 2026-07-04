@@ -307,7 +307,7 @@ Drawer closed by default · only slim icon rail visible on left · main chat/wor
   - `purpclaw.js` (root): `shell:true` exec → `trackedSpawn`
 - **Cognitive Spine booted live** — `cognitive_spine.py --port 7880` runs as one process importing all 6 cognitive modules directly. Health endpoint confirms: memory (temporal + counterfactual), rules (Datalog, 3 axioms), modal (Kripke, 4 logics, 1 agent), diagnostics (5 diagnostic agents), neuro-symbolic (memory bridge connected), autodream (7 cycles run). One port. No port soup.
 - **Smith + Neo adversarial pair shipped** — 8 attack classes detected. Reliability ledger tracks every attack + whether Neo caught it. Memory consistency checker validates against adversarial corruption.
-- **110 tools confirmed** — 8 built-in + 42 OmniCode MCP + 4 G0DM0D3 + 5 SmithNeo + 49 PC control + 2 MCP servers.
+- **110 tools confirmed ⚠️ STALE** — 8 built-in + 42 OmniCode MCP + 4 G0DM0D3 + 5 SmithNeo + 49 PC control + 2 MCP servers. ⚠️ tools-pc.js (49 tools) was later deleted. Actual native tools: 31.
 - **17 providers** — Added DeepSeek v4 Pro as primary, GitHub Models, Codex OAuth, Atomic Chat, Qwen.
 - **README rewritten** — 482 lines covering every surface. Honest numbers: what's running vs. what's built vs. what's integrated.
 
@@ -331,8 +331,7 @@ Drawer closed by default · only slim icon rail visible on left · main chat/wor
 
 ## Earlier history
 
-- `AGENT_DIRECTORY.md` was archived — agent count wrong (26 → 152 actual).
-- `PURPCLAW_COMPLETE_ARCHITECTURE.md` was archived — 18-service/30-agent → 25-service/152-agent reality.
+- `AGENT_DIRECTORY.md` was archived — agent count wrong (26 → 152 → 42 actual). ⚠️ 152 was itself wrong; real count is 42 personas.
 - `TEAM_HANDOVER.md` was archived — all tasks now DONE (except CozoDB).
 - `CAPTAINS_LOG.md` was archived — last entry May 24, missed the entire ship.
 
