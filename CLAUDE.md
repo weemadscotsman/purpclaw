@@ -31,7 +31,7 @@ Working rules live in [docs/spec/PURPCLAW_UI_CONSOLIDATION_FREEZE/](./docs/spec/
 
 ## What Is This?
 
-PURPCLAW is a persistent AI orchestration runtime — a 25-service distributed agent platform that runs locally under PM2 supervision, dispatches to a 152-agent swarm (35 runtime), falls back to an HMAC-signed HTTP/SSH worker pool when capacity hits, and presents itself through a CLI front door (`purpclaw`), a Next.js Mission Control UI , and a full-screen TUI cockpit (`purpclaw tui`). 17 LLM providers. 500+ tools. 7-layer world model. Self-improving via Karpathy ratchet.
+PURPCLAW is a persistent AI orchestration runtime — a 26-service distributed agent platform that runs locally under PM2 supervision, dispatches to 42 named agent personas, and presents itself through a CLI front door (`purpclaw`), a Next.js Mission Control UI, and a full-screen TUI cockpit (`purpclaw tui`). 17 LLM providers. 31 native tools (76 with OmniCode MCP). Self-improving via Karpathy ratchet.
 
 It is **not** a chatbot. It is a governed operational kernel for software, automation, and cognition workflows.
 
@@ -192,7 +192,7 @@ v0.1.0 shipped:
 - Spawn cascade fixed (11 files, zero detached/shell/cmd leaks)
 - Cognitive Spine booted live (1 process, 6 modules, port 7880)
 - Smith + Neo adversarial pair (8 attack classes, reliability ledger)
-- 110 tools confirmed, 17 providers, 7 memory layers
+- 110 tools confirmed, 17 providers, 7 memory layers ⚠️ v0.1.0 — tools-pc.js was later deleted
 - Documentation cleanup (34 docs archived, QUICKSTART/ARCHITECTURE created)
 
 ## Documentation Index
@@ -200,7 +200,7 @@ v0.1.0 shipped:
 | File | Status | Purpose |
 |---|---|---|
 | `README.md` | ✅ CURRENT (2026-06-06) | Project overview + honest numbers |
-| `ARCHITECTURE.md` | ✅ CURRENT (2026-06-06) | Full architecture: 25 services, 7 memory layers, 152 agents, 110 tools |
+| `ARCHITECTURE.md` | ⚠️ STALE (2026-06-06) | Claims 25 services, 152 agents, 110 tools — update needed |
 | `QUICKSTART.md` | ✅ CURRENT (2026-06-06) | One-line install + core commands + service table |
 | `CLAUDE.md` (this file) | ✅ CURRENT (2026-06-06) | What every AI session reads on entry |
 | `CHANGELOG.md` | ✅ CURRENT (2026-06-06) | Curated change history through ship |
