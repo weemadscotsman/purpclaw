@@ -1,5 +1,9 @@
 # SYSTEM TRUTH — PurpClaw Real vs. Cosplay (2026-06-09)
 
+> ⚠️ HISTORICAL AUDIT from 2026-06-09. Numbers below reflect that date.
+> For current verified counts (2026-07-03), see `docs/generated/DOC_VS_STACK_COMPARISON.md`.
+> Key changes since this audit: tools-pc.js (49 tools) deleted; OmniCode MCP confirmed separate repo.
+
 > Grounded in code, not docs. Source: 11 end-to-end flow audits this session.
 > Marketing numbers in README/ARCHITECTURE are inflated; these are the real counts.
 
@@ -20,7 +24,7 @@ one tool-result rule. Wire those and 7 of the surface symptoms close at once.
 
 | # | System | Verdict |
 |---|---|---|
-| 1 | Swarm execution (tower) | ❌ cosplay — agents are single `llmComplete()` calls, zero `tool_calls`. 35 agents produce text, can't touch the 176 tools. Mouths, not hands. |
+| 1 | Swarm execution (tower) | ❌ cosplay — agents are single `llmComplete()` calls, zero `tool_calls`. 35 agents produce text, can't touch the 176 tools. Mouths, not hands. Note (2026-07-03): tower now has 42 named personas; agent-loop wired for tool calls. |
 | 2 | Cognitive spine loop | ❌ open loop — spine is written-to, never read-back; Swarm Coordinator :7898 (validation gate + worktree sandbox + spine fact-writes) was orphaned/bypassed by `run`. **(Wire added 2026-06-09: orchestrator `swarm <task>` → POST :7898 `/api/coordinate`.)** |
 | 3 | CLI/TUI/Web parity | ❌ no agentic HTTP door — only CLI `ask` runs the real `agent-loop.runAgent`; `/api/chat` is toolless; dead `chat-agent.js`. **#1 fix.** |
 | 4 | Browser/Playwright tools | ❌ `browser_open` uses banned `cmd /c start` and lies `ok:true`; `browser_screenshot` needs uninstalled `playwright-core`; `browser_click/type` vaporware. |
@@ -39,9 +43,9 @@ one tool-result rule. Wire those and 7 of the surface symptoms close at once.
   :7881, Pool :7885, Metrics :7890, Workers :7897, Spine :7880. Dark: voice
   :7781, bridge :7779, vision :7889, reasoning :7892, stt :7896, yolo, avatar,
   chorus, Swarm Coordinator :7898.
-- **Agents:** 35 (docs claim 152), 8 divisions, 3 tiers.
-- **Tools:** 176 real & executable via `TOOLS.invoke()` (browser_* excepted).
-- **Skills:** 390 dirs, 99 registered as tools, real execution verified (`skill_arxiv`).
+- **Agents:** 42 personas (2026-07-03: was 35 in this audit). Docs claimed 152 historically.
+- **Tools:** 31 native (was 176 in this audit — tools-pc.js 49-tool file now deleted).
+- **Skills:** 383 dirs (was 390 in this audit).
 - **Providers:** 17 + NVIDIA NIM (verified live: llama-3.3-70b tool-calling, bge-m3 embeddings).
 
 ## Security & governance status
@@ -74,7 +78,7 @@ You → CLI/TUI/WebUI
 ## Priority wiring queue
 
 1. **Agentic HTTP door** — route `/api/chat` through `agent-loop.runAgent` (closes #3, gives TUI/Web hands).
-2. **Tower tool loop** — replace single `llmComplete()` with the agent loop so the 35 agents can use the 176 tools (closes #1).
+2. **Tower tool loop** — replace single `llmComplete()` with the agent loop so the 42 personas can use the 31 native tools (closes #1). (Numbers updated 2026-07-03: was 35 agents / 176 tools.)
 3. **Spine bootable + consulted** — declare/install numpy; read-back in dispatch path (closes #6, half of #2).
 4. **EventBus contract** — one shared client, one envelope; fix context-bus subscriber (closes #9).
 5. **Voice ingress** — stt :7896 transcript → orchestrator /dispatch (voice-first full-auto).
