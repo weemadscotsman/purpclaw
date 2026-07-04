@@ -31,11 +31,9 @@ Podcast Studio has been treated as a real subsystem, not a toy. Its agent config
 
 Council is now dynamic rather than fixed-cast. `registry/council-profiles.json` defines meeting types, chairs, skills, attendance tags, subscriptions, personalities, relationships, interrupt priorities, and default lines. `purpclaw council` classifies the question, selects a domain chair, summons 5-8 relevant seats, allows subscribed interrupts, emits actions, and dissolves the meeting.
 
-PURPCLAW now has a canonical generated agent registry at `agents/AGENT_REGISTRY.json`, with a human index at `agents/AGENTS_INDEX.md`. The live distinct roster is 85 agents:
+PURPCLAW now has a canonical generated agent registry at `agents/AGENT_REGISTRY.json`, with a human index at `agents/AGENTS_INDEX.md`. The live distinct roster is **42 personas** (2026-07-03 count from skills/*/AGENT.md files):
 
-- 41 persona agents from `agents/*.md`
-- 44 swarm agents after dedupe
-- source inputs observed by the generator: 41 persona files, 45 swarm profiles, 35 tower runtime entries, 44 routing matrix entries, and 34 division table mappings
+- 42 persona agents from `skills/*/AGENT.md` files (2026-07-03 count)
 - exhaustive agent-like source audit currently sees 1,530 files, classified into canonical, generated, division, documentation/reference, runtime output, archive/vendor, and other buckets
 
 Runtime consumers now use `lib/agent-registry.js` instead of directly assuming `agent_profiles.json` is the whole roster.
