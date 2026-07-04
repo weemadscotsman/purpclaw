@@ -1,11 +1,11 @@
 # 🟣 PurpClaw Launch Pack
-> Drop these when you're ready to go public.
+> ⚠️ v0.2.0 STALE — update numbers before going public. See correct numbers in PRODUCT.md.
 
-## X Post (Release)
+## X Post (Release) — UPDATE NEEDED
 ```
-PurpClaw v0.2.0 is live on GitHub.
+PurpClaw v0.3.0 is live on GitHub.
 
-54 tools. 17 providers. 152 agents. MCP native. Self-improving.
+31 native tools. 17 providers. 42 agent personas. 383 skills. MCP native. Self-improving.
 
 Terminal-first AI operating system.
 
@@ -26,14 +26,14 @@ We publish ours monthly. Transparency builds trust.
 github.com/weemadscotsman/purpclaw
 ```
 
-## LinkedIn (Partner-friendly)
+## LinkedIn (Partner-friendly) — UPDATE NEEDED
 ```
-We shipped PurpClaw v0.2.0 – an open-source, terminal-first AI agent system.
+We shipped PurpClaw v0.3.0 – an open-source, terminal-first AI agent system.
 
 Capabilities:
 - 17 LLM providers (OpenAI, Anthropic, Gemini, Ollama, GitHub Models, etc.)
-- 54 tools (files, shell, code search, MCP, OmniCode indexing)
-- 152 specialized agents across 5 divisions
+- 31 native tools + 45 OmniCode MCP = 76 accessible tools
+- 42 specialized agent personas
 - Self-improving LoRA training (Karpathy ratchet)
 - Full voice pipeline (STT + TTS), vision (YOLO), and cognitive memory
 
@@ -43,12 +43,14 @@ Star the repo, try the CLI, sponsor the evolution.
 github.com/weemadscotsman/purpclaw
 ```
 
-## Reddit / Hacker News
+## Reddit / Hacker News — UPDATE NEEDED
 ```
-PurpClaw – open-source Claude Code alternative with 17 providers, 54 tools, and MCP support.
+PurpClaw – open-source Claude Code alternative with 17 providers, 31 native tools, and MCP support.
 
 I've been building this daily. It's not a wrapper — it's a full agent OS:
 - 17 providers (OpenAI, Anthropic, Gemini, Ollama, GitHub Models, Codex...)
+- 31 native tools + 45 OmniCode MCP = 76 accessible tools
+- 42 agent personas
 - Self-improving via LoRA training (Karpathy-style ratchet)
 - MCP native (connect any MCP server as a tool)
 - OmniCode integration (index your repo, saves 99% on token burn)
