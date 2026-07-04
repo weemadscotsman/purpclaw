@@ -23,7 +23,7 @@ The spine. One file that maps service → capability → surface → API route �
 |---------|------|----------|-------------|-------------|------------|
 | PURPCLAW API | 7780 | `purpclaw-api` | Core HTTP gateway — all chat, agent dispatch, memory, pool, spawning | `purpclaw ask`, `purpclaw chat`, `purpclaw run` | Many (see API Registry) |
 | Orchestrator | 7784 | `purpclaw-orchestrator` | Task queue governance — holds/approves high-risk jobs | `purpclaw jobs`, `purpclaw approve`, `purpclaw reject` | `/api/orchestrate` |
-| Agent Tower | 7790 | `purpclaw-tower` | Agent registry + spawn — maintains 85 agents | `purpclaw agents`, `purpclaw roster` | `/api/tower/*` |
+| Agent Tower | 7790 | `purpclaw-tower` | Agent registry + spawn — 42 named personas | `purpclaw agents`, `purpclaw roster` | `/api/tower/*` |
 | Voice Coordinator | 7781 | `purpclaw-voice` | Voice pipeline orchestration | `purpclaw voice` | Internal only |
 | Voice Bridge | 7792 | `purpclaw-bridge` | STT → LLM → TTS bridge | `purpclaw voice` | `/api/voice/*` |
 | Event Bus | 7782 | `purpclaw-eventbus` | Inter-service pub/sub messaging | — | `/api/eventbus/*` |
