@@ -1072,7 +1072,7 @@ window.addEventListener('error', function(e) {
     console.log('[wireWhoami] called, d.name:', d?.name);
     if (!d) return;
     set('session_user', d.name || 'sovereign');
-    if (d.systems && d.systems.providers) {
+    if (d.systems && Array.isArray(d.systems.providers)) {
       var primary = d.systems.providers.find(function(p) { return p.primary; });
       if (primary) set('provider_name', primary.name || primary);
     }
@@ -1208,6 +1208,11 @@ window.addEventListener('error', function(e) {
         set('bd_agents_total', d.agents && d.agents.registered != null ? d.agents.registered : '—');
         set('bd_agents_divisions', d.agents && d.agents.divisions != null ? d.agents.divisions : '—');
         set('bd_agents_active', d.agents && d.agents.active != null ? d.agents.active : '0');
+        // Feed the header/stat/footer REGISTERED + DIVISIONS chips from this
+        // authoritative count — mission-data doesn't reliably carry totals,
+        // which is why those chips sat on "—".
+        if (d.agents && d.agents.registered != null) { set('agents_total', d.agents.registered); set('stat_agents', d.agents.registered); }
+        if (d.agents && d.agents.divisions != null) set('stat_divisions', d.agents.divisions);
         set('bd_agents_strict', '7');  // honest constant: those with executor+health+proof
         set('bd_routes_total', d.routes && d.routes.total != null ? d.routes.total : '—');
         // Providers — ratio + chips
@@ -1245,15 +1250,21 @@ window.addEventListener('error', function(e) {
       // loadInitialData — use PRELOADED data immediately, then poll for updates
       // Note: called from init() AFTER DOM is fully ready
       function loadInitialData() {
-        if (!window.__PRELOADED) {
-          console.warn('[loadInitialData] window.__PRELOADED is null — data injection failed');
-          return;
+        // __PRELOADED is a server-side optimization for instant paint, only
+        // injected on /mission and /cockpit. When the page is served as the
+        // raw static /mission.html it's absent — that must NOT kill the live
+        // fetches below (the old early-return did exactly that, leaving every
+        // gauge on "—"). Paint from preload if present, then ALWAYS go live.
+        var P = window.__PRELOADED;
+        if (P) {
+          try { wireBreakdown(P.breakdown); } catch(e) { console.error('[wireBreakdown]', e.message); }
+          try { wireWhoami(P.whoami); } catch(e) { console.error('[wireWhoami]', e.message); }
+          try { wireAgentRegistry(P.agents); } catch(e) { console.error('[wireAgentRegistry]', e.message); }
+          try { wireMissionData(P.mission); } catch(e) { console.error('[wireMissionData]', e.message, Object.keys(P.mission||{})); }
+          try { wireMochi(P.mochi); } catch(e) { console.error('[wireMochi]', e.message); }
+        } else {
+          console.warn('[loadInitialData] no __PRELOADED (static /mission.html) — going straight to live fetches');
         }
-        try { wireBreakdown(window.__PRELOADED.breakdown); } catch(e) { console.error('[wireBreakdown]', e.message); }
-            try { wireWhoami(window.__PRELOADED.whoami); } catch(e) { console.error('[wireWhoami]', e.message); }
-            try { wireAgentRegistry(window.__PRELOADED.agents); } catch(e) { console.error('[wireAgentRegistry]', e.message); }
-            try { wireMissionData(window.__PRELOADED.mission); } catch(e) { console.error('[wireMissionData]', e.message, Object.keys(window.__PRELOADED.mission||{})); }
-            try { wireMochi(window.__PRELOADED.mochi); } catch(e) { console.error('[wireMochi]', e.message); }
 
         // Then do live polling for updates (browser can reach :7780 from page served by :7780)
         setTimeout(function() {
