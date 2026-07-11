@@ -184,6 +184,10 @@ img{display:block}
 .rib-ico{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;background:var(--pc-bg-raised);border:1px solid var(--pc-border);color:var(--pc-accent);font-size:13px;flex-shrink:0}
 .rib-n{font-size:11px;font-weight:600}
 .rib-s{font-family:var(--pc-font-mono);font-size:9px;letter-spacing:.08em}
+.rib-chips{display:flex;gap:4px;flex-wrap:nowrap;overflow-x:auto;max-width:100%;align-items:center;padding-bottom:2px}
+.rib-chips::-webkit-scrollbar{height:3px}
+.rib-chips::-webkit-scrollbar-thumb{background:var(--pc-border-strong);border-radius:2px}
+.rib-dot{display:inline-flex;align-items:center;gap:3px;padding:1px 5px;border-radius:4px;font-size:8px;white-space:nowrap;border:1px solid var(--pc-border);flex:0 0 auto}
 .pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--pc-font-mono);font-size:9px;letter-spacing:.1em;padding:3px 9px;border-radius:20px;border:1px solid var(--pc-border-strong);color:var(--pc-text-muted)}
 .pill.live{color:var(--pc-success);border-color:var(--pc-success)}
 .mc-link{font-family:var(--pc-font-mono);font-size:9.5px;letter-spacing:.08em;color:var(--pc-accent)}
@@ -200,6 +204,9 @@ img{display:block}
 .shell.focus .sidecar,.shell.focus .ribbon{opacity:0;pointer-events:none;overflow:hidden}
 .shell.focus .console{box-shadow:0 0 0 1px var(--pc-accent-dim),0 0 40px var(--pc-accent-soft) inset}
 .con-max#focusBtn{width:auto;padding:0 10px;font-family:var(--pc-font-mono);font-size:9.5px;letter-spacing:.1em}
+.con-max#teleBtn{width:auto;padding:0 10px;font-family:var(--pc-font-mono);font-size:9.5px;letter-spacing:.1em}
+/* Telemetry sidecar collapses by default so chat owns the room; toggle re-opens it. */
+.shell.telemetry-hidden .sidecar{display:none}
 .con-max.on{background:var(--pc-chip-active);border-color:var(--pc-accent);color:var(--pc-text)}
 .wlaunch{position:fixed;left:14px;bottom:14px;z-index:70;display:flex;align-items:center;gap:9px;background:var(--pc-bg-panel);border:1px solid var(--pc-border-strong);border-radius:12px;padding:8px 12px;box-shadow:0 8px 30px var(--pc-shadow)}
 .wlaunch[hidden]{display:none}
@@ -263,7 +270,7 @@ img{display:block}
 </style>
 </head>
 <body>
-<div class="shell" id="shell">
+<div class="shell telemetry-hidden" id="shell">
 
   <!-- LEFT RAIL -->
   <aside class="rail" data-panel="nav">
@@ -312,6 +319,7 @@ img{display:block}
         <div class="con-tools">
           <span class="mono dim" style="font-size:8.5px;letter-spacing:.14em">MODE</span>
           <select class="sel" id="modeSelect"><option>Command</option><option>Chat</option><option>Plan</option><option>Execute</option><option>Swarm</option><option>Mission</option><option>Research</option><option>Group</option></select>
+          <button class="con-max" id="teleBtn" title="Show/hide telemetry panels">▴ TELEMETRY</button>
           <button class="con-max" id="focusBtn">◱ FOCUS</button>
           <button class="con-max" id="maxBtn" title="Fullscreen chat">⛶</button>
         </div>
@@ -451,6 +459,8 @@ img{display:block}
     <div class="rib"><div class="rib-ico">✳</div><div><div class="rib-n">Skills</div><div class="rib-s" style="color:var(--pc-warning)"><span data-field="skills_total">—</span> LOADED</div></div></div>
     <div class="rib"><div class="rib-ico">⛨</div><div><div class="rib-n">Uptime</div><div class="rib-s" style="color:var(--pc-text-muted)"><span data-field="stat_uptime">—</span>s</div></div></div>
     <div class="rib"><div class="rib-ico">♞</div><div><div class="rib-n">Companion</div><div class="rib-s" style="color:var(--pc-success)"><span data-field="mochi_mood">—</span> · bond <span data-field="mochi_bond">—</span>%</div></div></div>
+    <div class="rib" style="flex:3 1 auto;min-width:220px"><div class="rib-ico">◈</div><div style="min-width:0"><div class="rib-n">Services</div><div class="rib-s rib-chips" data-field="rib_services_chips">—</div></div></div>
+    <div class="rib" style="flex:3 1 auto;min-width:200px"><div class="rib-ico">⚡</div><div style="min-width:0"><div class="rib-n">Providers <span class="mono dim" data-field="rib_providers_ratio" style="font-size:8px"></span></div><div class="rib-s rib-chips" data-field="rib_providers_chips">—</div></div></div>
   </footer>
 
 </div>
@@ -1215,29 +1225,44 @@ window.addEventListener('error', function(e) {
         if (d.agents && d.agents.divisions != null) set('stat_divisions', d.agents.divisions);
         set('bd_agents_strict', '7');  // honest constant: those with executor+health+proof
         set('bd_routes_total', d.routes && d.routes.total != null ? d.routes.total : '—');
-        // Providers — ratio + chips
+        // Providers — ratio + chips (panel + footer status bar)
         var prov = d.providers || {};
-        set('bd_providers_ratio', (prov.configured||0) + ' configured / ' + (prov.registered||0) + ' registered');
+        var provRatio = (prov.configured||0) + ' configured / ' + (prov.registered||0) + ' registered';
+        set('bd_providers_ratio', provRatio);
+        set('rib_providers_ratio', provRatio);
         var provEl = document.querySelector('[data-field="bd_providers_chips"]');
-        if (provEl && prov.list) {
+        var provRib = document.querySelector('[data-field="rib_providers_chips"]');
+        if (prov.list) {
           var cfg = new Set(prov.configuredList || []);
-          provEl.innerHTML = prov.list.map(function(name) {
+          var provHtml = prov.list.map(function(name) {
             var on = cfg.has(name);
             var c = on ? 'var(--pc-success)' : 'var(--pc-text-muted)';
             var bg = on ? 'rgba(74,222,128,0.10)' : 'rgba(255,255,255,0.03)';
             var title = on ? 'configured (has API key)' : 'registered (no key yet)';
             return '<span style="padding:2px 6px;border-radius:4px;background:'+bg+';color:'+c+';border:1px solid '+(on?'rgba(74,222,128,0.3)':'rgba(255,255,255,0.06)')+'" title="'+title+'">'+(on?'●':'○')+' '+name+'</span>';
           }).join('');
+          if (provEl) provEl.innerHTML = provHtml;
+          if (provRib) provRib.innerHTML = prov.list.map(function(name) {
+            var on = cfg.has(name);
+            var c = on ? 'var(--pc-success)' : 'var(--pc-text-muted)';
+            return '<span class="rib-dot" style="color:'+c+';border-color:'+(on?'rgba(74,222,128,0.3)':'var(--pc-border)')+'" title="'+name+(on?' — configured':' — registered (no key)')+'">'+(on?'●':'○')+' '+name+'</span>';
+          }).join('');
         }
-        // Services — chips
+        // Services — chips (panel + footer status bar)
         var svcEl = document.querySelector('[data-field="bd_services_chips"]');
-        if (svcEl && d.services) {
-          svcEl.innerHTML = Object.keys(d.services).map(function(name) {
-            var s = d.services[name];
-            var on = s.online;
+        var svcRib = document.querySelector('[data-field="rib_services_chips"]');
+        if (d.services && Object.keys(d.services).length) {
+          var svcNames = Object.keys(d.services);
+          if (svcEl) svcEl.innerHTML = svcNames.map(function(name) {
+            var s = d.services[name]; var on = s.online;
             var c = on ? 'var(--pc-success)' : 'var(--pc-danger)';
             var bg = on ? 'rgba(74,222,128,0.10)' : 'rgba(239,68,68,0.06)';
             return '<span style="padding:2px 6px;border-radius:4px;background:'+bg+';color:'+c+';border:1px solid '+(on?'rgba(74,222,128,0.3)':'rgba(239,68,68,0.2)')+'" title="'+name+':'+s.port+' '+(on?'online':'offline')+'">'+(on?'●':'○')+' '+name+' <span style="color:var(--pc-text-muted);font-size:8.5px">:'+s.port+'</span></span>';
+          }).join('');
+          if (svcRib) svcRib.innerHTML = svcNames.map(function(name) {
+            var s = d.services[name]; var on = s.online;
+            var c = on ? 'var(--pc-success)' : 'var(--pc-danger)';
+            return '<span class="rib-dot" style="color:'+c+';border-color:'+(on?'rgba(74,222,128,0.3)':'rgba(239,68,68,0.2)')+'" title="'+name+':'+s.port+' '+(on?'online':'offline')+'">'+(on?'●':'○')+' '+name+'</span>';
           }).join('');
         }
         // Generated timestamp
