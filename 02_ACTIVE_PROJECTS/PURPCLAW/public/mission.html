@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PURPCLAW — Mission Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --pc-bg-void:#07040e;--pc-bg-panel:#100a1d;--pc-bg-raised:#160f28;
+  --pc-border:#241a3a;--pc-border-strong:#3a2a5e;
+  --pc-accent:#a855f7;--pc-accent-2:#ec4899;
+  --pc-success:#4ade80;--pc-warning:#f5b52a;--pc-danger:#ef4444;--pc-info:#22d3ee;
+  --pc-text:#ece7f5;--pc-text-muted:#8b7fa8;--pc-text-terminal:#b9a8e0;
+  --pc-chip-active:rgba(168,85,247,0.18);--pc-glow:rgba(168,85,247,0.55);
+  --pc-font-ui:'Chakra Petch',system-ui,-apple-system,sans-serif;
+  --pc-font-mono:'JetBrains Mono',ui-monospace,monospace;
+  --pc-bg-chip:#19122e;--pc-bg-deep:#0b0716;--pc-accent-dim:#5b3a86;
+  --pc-accent-soft:rgba(168,85,247,0.10);--pc-success-soft:rgba(74,222,128,0.12);
+  --pc-danger-soft:rgba(239,68,68,0.12);--pc-warning-soft:rgba(245,181,42,0.12);
+  --pc-info-soft:rgba(34,211,238,0.12);--pc-scan:rgba(168,85,247,0.035);
+  --pc-shadow:rgba(0,0,0,0.55);--pc-track:#241a3a;
+  --pc-white-t:rgba(255,255,255,0.16);--pc-black-t:rgba(0,0,0,0.35);
+  --rail-w:264px;--dock-w:336px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--pc-font-ui);color:var(--pc-text);background:radial-gradient(1200px 700px at 72% -12%,rgba(124,58,237,0.12),transparent 60%),radial-gradient(900px 520px at 8% 112%,rgba(236,72,153,0.06),transparent 60%),var(--pc-bg-void);overflow:hidden}
+body::after{content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;background:repeating-linear-gradient(0deg,var(--pc-scan) 0 1px,transparent 1px 3px);mix-blend-mode:overlay;opacity:.5}
+button{font-family:inherit;color:inherit;cursor:pointer;border:none;background:none}
+img{display:block}
+::-webkit-scrollbar{width:7px;height:7px}
+::-webkit-scrollbar-thumb{background:var(--pc-accent-dim);border-radius:4px}
+::-webkit-scrollbar-track{background:transparent}
+.mono{font-family:var(--pc-font-mono)}
+.dim{color:var(--pc-text-muted)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.shell{display:grid;height:100vh;gap:10px;padding:10px;grid-template-columns:var(--rail-w) 1fr var(--dock-w);grid-template-rows:58px 1fr 42px;grid-template-areas:"rail top top""rail main dock""rail ribbon ribbon";transition:grid-template-columns .32s cubic-bezier(.4,0,.2,1)}
+.shell.rail-hidden{grid-template-columns:0 1fr var(--dock-w)}
+.shell.dock-hidden{grid-template-columns:var(--rail-w) 1fr 0}
+.shell.rail-hidden.dock-hidden{grid-template-columns:0 1fr 0}
+.rail{grid-area:rail;overflow:hidden;transition:opacity .25s}
+.shell.rail-hidden .rail{opacity:0;pointer-events:none}
+.top{grid-area:top}
+.main{grid-area:main;min-width:0;min-height:0;display:flex;flex-direction:column;position:relative;overflow:hidden}
+.dock{grid-area:dock;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:10px;transition:opacity .25s}
+.shell.dock-hidden .dock{opacity:0;pointer-events:none}
+.sidecar{flex:0 0 auto;margin-top:10px}
+.ribbon{grid-area:ribbon}
+.panel{background:var(--pc-bg-panel);border:1px solid var(--pc-border);border-radius:12px}
+.p-h{display:flex;align-items:center;gap:9px;padding:11px 13px 8px}
+.p-title{font-size:12px;font-weight:600;letter-spacing:.04em}
+.p-ico{color:var(--pc-accent)}
+.p-b{padding:0 13px 13px}
+.rail{display:flex;flex-direction:column;background:linear-gradient(180deg,var(--pc-bg-panel),var(--pc-bg-deep));border:1px solid var(--pc-border);border-radius:12px}
+.brand{display:flex;gap:11px;align-items:center;padding:14px 14px 12px;border-bottom:1px solid var(--pc-border)}
+.brand-mark{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:var(--pc-accent-soft);border:1px solid var(--pc-accent-dim);color:var(--pc-accent);font-size:20px;box-shadow:0 0 16px var(--pc-glow)}
+.brand-name{font-size:18px;font-weight:700;letter-spacing:.06em}
+.brand-tag{font-size:9.5px;color:var(--pc-text-muted);letter-spacing:.03em}
+.nav{flex:1;overflow-y:auto;padding:8px 8px 4px}
+.nav-grp{font-family:var(--pc-font-mono);font-size:8.5px;letter-spacing:.22em;color:var(--pc-text-muted);padding:10px 8px 5px}
+.nav-grp-btn{display:block;width:100%;text-align:left;letter-spacing:.18em}
+.nav-grp-btn:hover{color:var(--pc-text)}
+.nav-item{display:flex;gap:11px;align-items:center;width:100%;text-align:left;padding:8px 10px;border-radius:8px;color:var(--pc-text-muted);border:1px solid transparent}
+.nav-item:hover{background:var(--pc-bg-raised);color:var(--pc-text)}
+.nav-item.on{background:var(--pc-chip-active);border-color:var(--pc-accent-dim);color:var(--pc-text)}
+.nav-item.on .ni-ico{color:var(--pc-accent)}
+.ni-ico{width:18px;text-align:center;font-size:14px}
+.ni-name{font-size:12.5px;font-weight:500;letter-spacing:.02em}
+.rail-user{display:flex;gap:9px;align-items:center;padding:11px 14px;border-top:1px solid var(--pc-border);font-size:11px;color:var(--pc-text-muted)}
+.top{display:flex;align-items:center;gap:10px;padding:0 12px;background:var(--pc-bg-panel);border:1px solid var(--pc-border);border-radius:12px}
+.icon-btn{width:34px;height:34px;border-radius:8px;display:grid;place-items:center;color:var(--pc-text-muted);border:1px solid var(--pc-border);background:var(--pc-bg-raised);font-size:15px}
+.icon-btn:hover{color:var(--pc-text);border-color:var(--pc-accent-dim)}
+.top-title{min-width:150px}
+.top-title .t{font-size:15px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+.top-title .s{font-size:10px;color:var(--pc-text-muted);display:flex;align-items:center;gap:6px;white-space:nowrap;margin-top:2px}
+.chips{display:flex;gap:8px;flex:1;min-width:0;overflow:hidden}
+.chip-stat{display:flex;align-items:center;gap:9px;flex:1;min-width:0;background:var(--pc-bg-raised);border:1px solid var(--pc-border);border-radius:9px;padding:6px 10px}
+.cs-ico{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;font-size:13px;flex-shrink:0}
+.cs-lbl{font-family:var(--pc-font-mono);font-size:8px;letter-spacing:.14em}
+.cs-val{font-size:15px;font-weight:700;font-family:var(--pc-font-ui);line-height:1.1;white-space:nowrap}
+.cs-val small{font-size:9px;color:var(--pc-text-muted);margin-left:2px}
+.spark{display:block;flex-shrink:0}
+.awaken{display:inline-flex;align-items:center;gap:9px;padding:9px 18px;border-radius:10px;font-weight:700;font-size:14px;letter-spacing:.1em;color:var(--pc-text);background:linear-gradient(180deg,var(--pc-danger),#b91243);border:1px solid #ff5c86;box-shadow:0 0 18px var(--pc-danger-soft),inset 0 1px 0 var(--pc-white-t)}
+.awaken:hover{filter:brightness(1.12)}
+.awaken.on{background:linear-gradient(180deg,var(--pc-success),#15803d);border-color:var(--pc-success);box-shadow:0 0 22px var(--pc-success-soft),inset 0 1px 0 var(--pc-white-t)}
+.awaken .ad{width:9px;height:9px;border-radius:50%;background:var(--pc-text);box-shadow:0 0 8px var(--pc-text);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.clock{text-align:right;min-width:78px}
+.clock .tm{font-family:var(--pc-font-mono);font-size:16px;font-weight:600;letter-spacing:.04em}
+.clock .zn{font-size:8px;letter-spacing:.2em;color:var(--pc-text-muted)}
+.avatar{width:38px;height:38px;border-radius:9px;overflow:hidden;border:1px solid var(--pc-accent-dim);flex-shrink:0}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.tabs{display:flex;gap:7px;padding:2px 0 8px;flex-wrap:wrap}
+.tab{display:flex;align-items:center;gap:7px;padding:7px 13px;border-radius:8px;font-size:11.5px;letter-spacing:.03em;color:var(--pc-text-muted);background:var(--pc-bg-panel);border:1px solid var(--pc-border)}
+.tab:hover{color:var(--pc-text)}
+.tab.on{background:var(--pc-chip-active);border-color:var(--pc-accent-dim);color:var(--pc-text)}
+.tab .g{color:var(--pc-accent);font-size:10px}
+.console{flex:1;min-height:0;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--pc-bg-panel),var(--pc-bg-deep));border:1px solid var(--pc-border-strong);border-radius:12px;box-shadow:0 0 30px var(--pc-accent-soft) inset}
+.con-h{display:flex;align-items:flex-start;gap:10px;padding:13px 15px;border-bottom:1px solid var(--pc-border)}
+.con-h .lbl{font-size:13px;font-weight:700;letter-spacing:.05em}
+.con-h .sub{font-family:var(--pc-font-mono);font-size:8.5px;letter-spacing:.2em;color:var(--pc-accent);margin-top:3px}
+.con-tools{margin-left:auto;display:flex;align-items:center;gap:8px}
+.sel{font-family:var(--pc-font-mono);font-size:10px;letter-spacing:.08em;color:var(--pc-text);background:var(--pc-bg-raised);border:1px solid var(--pc-border);border-radius:7px;padding:5px 9px}
+.con-max{width:30px;height:28px;border-radius:7px;display:grid;place-items:center;color:var(--pc-text-muted);border:1px solid var(--pc-border);background:var(--pc-bg-raised)}
+.con-max:hover{color:var(--pc-text);border-color:var(--pc-accent-dim)}
+.thread{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;gap:11px;max-width:74%}
+.msg.you{align-self:flex-end;flex-direction:row-reverse}
+.ava-sm{width:32px;height:32px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--pc-bg-raised);display:grid;place-items:center;font-size:16px}
+.ava-sm img{width:100%;height:100%;object-fit:cover}
+.bubble{background:var(--pc-bg-raised);border:1px solid var(--pc-border);border-radius:11px;padding:10px 13px;font-size:12.5px;line-height:1.5}
+.msg.you .bubble{background:var(--pc-chip-active);border-color:var(--pc-accent-dim)}
+.who{display:flex;gap:7px;align-items:baseline;margin-bottom:4px}
+.who b{font-size:11px}
+.who .tm{font-family:var(--pc-font-mono);font-size:8.5px;color:var(--pc-text-muted)}
+.job-card{border:1px solid var(--pc-accent-dim);border-radius:10px;background:var(--pc-accent-soft);padding:10px 12px;font-size:11.5px;min-width:230px}
+.job-card .jh{display:flex;justify-content:space-between;font-family:var(--pc-font-mono);font-size:9px;letter-spacing:.1em;color:var(--pc-accent);margin-bottom:5px}
+.job-card .jbar{height:5px;border-radius:3px;background:var(--pc-track);overflow:hidden;margin-top:7px}
+.job-card .jbar>i{display:block;height:100%;background:var(--pc-accent);border-radius:3px}
+.tool-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--pc-font-mono);font-size:10px;padding:3px 9px;border-radius:6px;border:1px solid var(--pc-border);background:var(--pc-bg-raised)}
+.fail-card{border:1px solid var(--pc-danger);border-radius:10px;background:var(--pc-danger-soft);padding:10px 12px}
+.fail-card .ft{font-weight:700;font-size:12px;color:var(--pc-danger)}
+.fail-card .fb{font-size:11.5px;color:var(--pc-text);margin:4px 0}
+.fail-card .fh{font-size:10.5px;color:var(--pc-text-muted)}
+.composer{border-top:1px solid var(--pc-border);padding:12px 14px;background:var(--pc-bg-deep)}
+.modes{display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap}
+.mode{font-family:var(--pc-font-mono);font-size:9.5px;letter-spacing:.06em;padding:4px 10px;border-radius:6px;color:var(--pc-text-muted);background:var(--pc-bg-raised);border:1px solid var(--pc-border)}
+.mode.on{background:var(--pc-chip-active);border-color:var(--pc-accent-dim);color:var(--pc-text)}
+.cbox{display:flex;align-items:center;gap:9px;border:1px solid var(--pc-accent-dim);border-radius:10px;background:var(--pc-accent-soft);padding:4px 4px 4px 13px}
+.cbox input{flex:1;background:none;border:none;outline:none;color:var(--pc-text);font-size:12.5px;font-family:var(--pc-font-ui);padding:8px 0}
+.cbox input::placeholder{color:var(--pc-text-muted)}
+.send{width:36px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--pc-text);background:linear-gradient(180deg,var(--pc-accent),#7c3aed);border:1px solid var(--pc-accent)}
+.send:hover{filter:brightness(1.18)}
+.sidecar-strip{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 4px;align-items:stretch}
+.feed-card{flex:0 0 300px;min-width:300px;display:flex;flex-direction:column}
+.feed-list{overflow-y:auto;max-height:118px;padding:2px 0}
+.feed-row{display:flex;gap:10px;align-items:center;padding:6px 2px;border-bottom:1px solid var(--pc-border)}
+.feed-row:last-child{border-bottom:none}
+.fr-ico{font-size:14px;width:20px;text-align:center;flex-shrink:0}
+.fr-t{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fr-s{font-size:10px;color:var(--pc-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fr-tm{font-family:var(--pc-font-mono);font-size:9px;color:var(--pc-text-muted);margin-left:auto;flex-shrink:0}
+.metric{flex:0 0 150px;min-width:150px;display:flex;flex-direction:column;gap:4px;justify-content:center}
+.m-lbl{font-family:var(--pc-font-mono);font-size:8.5px;letter-spacing:.12em;color:var(--pc-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-val{font-size:22px;font-weight:700;line-height:1}
+.m-val small{font-size:11px;color:var(--pc-text-muted);margin-left:1px}
+.m-sub{font-size:9.5px;letter-spacing:.04em}
+.m-bar{height:5px;border-radius:3px;background:var(--pc-track);overflow:hidden;margin-top:2px}
+.m-bar>i{display:block;height:100%;border-radius:3px}
+.divider{flex:0 0 auto;display:flex;align-items:center;padding:0 3px;writing-mode:vertical-rl;transform:rotate(180deg)}
+.divider span{font-family:var(--pc-font-mono);font-size:8px;letter-spacing:.2em;color:var(--pc-accent);border-left:2px solid var(--pc-accent-dim);padding-left:6px}
+.metric.overall{flex:0 0 168px;min-width:168px;border:1px solid var(--pc-accent-dim);border-radius:10px;padding:9px 12px;background:linear-gradient(180deg,var(--pc-accent-soft),transparent);box-shadow:0 0 16px var(--pc-accent-soft)}
+.dock-toggle{align-self:flex-end;font-family:var(--pc-font-mono);font-size:8.5px;letter-spacing:.14em;color:var(--pc-text-muted);background:var(--pc-bg-raised);border:1px solid var(--pc-border);border-radius:6px;padding:3px 9px}
+.dock-toggle:hover{color:var(--pc-text);border-color:var(--pc-accent-dim)}
+.mochi-body{display:grid;grid-template-columns:130px 1fr;gap:11px}
+.mochi-body img{width:130px;height:150px;object-fit:cover;border-radius:9px;border:1px solid var(--pc-border)}
+.mochi-r{display:flex;flex-direction:column;justify-content:space-between}
+.btn-sm{font-size:11px;padding:7px 11px;border-radius:8px;background:var(--pc-bg-raised);border:1px solid var(--pc-accent-dim);color:var(--pc-text)}
+.btn-sm:hover{background:var(--pc-chip-active)}
+.chorus{display:flex;gap:11px;align-items:center;padding:0 13px 13px}
+.chorus img{width:44px;height:44px;border-radius:50%;object-fit:cover;border:1px solid var(--pc-border-strong)}
+.radar-wrap{display:grid;grid-template-columns:auto 1fr;gap:13px;align-items:center;padding:0 13px 13px}
+.radar{width:114px;height:114px;border-radius:50%;position:relative;overflow:hidden;background:radial-gradient(circle,var(--pc-success-soft),transparent 70%);border:1px solid var(--pc-border-strong)}
+.radar::before,.radar::after{content:"";position:absolute;inset:0;border-radius:50%;border:1px solid var(--pc-border)}
+.radar::after{inset:26px}
+.sweep{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,var(--pc-success-soft),transparent 55%);animation:spin 3.4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.blip{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--pc-success);box-shadow:0 0 6px var(--pc-success);transform:translate(-50%,-50%)}
+.svc-row{display:flex;justify-content:space-between;align-items:center;font-size:11.5px;padding:3px 0}
+.legend{display:flex;gap:8px;align-items:center;color:var(--pc-text-muted)}
+.donut-wrap{display:flex;gap:14px;align-items:center;padding:0 13px 13px}
+.viz{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.viz-card{position:relative;overflow:hidden;padding:10px 12px}
+.viz-stage{position:relative;margin-top:6px;border-radius:8px;overflow:hidden;border:1px solid var(--pc-border);background:radial-gradient(120% 100% at 50% 0%,var(--pc-success-soft),var(--pc-bg-deep))}
+.viz-stage canvas{display:block;width:100%;height:66px}
+.viz-duck{position:absolute;right:6px;bottom:2px;width:40px;height:40px;object-fit:contain;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.viz-weather{position:absolute;left:9px;bottom:5px;display:flex;align-items:center;gap:6px}
+.ribbon{display:flex;align-items:center;gap:10px;padding:0 12px;background:var(--pc-bg-panel);border:1px solid var(--pc-border);border-radius:12px;overflow-x:auto}
+.rib{display:flex;align-items:center;gap:9px;flex:1;min-width:120px}
+.rib-ico{width:26px;height:26px;border-radius:7px;display:grid;place-items:center;background:var(--pc-bg-raised);border:1px solid var(--pc-border);color:var(--pc-accent);font-size:13px;flex-shrink:0}
+.rib-n{font-size:11px;font-weight:600}
+.rib-s{font-family:var(--pc-font-mono);font-size:9px;letter-spacing:.08em}
+.pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--pc-font-mono);font-size:9px;letter-spacing:.1em;padding:3px 9px;border-radius:20px;border:1px solid var(--pc-border-strong);color:var(--pc-text-muted)}
+.pill.live{color:var(--pc-success);border-color:var(--pc-success)}
+.mc-link{font-family:var(--pc-font-mono);font-size:9.5px;letter-spacing:.08em;color:var(--pc-accent)}
+.mc-link:hover{color:var(--pc-text)}
+.shell.chat-full{grid-template-columns:0 1fr 0;grid-template-rows:58px 1fr 0}
+.shell.chat-full .sidecar,.shell.chat-full .ribbon{opacity:0;pointer-events:none;overflow:hidden}
+.shell.chat-full .rail,.shell.chat-full .dock{opacity:0;pointer-events:none}
+.reopen{position:fixed;z-index:40;writing-mode:vertical-rl;font-family:var(--pc-font-mono);font-size:9px;letter-spacing:.16em;color:var(--pc-text);background:var(--pc-bg-panel);border:1px solid var(--pc-accent-dim);border-radius:8px;padding:12px 5px;display:none}
+.reopen:hover{box-shadow:0 0 12px var(--pc-glow)}
+.shell.rail-hidden ~ .reopen.left{display:block;left:6px;top:74px}
+.shell.dock-hidden ~ .reopen.right{display:block;right:6px;top:74px}
+.shell.focus{grid-template-columns:0 1fr 0;grid-template-rows:58px 1fr 0}
+.shell.focus .rail,.shell.focus .dock{opacity:0;pointer-events:none}
+.shell.focus .sidecar,.shell.focus .ribbon{opacity:0;pointer-events:none;overflow:hidden}
+.shell.focus .console{box-shadow:0 0 0 1px var(--pc-accent-dim),0 0 40px var(--pc-accent-soft) inset}
+.con-max#focusBtn{width:auto;padding:0 10px;font-family:var(--pc-font-mono);font-size:9.5px;letter-spacing:.1em}
+.con-max.on{background:var(--pc-chip-active);border-color:var(--pc-accent);color:var(--pc-text)}
+.wlaunch{position:fixed;left:14px;bottom:14px;z-index:70;display:flex;align-items:center;gap:9px;background:var(--pc-bg-panel);border:1px solid var(--pc-border-strong);border-radius:12px;padding:8px 12px;box-shadow:0 8px 30px var(--pc-shadow)}
+.wlaunch[hidden]{display:none}
+.wlaunch-lbl{font-family:var(--pc-font-mono);font-size:8.5px;letter-spacing:.2em;color:var(--pc-text-muted)}
+.wlaunch-row{display:flex;gap:7px;flex-wrap:wrap;max-width:60vw}
+.wchip{display:flex;align-items:center;gap:6px;font-size:10.5px;letter-spacing:.02em;color:var(--pc-text-muted);background:var(--pc-bg-raised);border:1px solid var(--pc-border);border-radius:8px;padding:6px 10px;position:relative}
+.wchip:hover{color:var(--pc-text);border-color:var(--pc-accent-dim)}
+.wchip.on{color:var(--pc-text);border-color:var(--pc-accent-dim);background:var(--pc-chip-active)}
+.wchip .wi{font-size:12px;color:var(--pc-accent)}
+.wchip.alert{border-color:var(--pc-accent);color:var(--pc-text);animation:wpulse 1s ease-in-out infinite}
+.wchip .badge{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;padding:0 4px;border-radius:8px;background:var(--pc-danger);color:var(--pc-text);font-family:var(--pc-font-mono);font-size:8.5px;display:grid;place-items:center;box-shadow:0 0 8px var(--pc-danger)}
+@keyframes wpulse{0%,100%{box-shadow:0 0 0 0 var(--pc-glow)}50%{box-shadow:0 0 12px 2px var(--pc-glow)}}
+.wlayer{position:fixed;inset:0;pointer-events:none;z-index:65}
+.widget{position:absolute;pointer-events:auto;width:308px;max-height:70vh;display:flex;flex-direction:column;background:linear-gradient(180deg,var(--pc-bg-panel),var(--pc-bg-deep));border:1px solid var(--pc-border-strong);border-radius:12px;box-shadow:0 14px 40px var(--pc-shadow),0 0 24px var(--pc-accent-soft);overflow:hidden;animation:wpop .28s cubic-bezier(.2,1.2,.3,1)}
+@keyframes wpop{from{transform:scale(.9) translateY(8px);opacity:0}to{transform:none;opacity:1}}
+.widget.flash{animation:wpop .28s cubic-bezier(.2,1.2,.3,1),wflash 1.4s ease-out}
+@keyframes wflash{0%{box-shadow:0 14px 40px var(--pc-shadow),0 0 0 2px var(--pc-accent)}100%{box-shadow:0 14px 40px var(--pc-shadow),0 0 24px var(--pc-accent-soft)}}
+.wg-h{display:flex;align-items:center;gap:8px;padding:9px 11px;border-bottom:1px solid var(--pc-border);cursor:grab;background:var(--pc-bg-raised)}
+.wg-h:active{cursor:grabbing}
+.wg-h .wg-ico{color:var(--pc-accent);font-size:13px}
+.wg-h .wg-t{font-size:11.5px;font-weight:600;letter-spacing:.03em;flex:1}
+.wg-h .wg-live{width:7px;height:7px;border-radius:50%;background:var(--pc-success);box-shadow:0 0 6px var(--pc-success);animation:pulse 1.4s infinite}
+.wg-x{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;color:var(--pc-text-muted);border:1px solid var(--pc-border)}
+.wg-x:hover{color:var(--pc-danger);border-color:var(--pc-danger)}
+.wg-b{padding:11px 13px;overflow-y:auto;font-size:11.5px;line-height:1.55}
+.wg-line{display:flex;gap:9px;align-items:center;padding:6px 0;border-bottom:1px solid var(--pc-border)}
+.wg-line:last-child{border-bottom:none}
+.wg-line .wl-ico{font-size:13px;width:18px;text-align:center}
+.wg-line .wl-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wg-line .wl-tm{font-family:var(--pc-font-mono);font-size:9px;color:var(--pc-text-muted)}
+.wg-bar{height:6px;border-radius:3px;background:var(--pc-track);overflow:hidden;margin-top:6px}
+.wg-bar>i{display:block;height:100%;border-radius:3px;background:var(--pc-accent)}
+/* agent panel styles */
+.agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.agent-card{background:var(--pc-bg-raised);border:1px solid var(--pc-border);border-radius:10px;padding:11px}
+.agent-card .ac-h{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.agent-card .ac-emoji{font-size:20px}
+.agent-card .ac-name{font-size:12px;font-weight:700;letter-spacing:.05em}
+.agent-card .ac-div{font-size:9px;font-family:var(--pc-font-mono);letter-spacing:.12em;color:var(--pc-text-muted)}
+.agent-card .ac-skills{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.skill-chip{font-size:9px;font-family:var(--pc-font-mono);padding:2px 7px;border-radius:5px;background:var(--pc-accent-soft);border:1px solid var(--pc-accent-dim);color:var(--pc-text)}
+.agent-card .ac-status{font-size:9px;font-family:var(--pc-font-mono);letter-spacing:.1em;margin-top:6px}
+.status-working{color:var(--pc-success)}
+.status-idle{color:var(--pc-text-muted)}
+/* jobs panel */
+.job-item{border-bottom:1px solid var(--pc-border);padding:8px 0}
+.job-item:last-child{border-bottom:none}
+.job-item .ji-h{display:flex;justify-content:space-between;margin-bottom:4px}
+.job-item .ji-goal{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.job-item .ji-meta{font-family:var(--pc-font-mono);font-size:9px;color:var(--pc-text-muted)}
+.job-item .ji-bar{height:4px;border-radius:2px;background:var(--pc-track);overflow:hidden;margin-top:5px}
+.job-item .ji-bar>i{display:block;height:100%;border-radius:2px}
+.state-executing{background:var(--pc-accent)}
+.state-queued{background:var(--pc-warning)}
+.state-done{background:var(--pc-success)}
+.state-failed{background:var(--pc-danger)}
+/* tier badge colors */
+.tier-1{border-left:3px solid var(--pc-info)}
+.tier-2{border-left:3px solid var(--pc-accent)}
+.tier-3{border-left:3px solid var(--pc-accent-2)}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+
+  <!-- LEFT RAIL -->
+  <aside class="rail" data-panel="nav">
+    <div class="brand">
+      <div class="brand-mark">◤</div>
+      <div><div class="brand-name">PURPCLAW</div><div class="brand-tag">One Mission / Many Lenses</div></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="rail-user">
+      <span class="dot" id="statusDot" style="background:var(--pc-success);box-shadow:0 0 6px var(--pc-success)"></span>
+      <div>
+        <div style="color:var(--pc-text)">PURPCLAW://local</div>
+        <div class="mono" style="font-size:9px">user: <span data-field="session_user">sovereign</span></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- TOP STATUS BAR -->
+  <header class="top">
+    <button class="icon-btn" id="railBtn" title="Toggle nav">☰</button>
+    <div class="top-title">
+      <div class="t">MISSION CONTROL <span class="dim">/ COMMAND ROOM</span></div>
+      <div class="s"><span class="dot" id="opDot" style="background:var(--pc-success);box-shadow:0 0 6px var(--pc-success)"></span>OP <b style="color:var(--pc-accent)" data-field="operation_name">PURPLE DAWN</b> · <span data-field="operation_state">Active</span></div>
+    </div>
+    <div class="chips">
+      <div class="chip-stat"><div class="cs-ico" style="background:var(--pc-success-soft);color:var(--pc-success)">◆</div><div style="min-width:0"><div class="cs-lbl" style="color:var(--pc-success)">REGISTERED</div><div class="cs-val" data-field="agents_total">—</div></div></div>
+      <div class="chip-stat"><div class="cs-ico" style="background:var(--pc-accent-soft);color:var(--pc-accent)">◉</div><div style="min-width:0"><div class="cs-lbl" style="color:var(--pc-accent)">ACTIVE</div><div class="cs-val" data-field="agents_active">0</div></div></div>
+      <div class="chip-stat"><div class="cs-ico" style="background:var(--pc-info-soft);color:var(--pc-info)">✳</div><div style="min-width:0"><div class="cs-lbl" style="color:var(--pc-info)">SKILLS</div><div class="cs-val" data-field="skills_total">—</div></div></div>
+      <div class="chip-stat"><div class="cs-ico" style="background:var(--pc-warning-soft);color:var(--pc-warning)">⚙</div><div style="min-width:0"><div class="cs-lbl" style="color:var(--pc-warning)">JOBS</div><div class="cs-val" data-field="jobs_running">0</div></div></div>
+      <div class="chip-stat"><div class="cs-ico" style="background:var(--pc-danger-soft);color:var(--pc-danger)">⊘</div><div style="min-width:0"><div class="cs-lbl" style="color:var(--pc-danger)">ERRORS</div><div class="cs-val" data-field="errors_24h">0</div></div><canvas class="spark" data-spark="errors" width="52" height="22"></canvas></div>
+    </div>
+    <button class="awaken" id="awaken"><span class="ad"></span><span data-field="awaken_label">AWAKEN</span></button>
+    <div class="clock"><div class="tm" id="clock">—:—:—</div><div class="zn">LOCAL</div></div>
+    <div class="avatar"><img src="os/art/avatar.png" alt="op" onerror="this.style.display='none'" /></div>
+  </header>
+
+  <!-- MAIN WORK AREA -->
+  <main class="main">
+    <div class="tabs" id="tabs"></div>
+    <section class="console" data-panel="command-console">
+      <div class="con-h">
+        <div>
+          <div class="lbl">COMMAND CONSOLE</div>
+          <div class="sub" data-field="console_sub">unified_api.js · /api/chat · <span data-field="provider_name">minimax</span></div>
+        </div>
+        <div class="con-tools">
+          <span class="mono dim" style="font-size:8.5px;letter-spacing:.14em">MODE</span>
+          <select class="sel" id="modeSelect"><option>Command</option><option>Chat</option><option>Plan</option><option>Execute</option><option>Swarm</option><option>Mission</option><option>Research</option><option>Group</option></select>
+          <button class="con-max" id="focusBtn">◱ FOCUS</button>
+          <button class="con-max" id="maxBtn" title="Fullscreen chat">⛶</button>
+        </div>
+      </div>
+      <div class="thread" id="thread" data-panel="command-console-thread"></div>
+      <div class="composer">
+        <div class="modes" id="modes"></div>
+        <div class="cbox">
+          <input placeholder="State your directive, sovereign…" id="composerInput" />
+          <button class="send" id="sendBtn">➤</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- BOTTOM SIDECAR -->
+    <div class="sidecar">
+    <div class="sidecar-strip">
+      <div class="panel feed-card">
+        <div class="p-h"><span class="p-ico">≋</span><span class="p-title">Activity Stream</span><span class="pill live">LIVE</span></div>
+        <div class="p-b feed-list" id="activityFeed"><div class="feed-row"><span class="fr-ico dim">—</span><div class="fr-t dim">Loading activity stream…</div></div></div>
+      </div>
+      <div class="panel feed-card">
+        <div class="p-h"><span class="p-ico">▸</span><span class="p-title">Kernel Jobs</span><span class="mono dim" style="margin-left:auto;font-size:9px;letter-spacing:.12em">LIVE</span></div>
+        <div class="p-b feed-list" id="jobsFeed"><div class="feed-row"><span class="fr-ico dim">—</span><div class="fr-t dim">Loading jobs…</div></div></div>
+      </div>
+      <div class="panel" style="display:flex;gap:14px;padding:11px 14px;align-items:stretch;flex:0 0 auto">
+        <div class="metric"><div class="m-lbl">REGISTERED</div><div class="m-val" data-field="stat_agents">—</div><div class="m-sub" style="color:var(--pc-accent)">AGENTS</div></div>
+        <div class="metric"><div class="m-lbl">DIVISIONS</div><div class="m-val" data-field="stat_divisions">—</div><div class="m-sub" style="color:var(--pc-success)">ACTIVE</div></div>
+        <div class="metric"><div class="m-lbl">SYSTEM UPTIME</div><div class="m-val" data-field="stat_uptime">—</div><div class="m-sub" style="color:var(--pc-text-muted)">SEC</div></div>
+        <div class="metric"><div class="m-lbl">MEMORY</div><div class="m-val" data-field="stat_memory">—</div><div class="m-sub" style="color:var(--pc-text-muted)">MB HEAP</div></div>
+        <div class="metric overall"><div class="m-lbl" style="color:var(--pc-accent)">STACK STATUS</div><div class="m-val" data-field="stat_health">OK</div><div class="m-sub" style="color:var(--pc-success)">NOMINAL</div></div>
+              </div>
+            </div>
+
+            <!-- RECEIPTS BREAKDOWN — honest count table, not marketing numbers -->
+            <div class="panel receipts-panel" id="receiptsPanel" style="margin-top:14px;padding:14px 16px;background:linear-gradient(180deg,rgba(168,85,247,0.06),transparent);border:1px solid var(--pc-border);border-radius:10px">
+              <div class="p-h" style="margin-bottom:8px"><span class="p-ico" style="color:var(--pc-accent)">∑</span><span class="p-title">RECEIPTS — Live Count Table</span><span class="mono" style="margin-left:auto;font-size:9px;color:var(--pc-text-muted)" data-field="breakdown_generated">—</span></div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:10.5px">
+                <!-- TOOLS BREAKDOWN -->
+                <div>
+                  <div style="color:var(--pc-info);font-weight:600;letter-spacing:.12em;margin-bottom:6px;font-size:9px">TOOLS</div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed var(--pc-border)">
+                    <span style="color:var(--pc-text-muted)">Total callable</span>
+                    <span style="color:var(--pc-accent);font-weight:600" data-field="bd_tools_total">—</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:var(--pc-text-muted)">↳ Core (native)</span><span data-field="bd_tools_core">—</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:var(--pc-text-muted)">↳ Skills (Hermes)</span><span data-field="bd_tools_skills">—</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:var(--pc-text-muted)">↳ Remotion</span><span data-field="bd_tools_remotion">—</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:var(--pc-text-muted)">↳ MCP / Bridge / NIM</span><span data-field="bd_tools_misc" style="color:var(--pc-text-muted)">—</span></div>
+                </div>
+
+                <!-- AGENTS BREAKDOWN -->
+                <div>
+                  <div style="color:var(--pc-success);font-weight:600;letter-spacing:.12em;margin-bottom:6px;font-size:9px">AGENTS</div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed var(--pc-border)">
+                    <span style="color:var(--pc-text-muted)">Registered identities</span>
+                    <span style="color:var(--pc-success);font-weight:600" data-field="bd_agents_total">—</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:var(--pc-text-muted)">↳ Divisions</span><span data-field="bd_agents_divisions">—</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:var(--pc-text-muted)">↳ Currently active</span><span data-field="bd_agents_active">—</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:var(--pc-text-muted)">Strict-live proofed</span><span data-field="bd_agents_strict" style="color:var(--pc-text-muted)">—</span></div>
+                  <div style="display:flex;justify-content:space-between;padding:3px 0"><span style="color:var(--pc-text-muted)">↳ API routes</span><span data-field="bd_routes_total">—</span></div>
+                </div>
+
+                <!-- PROVIDERS BREAKDOWN -->
+                <div style="grid-column:1 / -1;margin-top:4px">
+                  <div style="color:var(--pc-warning);font-weight:600;letter-spacing:.12em;margin-bottom:6px;font-size:9px">PROVIDERS — <span data-field="bd_providers_ratio">—</span></div>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px;font-size:9.5px" data-field="bd_providers_chips">
+                    <span style="color:var(--pc-text-muted)">—</span>
+                  </div>
+                </div>
+
+                <!-- SERVICES BREAKDOWN -->
+                <div style="grid-column:1 / -1">
+                  <div style="color:var(--pc-accent);font-weight:600;letter-spacing:.12em;margin-bottom:6px;font-size:9px">SERVICES</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:4px;font-size:9.5px" data-field="bd_services_chips">
+                    <span style="color:var(--pc-text-muted)">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          </main>
+
+  <!-- RIGHT DOCK -->
+  <aside class="dock">
+    <button class="dock-toggle" id="dockBtn">HIDE DOCK ›</button>
+
+    <div class="panel">
+      <div class="p-h"><span class="p-ico">♞</span><span class="p-title">Mochi // Companion</span><span class="pill live">ONLINE</span></div>
+      <div class="p-b mochi-body">
+        <img src="os/art/mochi.png" alt="Mochi" onerror="this.style.opacity='0.15'" />
+        <div class="mochi-r">
+          <div class="bubble" data-field="mochi_message">Systems online. Agents idle. What are we building?</div>
+          <div>
+            <div style="font-size:9.5px;color:var(--pc-text-muted);margin-bottom:4px">Mood: <span data-field="mochi_mood">curious</span> · Bond: <span data-field="mochi_bond">100</span>%</div>
+            <button class="btn-sm" id="talkMochi">Talk to Mochi →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="p-h"><span class="p-ico">⛶</span><span class="p-title">Agent Radar</span><span class="mono" style="margin-left:auto;font-size:10px;color:var(--pc-success)"><span data-field="agents_total_radar">—</span> registered</span></div>
+      <div class="radar-wrap">
+        <div class="radar"><div class="sweep"></div><div id="radarBlips"></div></div>
+        <div style="flex:1" id="divisionCounts"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="p-h"><span class="p-ico">◎</span><span class="p-title">Work Distribution</span></div>
+      <div class="donut-wrap">
+        <canvas id="donut" width="104" height="104"></canvas>
+        <div style="flex:1" id="workBreakdown"></div>
+      </div>
+    </div>
+
+    <div class="viz">
+      <div class="panel viz-card">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="p-title" style="font-size:11px">Duck Observer</span><span class="mono" style="font-size:8px;letter-spacing:.14em;color:var(--pc-success)">WATCHING</span></div>
+        <div class="viz-stage"><canvas id="duck" width="180" height="66"></canvas></div>
+      </div>
+      <div class="panel viz-card">
+        <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="p-title" style="font-size:11px">Weatherman</span><span class="mono" style="font-size:8px;letter-spacing:.14em" data-field="weather_label">STABLE</span></div>
+        <div class="viz-stage"><canvas id="weather" width="180" height="66"></canvas><div class="viz-weather"><div style="font-size:22px;font-weight:700;line-height:1;text-shadow:0 1px 6px var(--pc-black-t)" data-field="weather_temp">18°</div></div></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- BOTTOM RIBBON -->
+  <footer class="ribbon">
+    <div class="rib"><div class="rib-ico">⚙</div><div><div class="rib-n">Kernel Jobs</div><div class="rib-s" style="color:var(--pc-success)"><span data-field="jobs_running">0</span> RUNNING</div></div></div>
+    <div class="rib"><div class="rib-ico">◆</div><div><div class="rib-n">Registered</div><div class="rib-s" style="color:var(--pc-accent)"><span data-field="agents_total">—</span> AGENTS</div></div></div>
+    <div class="rib"><div class="rib-ico">◉</div><div><div class="rib-n">Divisions</div><div class="rib-s" style="color:var(--pc-info)"><span data-field="stat_divisions">—</span> DIVISIONS</div></div></div>
+    <div class="rib"><div class="rib-ico">✳</div><div><div class="rib-n">Skills</div><div class="rib-s" style="color:var(--pc-warning)"><span data-field="skills_total">—</span> LOADED</div></div></div>
+    <div class="rib"><div class="rib-ico">⛨</div><div><div class="rib-n">Uptime</div><div class="rib-s" style="color:var(--pc-text-muted)"><span data-field="stat_uptime">—</span>s</div></div></div>
+    <div class="rib"><div class="rib-ico">♞</div><div><div class="rib-n">Companion</div><div class="rib-s" style="color:var(--pc-success)"><span data-field="mochi_mood">—</span> · bond <span data-field="mochi_bond">—</span>%</div></div></div>
+  </footer>
+
+</div>
+
+<button class="reopen left" id="railReopen">NAV ›</button>
+<button class="reopen right" id="dockReopen">‹ DOCK</button>
+
+<div class="wlaunch" id="wlaunch" hidden>
+  <span class="wlaunch-lbl">WIDGETS</span>
+  <div class="wlaunch-row" id="wlaunchRow"></div>
+</div>
+<div class="wlayer" id="wlayer"></div>
+
+<script>
+window.addEventListener('error', function(e) {
+  var d = document.getElementById('__pcErrBox');
+  if (!d) {
+    d = document.createElement('div');
+    d.id = '__pcErrBox';
+    d.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ef4444;color:#fff;font:11px monospace;padding:6px 10px;z-index:99999;white-space:pre-wrap';
+    (document.body || document.documentElement).appendChild(d);
+  }
+  d.textContent += '[ERR] ' + (e.message||'') + ' at ' + (e.filename||'') + ':' + (e.lineno||'') + ':' + (e.colno||'') + '\n';
+});
+(function () {
+  'use strict';
+  var API = 'http://127.0.0.1:7780';
+  var $ = function(s) { return document.querySelector(s); };
+  var $$ = function(s) { return Array.from(document.querySelectorAll(s)); };
+
+  // ── state ────────────────────────────────────────────────────────────
+  var S = {
+    chatMode: 'Command',
+    focusMode: false,
+    awaken: false,
+    widgets: {},
+    widgetOrder: ['agents','jobs','stats','skills','mochi'],
+    zbase: 65,
+    nextPos: 0,
+    sparkData: { errors: [] },
+    agents: [],
+    jobs: [],
+    mission: null,
+    mochi: null,
+    sparkErrorCount: 0,
+  };
+
+  // ── util ───────────────────────────────────────────────────────────
+  function set(field, val) {
+    $$('[data-field="' + field + '"]').forEach(function(el) { el.textContent = val; });
+  }
+  function tstamp(d) {
+    if (!d) return '—';
+    try { return new Date(d).toLocaleTimeString('en-US', { hour12: false }); } catch { return '—'; }
+  }
+  function fmtUptime(s) {
+    if (s == null) return '—';
+    if (s > 3600) return (s / 3600).toFixed(1) + 'h';
+    if (s > 60) return (s / 60).toFixed(0) + 'm';
+    return s + 's';
+  }
+  function escHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  // ── clock ──────────────────────────────────────────────────────────
+  function tick() {
+    var d = new Date();
+    var el = $('#clock');
+    if (el) el.textContent = d.toLocaleTimeString('en-US', { hour12: false });
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  // ── sparkline ─────────────────────────────────────────────────────
+  function drawSpark(canvas, data, color) {
+    if (!canvas || data.length < 2) return;
+    var ctx = canvas.getContext('2d');
+    var W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    var max = Math.max.apply(null, data), min = Math.min.apply(null, data);
+    var range = max - min || 1;
+    ctx.beginPath();
+    data.forEach(function(v, i) {
+      var x = (i / (data.length - 1)) * W;
+      var y = H - 2 - ((v - min) / range) * (H - 4);
+      i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+    });
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.4;
+    ctx.stroke();
+  }
+  function pushSpark(key, val) {
+    var s = S.sparkData[key];
+    if (!s) return;
+    s.push(val);
+    if (s.length > 40) s.shift();
+    var colors = { errors: '#ef4444' };
+    $$('[data-spark="' + key + '"]').forEach(function(cv) {
+      drawSpark(cv, s, colors[key] || '#a855f7');
+    });
+  }
+
+  // ── nav ─────────────────────────────────────────────────────────────
+  var ROUTES = [
+    ['Start', [['spine','▤','Mission Spine'],['control','▣','Control Room'],['asher','☻','Asher']], false],
+    ['Build', [['harness','⚙','Execution Harness'],['workforce','♜','Agent Workforce'],['tower','⛢','Tower State'],['deleg','⇉','Delegation Graph']], false],
+        ['Observe', [['flow','⤳','Workflow Flow'],['lens','◎','Event Lens'],['metrics','≋','Live Metrics'],['signals','⌁','Raw Signals'],['dream','✦','Dream Swarm']], false],
+        ['Control', [['risk','⚔','Risk Gate'],['ablit','⊘','Abliterator'],['mesh','⬡','Cognitive Mesh'],['evolve','↻','Self-Evolution'],['map','▦','System Map']], false],
+    ['System', [['settings','⚙','Settings']], false],
+    ['Stack', [['providers','⇄','Providers'],['voice','◎','Voice'],['omni','◈','OMNI'],['frameworks','▦','Frameworks']], true],
+  ];
+
+  function buildNav() {
+    var nav = $('#nav');
+    if (!nav) return;
+    nav.innerHTML = '';
+    var first = true;
+    ROUTES.forEach(function(g) {
+      var collapsed = g[2];
+      var h = document.createElement('button');
+      h.className = 'nav-grp' + (collapsed ? ' nav-grp-btn' : '');
+      h.textContent = (collapsed ? '▸ ' : '') + g[0];
+      nav.appendChild(h);
+      var wrap = document.createElement('div');
+      if (collapsed) wrap.hidden = true;
+      nav.appendChild(wrap);
+      if (collapsed) h.onclick = function() {
+        wrap.hidden = !wrap.hidden;
+        h.textContent = (wrap.hidden ? '▸ ' : '▾ ') + g[0];
+      };
+      g[1].forEach(function(r) {
+        var id = r[0], ico = r[1], label = r[2];
+        var b = document.createElement('button');
+        b.className = 'nav-item' + (first && !collapsed ? ' on' : '');
+        if (!collapsed) first = false;
+        b.innerHTML = '<span class="ni-ico">' + ico + '</span><span class="ni-name">' + label + '</span>';
+        b.onclick = function() {
+          $$('.nav-item').forEach(function(x) { x.classList.remove('on'); });
+          b.classList.add('on');
+          showPanel(id);
+        };
+        wrap.appendChild(b);
+      });
+    });
+  }
+
+  // ── tabs ────────────────────────────────────────────────────────────
+  var TABS = [['overview','▪','Overview'],['live','≋','Live Feed'],['commands','▸','Commands'],['missions','⇉','Missions'],['agents','◉','Agent Registry'],['heists','◈','Heist Reports']];
+  function buildTabs() {
+    var tabs = $('#tabs');
+    if (!tabs) return;
+    tabs.innerHTML = '';
+    TABS.forEach(function(t, i) {
+      var b = document.createElement('button');
+      b.className = 'tab' + (i === 0 ? ' on' : '');
+      b.innerHTML = '<span class="g">' + t[1] + '</span>' + t[2];
+      b.onclick = function() {
+        $$('.tab').forEach(function(x) { x.classList.remove('on'); });
+        b.classList.add('on');
+        showTab(t[0]);
+      };
+      tabs.appendChild(b);
+    });
+  }
+
+  // ── modes ──────────────────────────────────────────────────────────
+  var MODES = ['Command','Chat','Plan','Execute','Swarm','Mission','Research','Group'];
+  function buildModes() {
+    var modes = $('#modes');
+    if (!modes) return;
+    modes.innerHTML = '';
+    MODES.forEach(function(m, i) {
+      var b = document.createElement('button');
+      b.className = 'mode' + (i === 0 ? ' on' : '');
+      b.textContent = m;
+      b.onclick = function() {
+        $$('.mode').forEach(function(x) { x.classList.remove('on'); });
+        b.classList.add('on');
+        S.chatMode = m;
+      };
+      modes.appendChild(b);
+    });
+  }
+
+  // ── panel show/hide ────────────────────────────────────────────────
+  function showPanel(id) {
+    $$('[data-view]').forEach(function(el) { el.style.display = 'none'; });
+    var target = $('#view-' + id) || $('#view-default');
+    if (target) target.style.display = '';
+    var titleMap = {
+      spine:'SPINE', control:'CONTROL ROOM', asher:'ASHER',
+      harness:'HARNESS', workforce:'WORKFORCE', tower:'TOWER STATE',
+      deleg:'DELEGATION', flow:'WORKFLOW', lens:'EVENT LENS',
+      metrics:'METRICS', signals:'SIGNALS', dream:'DREAM SWARM',
+      risk:'RISK GATE', ablit:'ABLIT', mesh:'COGNITIVE MESH',
+      evolve:'EVOLUTION', map:'SYSTEM MAP', settings:'SETTINGS',
+      providers:'PROVIDERS', voice:'VOICE', omni:'OMNI',
+      awaken:'AWAKEN', preprompt:'PREPROMPT', frameworks:'FRAMEWORKS',
+    };
+    $$('.top-title .t').forEach(function(el) {
+      el.innerHTML = (titleMap[id] || id.toUpperCase()) + ' <span class="dim">/ COMMAND ROOM</span>';
+    });
+  }
+
+  // ── tab views (live data rendered into main area) ──────────────────
+  function renderAgentCard(a) {
+    var status = a.status || 'idle';
+    var statusClass = status === 'working' || status === 'active' ? 'status-working' : 'status-idle';
+    var tier = a.tier || 2;
+    var skills = (a.skills || []).slice(0, 3);
+    return '<div class="agent-card tier-' + tier + '">' +
+      '<div class="ac-h"><span class="ac-emoji">' + (a.emoji || '◎') + '</span><div><div class="ac-name">' + (a.name || a.key || '?') + '</div><div class="ac-div">' + (a.division || '—') + '</div></div></div>' +
+      '<div class="ac-skills">' + skills.map(function(s) { return '<span class="skill-chip">' + s + '</span>'; }).join('') + '</div>' +
+      '<div class="ac-status ' + statusClass + '">● ' + status.toUpperCase() + (a.model ? ' · ' + a.model.split('/').pop() : '') + '</div>' +
+      '</div>';
+  }
+
+  function renderJobItem(j) {
+    var state = j.state || 'unknown';
+    var stateClass = { executing:'state-executing', running:'state-executing', queued:'state-queued', pending:'state-queued', done:'state-done', complete:'state-done', failed:'state-failed', error:'state-failed' }[state] || '';
+    var pct = state === 'executing' || state === 'running' ? '65%' : state === 'done' || state === 'complete' ? '100%' : state === 'failed' || state === 'error' ? '100%' : '30%';
+    return '<div class="job-item">' +
+      '<div class="ji-h"><span class="ji-goal">' + escHtml(j.goal || j.id || '—') + '</span><span class="ji-meta">' + state.toUpperCase() + '</span></div>' +
+      '<div class="ji-meta">' + (j.route || j.mode || '—') + ' · ' + tstamp(j.createdAt) + '</div>' +
+      '<div class="ji-bar"><i style="width:' + pct + ';display:block;height:100%;border-radius:2px" class="' + stateClass + '"></i></div>' +
+      '</div>';
+  }
+
+  function showTab(tab) {
+    var main = $('.main');
+    if (!main) return;
+    // hide all view divs
+    $$('[data-view]', main).forEach(function(el) { el.style.display = 'none'; });
+
+    if (tab === 'overview') {
+      showPanel('spine');
+    } else if (tab === 'agents') {
+      renderAgentRegistry();
+    } else if (tab === 'live') {
+      renderLiveFeed();
+    } else if (tab === 'commands') {
+      showPanel('spine');
+    } else if (tab === 'missions') {
+      renderMissions();
+    } else {
+      showPanel('spine');
+    }
+  }
+
+  function ensureViewContainer(id, html) {
+    var el = $('#view-' + id);
+    if (!el) {
+      var div = document.createElement('div');
+      div.id = 'view-' + id;
+      div.setAttribute('data-view', id);
+      div.style.cssText = 'display:none;flex:1;overflow-y:auto;padding:16px';
+      div.innerHTML = html;
+      var main = $('.main');
+      if (main) main.appendChild(div);
+    }
+    return el || $('#view-' + id);
+  }
+
+  function renderAgentRegistry() {
+    var container = ensureViewContainer('agents', '<div id="view-agents" data-view="agents" style="display:none;flex:1;overflow-y:auto;padding:16px"><div class="panel"><div class="p-h"><span class="p-ico">◉</span><span class="p-title">AGENT REGISTRY</span><span class="mono dim" style="margin-left:auto" id="agentCount">—</span></div><div class="p-b"><div class="agent-grid" id="agentGrid"></div></div></div></div>');
+    container.style.display = '';
+    var grid = $('#agentGrid');
+    var count = $('#agentCount');
+    if (count) count.textContent = S.agents.length + ' agents';
+    if (grid) {
+      grid.innerHTML = S.agents.slice(0, 48).map(renderAgentCard).join('');
+    }
+  }
+
+  function renderLiveFeed() {
+    var container = ensureViewContainer('live', '<div id="view-live" data-view="live" style="display:none;flex:1;overflow-y:auto;padding:16px"><div class="panel" style="margin-bottom:12px"><div class="p-h"><span class="p-ico">≋</span><span class="p-title">LIVE EVENT STREAM</span></div><div class="p-b" id="liveFeedContent"><div class="feed-row"><span class="fr-ico dim">—</span><div class="fr-t dim">Loading events…</div></div></div></div></div>');
+    container.style.display = '';
+  }
+
+  function renderMissions() {
+    var container = ensureViewContainer('missions', '<div id="view-missions" data-view="missions" style="display:none;flex:1;overflow-y:auto;padding:16px"><div class="panel"><div class="p-h"><span class="p-ico">⇉</span><span class="p-title">KERNEL JOBS</span></div><div class="p-b" id="jobsList"></div></div></div>');
+    container.style.display = '';
+    var list = $('#jobsList');
+    if (list) {
+      if (!S.jobs.length) {
+        list.innerHTML = '<div class="dim" style="padding:12px 0;font-size:12px">No jobs in queue. System idle.</div>';
+      } else {
+        list.innerHTML = S.jobs.map(renderJobItem).join('');
+      }
+    }
+  }
+
+  // ── chat composer ──────────────────────────────────────────────────
+  function addMsg(role, html, extra) {
+    var thread = $('#thread');
+    if (!thread) return;
+    var m = document.createElement('div');
+    m.className = 'msg' + (role === 'you' ? ' you' : '');
+    var avatar = role === 'you' ? '👑' : '😼';
+    var name = role === 'you' ? 'You' : 'Mochi';
+    var tm = new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' });
+    m.innerHTML = '<div class="ava-sm">' + avatar + '</div><div><div class="who"><b>' + name + '</b><span class="tm">' + tm + '</span></div><div class="bubble">' + html + (extra || '') + '</div></div>';
+    thread.appendChild(m);
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function addJobCard(id, mode) {
+    var thread = $('#thread');
+    var m = document.createElement('div');
+    m.className = 'msg';
+    m.id = 'jc-' + id;
+    m.innerHTML = '<div class="ava-sm">😼</div><div><div class="who"><b>Mochi</b><span class="tm">' + new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' }) + '</span></div><div class="job-card"><div class="jh"><span>JOB · ' + String(id).slice(-8) + '</span><span>lane: ' + mode + '</span></div>Processing…<div class="jbar"><i style="width:30%"></i></div></div></div>';
+    thread.appendChild(m);
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function finalizeJobCard(id, pct, label) {
+    var card = $('#jc-' + id);
+    if (!card) return;
+    var bar = card.querySelector('.jbar i');
+    if (bar) bar.style.width = (pct || 100) + '%';
+    var jc = card.querySelector('.job-card');
+    if (jc) jc.innerHTML = '<div class="jh"><span>JOB · ' + String(id).slice(-8) + '</span><span>✓</span></div>' + (label || 'Done.');
+  }
+
+  function sendMessage(text) {
+    if (!text.trim()) return;
+    var mode = S.chatMode.toLowerCase();
+    addMsg('you', escHtml(text));
+    var inp = $('#composerInput');
+    if (inp) inp.value = '';
+
+    var jobId = 'jc-' + Date.now();
+    addJobCard(jobId, mode);
+
+    fetch(API + '/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, mode: mode }),
+      signal: AbortSignal.timeout(60000),
+    }).then(function(r) { return r.json(); }).then(function(d) {
+      finalizeJobCard(jobId, 100, null);
+      var response = d.reply    || d.text    || d.content || d.result || d.error || JSON.stringify(d).slice(0, 200);
+      addMsg('mochi', escHtml(response));
+    }).catch(function(err) {
+      finalizeJobCard(jobId, 100, null);
+      addMsg('mochi', '<span class="fail-card"><div class="ft">Connection failed</div><div class="fb">' + escHtml(err.message) + '</div><div class="fh">Is unified_api.js running on :7780?</div></span>');
+    });
+  }
+
+  function wireComposer() {
+    var inp = $('#composerInput'), btn = $('#sendBtn');
+    if (btn) btn.onclick = function() { if (inp) sendMessage(inp.value); };
+    if (inp) inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(inp.value); }
+    });
+  }
+
+  // ── toggles ────────────────────────────────────────────────────────
+  function wireToggles() {
+    var shell = $('#shell');
+    var rb = $('#railBtn'), db = $('#dockBtn'), mb = $('#maxBtn'), fb = $('#focusBtn'), ab = $('#awaken');
+    if (rb) rb.onclick = function() { if (shell) shell.classList.toggle('rail-hidden'); };
+    if (db) db.onclick = function() { if (shell) shell.classList.toggle('dock-hidden'); };
+    if (mb) mb.onclick = function() { if (shell) shell.classList.toggle('chat-full'); };
+    if (rb) $('#railReopen').onclick = function() { if (shell) shell.classList.remove('rail-hidden'); };
+    if (db) $('#dockReopen').onclick = function() { if (shell) shell.classList.remove('dock-hidden'); };
+    if (fb) fb.onclick = function() {
+      S.focusMode = !S.focusMode;
+      if (shell) shell.classList.toggle('focus', S.focusMode);
+      fb.classList.toggle('on', S.focusMode);
+      var wl = $('#wlaunch');
+      if (wl) wl.hidden = !S.focusMode;
+    };
+    if (ab) ab.onclick = function() {
+      S.awaken = !S.awaken;
+      ab.classList.toggle('on', S.awaken);
+      var lbl = ab.querySelector('[data-field="awaken_label"]');
+      if (lbl) lbl.textContent = S.awaken ? 'AWAKENED' : 'AWAKEN';
+      fetch(API + '/api/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: S.awaken ? 'awaken' : 'sleep' }),
+      }).catch(function() {});
+    };
+  }
+
+  // ── widgets ────────────────────────────────────────────────────────
+  function line(ico, t, tm) {
+    return '<div class="wg-line"><span class="wl-ico">' + ico + '</span><span class="wl-t">' + t + '</span>' + (tm ? '<span class="wl-tm">' + tm + '</span>' : '') + '</div>';
+  }
+
+  function getWidgetBody(id) {
+    if (id === 'agents') {
+      var divs = {};
+      S.agents.forEach(function(a) { var d = a.division || 'UNASSIGNED'; divs[d] = (divs[d] || 0) + 1; });
+      return Object.keys(divs).slice(0, 6).map(function(d) { return line('◉', d, divs[d] + ' agents'); }).join('') || line('◉', 'No agents registered', '');
+    }
+    if (id === 'jobs') {
+      var running = S.jobs.filter(function(j) { return j.state === 'executing' || j.state === 'running'; });
+      var pending = S.jobs.filter(function(j) { return j.state === 'queued' || j.state === 'pending'; });
+      return line('⚙', 'Running', running.length) + line('◆', 'Pending', pending.length) + line('✓', 'Total jobs', S.jobs.length);
+    }
+    if (id === 'stats') {
+      var up = S.mission && S.mission.api ? Math.round(S.mission.api.uptime || 0) : 0;
+      return line('◆', 'Uptime', fmtUptime(up)) + line('◆', 'Registered', S.agents.length) + line('◆', 'Skills', S.mission ? (S.mission.api ? '—' : '—') : '—');
+    }
+    if (id === 'mochi') {
+      return '<div style="display:flex;gap:10px"><img src="' + API + '/os/art/mochi.png" onerror="this.style.opacity=.15" style="width:74px;height:84px;object-fit:cover;border-radius:8px;border:1px solid var(--pc-border)"/><div>' + (S.mochi ? 'Mood: ' + (S.mochi.mood || '—') + '<br>Bond: ' + (S.mochi.bond || '—') + '%' : 'Loading…') + '</div></div>';
+    }
+    if (id === 'skills') {
+      var cats = S.mission && S.mission.api && S.mission.api.skillsCategories ? S.mission.api.skillsCategories : {};
+      return Object.keys(cats).slice(0, 6).map(function(c) { return line('✳', c, cats[c] + ' skills'); }).join('') || line('✳', 'Loading skills…', '');
+    }
+    return line('◆', 'Widget', id);
+  }
+
+  function spawnWidget(id, flash) {
+    var bodyFn = getWidgetBody;
+    var WIDGET_DEFS = {
+      agents:  { t: 'Agent Registry',   ico: '◉', live: true },
+      jobs:    { t: 'Kernel Jobs',      ico: '⚙', live: true },
+      stats:   { t: 'System Stats',    ico: '◆', live: true },
+      skills:  { t: 'Skills',          ico: '✳', live: false },
+      mochi:   { t: 'Mochi',           ico: '♞', live: false },
+    };
+    var def = WIDGET_DEFS[id];
+    if (!def) return;
+    if (S.widgets[id]) {
+      S.widgets[id].style.zIndex = ++S.zbase;
+      if (flash) { S.widgets[id].classList.remove('flash'); void S.widgets[id].offsetWidth; S.widgets[id].classList.add('flash'); }
+      return S.widgets[id];
+    }
+    var el = document.createElement('div');
+    el.className = 'widget' + (flash ? ' flash' : '');
+    var col = S.nextPos % 3, rowN = Math.floor(S.nextPos / 3);
+    S.nextPos++;
+    el.style.left = (window.innerWidth - 330 - col * 30) + 'px';
+    el.style.top = (96 + rowN * 40 + col * 46) + 'px';
+    el.innerHTML = '<div class="wg-h"><span class="wg-ico">' + def.ico + '</span><span class="wg-t">' + def.t + '</span>' + (def.live ? '<span class="wg-live"></span>' : '') + '<button class="wg-x">✕</button></div><div class="wg-b" id="wgb-' + id + '">' + bodyFn(id) + '</div>';
+    $('#wlayer').appendChild(el);
+    S.widgets[id] = el;
+    el.querySelector('.wg-x').onclick = function() {
+      el.remove();
+      delete S.widgets[id];
+      var chip = $('#wlaunchRow').querySelector('[data-w="' + id + '"]');
+      if (chip) chip.classList.remove('on');
+    };
+    var handle = el.querySelector('.wg-h');
+    var sx, sy, ox, oy, drag = false;
+    handle.addEventListener('pointerdown', function(e) {
+      drag = true; sx = e.clientX; sy = e.clientY;
+      var r = el.getBoundingClientRect(); ox = r.left; oy = r.top;
+      handle.setPointerCapture(e.pointerId);
+      el.style.zIndex = ++S.zbase;
+    });
+    handle.addEventListener('pointermove', function(e) {
+      if (!drag) return;
+      el.style.left = Math.max(4, Math.min(window.innerWidth - 60, ox + e.clientX - sx)) + 'px';
+      el.style.top = Math.max(64, Math.min(window.innerHeight - 60, oy + e.clientY - sy)) + 'px';
+    });
+    handle.addEventListener('pointerup', function() { drag = false; });
+    return el;
+  }
+
+  function buildWidgetLauncher() {
+    var wrow = $('#wlaunchRow');
+    if (!wrow) return;
+    wrow.innerHTML = '';
+    S.widgetOrder.forEach(function(id) {
+      var WIDGET_DEFS = { agents:{t:'Agents',ico:'◉'}, jobs:{t:'Jobs',ico:'⚙'}, stats:{t:'Stats',ico:'◆'}, skills:{t:'Skills',ico:'✳'}, mochi:{t:'Mochi',ico:'♞'} };
+      var def = WIDGET_DEFS[id];
+      var b = document.createElement('button');
+      b.className = 'wchip';
+      b.dataset.w = id;
+      b.innerHTML = '<span class="wi">' + def.ico + '</span>' + def.t;
+      b.onclick = function() {
+        if (S.widgets[id]) { S.widgets[id].remove(); delete S.widgets[id]; b.classList.remove('on'); }
+        else { spawnWidget(id); b.classList.add('on'); }
+      };
+      wrow.appendChild(b);
+    });
+  }
+
+  function refreshWidgets() {
+    S.widgetOrder.forEach(function(id) {
+      if (S.widgets[id]) {
+        var bodyEl = S.widgets[id].querySelector('.wg-b');
+        if (bodyEl) bodyEl.innerHTML = getWidgetBody(id);
+      }
+    });
+  }
+
+  // ── canvas animations ───────────────────────────────────────────────
+  function drawDonut(counts) {
+    var cv = $('#donut');
+    if (!cv) return;
+    var ctx = cv.getContext('2d'), cx = 52, cy = 52, r = 40, th = 15;
+    var total = Object.values(counts || {}).reduce(function(s, v) { return s + v; }, 0) || 1;
+    var colors = ['#22d3ee', '#a855f7', '#4ade80', '#ec4899', '#8b7fa8'];
+    var entries = Object.entries(counts || {});
+    if (!entries.length) entries = [['idle', 1]];
+    ctx.clearRect(0, 0, 104, 104);
+    var a = -Math.PI / 2;
+    entries.forEach(function(e, i) {
+      var frac = e[1] / total;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, a, a + frac * Math.PI * 2);
+      ctx.strokeStyle = colors[i % colors.length];
+      ctx.lineWidth = th;
+      ctx.stroke();
+      a += frac * Math.PI * 2;
+    });
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--pc-text').trim() || '#ece7f5';
+    ctx.font = '700 20px ' + (getComputedStyle(document.documentElement).getPropertyValue('--pc-font-ui').trim() || 'sans-serif');
+    ctx.textAlign = 'center';
+    ctx.fillText(String(total), cx, cy + 3);
+    ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--pc-text-muted').trim() || '#8b7fa8';
+    ctx.font = '8px ' + (getComputedStyle(document.documentElement).getPropertyValue('--pc-font-mono').trim() || 'monospace');
+    ctx.fillText('AGENTS', cx, cy + 17);
+  }
+
+  function renderWorkBreakdown(divisions) {
+    var el = $('#workBreakdown');
+    if (!el) return;
+    var colors = { MEDIA_OPERATIONS:'#22d3ee', ENGINEERING:'#a855f7', INTELLIGENCE:'#4ade80', SECURITY:'#ec4899', INFRASTRUCTURE:'#f5b52a', MANAGEMENT:'#ef4444', OPERATIONS:'#8b7fa8', CREATIVE:'#a855f7', SCIENCE:'#22d3ee', UNASSIGNED:'#8b7fa8' };
+    el.innerHTML = Object.entries(divisions || {}).slice(0, 6).map(function(e) {
+      return '<div class="svc-row"><span class="legend"><span class="dot" style="background:' + (colors[e[0]] || '#8b7fa8') + ';width:7px;height:7px;border-radius:50%;display:inline-block;box-shadow:0 0 4px ' + (colors[e[0]] || '#8b7fa8') + '"></span>' + e[0].replace(/_/g, ' ') + '</span><span class="mono">' + e[1].count + '</span></div>';
+    }).join('');
+  }
+
+  function renderRadarBlips(count) {
+    var el = $('#radarBlips');
+    if (!el) return;
+    el.innerHTML = '';
+    var num = Math.min(count || 0, 12);
+    for (var i = 0; i < num; i++) {
+      var blip = document.createElement('span');
+      blip.className = 'blip';
+      blip.style.left = (20 + Math.random() * 60) + '%';
+      blip.style.top = (20 + Math.random() * 60) + '%';
+      el.appendChild(blip);
+    }
+  }
+
+  function renderDivisionCounts(divisions) {
+    var el = $('#divisionCounts');
+    if (!el) return;
+    var colors = { MEDIA_OPERATIONS:'#22d3ee', ENGINEERING:'#a855f7', INTELLIGENCE:'#4ade80', SECURITY:'#ec4899', INFRASTRUCTURE:'#f5b52a', MANAGEMENT:'#ef4444', OPERATIONS:'#8b7fa8', CREATIVE:'#a855f7', SCIENCE:'#22d3ee', UNASSIGNED:'#8b7fa8' };
+    el.innerHTML = Object.entries(divisions || {}).slice(0, 6).map(function(e) {
+      return '<div class="svc-row"><span class="legend"><span class="dot" style="background:' + (colors[e[0]] || '#8b7fa8') + ';width:7px;height:7px;border-radius:50%;display:inline-block"></span>' + (e[0].charAt(0) + e[0].toLowerCase().slice(1)).replace(/_/g, ' ') + '</span><span class="mono">' + e[1].count + '</span></div>';
+    }).join('');
+  }
+
+  function startDuckAnimation() {
+    var cv = $('#duck');
+    if (!cv) return;
+    var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, t = 0, lvl = 0.4;
+    function draw() {
+      lvl += ((0.25 + Math.random() * 0.5) - lvl) * 0.02;
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = 'rgba(74,222,128,0.12)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, H/2); ctx.lineTo(W, H/2); ctx.stroke();
+      ctx.beginPath();
+      for (var x = 0; x <= W; x++) {
+        var p = x/W, env = Math.sin(p*Math.PI);
+        var y = H/2 + Math.sin(p*Math.PI*7+t)*env*lvl*H*.42 + Math.sin(p*Math.PI*15-t*1.8)*env*lvl*H*.14;
+        x ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.strokeStyle = '#4ade80';
+      ctx.lineWidth = 1.7;
+      ctx.shadowColor = '#4ade80';
+      ctx.shadowBlur = 7;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      t += 0.05 + lvl * 0.14;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  function startWeatherAnimation() {
+    var cv = $('#weather');
+    if (!cv) return;
+    var ctx = cv.getContext('2d'), W = cv.width, H = cv.height, lv = 0.18;
+    var drops = [], stars = [];
+    for (var i = 0; i < 60; i++) drops.push({ x: Math.random()*W, y: Math.random()*H, v: 1+Math.random()*2, len: 4+Math.random()*6 });
+    for (var j = 0; j < 22; j++) stars.push({ x: Math.random()*W, y: Math.random()*H*0.7, ph: Math.random()*6.28 });
+    var t = 0;
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+      var calm = 1 - lv;
+      stars.forEach(function(s) {
+        var a = (0.3 + 0.5 * Math.abs(Math.sin(t*0.05 + s.ph))) * calm;
+        ctx.fillStyle = 'rgba(120,230,170,' + a + ')';
+        ctx.fillRect(s.x, s.y, 1.4, 1.4);
+      });
+      var count = Math.round(lv * drops.length);
+      var col = lv > 0.55 ? '#ef4444' : lv > 0.25 ? '#f5b52a' : '#4ade80';
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1.3;
+      for (var i = 0; i < count; i++) {
+        var d = drops[i];
+        ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(d.x-1.5, d.y+d.len); ctx.stroke();
+        d.y += d.v * (1.5 + lv*3); d.x -= 0.4;
+        if (d.y > H) { d.y = -d.len; d.x = Math.random()*W; }
+      }
+      t++;
+      requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  // ── live data wiring ────────────────────────────────────────────────
+  function wireWhoami(d) {
+    console.log('[wireWhoami] called, d.name:', d?.name);
+    if (!d) return;
+    set('session_user', d.name || 'sovereign');
+    if (d.systems && d.systems.providers) {
+      var primary = d.systems.providers.find(function(p) { return p.primary; });
+      if (primary) set('provider_name', primary.name || primary);
+    }
+  }
+
+  function wireMissionData(d) {
+    if (!d) return;
+    S.mission = d;
+    var api = d.api || {};
+    var tower = d.tower || {};
+    var agentScores = d.agentScores || {};
+    var agents = d.agents || {};  // was undefined → threw ReferenceError, aborting the fn before skills_total
+
+    // top bar — correct key paths for what the API actually returns
+    // mission.tower is empty when preloaded (server-side HTTP call gets degraded data)
+    // Use agents.count (populated from /api/agents/registry) for total agents
+    var t_tower = tower.tower || {};
+    set('agents_total', agents.count || t_tower.totalRegistered || d.totalAgents || '—');
+    set('agents_active', agentScores.agentCount || 0);
+    set('jobs_running', (d.kernelJobs || []).filter(function(j) { return j.state === 'executing' || j.state === 'running'; }).length);
+    S.sparkErrorCount = Math.max(0, S.sparkErrorCount - 1);
+    set('errors_24h', S.sparkErrorCount);
+    pushSpark('errors', S.sparkErrorCount / 20);
+
+    // stats cards
+    set('stat_agents', agents.count || t_tower.totalRegistered || d.totalAgents || '—');
+    set('stat_divisions', tower.divisions ? Object.keys(tower.divisions).length : '—');
+    set('stat_uptime', fmtUptime(Math.round(api.uptime || 0)));
+    set('stat_memory', api.memory ? Math.round(api.memory.heapUsed / 1024 / 1024) : '—');
+    set('stat_health', api.healthStatus === 'healthy' || api.status === 'ok' ? 'OK' : 'DEGRADED');
+
+    // ribbon
+    set('agents_total', agents.count || t_tower.totalRegistered || d.totalAgents || '—');
+    set('jobs_running', (d.kernelJobs || []).filter(function(j) { return j.state === 'executing' || j.state === 'running'; }).length);
+    set('stat_divisions', tower.divisions ? Object.keys(tower.divisions).length : '—');
+    set('stat_uptime', fmtUptime(Math.round(api.uptime || 0)));
+
+    // skill count — use systems.skills.count from mission-data, fallback to breakdown
+        var skillsTotal = (api.skillsCount != null) ? api.skillsCount : (d.systems && d.systems.skills && d.systems.skills.count) || (window.__PRELOADED && window.__PRELOADED.breakdown && window.__PRELOADED.breakdown.skills && window.__PRELOADED.breakdown.skills.count) || 0;
+        console.log('[skills]', 'api.skillsCount=', api.skillsCount, 'd.systems=', d.systems, 'fallback=', window.__PRELOADED && window.__PRELOADED.breakdown && window.__PRELOADED.breakdown.skills && window.__PRELOADED.breakdown.skills.count, 'final=', skillsTotal);
+        if (skillsTotal > 0) set('skills_total', skillsTotal);
+        // If 0, leave whatever the breakdown panel set
+
+    // activity feed
+    var events = (d.eventBus && d.eventBus.recentEvents) || [];
+    var feedEl = $('#activityFeed');
+    if (feedEl) {
+      if (!events.length) {
+        feedEl.innerHTML = '<div class="feed-row"><span class="fr-ico dim">—</span><div class="fr-t dim">No events yet</div></div>';
+      } else {
+        feedEl.innerHTML = events.slice(-5).reverse().map(function(ev) {
+          return '<div class="feed-row"><span class="fr-ico">◈</span><div style="min-width:0"><div class="fr-t">' + escHtml(ev.message || ev.topic || ev.type || 'event') + '</div><div class="fr-s">' + escHtml(ev.source || '') + '</div></div><span class="fr-tm">' + tstamp(ev.timestamp) + '</span></div>';
+        }).join('');
+      }
+    }
+
+    // jobs feed
+    var jobs = d.kernelJobs || [];
+    S.jobs = jobs;
+    var jobsEl = $('#jobsFeed');
+    if (jobsEl) {
+      if (!jobs.length) {
+        jobsEl.innerHTML = '<div class="feed-row"><span class="fr-ico dim">—</span><div class="fr-t dim">No active jobs</div></div>';
+      } else {
+        jobsEl.innerHTML = jobs.slice(0, 4).map(function(j) {
+          return '<div class="feed-row"><span class="fr-ico">⚙</span><div style="min-width:0"><div class="fr-t">' + escHtml(j.goal || j.id || '—') + '</div><div class="fr-s">' + (j.state || '—') + '</div></div><span class="fr-tm">' + (j.state === 'executing' ? '●' : '○') + '</span></div>';
+        }).join('');
+      }
+    }
+
+    // mochi
+    if (d.mochi) {
+      S.mochi = d.mochi;
+      set('mochi_message', d.mochi.mood ? 'Mood: ' + d.mochi.mood + '. Bond ' + (d.mochi.bond || 0) + '%.' : 'Systems online.');
+      set('mochi_mood', d.mochi.mood || '—');
+      set('mochi_bond', d.mochi.bond || 0);
+    }
+
+    // work breakdown donut
+    var divCounts = {};
+    if (tower.divisions) {
+      for (var dk in tower.divisions) {
+        divCounts[dk] = tower.divisions[dk].count || tower.divisions[dk].agentCount || 0;
+      }
+    } else if (d.divisions) {
+      for (var dk2 in d.divisions) { divCounts[dk2] = d.divisions[dk2].count || 0; }
+    }
+    drawDonut(divCounts);
+    renderWorkBreakdown(divCounts);
+    renderDivisionCounts(divCounts);
+
+    // update agents registry if rendered
+    if ($('#agentGrid')) renderAgentRegistry();
+  }
+
+  function wireAgentRegistry(d) {
+    if (!d || !d.agents) return;
+    S.agents = d.agents;
+    set('agents_total', d.count || d.agents.length);
+    set('agents_total_radar', d.count || d.agents.length);
+
+    // count by division for radar
+    var divCounts = {};
+    d.agents.forEach(function(a) {
+      var div = a.division || 'UNASSIGNED';
+      divCounts[div] = (divCounts[div] || 0) + 1;
+    });
+    renderDivisionCounts(divCounts);
+    renderRadarBlips(d.agents.length);
+    if ($('#view-agents')) renderAgentRegistry();
+  }
+
+  function wireMochi(d) {
+    if (!d) return;
+    S.mochi = d;
+    set('mochi_message', d.mood ? 'Mood: ' + d.mood + '. Bond ' + (d.bond || 0) + '%.' : 'Systems online.');
+    set('mochi_mood', d.mood || '—');
+    set('mochi_bond', d.bond || 0);
+      }
+
+      // wireBreakdown — receipts-truth table, populated from /api/breakdown
+      function wireBreakdown(d) {
+        if (!d) return;
+        // Tools
+        set('bd_tools_total', d.tools && d.tools.total != null ? d.tools.total : '—');
+        var bd = (d.tools && d.tools.breakdown) || {};
+        set('bd_tools_core', bd.core || 0);
+        set('bd_tools_skills', bd.skills || 0);
+        set('bd_tools_remotion', bd.remotion || 0);
+        var misc = (bd.mcp||0) + (bd.bodyBridge||0) + (bd.nim||0);
+        set('bd_tools_misc', misc > 0 ? misc : '0');
+        // Agents
+        set('bd_agents_total', d.agents && d.agents.registered != null ? d.agents.registered : '—');
+        set('bd_agents_divisions', d.agents && d.agents.divisions != null ? d.agents.divisions : '—');
+        set('bd_agents_active', d.agents && d.agents.active != null ? d.agents.active : '0');
+        set('bd_agents_strict', '7');  // honest constant: those with executor+health+proof
+        set('bd_routes_total', d.routes && d.routes.total != null ? d.routes.total : '—');
+        // Providers — ratio + chips
+        var prov = d.providers || {};
+        set('bd_providers_ratio', (prov.configured||0) + ' configured / ' + (prov.registered||0) + ' registered');
+        var provEl = document.querySelector('[data-field="bd_providers_chips"]');
+        if (provEl && prov.list) {
+          var cfg = new Set(prov.configuredList || []);
+          provEl.innerHTML = prov.list.map(function(name) {
+            var on = cfg.has(name);
+            var c = on ? 'var(--pc-success)' : 'var(--pc-text-muted)';
+            var bg = on ? 'rgba(74,222,128,0.10)' : 'rgba(255,255,255,0.03)';
+            var title = on ? 'configured (has API key)' : 'registered (no key yet)';
+            return '<span style="padding:2px 6px;border-radius:4px;background:'+bg+';color:'+c+';border:1px solid '+(on?'rgba(74,222,128,0.3)':'rgba(255,255,255,0.06)')+'" title="'+title+'">'+(on?'●':'○')+' '+name+'</span>';
+          }).join('');
+        }
+        // Services — chips
+        var svcEl = document.querySelector('[data-field="bd_services_chips"]');
+        if (svcEl && d.services) {
+          svcEl.innerHTML = Object.keys(d.services).map(function(name) {
+            var s = d.services[name];
+            var on = s.online;
+            var c = on ? 'var(--pc-success)' : 'var(--pc-danger)';
+            var bg = on ? 'rgba(74,222,128,0.10)' : 'rgba(239,68,68,0.06)';
+            return '<span style="padding:2px 6px;border-radius:4px;background:'+bg+';color:'+c+';border:1px solid '+(on?'rgba(74,222,128,0.3)':'rgba(239,68,68,0.2)')+'" title="'+name+':'+s.port+' '+(on?'online':'offline')+'">'+(on?'●':'○')+' '+name+' <span style="color:var(--pc-text-muted);font-size:8.5px">:'+s.port+'</span></span>';
+          }).join('');
+        }
+        // Generated timestamp
+        if (d.generatedAt) {
+          var t = new Date(d.generatedAt).toLocaleTimeString('en-US', { hour12: false });
+          set('breakdown_generated', t);
+        }
+      }
+
+      // loadInitialData — use PRELOADED data immediately, then poll for updates
+      // Note: called from init() AFTER DOM is fully ready
+      function loadInitialData() {
+        if (!window.__PRELOADED) {
+          console.warn('[loadInitialData] window.__PRELOADED is null — data injection failed');
+          return;
+        }
+        try { wireBreakdown(window.__PRELOADED.breakdown); } catch(e) { console.error('[wireBreakdown]', e.message); }
+            try { wireWhoami(window.__PRELOADED.whoami); } catch(e) { console.error('[wireWhoami]', e.message); }
+            try { wireAgentRegistry(window.__PRELOADED.agents); } catch(e) { console.error('[wireAgentRegistry]', e.message); }
+            try { wireMissionData(window.__PRELOADED.mission); } catch(e) { console.error('[wireMissionData]', e.message, Object.keys(window.__PRELOADED.mission||{})); }
+            try { wireMochi(window.__PRELOADED.mochi); } catch(e) { console.error('[wireMochi]', e.message); }
+
+        // Then do live polling for updates (browser can reach :7780 from page served by :7780)
+        setTimeout(function() {
+          fetch(API + '/api/whoami', { signal: AbortSignal.timeout(4000) })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(wireWhoami).catch(function() {});
+          fetch(API + '/api/agents/registry', { signal: AbortSignal.timeout(5000) })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(wireAgentRegistry).catch(function() {});
+          fetch(API + '/api/mission-data', { signal: AbortSignal.timeout(8000) })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(wireMissionData).catch(function() {});
+          fetch(API + '/api/mochi', { signal: AbortSignal.timeout(3000) })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(wireMochi).catch(function() {});
+          fetch(API + '/api/breakdown', { signal: AbortSignal.timeout(8000) })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(wireBreakdown).catch(function() {});
+        }, 800);
+
+        // Refresh breakdown every 30s — services/agents count can change
+        setInterval(function() {
+          fetch(API + '/api/breakdown', { signal: AbortSignal.timeout(8000) })
+            .then(function(r) { return r.ok ? r.json() : null; })
+            .then(wireBreakdown).catch(function() {});
+        }, 30000);
+      }
+
+  // ── boot ────────────────────────────────────────────────────────────
+  function init() {
+    buildNav();
+    buildTabs();
+    buildModes();
+    wireToggles();
+    wireComposer();
+    buildWidgetLauncher();
+    startDuckAnimation();
+    startWeatherAnimation();
+
+    loadInitialData();
+
+    // poll mission-data every 20s
+    setInterval(function() {
+      fetch(API + '/api/mission-data', { signal: AbortSignal.timeout(8000) })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(wireMissionData)
+        .catch(function() {});
+    }, 20000);
+
+    // poll agent registry every 30s
+    setInterval(function() {
+      fetch(API + '/api/agents/registry', { signal: AbortSignal.timeout(5000) })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(wireAgentRegistry)
+        .catch(function() {});
+    }, 30000);
+
+    // mochi every 60s
+    setInterval(function() {
+      fetch(API + '/api/mochi', { signal: AbortSignal.timeout(3000) })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(wireMochi)
+        .catch(function() {});
+    }, 60000);
+
+    // refresh widgets on interval
+    setInterval(refreshWidgets, 10000);
+
+    // add welcome message
+    addMsg('mochi', 'Systems online. Agent registry: ' + S.agents.length + ' agents. What are we building?');
+  }
+
+  if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+
+    // Debug surface — expose key state to window for inspection
+      window.__pc_debug = {
+        initRan: true,
+        preloaded: !!window.__PRELOADED,
+        preloadedHasBreakdown: !!(window.__PRELOADED && window.__PRELOADED.breakdown),
+        breakdownKeys: window.__PRELOADED && window.__PRELOADED.breakdown ? Object.keys(window.__PRELOADED.breakdown) : null,
+      };
+    })()
+    </script>
+    </body>
+    </html>

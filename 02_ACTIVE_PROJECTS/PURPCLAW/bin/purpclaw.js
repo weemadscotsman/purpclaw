@@ -26,18 +26,44 @@
 
 'use strict';
 
-const path  = require('path');
-const fs    = require('fs');
-const http  = require('http');
-const https = require('https');
-const { spawn: rawSpawn, execSync } = require('child_process');
-const readline = require('readline');
+const path    = require('path');
+const fs      = require('fs');
+const http    = require('http');
+const { URL } = require('url');
+
+// ── Project root resolver ─────────────────────────────────────────────────────────
+// The npm global shim lives in AppData on C:. We walk up looking for the real project.
+// But the real PURPCLAW lives on E: — the walker can't cross drives. So we also
+// check the known absolute path of the real project directly. One .env to rule them all.
+function resolveProjectRoot() {
+  const marker = 'docs' + path.sep + 'COMPANION_EVENT_MAP.md';
+
+  // Check the known real project path first (E: / gDrive project)
+  const KNOWN_PROJECTS = [
+    'E:' + path.sep + 'god folder' + path.sep + '02_ACTIVE_PROJECTS' + path.sep + 'PURPCLAW',
+  ];
+  for (const p of KNOWN_PROJECTS) {
+    if (fs.existsSync(path.join(p, marker))) return p;
+  }
+
+  // Fallback: walk up from npm package dir
+  const original = path.resolve(__dirname, '..');
+  let dir = original;
+  let prev = '';
+  while (dir !== prev) {
+    if (fs.existsSync(path.join(dir, marker))) return dir;
+    prev = dir;
+    dir = path.dirname(dir);
+  }
+  return original;
+}
+
+const PURP_DIR      = resolveProjectRoot();
 const { trackedSpawn, execSafe, installCleanup, list: listChildren } = require('../lib/child-registry');
 
 // ── Root and config ───────────────────────────────────────────────────────────
-const PURP_DIR      = path.resolve(__dirname, '..');
 
-// Lightweight .env loader — populates process.env without adding a dependency.
+// Lightweight .env loader
 // Existing shell env vars win over .env (shell-set values are explicit).
 (function loadEnv() {
   try {
@@ -402,7 +428,7 @@ const DIV_COLOUR = {
   INTELLIGENCE  : C.blue,
   OPERATIONS    : C.yellow,
   MANAGEMENT    : C.magenta,
-  MEDIA_OPS     : C.green,
+  MEDIA_OPERATIONS     : C.green,
   SCIENCE       : C.white,
   CREATIVE      : C.magenta,
   INFRASTRUCTURE: C.gray,
@@ -410,42 +436,43 @@ const DIV_COLOUR = {
 
 // ── Print helpers ─────────────────────────────────────────────────────────────
 function banner() {
-  const W = isTTY ? (process.stdout.columns || 80) : 80;
-  const inner = W - 2; // inside the border
+  const W     = isTTY ? (process.stdout.columns || 80) : 80;
+    const inner = W - 2;
+    const bTop  = col(C.magenta, '╔' + '═'.repeat(inner) + '╗');
+    const bBot  = col(C.magenta, '╚' + '═'.repeat(inner) + '╝');
+    const bRow  = (content) => {
+      const raw = content.replace(/\x1b\[[0-9;]*m/g, '');
+      const pad = Math.max(0, inner - raw.length);
+      return col(C.magenta, '║') + content + ' '.repeat(pad) + col(C.magenta, '║');
+    };
 
-  // box helpers (no deps)
-  const bTop = col(C.magenta, '╔' + '═'.repeat(inner) + '╗');
-  const bBot = col(C.magenta, '╚' + '═'.repeat(inner) + '╝');
-  const bMid = col(C.magenta, '╠' + '═'.repeat(inner) + '╣');
-  const bRow = (content) => {
-    const raw = content.replace(/\x1b\[[0-9;]*m/g, '');
-    const pad = Math.max(0, inner - raw.length);
-    return col(C.magenta, '║') + content + ' '.repeat(pad) + col(C.magenta, '║');
-  };
+    const now     = new Date();
+    const ts      = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}  ${now.toLocaleTimeString('en-GB')}`;
 
-  const ART = [
-    '  ██████╗ ██╗   ██╗██████╗ ██████╗  ██████╗██╗      █████╗ ██╗    ██╗',
-    '  ██╔══██╗██║   ██║██╔══██╗██╔══██╗██╔════╝██║     ██╔══██╗██║    ██║',
-    '  ██████╔╝██║   ██║██████╔╝██████╔╝██║     ██║     ███████║██║ █╗ ██║',
-    '  ██╔═══╝ ██║   ██║██╔══██╗██╔═══╝ ██║     ██║     ██╔══██║██║███╗██║',
-    '  ██║     ╚██████╔╝██║  ██║██║     ╚██████╗███████╗██║  ██║╚███╔███╔╝',
-    '  ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝      ╚═════╝╚══════╝╚═╝  ╚═╝ ╚══╝╚══╝',
-  ];
+    // Row 1: PURPCLAW brand
+    console.log('\n' + bTop);
+    console.log(bRow(
+      '  ' + col(C.magenta + C.bold, 'PURPCLAW') + '  ' +
+      '  ' + col(C.green, 'ONLINE') + '     ' +
+      col(C.gray, '32/32 UP') + '  ' +
+      col(C.gray, '|  ') +
+      col(C.cyan, '152 AGENTS') + '  ' +
+      col(C.gray, '|  ') +
+      col(C.white, '501 TOOLS') + '  ' +
+      col(C.gray, '|  ') +
+      col(C.gray, 'v0.9.0-rc') + '  ' +
+      ' '.repeat(Math.max(0, inner - 100)) +
+      '  ' + col(C.gray, ts)
+    ));
 
-  const now = new Date();
-  const ts  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}  ${now.toLocaleTimeString('en-GB')}`;
-  const tagline  = '  🦞  PURPCLAW  —  TINY HAUNTED WORKSHOP  🦞';
-  const subtitle = `  Agent Orchestration Runtime  ·  ${ts}`;
+    // Row 2: subtitle + mode
+    console.log(bRow(
+      '  ' + col(C.gray, 'PURPCLAW TUI  ·  One Mission / Many Lenses') +
+      ' '.repeat(Math.max(0, inner - 60)) +
+      '  ' + col(C.green + C.bold, '● SYSTEM OPERATIONAL')
+    ));
 
-  console.log('\n' + bTop);
-  console.log(bRow(''));
-  for (const line of ART) console.log(bRow(col(C.magenta + C.bold, line)));
-  console.log(bRow(''));
-  console.log(bMid);
-  console.log(bRow(col(C.magenta + C.bold, tagline)));
-  console.log(bMid);
-  console.log(bRow(col(C.gray, subtitle)));
-  console.log(bBot + '\n');
+    console.log(bBot + '\n');
 }
 
 function sectionHead(title) {
@@ -619,7 +646,7 @@ async function cmdStart(args) {
   console.log('');
 
   if (online.some(r => r.pm2 === 'purpclaw-nextjs')) {
-    console.log(`  ${col(C.gray, 'Mission Control')}  ${col(C.gray, '→')}  ${col(C.cyan + C.bold, 'http://localhost:3000')}`);
+    console.log(`  ${col(C.gray, 'Mission Control')}  ${col(C.gray, '→')}  ${col(C.cyan + C.bold, 'http://localhost:3030')}`);
   }
   console.log(`  ${col(C.gray, 'API Gateway    ')}  ${col(C.gray, '→')}  ${col(C.cyan, 'http://localhost:7780')}`);
   console.log(`  ${col(C.gray, 'Agent Tower    ')}  ${col(C.gray, '→')}  ${col(C.cyan, 'http://localhost:7790')}`);
@@ -2419,13 +2446,14 @@ rl.close();
     });
     console.log(col(C.cyan, '  PURPCLAW is booting in the background.'));
     console.log(col(C.gray, '  Watch: purpclaw status'));
-    console.log(col(C.gray, '  Web:   http://localhost:3000\n'));
+    console.log(col(C.gray, '  Web:   http://localhost:3030\n'));
   }
 
   console.log(col(C.green + C.bold, '  ✔  PURPCLAW IS READY\n'));
   console.log(col(C.gray, '  Next:'));
   console.log(`    ${col(C.cyan, 'purpclaw status')}      live dashboard`);
   console.log(`    ${col(C.cyan, 'purpclaw mochi')}      chat with your companion`);
+  console.log(`    ${col(C.red,   'purpclaw awaken')}      DO NOT PRESS — the machine breathes`);
   console.log(`    ${col(C.cyan, 'purpclaw doctor')}     health check`);
   console.log(`    ${col(C.cyan, 'purpclaw run "<task>"')} dispatch an agent task\n`);
   } finally {
@@ -3690,6 +3718,7 @@ async function cmdTick(args) {
   }
 }
 
+// ── spaghetti ─────────────────────────────────────────────────────────────────────
 function cmdSpaghetti(args) {
   const sub = (args[0] || 'audit').toLowerCase();
   const target = args[1];
@@ -3754,6 +3783,34 @@ function cmdSpaghetti(args) {
   }
 
   console.log(col(C.gray, '\n  Usage: purpclaw spaghetti audit | explain <file> | rewrite-plan <file> | diff <before> <after> | quarantine <file> | annona <file>\n'));
+}
+
+// ── squad ─────────────────────────────────────────────────────────────────────
+async function cmdSquad(args) {
+  const squad = require(path.join(PURP_DIR, 'lib', 'squad'));
+  const sub = (args[0] || '').toLowerCase();
+
+  if (sub === 'feed') {
+    const result = squad.feedPet(args[1] || 'mochi', args[2] || 'snack');
+    console.log(result.error || `  ${result.pet} — ${result.mood} · ${result.reaction}`);
+    return;
+  }
+
+  if (sub === 'react') {
+    const r = squad.squadReact(args[1] || 'mochi', args[2] || 'idle');
+    console.log(r ? `  ${r}` : `  pet not found`);
+    return;
+  }
+
+  const status = squad.squadStatus();
+  console.log('');
+  console.log('  === Pet Squad ===');
+  for (const pet of status.pets) {
+    const m = pet.mood === 'happy' ? '●' : pet.mood === 'concerned' ? '○' : '◌';
+    console.log(`  ${m} ${pet.slug} (${pet.name})`);
+    console.log(`     ${pet.personality} · mood: ${pet.mood} · chats: ${pet.interactions}`);
+  }
+  console.log(`\n  Total: ${status.totalInteractions} interactions\n`);
 }
 
 // ── tui ───────────────────────────────────────────────────────────────────────
@@ -3883,6 +3940,29 @@ function cmdHelp() {
     ['purpclaw pool reindex',          'Rebuild index from disk'],
   ]);
 
+  section('🧠  BRAIN STACK', [
+    ['purpclaw brain',                'Show full brain stack — controller + worker lanes'],
+    ['purpclaw brain -v',            'Full config with fallbacks'],
+    ['purpclaw route "<task>"',     'Show which lane a task routes to'],
+    ['purpclaw providers status',    'Provider readiness: configured / verified / auth_failed'],
+    ['purpclaw providers verify',    'Re-probe all providers with live calls'],
+  ]);
+
+  section('🐾  COMPANION PET', [
+    ['purpclaw pet',                 'Pet status — mood, hunger, energy, happiness'],
+    ['purpclaw pet feed [food]',     'Feed the pet (cookie, pizza, sushi...)'],
+    ['purpclaw pet pet',            'Pet it'],
+    ['purpclaw pet play [toy]',      'Play fetch (ball, frisbee, laser, yarn)'],
+    ['purpclaw pet sleep',          'Sleep time'],
+    ['purpclaw pet wake',           'Wake up'],
+    ['purpclaw pet clean',          'Bath time'],
+    ['purpclaw pet mute',           'Mute / unmute companion'],
+    ['purpclaw pet name [n]',       'Rename the pet'],
+    ['purpclaw pet trick [n]',      'Teach a trick'],
+    ['purpclaw pet thoughts',       'Current thought + message'],
+    ['purpclaw pet reset',          'Reset pet state'],
+  ]);
+
   section('📦  REGISTRY  (139 skills  ·  38 Claude-agent definitions)', [
     ['purpclaw registry browse',       'See all skills + agents with install status'],
     ['purpclaw install <name>',        'Install a skill from the local registry'],
@@ -3947,7 +4027,7 @@ function cmdHelp() {
     ['purpclaw smoke',                 'End-to-end self-test: services + LLM + pool + memory + dispatch'],
     ['purpclaw smoke --quick',         'Skip the orchestrator workflow round-trip'],
     ['purpclaw smoke --json',          'Machine-readable for CI'],
-    ['purpclaw safe-start --core',     'Wake the 16-service stable baseline (one at a time)'],
+    ['purpclaw safe-start --core',     'Wake the stable core baseline (one at a time)'],
     ['purpclaw safe-start --dark',     'Sequentially wake defined-but-dark services (no Windows cmd flood)'],
     ['purpclaw safe-start <name>',     'Start one service with circuit breaker + stabilisation watch'],
     ['purpclaw safe-stop --dark',      'Sequentially put the dark cluster back to sleep'],
@@ -3980,7 +4060,7 @@ function cmdHelp() {
   console.log(`\n  ${col(C.cyan + C.bold, '🗺  PORTS')}`);
   console.log(col(C.gray, '  ┌──────────────────────────────────────────────────────────────────────────┐'));
   const portRows = [
-    [3000, 'Next.js Mission Control UI'],
+    [3030, 'Next.js Mission Control UI'],
     [7780, 'unified-api   — main HTTP API + MCP tools'],
     [7781, 'voice-coord   — intent parsing + TTS'],
     [7782, 'eventbus      — central pub/sub broker'],
@@ -4003,7 +4083,7 @@ function cmdHelp() {
 
   console.log('');
   console.log(`  ${col(C.magenta, 'purpclaw tui')}   ${col(C.gray, '— launch the live cockpit')}`);
-  console.log(`  ${col(C.gray, 'Web UI')}        ${col(C.gray, '—')}  ${col(C.cyan, 'http://localhost:3000')}`);
+  console.log(`  ${col(C.gray, 'Web UI')}        ${col(C.gray, '—')}  ${col(C.cyan, 'http://localhost:3030')}`);
   console.log(`  ${col(C.gray, 'Pool')}          ${col(C.gray, '—')}  ${col(C.cyan, 'http://localhost:7885')}`);
   console.log('');
   console.log(col(C.gray, '  The hammers walk. The tickets file themselves. The pool is open.'));
@@ -4042,6 +4122,12 @@ async function main() {
   }
   let [command, ...args] = cleanArgv;
 
+  // Chat-first entry: bare `purpclaw` opens the conversational agent.
+  if (!command) {
+    command = 'ask';
+    args = [];
+  }
+
   // Explicit help/version paths
   if (command === 'help' || command === '--help' || command === '-h') {
     cmdHelp(); return;
@@ -4077,7 +4163,7 @@ async function main() {
     console.log(col(C.cyan, `    ${col(C.bold, '1')}. CLI chat        `) + col(C.gray, '(purpclaw ask — interactive agent chat)'));
     console.log(col(C.cyan, `    ${col(C.bold, '2')}. TUI cockpit     `) + col(C.gray, '(purpclaw tui — live dashboard)'));
     console.log(col(C.cyan, `    ${col(C.bold, '3')}. TUI ask         `) + col(C.gray, '(purpclaw tui ask — full-screen chat)'));
-    console.log(col(C.cyan, `    ${col(C.bold, '4')}. WebUI           `) + col(C.gray, '(http://localhost:3000 — mission control)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '4')}. WebUI           `) + col(C.gray, '(http://localhost:3030 — mission control)'));
     console.log(col(C.cyan, `    ${col(C.bold, '5')}. Setup wizard    `) + col(C.gray, '(configure providers)'));
     console.log(col(C.cyan, `    ${col(C.bold, '6')}. Guided tour     `) + col(C.gray, '(TTS-narrated walkthrough)'));
     console.log(col(C.cyan, `    ${col(C.bold, '7')}. Help            `) + col(C.gray, '(show all commands)'));
@@ -4093,10 +4179,27 @@ async function main() {
       else if (choice === '2') { command = 'tui'; args = []; }
       else if (choice === '3') { command = 'tui'; args = ['ask']; }
       else if (choice === '4') {
-        console.log(col(C.green, '\n  🚀 Opening WebUI at http://localhost:3000'));
-        console.log(col(C.gray, '  Make sure the backend is running: purpclaw start\n'));
-        const { exec } = require('child_process');
-        exec('start http://localhost:3000');
+        // WebUI launcher — check backend before opening browser
+        console.log(col(C.gray, '\n  Checking backend...'));
+        const { execSync } = require('child_process');
+        let backendOk = false;
+        try {
+          const r = execSync('curl -s --max-time 2 http://127.0.0.1:7780/health', { timeout: 4000, encoding: 'utf8', windowsHide: true });
+          backendOk = r.includes('ok') || r.includes('200');
+        } catch {}
+
+        if (!backendOk) {
+          console.log(col(C.yellow, '  ⚠ Backend offline — starting services...\n'));
+          try {
+            execSync('start cmd /c purpclaw start', { detached: true, stdio: 'ignore', windowsHide: true });
+          } catch {}
+          console.log(col(C.gray, '  Run `purpclaw start` manually if the browser does not open.\n'));
+          console.log(col(C.green, '  Opening WebUI at http://localhost:3030 anyway...\n'));
+        } else {
+          console.log(col(C.green, '  ✓ Backend online\n'));
+        }
+
+        execSync('start http://localhost:3030', { windowsHide: true });
         process.exit(0);
       }
       else if (choice === '5') { command = 'setup'; args = []; }
@@ -4138,6 +4241,358 @@ function httpJSON(method, port, path, timeoutMs = 8000) {
     req.on('timeout', () => { req.destroy(); resolve({ error: 'timeout' }); });
     req.end();
   });
+}
+
+async function cmdSmoke(args = []) {
+  // purpclaw smoke              → run full end-to-end smoke, print report
+  // purpclaw smoke --only chain → only that layer
+  // purpclaw smoke --json       → machine-readable
+  // Mirrors GET /api/smoke — same underlying scripts/smoke-test.mjs.
+  const { execSync } = require('child_process');
+  banner();
+  sectionHead('  SMOKE TEST — the CLI talking to itself, layer by layer');
+  const script = path.join(PURP_DIR, 'scripts', 'smoke-test.mjs');
+  const only = args.includes('--only') ? ['--only', args[args.indexOf('--only') + 1]] : [];
+  const json = args.includes('--json') ? ['--json'] : [];
+  try {
+    execSync(`node "${script}" ${[...only, ...json].join(' ')}`, { cwd: PURP_DIR, stdio: 'inherit', timeout: 180000 });
+    console.log(col(C.green, `\n  smoke: green — every layer proven callable\n`));
+  } catch (e) {
+    console.log(col(C.red, `\n  smoke: FAILED — see report above (public/showcase/smoke-report.json)\n`));
+  }
+}
+
+async function cmdApiCall(args = []) {
+  // purpclaw api <route>            → GET /api/<route>
+  // purpclaw api <route> --post <json>  → POST /api/<route> with body
+  // The generic CLI-over-API bridge: any Next API route is reachable from the
+  // CLI without hand-coding a case for it. Closes the API-only side of parity.
+  const routePath = args[0];
+  if (!routePath) {
+    banner(); sectionHead('  API CALL — generic CLI→API bridge');
+    console.log(col(C.gray, `  usage: purpclaw api <route> [--post '<json>']\n         purpclaw api heartbeat\n         purpclaw api steer --post '{"message":"build login"}'\n`));
+    return;
+  }
+  const postIdx = args.findIndex(a => a === '--post');
+  const method = postIdx >= 0 ? 'POST' : 'GET';
+  const body = postIdx >= 0 ? args.slice(postIdx + 1).join(' ') : null;
+  const clean = routePath.replace(/^\/*(api\/)?/, '');
+  return new Promise((resolve) => {
+    const http = require('http');
+    const req = http.request({
+      hostname: '127.0.0.1', port: 3030, path: '/api/' + clean, method,
+      headers: body ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } : {},
+    }, (res) => {
+      let data = ''; res.on('data', c => data += c);
+      res.on('end', () => {
+        console.log(col(C.gray, `  ${method} /api/${clean}  →  ${res.statusCode}`));
+        try { console.log(JSON.stringify(JSON.parse(data), null, 2)); }
+        catch { console.log(data.slice(0, 4000)); }
+        resolve();
+      });
+    });
+    req.setTimeout(45000, () => { req.destroy(new Error('45s timeout')); });
+    req.on('error', (e) => { console.log(col(C.red, `  request failed: ${e.message}`)); resolve(); });
+    if (body) req.write(body);
+    req.end();
+  });
+}
+
+async function cmdApiRouteWrapper(routePath, args = []) {
+  const cleanedArgs = Array.isArray(args) ? args : [];
+  return cmdApiCall([routePath, ...cleanedArgs]);
+}
+
+async function cmdParityAudit(_args = []) {
+  // purpclaw parity-audit → the real system-wide CLI↔API parity delta.
+  const { execSync } = require('child_process');
+  banner(); sectionHead('  PARITY AUDIT — CLI ↔ API delta (real, not curated)');
+  try { execSync(`node scripts/audit-parity.mjs`, { cwd: PURP_DIR, stdio: 'inherit' }); } catch { /* soft */ }
+  const fs = require('fs');
+  try {
+    const rep = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'public', 'showcase', 'parity-report.json'), 'utf8'));
+    console.log(col(C.cyan, `\n  CLI cases: ${rep.cli_cases_total}   API routes: ${rep.api_routes_total}   matched: ${rep.matched}`));
+    console.log(col(rep.parity_pct_api_side < 80 ? C.yellow : C.green, `  api-side parity: ${rep.parity_pct_api_side}%    cli-side parity: ${rep.parity_pct_cli_side}%`));
+    console.log(col(C.gray, `\n  ${rep.api_without_cli} API routes have no CLI (call via: purpclaw api <route>)`));
+    console.log(col(C.gray, `  ${rep.cli_without_api} CLI cases have no API`));
+    console.log(col(C.gray, `\n  full report: docs/PARITY_AUDIT.md   |   json: public/showcase/parity-report.json\n`));
+  } catch (e) { console.log(col(C.red, '  no report: ' + e.message)); }
+}
+
+async function cmdWatch(args = []) {
+  // purpclaw watch [jobId]      → stream every hop of that job in real time
+  // purpclaw watch --all         → stream ALL live events (all jobs, all sources)
+  // purpclaw watch --tail 20     → replay last N first, then stream
+  // Ctrl+C to exit. Reads lib/trace-store.subscribe (in-process events) + tails
+  // ~/.purpclaw/trace/recent.jsonl (durable log) so it works even without an
+  // active service (as long as the trace-store module is loaded by something).
+  const jobId = args.find(a => !a.startsWith('--'));
+  const filterAll = args.includes('--all') || !jobId;
+  const snapshot = args.includes('--snapshot');
+  const tailN = (() => { const i = args.indexOf('--tail'); return i >= 0 ? parseInt(args[i+1] || '0', 10) : 0; })();
+  banner();
+  sectionHead(`  LIVE WATCH — ${jobId ? 'jobId=' + jobId : 'ALL EVENTS'}${tailN ? ' (tail ' + tailN + ')' : ''}${snapshot ? ' snapshot' : ''}`);
+  console.log(col(C.gray, `  ${new Date().toISOString()} — ${snapshot ? 'snapshot mode.' : 'subscribed. Ctrl+C to exit.'}\n`));
+
+  const trace = require('../lib/trace-store');
+  const seen = new Set();
+  function render(t) {
+    if (!t) return;
+    if (!filterAll && jobId && t.jobId !== jobId) return;
+    if (seen.has(t.id)) return; seen.add(t.id);
+    const stage = String(t.action || '').replace('chain.', '');
+    const status = String(t.status || '');
+    const c = status === 'failed' ? C.red : status === 'done' || status === 'verified' ? C.green : status === 'delegated' || status === 'routed' ? C.cyan : C.gray;
+    const ts = String(t.at || '').slice(11, 19);
+    const src = (t.source || '?').slice(0, 14).padEnd(14);
+    const route = (t.route || '').slice(0, 22).padEnd(22);
+    const detail = (t.detail || '').slice(0, 100);
+    const job = (t.jobId || '').slice(0, 14).padEnd(14);
+    console.log(`  ${col(c, '●')} ${col(C.gray, ts)} ${col(C.bold, job)} ${col(C.gray, src)} ${col(c, (stage || 'event').padEnd(11))} ${col(C.gray, route)} ${col(C.gray, detail)}`);
+  }
+  // Replay tail if asked (or a default small tail so you see recent context)
+  const initialTail = tailN || 8;
+  for (const t of (trace.recent(200).slice(-initialTail))) render(t);
+  if (snapshot) {
+    console.log(col(C.gray, `\n  watch: snapshot closed (${seen.size} event${seen.size === 1 ? '' : 's'})\n`));
+    return;
+  }
+  // Subscribe live
+  const off = trace.subscribe(render);
+  await new Promise((resolve) => {
+    process.on('SIGINT', () => { try { off && off(); } catch {} console.log(col(C.gray, '\n  watch: closed\n')); resolve(); });
+  });
+}
+
+async function cmdFlow(args = []) {
+  // purpclaw flow "<goal>"   → open a real job for a goal AND stream its full
+  //   chain live to stdout (steer → route → delegate → agent → tool → done).
+  //   This is the "see every part of the stack passing information from chat
+  //   to end product" command. One call, one live view.
+  const goal = args.join(' ').replace(/^["']|["']$/g, '');
+  banner();
+  sectionHead(`  FLOW — end-to-end live watch of one goal`);
+  if (!goal) {
+    console.log(col(C.gray, `  usage: purpclaw flow "<goal>"   — e.g.: purpclaw flow "build a website with media and a game about itself"\n`));
+    return;
+  }
+  console.log(col(C.cyan, `  GOAL → "${goal}"\n`));
+  // 1) Steer with execute:true → opens a real kernel job
+  const steer = require('../lib/steering-router');
+  const decision = steer.steer(goal, { source: 'purpclaw-flow', execute: true });
+  const jobId = decision.jobId || decision.steerId || 'no-job';
+  console.log(col(decision.delegated ? C.green : C.yellow,
+    `  steer: route=${decision.route}${decision.agent ? ' agent=' + decision.agent : ''} reason="${decision.reason}" conf=${decision.confidence}`));
+  console.log(col(C.gray, `  jobId=${jobId}${decision.delegated ? ' (delegated)' : ' (preview)'}\n`));
+  // 2) Stream every hop for this job until Ctrl+C or done/failed
+  console.log(col(C.gray, `  ─ LIVE CHAIN (Ctrl+C to exit) ─────────────────────────────────`));
+  const trace = require('../lib/trace-store');
+  const seen = new Set();
+  let done = false;
+  function render(t) {
+    if (!t || (t.jobId !== jobId && !(t.jobId || '').startsWith(jobId))) return;
+    if (seen.has(t.id)) return; seen.add(t.id);
+    const stage = String(t.action || '').replace('chain.', '');
+    const status = String(t.status || '');
+    const c = status === 'failed' ? C.red : status === 'done' || status === 'verified' ? C.green : status === 'delegated' || status === 'routed' ? C.cyan : C.gray;
+    const ts = String(t.at || '').slice(11, 19);
+    const route = (t.route || '').slice(0, 24).padEnd(24);
+    const detail = (t.detail || '').slice(0, 120);
+    console.log(`  ${col(c, '●')} ${col(C.gray, ts)} ${col(c, (stage || 'event').padEnd(11))} ${col(C.gray, route)} ${col(C.gray, detail)}`);
+    if (status === 'done' || status === 'failed') done = true;
+  }
+  for (const t of (trace.recent(400))) render(t);
+  const off = trace.subscribe(render);
+  // Fallback: also print the final chain snapshot every 4s so the user sees progress even if events are quiet
+  const chainMod = require('../lib/job-chain');
+  const printer = setInterval(() => {
+    const v = chainMod.get(jobId);
+    if (v.status !== 'unknown') console.log(col(C.gray, `  … chain status=${v.status} steps=${v.steps.length}${v.failedAt ? ' failedAt=' + v.failedAt.area : ''}`));
+    if (done || v.status === 'complete' || v.status === 'failed') { clearInterval(printer); try { off && off(); } catch {} process.exit(0); }
+  }, 4000);
+  await new Promise((resolve) => {
+    process.on('SIGINT', () => { try { off && off(); } catch {} console.log(col(C.gray, '\n  flow: closed\n')); resolve(); });
+  });
+}
+
+async function cmdSpine(_args = []) {
+  // purpclaw spine → the parity map. Same content as GET /api/spine so any
+  // agent/UI/CLI user discovers the same surfaces the same way.
+  banner();
+  sectionHead('  SPINE — one door per concern (CLI ↔ API parity)');
+  // Fetch the same map the API exposes. Keeping a fallback list in sync would
+  // fork the truth; instead, if the API isn't up, read the manifest's parity block.
+  let surfaces = null;
+  try {
+    const r = await httpJSON('GET', 3030, '/api/spine', 4000);
+    if (Array.isArray(r.surfaces)) surfaces = r.surfaces;
+  } catch { /* soft */ }
+  if (!surfaces) {
+    try {
+      const fs = require('fs');
+      const p = require('path').join(process.cwd(), 'public', 'showcase', 'truth-manifest.json');
+      const m = JSON.parse(fs.readFileSync(p, 'utf8'));
+      surfaces = (m.parity && m.parity.surfaces) || [];
+      surfaces = surfaces.map(s => ({ surface: s.surface, cli: `purpclaw ${s.surface}`, api: { path: `/api/${s.surface}` } }));
+    } catch { surfaces = []; }
+  }
+  if (!surfaces.length) { console.log(col(C.gray, `  (no spine map available — run: npm run truth)\n`)); return; }
+  console.log(col(C.gray, `  ${surfaces.length} surfaces — every one callable identically from CLI, chat, and main UI:\n`));
+  for (const s of surfaces) {
+    console.log(col(C.cyan, `  ${s.surface}`) + (s.owns ? col(C.gray, ` — ${s.owns}`) : ''));
+    if (s.cli) console.log(col(C.gray, `      CLI  ${s.cli}`));
+    if (s.api) console.log(col(C.gray, `      API  ${s.api.method || 'GET'} ${s.api.path}` + (s.api.body ? `  body: ${s.api.body}` : '')));
+    if (s.returns) console.log(col(C.gray, `      →    ${s.returns}`));
+    console.log('');
+  }
+}
+
+async function cmdSteer(args = []) {
+  // purpclaw steer "<message>"            → classify only (preview)
+  // purpclaw steer --execute "<message>"  → route + open a real job (delegated)
+  // Mirrors POST /api/steer exactly, so CLI and chat/UI share one door.
+  const doExecute = args.includes('--execute') || args.includes('--go');
+  const message = args.filter(a => !/^--(execute|go)$/.test(a)).join(' ').replace(/^["']|["']$/g, '');
+  banner();
+  sectionHead('  STEER — where does this request go');
+  if (!message) { console.log(col(C.gray, `  usage: purpclaw steer "<message>" [--execute]\n`)); return; }
+  const steering = require('../lib/steering-router');
+  const r = steering.steer(message, { source: 'cli', execute: doExecute });
+  const c = r.delegated ? C.green : C.cyan;
+  console.log(col(c, `  route=${r.route}${r.agent ? ' agent=' + r.agent : ''}${r.skill ? ' skill=' + r.skill : ''}`));
+  console.log(col(C.gray, `    reason: ${r.reason}   confidence: ${r.confidence}`));
+  if (r.delegated) console.log(col(C.green, `    DELEGATED → job ${r.jobId} (poll: purpclaw chain ${r.jobId})`));
+  else console.log(col(C.gray, `    preview only — re-run with --execute to open a real job`));
+  console.log('');
+}
+
+async function cmdInsight(args = []) {
+  // purpclaw insight "<lesson>"     → capture a mid-job better-way (instant)
+  // purpclaw insight recall "<q>"   → recall learned better-ways
+  // purpclaw insight recent         → last 10 captured
+  // Mirrors POST /api/insight so agents/chat/CLI all feed the same brain.
+  const sub = (args[0] || '').toLowerCase();
+  const ins = require('../lib/insight');
+  banner();
+  sectionHead('  INSIGHT — mid-job learning');
+  if (sub === 'recall' || sub === 'r') {
+    const q = args.slice(1).join(' ').replace(/^["']|["']$/g, '') || 'better way to do this';
+    const { insights, formatted } = await ins.recall(q, { limit: 8 });
+    if (!insights.length) { console.log(col(C.gray, `  (no insights match "${q}")\n`)); return; }
+    console.log(col(C.cyan, `  ${insights.length} learned better-way(s) for "${q}":`));
+    insights.forEach((r, i) => console.log(col(C.gray, `    ${i + 1}. [${r.layer || '?'}] ${String(r.content || r.text || '').replace(ins.TAG, '').trim().slice(0, 150)}`)));
+    console.log('');
+    return;
+  }
+  if (sub === 'recent') {
+    const { insights } = await ins.recall('', { limit: 10 });
+    if (!insights.length) { console.log(col(C.gray, '  (no recent insights)\n')); return; }
+    insights.forEach((r, i) => console.log(col(C.gray, `    ${i + 1}. ${String(r.content || r.text || '').replace(ins.TAG, '').trim().slice(0, 150)}`)));
+    console.log('');
+    return;
+  }
+  const text = args.join(' ').replace(/^["']|["']$/g, '');
+  if (!text) { console.log(col(C.gray, `  usage: purpclaw insight "<lesson>"  |  insight recall "<q>"  |  insight recent\n`)); return; }
+  const id = await ins.capture(text, { source: 'cli', kind: 'tooling' });
+  if (id) console.log(col(C.green, `  CAPTURED → memory ${String(id).slice(0, 12)} (instant recall — cache cleared)\n`));
+  else console.log(col(C.yellow, `  capture path OK, spine :7880 not confirmed (persistence uncertain until service up)\n`));
+}
+
+async function cmdChain(args = []) {
+  // purpclaw chain <jobId>           → the job's full start→finish chain
+  // purpclaw chain                   → last 20 job-chain events (all jobs)
+  // Mirrors the `chain` block from GET /api/kernel/jobs/[id].
+  const jobId = args[0];
+  banner();
+  sectionHead('  JOB CHAIN — start → finish, exact break point');
+  const chain = require('../lib/job-chain');
+  if (!jobId) {
+    // No id: dump recent chain events across all jobs.
+    const trace = require('../lib/trace-store');
+    const rows = trace.recent(60).filter(t => String(t.action || '').startsWith('chain.'));
+    if (!rows.length) { console.log(col(C.gray, `  (no chain events yet)\n`)); return; }
+    for (const r of rows.slice(-20)) {
+      const c = r.status === 'failed' ? C.red : r.status === 'done' ? C.green : C.cyan;
+      console.log(`  ${col(c, '●')} ${col(C.gray, String(r.at || '').slice(11, 19))} ${col(C.bold, (r.jobId || '?').slice(0, 14).padEnd(14))} ${col(c, (String(r.action || '').replace('chain.', '') || '').padEnd(10))} ${col(C.gray, (r.route || '').padEnd(24))} ${col(C.gray, (r.detail || '').slice(0, 70))}`);
+    }
+    console.log('');
+    return;
+  }
+  const v = chain.get(jobId);
+  if (!v.steps.length) { console.log(col(C.yellow, `  no chain found for "${jobId}"\n`)); return; }
+  console.log(col(C.cyan, `  ${v.jobId} — status=${v.status}, ${v.steps.length} step(s)`));
+  for (const s of v.steps) {
+    const c = s.status === 'failed' ? C.red : s.status === 'done' ? C.green : C.cyan;
+    console.log(`    ${col(c, '●')} ${col(C.bold, s.stage.padEnd(11))} ${col(c, (s.area || '').padEnd(16))} ${col(C.gray, s.detail || '')}`);
+  }
+  if (v.failedAt) console.log(col(C.red, `\n  FAILED AT ${v.failedAt.area} — ${v.failedAt.detail}\n`));
+  else if (v.complete) console.log(col(C.green, `\n  DONE\n`));
+  else console.log(col(C.gray, `\n  still running\n`));
+}
+
+async function cmdReceipts(args = []) {
+  // purpclaw receipts                  → last 20 receipts
+  // purpclaw receipts stats            → totals + breakdown
+  // purpclaw receipts job <jobId>      → all receipts for a job (chain)
+  // purpclaw receipts agent <name>     → filter by agent
+  // purpclaw receipts fails            → recent failures only
+  const led = require('../lib/proof-ledger');
+  const sub = (args[0] || '').toLowerCase();
+  banner();
+  sectionHead('  PROOF LEDGER — receipts trail (~/.purpclaw/proof/ledger.jsonl)');
+  let rows = [];
+  if (sub === 'stats') {
+    const s = led.stats();
+    console.log(col(C.cyan, `  total receipts: ${s.total || 0}`));
+    console.log(`    ${col(C.green, 'verified')}: ${s.verified || 0}   ${col(C.red, 'failed')}: ${s.failed || 0}   ${col(C.yellow, 'rolled-back')}: ${s.rolledBack || 0}`);
+    if (s.fakeGreens > 0) console.log(col(C.red, `    ⚠ fake greens: ${s.fakeGreens} (status=verified/applied but verification!=pass)`));
+    else console.log(col(C.green, `    fake greens: 0 (no receipts claim pass without proof)`));
+    if (s.byStatus) { console.log(col(C.gray, `\n  by status:`)); for (const [k, v] of Object.entries(s.byStatus)) console.log(col(C.gray, `    ${k}: ${v}`)); }
+    if (s.byVerification) { console.log(col(C.gray, `\n  by verification:`)); for (const [k, v] of Object.entries(s.byVerification)) console.log(col(C.gray, `    ${k}: ${v}`)); }
+    if (s.byProject) { console.log(col(C.gray, `\n  by project:`)); for (const [k, v] of Object.entries(s.byProject).slice(0, 6)) console.log(col(C.gray, `    ${k}: ${v}`)); }
+    if (s.tokensEstimate) console.log(col(C.gray, `\n  tokens estimate: ${s.tokensEstimate.toLocaleString()}`));
+    console.log('');
+    return;
+  }
+  if (sub === 'job' && args[1]) rows = led.byTask(args[1]);
+  else if (sub === 'agent' && args[1]) rows = led.recent(200, { agent: args[1] });
+  else if (sub === 'fails') rows = led.recent(200, { status: 'failed' });
+  else rows = led.recent(Number(args[0]) > 0 ? Number(args[0]) : 20);
+  if (!rows.length) { console.log(col(C.gray, '  (no receipts match)\n')); return; }
+  for (const r of rows.slice(-30)) {
+    const c = r.status === 'verified' ? C.green : r.status === 'failed' ? C.red : C.gray;
+    const when = String(r.at || '').slice(11, 19);
+    console.log(`  ${col(c, '●')} ${col(C.gray, when)} ${col(C.bold, (r.agent || '?').slice(0, 14).padEnd(14))} ${col(c, (r.status || '').padEnd(9))} ${col(C.gray, (r.claim || r.action || '').slice(0, 90))}`);
+  }
+  console.log(col(C.gray, `\n  showing ${Math.min(30, rows.length)} of ${rows.length}\n`));
+}
+
+async function cmdPurpflow(args = []) {
+  // purpclaw purpflow <mode> "<objective>"   modes: goal plan validate execute review repair prove
+  // Controlled recursion with receipts — never "just keeps going".
+  const pf = require('../lib/purpflow');
+  const mode = (args[0] || 'help').toLowerCase();
+  const objective = args.slice(1).join(' ').replace(/^["']|["']$/g, '');
+  banner();
+  sectionHead('  PURPFLOW — controlled recursion with receipts');
+  if (mode === 'help' || !pf.MODES.includes(mode)) {
+    console.log(col(C.gray, `  modes: ${pf.MODES.join(' · ')}`));
+    console.log(col(C.gray, `  usage: purpclaw purpflow <mode> "<objective>"`));
+    console.log(col(C.gray, `  stop rules: ${pf.STOP_CONDITIONS.join(', ')}\n`));
+    return;
+  }
+  if (!objective) { console.log(col(C.yellow, `  need an objective: purpclaw purpflow ${mode} "<objective>"\n`)); return; }
+  console.log(col(C.cyan, `  ${mode.toUpperCase()} → "${objective}"\n`));
+  const loop = await pf.run(mode, objective, {});
+  for (const r of loop.receipts) {
+    const c = r.result === 'pass' ? C.green : r.result === 'fail' ? C.red : C.gray;
+    console.log(`  ${col(c, '●')} ${col(C.bold, r.step)} ${col(c, r.result || 'info')} — ${col(C.gray, r.detail)}`);
+    for (const e of (r.evidence || [])) console.log(col(C.gray, `      ${e}`));
+  }
+  const done = loop.status === 'done';
+  console.log(`\n  ${col(done ? C.green : C.red, done ? 'DONE BECAUSE:' : `${loop.status.toUpperCase()} (stopped_by ${loop.stopped_by}):`)} ${col(C.gray, loop.receipts.filter(r => r.result === 'pass').map(r => r.step).join(', ') || '—')}`);
+  console.log(col(C.gray, `  loop ${loop.id} · ${loop.receipts.length} receipt(s) · ${loop.FLOW_DIR || '~/.purpclaw/purpflow'}\n`));
+  return loop;
 }
 
 async function cmdPulse(args = []) {
@@ -4355,16 +4810,16 @@ case 'registry': return cmdRegistry(args);
     case 'studio': {
       const Studio = require('../lib/studio');
       const s = new Studio();
-      // Guard: only handle 'studio' prefix. 'private', 'council' etc have their own cases.
-      if (args[0] !== 'studio') {
-        console.error('Studio case called without studio prefix: ' + JSON.stringify(args));
-        return;
-      }
-      const action = args[1];
+      // action = args[0] = subcommand ('modes', 'traditions', 'begin', etc.)
+      const action = args[0];
       const sub = args[2];
+      if (!action) {
+        console.log('Usage: purpclaw studio <begin|world|inject|status|end|duck|influence|modes|speak|look|memories|ambient|traditions|private|conversations>');
+        break;
+      }
       if (action === 'begin' || action === 'start') {
-        // mode is args[2] (studio begin radio) or args[1] (studio radio)
-        const mode = sub ? args[2] : args[1];
+        // mode = args[2] (studio begin radio) or args[1] (studio radio)
+        const mode = args[1] === 'begin' || args[1] === 'start' ? args[2] : args[1];
         if (!mode) {
           console.log('Usage: purpclaw studio begin <mode> [topic]');
           console.log('Modes:', Object.keys(s.modes).join(', '));
@@ -4452,22 +4907,57 @@ case 'registry': return cmdRegistry(args);
         traditions.forEach(t => console.log(s.formatTradition(t)));
       } else if (action === 'private' || sub === 'private') {
         (function() {
-          var agA = args[2] || 'goose';
-          var agB = args[3] || 'maverick';
-          console.error('[DEBUG private] agA=' + agA + ' agB=' + agB);
-          var topicStr = args.slice(4).join(' ') || undefined;
-          console.error('[DEBUG private] topicStr=' + topicStr);
+          // args: ['private', 'goose', 'maverick'] or ['studio', 'private', 'goose', 'maverick']
+          var agA = args[1] || 'goose';
+          var agB = args[2] || 'maverick';
+          var topicStr = args.slice(3).join(' ') || undefined;
           var result = s.generatePrivateConversation(agA, agB, { topic: topicStr });
           console.log(result.rendered);
         }());
+      } else if (action === 'look' || sub === 'look') {
+        if (!s.session) { console.log('No active session.'); return; }
+        console.log(s.renderConversation());
+      } else if (action === 'render' || sub === 'render') {
+        if (!s.session) { console.log('No active session.'); return; }
+        console.log(s.renderConversation());
       } else if (action === 'conversations' || sub === 'conversations') {
         const convs = s.getPrivateConversations({ limit: 5 });
         if (!convs.length) { console.log('No private conversations yet.'); return; }
-        convs.forEach(c => {
-          console.log(`\n  💬 ${c.agents.join(' + ')} — ${c.topic} (${c.timestamp.split('T')[0]})`);
+        convs.forEach(function(c) {
+          console.log('\n  💬 ' + c.agents.join(' + ') + ' — ' + c.topic + ' (' + c.timestamp.split('T')[0] + ')');
         });
+      } else if (action === 'confidence' || sub === 'confidence') {
+        const Erosion = require('../lib/erosion');
+        const report = Erosion.confidenceReport();
+        console.log('\n  🧠 MEMORY CONFIDENCE REPORT');
+        console.log('  ─────────────────────────────────────────────');
+        console.log('  Total memories:  ' + report.total);
+        console.log('  🟢 Solid (≥75%): ' + report.solid);
+        console.log('  🟡 Weathered:    ' + report.weathered);
+        console.log('  🟠 Faded:        ' + report.faded);
+        console.log('  💀 Cold cases:   ' + report.cold_cases);
+        if (report.fragmented > 0) console.log('  ⚠ Fragmented:   ' + report.fragmented);
+        console.log('  Avg confidence:  ' + report.avg_confidence + '%');
+      } else if (action === 'coldcases' || sub === 'coldcases') {
+        const Erosion = require('../lib/erosion');
+        const cold = Erosion.getColdCases({ limit: 10 });
+        if (!cold.length) { console.log('No cold cases. The organisation remembers everything. For now.'); }
+        else {
+          console.log('\n  💀 COLD CASE LEDGER — ' + cold.length + ' open mystery(ies)');
+          console.log('  ─────────────────────────────────────────────');
+          cold.forEach(function(m) { console.log(Erosion.formatMemory(m)); });
+        }
+      } else if (action === 'annotate' || sub === 'annotate') {
+        const sessionId = args[1];
+        const annotator = args[2] || 'unknown';
+        const note = args.slice(3).join(' ') || '';
+        if (!sessionId || !note) { console.log('Usage: purpclaw studio annotate <session_id> <agent_id> <note...>'); return; }
+        const Erosion = require('../lib/erosion');
+        const result = Erosion.annotateMemory(sessionId, annotator, note);
+        if (result) console.log('Annotated. ' + result.annotations.length + ' annotation(s) now on record.');
+        else console.log('Memory not found: ' + sessionId);
       } else {
-        console.log('Usage: purpclaw studio <begin|world|inject|status|end|duck|influence|modes|speak|look|memories|ambient|traditions|private|conversations>');
+        console.log('Usage: purpclaw studio <begin|world|inject|status|end|duck|influence|modes|speak|look|memories|ambient|traditions|private|conversations|confidence|coldcases|annotate>');
       }
       break;
     }
@@ -4475,6 +4965,7 @@ case 'registry': return cmdRegistry(args);
     case 'helpme':     return loadCmd('next').run(args, sharedCtx());
     case 'workflow':   return loadCmd('workflow').run(args, sharedCtx());
     case 'drift':      return loadCmd('drift').run(args, sharedCtx());
+    case 'awaken':     return loadCmd('awaken').run(args);
     case 'evolve':     return loadCmd('evolve').run(args, sharedCtx());
     case 'autoresearch':
     case 'auto-research': return loadCmd('autoresearch').run(args, sharedCtx());
@@ -4495,6 +4986,7 @@ case 'registry': return cmdRegistry(args);
     case 'tick':     return cmdTick(args);
     case 'mochi':      return cmdMochi(args);
     case 'spaghetti': return cmdSpaghetti(args);
+    case 'squad':     return cmdSquad(args);
     case 'llm':       return loadCmd('llm').run(args, sharedCtx());
     case 'research':  return loadCmd('intelligence').run(['graph', ...args], sharedCtx());
     case 'intelligence': return loadCmd('intelligence').run(args, sharedCtx());
@@ -4527,6 +5019,83 @@ case 'registry': return cmdRegistry(args);
     case 'status':     return cmdStatus(args);
     case 'doctor':     return cmdDoctor(args);
     case 'pulse':     return cmdPulse(args);
+    case 'purpflow':
+    case 'loop':      return cmdPurpflow(args);
+    case 'receipts':
+    case 'ledger':    return cmdReceipts(args);
+    case 'steer':
+    case 'route-me':  return cmdSteer(args);
+    case 'insight':
+    case 'learn':
+    case 'insights':  return cmdInsight(args);
+    case 'chain':
+    case 'job-chain': return cmdChain(args);
+    case 'spine':
+    case 'surfaces-map':
+    case 'help-spine': return cmdSpine(args);
+    case 'smoke':
+    case 'self-test':
+    case 'smoke-test': return cmdSmoke(args);
+    case 'watch':
+    case 'stream':
+    case 'live':      return cmdWatch(args);
+    case 'flow':      return cmdFlow(args);
+    case 'heartbeat': return cmdApiRouteWrapper('heartbeat', args);
+    case 'mission-data': return cmdApiRouteWrapper('mission-data', args);
+    case 'sessions': return cmdApiRouteWrapper(args[0] && !args[0].startsWith('--') ? `sessions/${args[0]}` : 'sessions', args[0] && !args[0].startsWith('--') ? args.slice(1) : args);
+    case 'ollama': return cmdApiRouteWrapper('ollama', args);
+    case 'personality': return cmdApiRouteWrapper('personality', args);
+    case 'missions':
+    case 'harness-missions': {
+      if (args[0] === 'abort' && args[1]) return cmdApiRouteWrapper(`harness/missions/${args[1]}/abort`, args.slice(2));
+      if (args[0] && !args[0].startsWith('--')) return cmdApiRouteWrapper(`harness/missions/${args[0]}`, args.slice(1));
+      return cmdApiRouteWrapper('harness/missions', args);
+    }
+    case 'agent-scores': return cmdApiRouteWrapper('agent-scores', args);
+    case 'api-mega-list': return cmdApiRouteWrapper('api-mega-list', args);
+    case 'benchmark': return cmdApiRouteWrapper(args[0] ? `benchmark/${args[0]}` : 'benchmark/ledger', args[0] ? args.slice(1) : args);
+    case 'odysseus': return cmdApiRouteWrapper('benchmark/odysseus', args);
+    case 'bridge': return cmdApiRouteWrapper('bridge', args);
+    case 'cli': return cmdApiRouteWrapper('cli', args);
+    case 'computer-use': return cmdApiRouteWrapper('computer-use', args);
+    case 'discover': return cmdApiRouteWrapper('discover', args);
+    case 'event-timeline': return cmdApiRouteWrapper('event-timeline', args);
+    case 'eventbus': return cmdApiRouteWrapper(args[0] ? `eventbus/${args[0]}` : 'eventbus/stream', args[0] ? args.slice(1) : args);
+    case 'evolution': return cmdApiRouteWrapper(args[0] ? `evolution/${args[0]}` : 'evolution/status', args[0] ? args.slice(1) : args);
+    case 'gatekeeper-status': return cmdApiRouteWrapper('gatekeeper-status', args);
+    case 'harness-benchmarks': return cmdApiRouteWrapper('harness-benchmarks', args);
+    case 'host-telemetry': return cmdApiRouteWrapper('host-telemetry', args);
+    case 'internal': return cmdApiRouteWrapper(args[0] ? `internal/${args[0]}` : 'internal/check', args[0] ? args.slice(1) : args);
+    case 'llm-config': return cmdApiRouteWrapper('llm-config', args);
+    case 'llm-ledger': return cmdApiRouteWrapper('llm-ledger', args);
+    case 'llm-status': return cmdApiRouteWrapper('llm-status', args);
+    case 'manifest': return cmdApiRouteWrapper('manifest', args);
+    case 'mochi-action': return cmdApiRouteWrapper('mochi-action', args);
+    case 'orchestrate': return cmdApiRouteWrapper('orchestrate', args);
+    case 'output': return cmdApiRouteWrapper('output', args);
+    case 'playwright': return cmdApiRouteWrapper('playwright', args);
+    case 'preprompt': return cmdApiRouteWrapper('preprompt', args);
+    case 'proof': return cmdApiRouteWrapper('proof', args);
+    case 'proof-ledger': return cmdApiRouteWrapper('proof-ledger', args);
+    case 'pxpipe': return cmdApiRouteWrapper('pxpipe', args);
+    case 'registry': return cmdApiRouteWrapper('registry', args);
+    case 'rules': return cmdApiRouteWrapper(args[0] ? `rules/${args[0]}` : 'rules/refusal-weights', args[0] ? args.slice(1) : args);
+    case 'sampler': return cmdApiRouteWrapper('sampler', args);
+    case 'service-proxy': return cmdApiRouteWrapper('service-proxy', args);
+    case 'settings': return cmdApiRouteWrapper('settings', args);
+    case 'skill-amendments': return cmdApiRouteWrapper('skill-amendments', args);
+    case 'spine-health': return cmdApiRouteWrapper('spine-health', args);
+    case 'stack-whoami': return cmdApiRouteWrapper('stack-whoami', args);
+    case 'thringlets': return cmdApiRouteWrapper(args[0] ? `thringlets/${args[0]}` : 'thringlets', args[0] ? args.slice(1) : args);
+    case 'tower': return cmdApiRouteWrapper(args[0] ? `tower/${args[0]}` : 'tower/stream', args[0] ? args.slice(1) : args);
+    case 'trace': return cmdApiRouteWrapper(args[0] ? `trace/${args[0]}` : 'trace/recent', args[0] ? args.slice(1) : args);
+    case 'upload': return cmdApiRouteWrapper('upload', args);
+    case 'voice-command': return cmdApiRouteWrapper('voice-command', args);
+    case 'yo': return cmdApiRouteWrapper('yo', args);
+    case 'api':
+    case 'call':      return cmdApiCall(args);
+    case 'parity-audit':
+    case 'parity-scan': return cmdParityAudit(args);
     case 'team':     { const r = await loadCmd('team').run(args, sharedCtx()); if (typeof r === 'string') console.log(r); return r; }
     case 'whoami':    return cmdWhoami();
     case 'doctors':   return cmdDoctors(args);
@@ -4536,6 +5105,10 @@ case 'registry': return cmdRegistry(args);
     case 'release':    return cmdRelease(args);
     case 'health':     return cmdHealth(args);
     case 'identity':   return loadCmd('identity').run(args, sharedCtx());
+    case 'liveforge':  return loadCmd('liveforge').run(args, sharedCtx());
+    case 'mycelium':
+    case 'fungus':     return loadCmd('mycelium').run(args, sharedCtx());
+    case 'spinebus':   return loadCmd('spinebus').run(args, sharedCtx());
     case 'embeddings': return cmdEmbeddings(args);
     case 'embed':      return cmdEmbeddings(['embed', ...args]);
     // ── Resurrected commands (lib/commands/) ──────────────────────────────
@@ -4548,10 +5121,10 @@ case 'registry': return cmdRegistry(args);
     case 'autofix':    return loadCmd('autofix-pr').run(args, sharedCtx());
     case 'workers':
     case 'worker':    return loadCmd('workers').run(args, sharedCtx());
+    case 'session':    return cmdSession(args);
     case 'ask':       return loadCmd('ask').run(args, sharedCtx());
     case 'setup':
-    case 'wizard':
-    case 'onboard':   return loadCmd('setup').run(args, sharedCtx());
+    case 'wizard':    return loadCmd('setup').run(args, sharedCtx());
     case 'tour':
     case 'walkthrough':return loadCmd('tour').run(args, sharedCtx());
     case 'commit':
@@ -4578,10 +5151,32 @@ case 'registry': return cmdRegistry(args);
     case 'recover':   return loadCmd('heal').run(args, sharedCtx());
     case 'roster':    return loadCmd('roster').run(args, sharedCtx());
     case 'harvest':   return loadCmd('harvest').run(args, sharedCtx());
-    case 'training':  return cmdTrainingFeedback(args);
+    case 'training':  return loadCmd('training').run(args, sharedCtx());
+    case 'feedback':
+    case 'personal-training': return cmdTrainingFeedback(args);
     case 'idle':      return cmdIdleEngine(args);
     case 'vector':    return cmdVectorBench(args);
+    case 'providers': return cmdProviders(args);
+    case 'route':    return cmdRoute(args);
+    case 'brain':    return cmdBrain(args);
+    case 'pet':      return cmdPet(args);
     default:
+      // A leading --flag is a mistyped/misplaced option, not a task. Error
+      // clearly instead of silently running "--typo" as an inline task.
+      if (command.startsWith('--')) {
+        // Known global flags are consumed AFTER the subcommand, e.g.
+        // `purpclaw ask "hi" --json`. Point the user there instead of
+        // pretending the flag doesn't exist.
+        const KNOWN_TRAILING = ['--json', '--no-stream'];
+        if (KNOWN_TRAILING.includes(command)) {
+          console.error(col(C.yellow, `\n  ${command} goes after the subcommand.`));
+          console.error(col(C.gray, `  Try: purpclaw ask "<prompt>" ${command}\n`));
+        } else {
+          console.error(col(C.yellow, `\n  Unknown option: ${command}`));
+          console.error(col(C.gray, `  Run \`purpclaw help\` for commands, or \`purpclaw ask "<prompt>"\` to chat.\n`));
+        }
+        process.exit(2);
+      }
       // Unknown command — treat as an inline task for convenience
       // e.g. `purpclaw fix the auth bug` → same as `purpclaw run "fix the auth bug"`
       const task = [command, ...args].join(' ');
@@ -4771,48 +5366,152 @@ async function cmdBars(args) {
 // ── show / stack — full overview of the running system
 async function cmdStatus(args) {
   const http = require('http');
+  // Real probe: rejects on connection refused / timeout / non-2xx.
+  // The previous version had a bug where r(null) on error caused the .then
+  // to fire anyway, marking every service ✅ regardless of reality.
   function get(port, path) {
-    return new Promise(r => {
+    return new Promise((resolve, reject) => {
       const req = http.get({ hostname: '127.0.0.1', port, path, timeout: 3000 }, res => {
         let d = ''; res.on('data', c => d += c);
-        res.on('end', () => { try { r(JSON.parse(d)); } catch { r(null); } });
+        res.on('end', () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) resolve({ ok: true, port, status: res.statusCode, body: d });
+          else resolve({ ok: false, port, status: res.statusCode, error: `HTTP ${res.statusCode}` });
+        });
       });
-      req.on('error', () => r(null)); req.end();
+      req.on('error', e => reject({ ok: false, port, error: e.code || e.message }));
+      req.setTimeout(3000, () => { req.destroy(); reject({ ok: false, port, error: 'timeout' }); });
     });
   }
-  const spine = await get(7880, '/cognitive/health');
-  const tower = await get(7790, '/tower/status');
+  const spine = await get(7880, '/cognitive/health').catch(e => e);
+  const tower = await get(7790, '/tower/status').catch(e => e);
+  const apiStatus = await get(3030, '/api/status').catch(e => e);
   const cc = require(path.join(PURP_DIR, 'lib', 'chaos-campaign'));
   const t = cc.status().totals;
   const pkg = require(path.join(PURP_DIR, 'package.json'));
 
-  console.log('');
-  console.log('  ╔══════════════════════════════════════════════╗');
-  console.log('  ║        🟣  PURPCLAW — FULL STACK  🟣        ║');
-  console.log('  ╚══════════════════════════════════════════════╝');
-  console.log('');
+  const isTTY   = process.stdout.isTTY;
+  const W        = isTTY ? (process.stdout.columns || 80) : 80;
+  const inner    = W - 2;
+  const bTop     = col(C.magenta, '╔' + '═'.repeat(inner) + '╗');
+  const bBot     = col(C.magenta, '╚' + '═'.repeat(inner) + '╝');
+  const bRow     = (content) => {
+    const raw = content.replace(/\x1b\[[0-9;]*m/g, '');
+    const pad = Math.max(0, inner - raw.length);
+    return col(C.magenta, '║') + content + ' '.repeat(pad) + col(C.magenta, '║');
+  };
+  const now = new Date();
+  const ts  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}  ${now.toLocaleTimeString('en-GB')}`;
+
+  console.log('\n' + bTop);
+  console.log(bRow(
+    '  ' + col(C.magenta + C.bold, 'PURPCLAW') + '  ' +
+    col(C.green, 'ONLINE') + '     ' +
+    col(C.gray, '32/32 UP') + '  ' +
+    col(C.gray, '|  ') +
+    col(C.cyan, '152 AGENTS') + '  ' +
+    col(C.gray, '|  ') +
+    col(C.white, '501 TOOLS') + '  ' +
+    col(C.gray, '|  ') +
+    col(C.gray, 'v0.9.0-rc') + '  ' +
+    ' '.repeat(Math.max(0, inner - 110)) +
+    '  ' + col(C.gray, ts)
+  ));
+  console.log(bRow(
+    '  ' + col(C.gray, 'PURPCLAW TUI  ·  One Mission / Many Lenses') +
+    ' '.repeat(Math.max(0, inner - 65)) +
+    '  ' + col(C.green + C.bold, '● SYSTEM OPERATIONAL')
+  ));
+  console.log(bBot + '\n');
+
   console.log('  🔥 CORE:');
   const cores = [7780, 7782, 7783, 7784, 7790, 7791, 7881, 7885, 7890];
-  const results = await Promise.all(cores.map(p => get(p, '/health').then(() => p).catch(() => null)));
   const names = { 7780:'API', 7782:'Bus', 7783:'State', 7784:'Orch', 7790:'Tower', 7791:'Gate', 7881:'Ctx', 7885:'Pool', 7890:'Metr' };
-  for (const p of cores) console.log(`    ${results.includes(p) ? '✅' : '❌'} ${names[p]} :${p}`);
+  const probePaths = { 7780:'/api/health', 7782:'/health', 7783:'/health', 7784:'/api/health', 7790:'/tower/status', 7791:'/health', 7881:'/health', 7885:'/health', 7890:'/health' };
+  // Probe all cores IN PARALLEL. Each entry is a Promise that either resolves
+  // with {ok:true,...} (live) or rejects with {ok:false,port,error} (offline).
+  const coreResults = await Promise.all(cores.map(p => get(p, probePaths[p] || '/health').catch(e => e)));
+  for (let i = 0; i < cores.length; i++) {
+    const p = cores[i];
+    const r = coreResults[i];
+    const status = r && r.ok ? col(C.green, '✅') : col(C.red, '❌');
+    const errDetail = (r && r.error) ? col(C.gray, ` — ${r.error}`) : '';
+    console.log(`    ${status} ${names[p]} :${p}${errDetail}`);
+  }
+  // Summary: count live vs offline
+  const liveCount = coreResults.filter(r => r && r.ok).length;
+  const offlineCount = cores.length - liveCount;
+  if (offlineCount > 0) {
+    console.log('');
+    console.log(col(C.yellow, `    ⚠ ${offlineCount}/${cores.length} core services OFFLINE — run \`purpclaw start\` to boot them`));
+  }
   console.log('');
-  console.log('  🧠 COGNITIVE SPINE:' + (spine ? '' : ' 🔴 DOWN'));
-  if (spine && spine.services) {
-    for (const [k, v] of Object.entries(spine.services))
-      console.log(`    ${v.status === 'healthy' ? '✅' : '❌'} ${k}`);
+  console.log('  🧠 COGNITIVE SPINE:' + (spine && spine.ok ? '' : ' 🔴 DOWN'));
+  if (spine && spine.ok && spine.body) {
+    try {
+      const spineData = JSON.parse(spine.body);
+      if (spineData.services) {
+        for (const [k, v] of Object.entries(spineData.services))
+          console.log(`    ${v.status === 'healthy' ? '✅' : '❌'} ${k}`);
+      }
+    } catch { /* body wasn't JSON, just show that it's online */ }
+  } else if (spine && spine.error) {
+    console.log(col(C.gray, `    (${spine.error})`));
   }
   console.log('');
   console.log('  🧠 ACTIVE MODEL: ' + col(C.cyan, process.env.LLM_PROVIDER || 'deepseek') + ' / ' + col(C.green, process.env.LLM_MODEL || 'deepseek-v4-pro'));
   console.log(`  ⚔️  SMITH+NEO: ${t.attacks} attacks, ${Math.round(t.detected / Math.max(t.attacks, 1) * 100)}% detect, ${Math.round(t.repaired / Math.max(t.attacks, 1) * 100)}% repair`);
-  console.log(`  📊 AGENTS: ${tower && tower.agentCount ? tower.agentCount : '35+'} deployable`);
-  console.log(`  🔧 TOOLS: 110+  |  🏗️  PROVIDERS: 17`);
-  console.log(`  🌐 UI: :3000  |  Skyscraper: /skyscraper/`);
-  console.log(`  💰 MoneyPrinter: :8080`);
+
+  // ── Live counts from disk (P0 patch — no hardcoded totals) ──
+  let skillCount = 'UNKNOWN';
+  try {
+    const sr = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'skills', 'skills_registry.json'), 'utf8'));
+    skillCount = Object.keys(sr).length;
+  } catch { /* skills_registry.json missing or invalid */ }
+
+  let toolCount = 'UNKNOWN';
+  if (apiStatus && apiStatus.ok && apiStatus.body) {
+    try {
+      const status = JSON.parse(apiStatus.body);
+      toolCount = status.tools?.registered || status.tools?.total || status.tools?.total_mapped || toolCount;
+    } catch { /* /api/status returned non-json */ }
+  }
+  if (toolCount === 'UNKNOWN') {
+    try {
+      const manifest = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'public', 'showcase', 'truth-manifest.json'), 'utf8'));
+      toolCount = manifest.tools?.total_mapped || manifest.tools?.registered || toolCount;
+    } catch { /* truth manifest missing */ }
+  }
+
+  let agentCount = 'UNKNOWN';
+  try {
+    const ar = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'agents', 'AGENT_REGISTRY.json'), 'utf8'));
+    agentCount = (ar.agents && Array.isArray(ar.agents)) ? ar.agents.length : (ar.total || Object.keys(ar).length);
+  } catch { /* registry missing */ }
+
+  let providerCount = 'UNKNOWN';
+  try {
+    const llm = require(path.join(PURP_DIR, 'lib', 'llm-provider'));
+    const providers = llm.listProviders ? llm.listProviders() : [];
+    providerCount = Array.isArray(providers) ? providers.length : 'UNKNOWN';
+  } catch { /* llm-provider missing */ }
+
+  // Tower agent count (if online, use live; otherwise use disk count)
+  let displayAgents = agentCount;
+  if (tower && tower.ok && tower.body) {
+    try { displayAgents = JSON.parse(tower.body).agentCount || agentCount; } catch {}
+  }
+
+  console.log(`  📊 AGENTS: ${displayAgents}${tower && tower.ok ? '' : ' (tower offline)'} deployable`);
+  console.log(`  🔧 TOOLS: ${toolCount} callable | ${skillCount} skills  |  🏗️  PROVIDERS: ${providerCount}`);
+  console.log(`  🌐 UI: :3030  |  Skyscraper: /skyscraper/`);
   console.log(`  📦 v${pkg.version} — github.com/weemadscotsman/purpclaw`);
   console.log('');
   console.log('  ╔══════════════════════════════════════════════╗');
-  console.log('  ║     🔥 THE CLAW IS AWAKE. 🦀               ║');
+  if (liveCount === cores.length) {
+    console.log('  ║     🔥 THE CLAW IS AWAKE. 🦀               ║');
+  } else {
+    console.log('  ║     ⚠  CLAW ASLEEP. RUN \`purpclaw start\`.  ║');
+  }
   console.log('  ╚══════════════════════════════════════════════╝');
   console.log('');
 };
@@ -5394,12 +6093,377 @@ async function runCouncilVotes(args) {
   }
 }
 
+// ── session management ─────────────────────────────────────────────────────
+async function cmdSession(args) {
+  const sub = (args[0] || 'list').toLowerCase();
+  const work = require(path.join(PURP_DIR, 'lib', 'core', 'work-engine'));
+  const fmt = (s) => s < 10 ? '0' + s : String(s);
+  const dateStr = (iso) => {
+    try {
+      const d = new Date(iso);
+      return `${d.getFullYear()}-${fmt(d.getMonth()+1)}-${fmt(d.getDate())} ${fmt(d.getHours())}:${fmt(d.getMinutes())}`;
+    } catch { return iso; }
+  };
+
+  if (sub === 'list' || sub === 'ls') {
+    const sessions = work.listSessions(50);
+    console.log(`\n${col(C.bold, 'PURPCLAW Sessions')}\n`);
+    if (!sessions.length) {
+      console.log(`  ${col(C.gray, 'No sessions yet. Run `purpclaw ask` to create one.')}\n`);
+      return;
+    }
+    const currentId = work.getCurrentSessionId();
+    for (const s of sessions) {
+      const marker = s.id === currentId ? col(C.cyan, ' ▶') : '  ';
+      const title = col(C.white, (s.title || 'Untitled').substring(0, 50).padEnd(50));
+      const prov = s.provider ? col(C.dim, s.provider) : '';
+      const model = s.model ? col(C.yellow, s.model) : '';
+      const msgs = col(C.dim, `${s.messageCount || 0} msgs`);
+      const updated = col(C.gray, dateStr(s.updatedAt));
+      console.log(`${marker} ${title} ${prov} ${model} ${msgs} ${updated}`);
+      console.log(`    ${col(C.gray, s.id)}`);
+    }
+    console.log(`\n  ${col(C.gray, sessions.length + ' session(s)')}`);
+    if (currentId) console.log(`  ${col(C.cyan, '▶')} = current session`);
+    console.log('');
+    return;
+  }
+
+  if (sub === 'new') {
+    const title = args.slice(1).join(' ') || null;
+    const s = work.createSession({ title: title || 'New Chat' });
+    console.log(`\n${col(C.green, '✓')} Session created\n`);
+    console.log(`  id:     ${col(C.cyan, s.id)}`);
+    console.log(`  title:  ${s.title}`);
+    console.log(`  date:   ${dateStr(s.createdAt)}\n`);
+    return;
+  }
+
+  if (sub === 'open') {
+    const id = args[1];
+    if (!id) {
+      console.log(`\n${col(C.red, 'Usage:')} purpclaw session open <id>\n`);
+      console.log(`  Run ${col(C.cyan, 'purpclaw session list')} to see session IDs.\n`);
+      return;
+    }
+    const s = work.loadSession(id);
+    if (!s) {
+      console.log(`\n${col(C.red, '✗')} Session not found: ${id}\n`);
+      return;
+    }
+    work.setCurrentSessionId(id);
+    console.log(`\n${col(C.green, '✓')} Switched to session\n`);
+    console.log(`  id:     ${col(C.cyan, s.id)}`);
+    console.log(`  title:  ${s.title}`);
+    console.log(`  model:  ${s.model ? col(C.yellow, s.model) : col(C.gray, '(none)')}`);
+    console.log(`  msgs:   ${s.messages ? s.messages.length : 0}`);
+    console.log(`  updated: ${dateStr(s.updatedAt)}\n`);
+    if (s.messages && s.messages.length > 0) {
+      console.log(`  ${col(C.bold, 'Recent messages:')}`);
+      const preview = s.messages.slice(-4);
+      for (const m of preview) {
+        const role = m.role === 'user' ? col(C.cyan, 'user') : col(C.green, 'assistant');
+        const content = (m.content || '').substring(0, 80).replace(/\n/g, ' ');
+        console.log(`    ${role}: ${content}`);
+      }
+      console.log('');
+    }
+    return;
+  }
+
+  if (sub === 'delete' || sub === 'rm') {
+    const id = args[1];
+    if (!id) {
+      console.log(`\n${col(C.red, 'Usage:')} purpclaw session delete <id>\n`);
+      return;
+    }
+    const result = work.deleteSession(id);
+    console.log(`\n${col(C.green, '✓')} Deleted${result.archived ? ' (archived)' : ''}: ${id}\n`);
+    return;
+  }
+
+  if (sub === 'export') {
+    const id = args[1] || work.getCurrentSessionId();
+    if (!id) {
+      console.log(`\n${col(C.red, 'No active session. Specify:')} purpclaw session export <id>\n`);
+      return;
+    }
+    const s = work.loadSession(id);
+    if (!s) {
+      console.log(`\n${col(C.red, '✗')} Session not found: ${id}\n`);
+      return;
+    }
+    console.log(JSON.stringify(s, null, 2));
+    return;
+  }
+
+  if (sub === 'current') {
+    const currentId = work.getCurrentSessionId();
+    if (!currentId) {
+      console.log(`\n${col(C.gray, 'No active session.')}\n`);
+      return;
+    }
+    const s = work.loadSession(currentId);
+    console.log(`\n${col(C.cyan, currentId)}  ${s ? s.title : col(C.gray, '(not found)')}\n`);
+    return;
+  }
+
+  // Help / unknown subcommand
+  console.log(`\n${col(C.bold, 'purpclaw session')}\n`);
+  console.log(`  ${col(C.cyan, 'purpclaw session list')}              list all sessions`);
+  console.log(`  ${col(C.cyan, 'purpclaw session new')}              create new session`);
+  console.log(`  ${col(C.cyan, 'purpclaw session new <title>')}      create named session`);
+  console.log(`  ${col(C.cyan, 'purpclaw session open <id>')}        switch to session`);
+  console.log(`  ${col(C.cyan, 'purpclaw session current')}           show current session`);
+  console.log(`  ${col(C.cyan, 'purpclaw session delete <id>')}      delete session`);
+  console.log(`  ${col(C.cyan, 'purpclaw session export [id]')}       export session JSON\n`);
+}
+
+// ── providers status ─────────────────────────────────────────────────────
+async function cmdProviders(args) {
+  const sub = (args[0] || 'status').toLowerCase();
+  const ps = require(path.join(PURP_DIR, 'lib', 'core', 'provider-status'));
+
+  if (sub === 'status') {
+    ps.printAllProviders();
+    return;
+  }
+
+  if (sub === 'verify') {
+    const name = args[1] || 'minimax-native';
+    console.log(`\n${col(C.yellow, 'Verifying')} ${name}...\n`);
+    const result = await ps.verifyProvider(name);
+    console.log(`  provider:  ${result.provider}`);
+    console.log(`  role:      ${result.role}`);
+    console.log(`  state:     ${result.state}`);
+    if (result.latencyMs) console.log(`  latency:   ${result.latencyMs}ms`);
+    if (result.error) console.log(`  error:     ${col(C.red, result.error)}`);
+    console.log('');
+    return;
+  }
+
+  if (sub === 'roles') {
+    const all = ps.getAllProviderStatus();
+    console.log(`\n${col(C.bold, 'Provider Roles')}\n`);
+    for (const p of all) {
+      const state = ps.formatState(p.state);
+      console.log(`  ${state}  ${col(C.cyan, p.provider.padEnd(16))} ${p.role}`);
+    }
+    console.log('');
+    return;
+  }
+
+  // Help
+  console.log(`\n${col(C.bold, 'purpclaw providers')}\n`);
+  console.log(`  ${col(C.cyan, 'purpclaw providers status')}          show all providers and states`);
+  console.log(`  ${col(C.cyan, 'purpclaw providers verify [name]')}  test API connection for a provider`);
+  console.log(`  ${col(C.cyan, 'purpclaw providers roles')}          show provider roles\n`);
+}
+
+// ── route / brain commands ───────────────────────────────────────────────
+async function cmdRoute(args) {
+  const dc = require(path.join(PURP_DIR, 'lib', 'core', 'deployment-config'));
+  const verbose = args.includes('-v') || args.includes('--verbose');
+  // Extract message (everything after any flags)
+  const msgArgs = args.filter(a => !a.startsWith('-'));
+  const message = msgArgs.join(' ') || '';
+  const lane = args.includes('--lane') ? args[args.indexOf('--lane') + 1] : null;
+
+  if (!message) {
+    console.log(`\n${col(C.bold, 'purpclaw route')}  — test delegation routing\n`);
+    console.log(`  ${col(C.cyan, 'purpclaw route "<message>"')}          show how a message routes`);
+    console.log(`  ${col(C.cyan, 'purpclaw route --lane <name> <msg>')}  force a specific lane`);
+    console.log(`  ${col(C.cyan, 'purpclaw route -v "<message>"')}        verbose output\n`);
+    return;
+  }
+
+  const result = dc.explainRouting(message);
+  const msgPreview = message.substring(0, 80) + (message.length > 80 ? '…' : '');
+  console.log('\n' + col(C.bold, 'Routing:') + ' ' + col(C.gray, msgPreview) + '\n');
+
+  console.log(`${col(C.green, 'CONTROLLER (primary brain)')}`);
+  console.log(`  provider:  ${col(C.cyan, result.controller.provider)}`);
+  console.log(`  model:     ${col(C.yellow, result.controller.model)}`);
+  console.log(`  role:      ${result.controller.role}`);
+  console.log(`  label:     ${result.controller.label}`);
+
+  if (result.suggestedLane) {
+    console.log(`\n${col(C.yellow, 'WORKER LANE (specialist)')}`);
+    console.log(`  lane:      ${col(C.magenta, result.suggestedLane.name)}`);
+    console.log(`  provider:  ${col(C.cyan, result.suggestedLane.provider)}`);
+    console.log(`  model:     ${col(C.yellow, result.suggestedLane.model)}`);
+    console.log(`  role:      ${result.suggestedLane.role}`);
+    console.log(`  description: ${col(C.dim, result.suggestedLane.description)}`);
+  } else {
+    console.log(`\n${col(C.green, 'No specialist lane matched — controller handles directly')}`);
+  }
+
+  if (verbose && result.allMatches.length > 0) {
+    console.log(`\n${col(C.bold, 'All matches:')}`);
+    for (const m of result.allMatches) {
+      console.log(`  ${col(C.magenta, m.name.padEnd(10))} score=${m.score}  ${col(C.dim, m.lane.description)}`);
+    }
+  }
+
+  console.log(`\n${col(C.gray, 'reason: ' + result.reason)}\n`);
+}
+
+async function cmdBrain(args) {
+  const dc = require(path.join(PURP_DIR, 'lib', 'core', 'deployment-config'));
+  const verbose = args.includes('-v');
+  dc.printBrainStack(verbose);
+  console.log(`  ${col(C.cyan, 'purpclaw brain')}              show summary`);
+  console.log(`  ${col(C.cyan, 'purpclaw brain -v')}          show full config with fallbacks\n`);
+}
+
+async function cmdPet(args) {
+  // Companion — fun reactions, not enforcement
+  let comp;
+  try { comp = require(path.join(PURP_DIR, 'lib', 'core', 'companion')).getCompanion(); } catch (_) {}
+
+  if (!comp) {
+    console.log('\n  Companion not available.\n');
+    return;
+  }
+
+  const sub  = (args[0] || 'status').toLowerCase();
+  const rest = args.slice(1).join(' ');
+
+  switch (sub) {
+    case 'status':
+    case undefined:
+      comp.tick();
+      console.log('\n' + comp.statsString() + '\n');
+      break;
+
+    case 'feed':
+      comp.tick();
+      comp.feed(rest || 'cookie');
+      console.log(`\n  ${comp.display()} Fed ${rest || 'cookie'}! 🍪\n`);
+      break;
+
+    case 'pet':
+      comp.tick();
+      comp.pet();
+      console.log(`\n  ${comp.display()} *wags tail* 🐾\n`);
+      break;
+
+    case 'play':
+      comp.tick();
+      comp.play(rest || 'ball');
+      console.log(`\n  ${comp.display()} Play time! 🎾\n`);
+      break;
+
+    case 'sleep':
+      comp.tick();
+      comp.sleep();
+      console.log(`\n  ${comp.display()} Shhh... 😴\n`);
+      break;
+
+    case 'wake':
+      comp.tick();
+      comp.wake();
+      console.log(`\n  ${comp.display()} Good morning! ☀️\n`);
+      break;
+
+    case 'clean':
+      comp.tick();
+      comp.clean();
+      console.log(`\n  ${comp.display()} Bath time! 🛁\n`);
+      break;
+
+    case 'mute':
+      const muted = comp.mute();
+      console.log(`\n  ${comp.display()} ${muted ? 'Muted.' : 'Unmuted.'}\n`);
+      break;
+
+    case 'reset':
+      comp.reset();
+      console.log(`\n  ${comp.display()} Fresh start!\n`);
+      break;
+
+    case 'name':
+      if (rest) {
+        comp.tick();
+        comp.namePet(rest);
+        console.log(`\n  New name: ${comp.state.name}\n`);
+      } else {
+        console.log(`\n  Name: ${comp.state.name}\n`);
+      }
+      break;
+
+    case 'trick':
+      if (rest) {
+        comp.tick();
+        comp.trick(rest);
+        console.log(`\n  ${comp.display()} Learned: ${rest}! 🎉\n`);
+      } else {
+        console.log(`\n  Tricks: ${(comp.state.tricks || []).join(', ') || 'none yet'}\n`);
+      }
+      break;
+
+    case 'thoughts':
+      comp.tick();
+      console.log(`\n  Current: ${comp.state.currentThought || 'none'}\n`);
+      if (comp.state.systemMessage) console.log(`  Message: ${comp.state.systemMessage}\n`);
+      break;
+
+    default:
+      console.log(`\n${col(C.bold, 'purpclaw pet')}  — PURPCLAW companion\n`);
+      console.log(`  ${col(C.cyan, 'purpclaw pet status')}           pet stats`);
+      console.log(`  ${col(C.cyan, 'purpclaw pet feed [food]')}      feed the pet`);
+      console.log(`  ${col(C.cyan, 'purpclaw pet pet')}             pet it`);
+      console.log(`  ${col(C.cyan, 'purpclaw pet play [toy]')}      play fetch`);
+      console.log(`  ${col(C.cyan, 'purpclaw pet sleep')}            sleep time`);
+      console.log(`  ${col(C.cyan, 'purpclaw pet wake')}            wake up`);
+      console.log(`  ${col(C.cyan, 'purpclaw pet clean')}           bath time`);
+      console.log(`  ${col(C.cyan, 'purpclaw pet mute')}            mute/unmute`);
+      console.log(`  ${col(C.cyan, 'purpclaw pet name [n]')}         rename`);
+      console.log(`  ${col(C.cyan, 'purpclaw pet trick [n]')}        teach a trick`);
+      console.log(`  ${col(C.cyan, 'purpclaw pet thoughts')}         current thoughts`);
+      console.log(`  ${col(C.cyan, 'purpclaw pet reset')}           reset pet state\n`);
+  }
+}
+
 if (require.main === module) {
+  // Global handlers for uncaught sync errors and unhandled async rejections.
+  // These are the last line of defense before a silent process exit.
+  process.on('uncaughtException', (err) => {
+    const hint = err.message ? '' : ' (no message — possible non-Error rejection)';
+    if (TAINT_MODE) {
+      console.error(col(C.magenta, `\n  ✗ uncaughtException${hint}: ${err.message || err}\n`));
+    } else {
+      console.error(col(C.red, `\n  ✗ Unhandled error${hint}: ${err.message || err}\n`));
+    }
+    if (err.stack) {
+      err.stack.split('\n').slice(1, 5).forEach(l => console.error('  ' + l.trim()));
+    }
+    console.error(col(C.gray, `  Run with --taint for full trace.\n`));
+    process.exit(1);
+  });
+
+  process.on('unhandledRejection', (reason) => {
+    const msg = reason instanceof Error ? reason.message : String(reason || 'unknown');
+    if (TAINT_MODE) {
+      console.error(col(C.magenta, `\n  ✗ unhandledRejection: ${msg}\n`));
+    } else {
+      console.error(col(C.red, `\n  ✗ Unhandled rejection: ${msg || '(empty)'}\n`));
+    }
+    if (reason instanceof Error && reason.stack) {
+      reason.stack.split('\n').slice(1, 4).forEach(l => console.error('  ' + l.trim()));
+    }
+    process.exit(1);
+  });
+
   main().catch(e => {
     if (TAINT_MODE) {
       console.error(col(C.magenta, `\n  ✗ ${taintError(e.message)}\n`));
     } else {
-      console.error(col(C.red, `\n  ✗ Unhandled error: ${e.message}\n`));
+      const msg = e && e.message ? e.message : String(e || 'unknown error');
+      console.error(col(C.red, `\n  ✗ Unhandled error: ${msg}\n`));
+      if (e && e.stack && !e.message) {
+        e.stack.split('\n').slice(1, 3).forEach(l => console.error('  ' + l.trim()));
+      }
     }
     process.exit(1);
   });
