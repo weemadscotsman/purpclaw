@@ -188,6 +188,16 @@ img{display:block}
 .rib-chips::-webkit-scrollbar{height:3px}
 .rib-chips::-webkit-scrollbar-thumb{background:var(--pc-border-strong);border-radius:2px}
 .rib-dot{display:inline-flex;align-items:center;gap:3px;padding:1px 5px;border-radius:4px;font-size:8px;white-space:nowrap;border:1px solid var(--pc-border);flex:0 0 auto}
+.rib-click{cursor:pointer;border-radius:8px;padding:2px 6px;transition:background .15s}
+.rib-click:hover{background:var(--pc-chip-active)}
+.rib-pop{position:fixed;z-index:80;bottom:56px;min-width:240px;max-width:min(560px,92vw);max-height:44vh;overflow-y:auto;background:var(--pc-bg-panel);border:1px solid var(--pc-border-strong);border-radius:12px;box-shadow:0 12px 40px var(--pc-shadow,rgba(0,0,0,.6))}
+.rib-pop[hidden]{display:none}
+.rib-pop-h{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border-bottom:1px solid var(--pc-border);font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--pc-accent)}
+.rib-pop-h button{background:none;border:none;color:var(--pc-text-muted);cursor:pointer;font-size:12px}
+.rib-pop-h button:hover{color:var(--pc-text)}
+.rib-pop-b{padding:10px 13px;font-size:11px;line-height:1.55}
+.rib-pop-row{display:flex;justify-content:space-between;gap:12px;padding:3px 0;border-bottom:1px dashed var(--pc-border)}
+.rib-pop-row:last-child{border-bottom:none}
 .pill{display:inline-flex;align-items:center;gap:6px;font-family:var(--pc-font-mono);font-size:9px;letter-spacing:.1em;padding:3px 9px;border-radius:20px;border:1px solid var(--pc-border-strong);color:var(--pc-text-muted)}
 .pill.live{color:var(--pc-success);border-color:var(--pc-success)}
 .mc-link{font-family:var(--pc-font-mono);font-size:9.5px;letter-spacing:.08em;color:var(--pc-accent)}
@@ -453,15 +463,18 @@ img{display:block}
 
   <!-- BOTTOM RIBBON -->
   <footer class="ribbon">
-    <div class="rib"><div class="rib-ico">⚙</div><div><div class="rib-n">Kernel Jobs</div><div class="rib-s" style="color:var(--pc-success)"><span data-field="jobs_running">0</span> RUNNING</div></div></div>
-    <div class="rib"><div class="rib-ico">◆</div><div><div class="rib-n">Registered</div><div class="rib-s" style="color:var(--pc-accent)"><span data-field="agents_total">—</span> AGENTS</div></div></div>
-    <div class="rib"><div class="rib-ico">◉</div><div><div class="rib-n">Divisions</div><div class="rib-s" style="color:var(--pc-info)"><span data-field="stat_divisions">—</span> DIVISIONS</div></div></div>
-    <div class="rib"><div class="rib-ico">✳</div><div><div class="rib-n">Skills</div><div class="rib-s" style="color:var(--pc-warning)"><span data-field="skills_total">—</span> LOADED</div></div></div>
-    <div class="rib"><div class="rib-ico">⛨</div><div><div class="rib-n">Uptime</div><div class="rib-s" style="color:var(--pc-text-muted)"><span data-field="stat_uptime">—</span>s</div></div></div>
-    <div class="rib"><div class="rib-ico">♞</div><div><div class="rib-n">Companion</div><div class="rib-s" style="color:var(--pc-success)"><span data-field="mochi_mood">—</span> · bond <span data-field="mochi_bond">—</span>%</div></div></div>
-    <div class="rib" style="flex:3 1 auto;min-width:220px"><div class="rib-ico">◈</div><div style="min-width:0"><div class="rib-n">Services</div><div class="rib-s rib-chips" data-field="rib_services_chips">—</div></div></div>
-    <div class="rib" style="flex:3 1 auto;min-width:200px"><div class="rib-ico">⚡</div><div style="min-width:0"><div class="rib-n">Providers <span class="mono dim" data-field="rib_providers_ratio" style="font-size:8px"></span></div><div class="rib-s rib-chips" data-field="rib_providers_chips">—</div></div></div>
+    <div class="rib rib-click" data-pop="jobs" title="Click for kernel job detail"><div class="rib-ico">⚙</div><div><div class="rib-n">Kernel Jobs</div><div class="rib-s" style="color:var(--pc-success)"><span data-field="jobs_running">0</span> RUNNING</div></div></div>
+    <div class="rib rib-click" data-pop="agents" title="Click for agent detail"><div class="rib-ico">◆</div><div><div class="rib-n">Registered</div><div class="rib-s" style="color:var(--pc-accent)"><span data-field="agents_total">—</span> AGENTS</div></div></div>
+    <div class="rib rib-click" data-pop="divisions" title="Click for division detail"><div class="rib-ico">◉</div><div><div class="rib-n">Divisions</div><div class="rib-s" style="color:var(--pc-info)"><span data-field="stat_divisions">—</span> DIVISIONS</div></div></div>
+    <div class="rib rib-click" data-pop="tools" title="Click for tool breakdown"><div class="rib-ico">✳</div><div><div class="rib-n">Skills</div><div class="rib-s" style="color:var(--pc-warning)"><span data-field="skills_total">—</span> LOADED</div></div></div>
+    <div class="rib rib-click" data-pop="system" title="Click for system detail"><div class="rib-ico">⛨</div><div><div class="rib-n">Uptime</div><div class="rib-s" style="color:var(--pc-text-muted)"><span data-field="stat_uptime">—</span>s</div></div></div>
+    <div class="rib rib-click" data-pop="companion" title="Click for companion detail"><div class="rib-ico">♞</div><div><div class="rib-n">Companion</div><div class="rib-s" style="color:var(--pc-success)"><span data-field="mochi_mood">—</span> · bond <span data-field="mochi_bond">—</span>%</div></div></div>
+    <div class="rib rib-click" data-pop="services" style="flex:3 1 auto;min-width:220px" title="Click for full service status"><div class="rib-ico">◈</div><div style="min-width:0"><div class="rib-n">Services</div><div class="rib-s rib-chips" data-field="rib_services_chips">—</div></div></div>
+    <div class="rib rib-click" data-pop="providers" style="flex:3 1 auto;min-width:200px" title="Click for full provider list"><div class="rib-ico">⚡</div><div style="min-width:0"><div class="rib-n">Providers <span class="mono dim" data-field="rib_providers_ratio" style="font-size:8px"></span></div><div class="rib-s rib-chips" data-field="rib_providers_chips">—</div></div></div>
   </footer>
+
+  <!-- Footer status-bar detail popover (click a rib to open) -->
+  <div id="ribPop" class="rib-pop" hidden><div class="rib-pop-h"><span id="ribPopTitle">—</span><button id="ribPopClose" title="Close">✕</button></div><div id="ribPopBody" class="rib-pop-b"></div></div>
 
 </div>
 
@@ -1206,6 +1219,7 @@ window.addEventListener('error', function(e) {
       // wireBreakdown — receipts-truth table, populated from /api/breakdown
       function wireBreakdown(d) {
         if (!d) return;
+        S.breakdown = d;  // cache for the footer detail popover
         // Tools
         set('bd_tools_total', d.tools && d.tools.total != null ? d.tools.total : '—');
         var bd = (d.tools && d.tools.breakdown) || {};
@@ -1319,11 +1333,88 @@ window.addEventListener('error', function(e) {
       }
 
   // ── boot ────────────────────────────────────────────────────────────
+  // Footer status-bar detail popover — click a rib to open a widget with
+  // the full breakdown for that group. Data comes from cached S.breakdown /
+  // S.jobs / S.mochi (no extra fetch).
+  function wireRibPopover() {
+    var pop = $('#ribPop'), body = $('#ribPopBody'), titleEl = $('#ribPopTitle');
+    if (!pop) return;
+    var esc = function(s){ return String(s==null?'':s).replace(/[&<>]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]; }); };
+    var row = function(a,b,c){ return '<div class="rib-pop-row"><span style="color:var(--pc-text-muted)">'+esc(a)+'</span><span style="color:'+(c||'var(--pc-text)')+'">'+esc(b)+'</span></div>'; };
+    function render(key) {
+      var bd = S.breakdown || {}, m = S.mission || {}, api = m.api || {};
+      if (key === 'services') {
+        var svc = bd.services || {};
+        var names = Object.keys(svc);
+        if (!names.length) return { t:'SERVICES', h:'<div class="dim">No service probe data yet.</div>' };
+        var up = names.filter(function(n){return svc[n].online;}).length;
+        return { t:'SERVICES — '+up+'/'+names.length+' online', h: names.map(function(n){
+          var s=svc[n]; return row(n+'  :'+s.port, s.online?'● online':'○ offline', s.online?'var(--pc-success)':'var(--pc-danger)'); }).join('') };
+      }
+      if (key === 'providers') {
+        var p = bd.providers || {}; var cfg = new Set(p.configuredList||[]);
+        return { t:'PROVIDERS — '+(p.configured||0)+' configured / '+(p.registered||0)+' registered', h:(p.list||[]).map(function(n){
+          var on=cfg.has(n); return row(n, on?'● configured':'○ no key', on?'var(--pc-success)':'var(--pc-text-muted)'); }).join('') };
+      }
+      if (key === 'jobs') {
+        var jobs = S.jobs || [];
+        if (!jobs.length) return { t:'KERNEL JOBS', h:'<div class="dim">No jobs.</div>' };
+        return { t:'KERNEL JOBS — '+jobs.length, h: jobs.slice(0,20).map(function(j){
+          var col = j.state==='executing'||j.state==='running' ? 'var(--pc-success)' : (j.state==='waiting_approval'?'var(--pc-warning)':'var(--pc-text-muted)');
+          return row((j.goal||j.id||'—').slice(0,70), j.state||'—', col); }).join('') };
+      }
+      if (key === 'agents') {
+        var a = bd.agents || {};
+        return { t:'AGENTS', h: row('Registered identities', a.registered!=null?a.registered:'—','var(--pc-accent)')
+          + row('Divisions', a.divisions!=null?a.divisions:'—') + row('Currently active', a.active!=null?a.active:0)
+          + row('Strict-live proofed', 7) + row('API routes', (bd.routes&&bd.routes.total)||'—') };
+      }
+      if (key === 'divisions') {
+        var a2 = bd.agents || {};
+        return { t:'DIVISIONS', h: row('Divisions', a2.divisions!=null?a2.divisions:'—','var(--pc-info)') + row('Registered agents', a2.registered!=null?a2.registered:'—') + row('Active', a2.active!=null?a2.active:0) };
+      }
+      if (key === 'tools') {
+        var t = bd.tools || {}, b = t.breakdown || {};
+        return { t:'TOOLS — '+(t.total!=null?t.total:'—')+' callable', h: row('Core (native)', b.core||0)
+          + row('Skills (Hermes)', b.skills||0) + row('Remotion', b.remotion||t.remotion||0)
+          + row('MCP / Bridge / NIM', (b.mcp||0)+(b.bodyBridge||0)+(b.nim||0)) };
+      }
+      if (key === 'system') {
+        return { t:'SYSTEM', h: row('Status', api.healthStatus||api.status||'—', 'var(--pc-success)')
+          + row('Uptime', (api.uptime?Math.round(api.uptime)+'s':'—')) + row('Heap', (api.memory?Math.round(api.memory.heapUsed/1048576)+' MB':'—'))
+          + row('Bridge', api.bridgeConnected?'connected':'—') };
+      }
+      if (key === 'companion') {
+        var mo = S.mochi || (m.mochi) || {};
+        return { t:'COMPANION', h: row('Name','Mochi') + row('Mood', mo.mood||'—','var(--pc-accent)') + row('Bond', (mo.bond!=null?mo.bond+'%':'—'),'var(--pc-success)') };
+      }
+      return { t:key.toUpperCase(), h:'<div class="dim">No detail.</div>' };
+    }
+    function open(rib) {
+      var key = rib.getAttribute('data-pop'); if (!key) return;
+      var r = render(key);
+      titleEl.textContent = r.t; body.innerHTML = r.h;
+      pop.hidden = false;
+      // Anchor above the clicked rib, clamped to viewport.
+      var rect = rib.getBoundingClientRect();
+      var pw = pop.offsetWidth;
+      var left = Math.max(8, Math.min(rect.left, window.innerWidth - pw - 8));
+      pop.style.left = left + 'px';
+    }
+    document.querySelectorAll('.rib-click').forEach(function(rib){
+      rib.addEventListener('click', function(e){ e.stopPropagation(); open(rib); });
+    });
+    $('#ribPopClose').onclick = function(){ pop.hidden = true; };
+    document.addEventListener('click', function(e){ if (!pop.hidden && !pop.contains(e.target) && !e.target.closest('.rib-click')) pop.hidden = true; });
+    document.addEventListener('keydown', function(e){ if (e.key === 'Escape') pop.hidden = true; });
+  }
+
   function init() {
     buildNav();
     buildTabs();
     buildModes();
     wireToggles();
+    wireRibPopover();
     wireComposer();
     buildWidgetLauncher();
     startDuckAnimation();
