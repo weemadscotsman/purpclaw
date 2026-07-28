@@ -202,9 +202,12 @@ body {
   <div id="footer">
     <span id="uptime">up ${uptime}m</span>
     <span id="mem-pct">mem ${Math.round(state.memoryUsage || 0)}%</span>
+    <button id="stop-btn" title="Stop TTS playback" style="background:none;border:none;color:#5a4a7a;cursor:pointer;font-size:11px;padding:0 2px;">&#9632;</button>
   </div>
 </div>
 <script>
+const TTS_HOST = ${JSON.stringify(TTS_HOST)};
+const TTS_PORT = ${JSON.stringify(TTS_PORT)};
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 async function refresh() {
   try {
@@ -230,6 +233,11 @@ async function refresh() {
 }
 refresh();
 document.getElementById('close-btn').onclick = () => fetch('/close', {method:'POST'});
+document.getElementById('stop-btn').onclick = async () => {
+  try {
+    await fetch('http://' + TTS_HOST + ':' + TTS_PORT + '/stop', {method:'POST'});
+  } catch {}
+};
 </script>
 </body>
 </html>`;
