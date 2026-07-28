@@ -223,19 +223,17 @@ function hooksFor(event, matcher) {
   let pluginHooks = [];
   try {
     const pm = require(path.join(ROOT, 'lib', 'plugin-manager.js'));
-    if (pm && typeof pm.getHooks === 'function') {
-      pluginHooks = pm.getHooks(event);
-    } else if (pm && pm.handlers) {
-      // Legacy: handlers(event) returns array of {plugin, handler, priority, matcher}
-      const ph = pm.handlers(event) || [];
-      pluginHooks = ph.map((h) => ({
+    // pm.hooks is a Map<event, [{plugin, handler, priority, matcher}]>
+    if (pm.hooks instanceof Map) {
+      const eventHooks = pm.hooks.get(event) || [];
+      pluginHooks = eventHooks.map((h) => ({
         event,
         actionType: 'runCommand',
-        command: null,        // in-process; will be handled in emit()
+        command: null,
         plugin:    h.plugin,
         priority:  h.priority || 50,
         matcher:   h.matcher  || null,
-        _handler:  h.handler, // internal: in-process handler
+        _handler:  h.handler,
       }));
     }
   } catch (_) { /* plugin-manager not available */ }
