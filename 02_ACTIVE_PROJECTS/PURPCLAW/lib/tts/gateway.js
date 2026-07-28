@@ -126,24 +126,29 @@ function handleWorkerMessage(msg) {
     const p = pending.get(msg.id);
     pending.delete(msg.id);
     clearTimeout(p.timeout);
+    if (p.clear) p.clear();
+    workerBusy = false;
     if (msg.ok) p.resolve({ ms: msg.ms || 0 });
     else p.reject(new Error(msg.error || 'worker error'));
+    return;
   }
 }
 
 function workerRequest(text, voice, wavPath, timeoutMs = 120000) {
   return new Promise((resolve, reject) => {
     if (!worker) { reject(new Error('worker not running')); return; }
+    workerBusy = true;
     const id = ++requestId;
     const sent = sendWorker({ cmd: 'speak', id, text, voice, wavPath: wavPath || '' });
-    if (!sent) { reject(new Error('worker stdin closed')); return; }
+    if (!sent) { workerBusy = false; reject(new Error('worker stdin closed')); return; }
     const timer = setTimeout(() => {
       if (pending.has(id)) {
         pending.delete(id);
+        workerBusy = false;
         reject(new Error('timeout'));
       }
     }, timeoutMs);
-    pending.set(id, { resolve, reject, timeout: timer });
+    pending.set(id, { resolve, reject, timeout: timer, clear: () => { workerBusy = false; } });
   });
 }
 
@@ -218,6 +223,33 @@ const server = http.createServer(async (req, res) => {
       log(`speak failed: ${e.message}`);
       return sendJson(res, 500, { ok: false, error: e.message });
     }
+  }
+
+  // POST /stop — kill current playback, restart worker fresh
+  if (url.pathname === '/stop' && req.method === 'POST') {
+    if (worker) {
+      // Reject any pending request
+      for (const [id, p] of pending) { try { p.reject(new Error('interrupted')); } catch {} }
+      pending.clear();
+      workerBusy = false;
+      worker.kill();
+      worker = null;
+      workerReady = false;
+      log('playback stopped by client');
+    }
+    sendJson(res, 200, { ok: true, stopped: !!worker });
+    // Auto-restart worker asynchronously
+    setTimeout(() => { if (!worker) startWorker(); }, 500);
+    return;
+  }
+
+  // GET /state — current playback state
+  if (url.pathname === '/state' && req.method === 'GET') {
+    return sendJson(res, 200, {
+      workerReady,
+      workerBusy,
+      pending: pending.size,
+    });
   }
 
   if (url.pathname === '/synthesize' && req.method === 'POST') {
