@@ -31,6 +31,20 @@ function sendCoworkAlert(msg, type = 'info') {
   req.end();
 }
 
+function sendCoworkTrack(agent, task, type = 'start') {
+  const enabled = process.env.COWORK_ALERT_ENABLED === 'true';
+  if (!enabled) return;
+  const host = process.env.COWORK_ALERT_HOST || '127.0.0.1';
+  const port = parseInt(process.env.COWORK_ALERT_PORT || '7791', 10);
+  const body = JSON.stringify({ agent, task, type });
+  const req = http.request({ hostname: host, port, path: '/track', method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } },
+    () => {});
+  req.on('error', () => {});
+  req.write(body);
+  req.end();
+}
+
 const { createHarness } = require('./harness/engine');
 const {
   classifyJob,
@@ -326,6 +340,9 @@ class ApiHarnessKernel extends EventEmitter {
     job.state = 'running';
     this.addEvent(job, 'started', 'kernel', job.dryRun ? 'contract preview' : job.route);
     this.persist(job);
+    // Co-Work: show agent + task in the overlay HUD
+    const agentName = job.contract?.preferredAgents?.[0] || job.contract?.type || 'purpclaw';
+    sendCoworkTrack(agentName, job.contract?.command || job.goal || '', 'start');
 
     const intake = job.request?.omnicodeIntake;
     if (
@@ -579,6 +596,7 @@ class ApiHarnessKernel extends EventEmitter {
     const label = job.contract?.label || job.id;
     const ok = job.events.some(e => e.type === 'completed');
     sendCoworkAlert(`Job ${label} ${ok ? 'done' : 'stopped'}`, ok ? 'info' : 'alert');
+    sendCoworkTrack(null, null, 'stop'); // clear HUD
     // Self-training hook: every finished job is a training trajectory.
     // The buffer is best-effort and never throws — a disk failure here
     // does not break the runtime. Disabled by setting

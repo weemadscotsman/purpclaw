@@ -341,6 +341,28 @@ function createServer() {
       return;
     }
 
+    // Track active agent + task (POST /track { agent, task, type })
+    // type: 'start' → set active agent/task; 'stop' → clear
+    if (u.pathname === '/track' && req.method === 'POST') {
+      let body = '';
+      req.on('data', c => body += c);
+      req.on('end', () => {
+        try {
+          const { agent, task, type } = JSON.parse(body);
+          if (type === 'stop') {
+            state.activeAgent = 'idle';
+            state.currentTask = '';
+          } else {
+            state.activeAgent = String(agent || 'agent').substring(0, 40);
+            state.currentTask = String(task || '').substring(0, 120);
+          }
+          saveState();
+        } catch {}
+        res.writeHead(200); res.end('ok');
+      });
+      return;
+    }
+
     if ((u.pathname === '/close' || u.pathname === '/minimize') && req.method === 'POST') {
       res.writeHead(200); res.end('ok');
       if (overlayProc) { try { overlayProc.kill(); } catch {} }
