@@ -1165,6 +1165,100 @@ async function cmdRelease(args) {
 }
 
 
+// ── checkpoint ─────────────────────────────────────────────────────────────────
+// purpclaw checkpoint create [dir]  — take a manual checkpoint
+// purpclaw checkpoint list [dir]    — list checkpoints
+// purpclaw checkpoint rollback <id> [dir] — roll back to a checkpoint
+// purpclaw checkpoint prune [dir]  — prune old checkpoints
+async function cmdCheckpoint(args) {
+  const sub = (args[0] || '').toLowerCase();
+  const wd = args[1] && !args[1].startsWith('-')
+    ? path.resolve(args[1])
+    : process.cwd();
+
+  // Lazy-load the checkpoint manager
+  let CheckpointManager, checkpointManager;
+  try {
+    const mod = await import(path.join(PURP_DIR, 'lib', 'checkpoint-manager.mjs'));
+    CheckpointManager = mod.CheckpointManager;
+    checkpointManager = mod.checkpointManager || mod.default;
+    if (!checkpointManager || typeof checkpointManager.createCheckpoint !== 'function') {
+      // Fallback: instantiate from class
+      checkpointManager = new CheckpointManager({ enabled: true });
+    }
+  } catch (err) {
+    console.error('Failed to load checkpoint manager:', err.message);
+    console.error('Make sure lib/checkpoint-manager.mjs exists.');
+    return 1;
+  }
+
+  switch (sub) {
+    case 'create': {
+      const msg = args.slice(2).join(' ') || `manual checkpoint from CLI`;
+      const result = await checkpointManager.createCheckpoint(wd, msg);
+      if (result) {
+        console.log(`✓ Checkpoint created: ${result.checkpointId} (${result.commitHash.slice(0, 8)})`);
+        return 0;
+      } else {
+        console.log('✗ No checkpoint created (no changes or git unavailable)');
+        return 1;
+      }
+    }
+
+    case 'list': {
+      const checkpoints = await checkpointManager.listCheckpoints(wd);
+      if (!checkpoints.length) {
+        console.log(`No checkpoints found for ${wd}`);
+        return 0;
+      }
+      console.log(`📸 Checkpoints for ${wd}:\n`);
+      checkpoints.forEach((cp, i) => {
+        const ts = cp.createdAt ? cp.createdAt.replace('T', ' ').slice(0, 19) : '?';
+        console.log(`  ${i + 1}. ${cp.checkpointId}  ${ts}  ${cp.message}`);
+      });
+      console.log('\n  purpclaw checkpoint rollback <id> [dir]  — restore a checkpoint');
+      return 0;
+    }
+
+    case 'rollback': {
+      const id = args[1];
+      if (!id) {
+        console.log('Usage: purpclaw checkpoint rollback <checkpoint-id> [dir]');
+        return 1;
+      }
+      const targetDir = args[2] && !args[2].startsWith('-')
+        ? path.resolve(args[2])
+        : wd;
+      const ok = await checkpointManager.rollback(targetDir, id);
+      if (ok) {
+        console.log(`✓ Rolled back ${targetDir} to checkpoint ${id.slice(0, 16)}`);
+        return 0;
+      } else {
+        console.log(`✗ Rollback failed (checkpoint not found or invalid id: ${id})`);
+        return 1;
+      }
+    }
+
+    case 'prune': {
+      const retentionDays = parseInt(args.find(a => a.startsWith('--days='))?.split('=')[1] || '7', 10);
+      const result = await checkpointManager.pruneCheckpoints(wd, retentionDays);
+      console.log(`✓ Pruned ${result.deleted} checkpoints, freed ~${result.freedMb} MB`);
+      return 0;
+    }
+
+    default: {
+      console.log('Usage:');
+      console.log('  purpclaw checkpoint create [dir]            — take a manual checkpoint');
+      console.log('  purpclaw checkpoint list [dir]              — list checkpoints');
+      console.log('  purpclaw checkpoint rollback <id> [dir]     — roll back to a checkpoint');
+      console.log('  purpclaw checkpoint prune [dir]             — prune old checkpoints');
+      console.log('  purpclaw checkpoint prune [dir] --days=30   — prune checkpoints older than 30 days');
+      return 0;
+    }
+  }
+}
+
+
 // ── resume ─────────────────────────────────────────────────────────────────────
 // Resume a previous session from agent_work/sessions/
 async function cmdResume(args) {
@@ -1589,13 +1683,45 @@ async function cmdBundles(args) {
   console.log('');
 }
 
+// ── profile ──────────────────────────────────────────────────────────────────
+// Profile routing — list, create, switch, routes management.
+// Mirrors Hermes gateway/profile_routing.py.
+async function cmdProfile(args) {
+  const PROFILE_ROUTER = (() => { try { return require('../lib/profile-router'); } catch { return null; } })();
+  if (!PROFILE_ROUTER) return console.error('profile-router not available');
+  const sub = (args[0] || '');
+  if (sub === 'list') {
+    console.log(PROFILE_ROUTER.cliListProfiles());
+  } else if (sub === 'create') {
+    const name = args._[1];
+    if (!name) return console.error('Usage: purpclaw profile create <name> [--clone <from>]');
+    try { const p = PROFILE_ROUTER.createProfile(name, args.clone || null); console.log('Created:', name, 'at', p); } catch (e) { console.error('Error:', e.message); }
+  } else if (sub === 'switch') {
+    const name = args._[1];
+    if (!name) return console.error('Usage: purpclaw profile switch <name>');
+    try { PROFILE_ROUTER.setActiveProfile(name); console.log('Switched to:', name); } catch (e) { console.error('Error:', e.message); }
+  } else if (sub === 'routes') {
+    console.log(PROFILE_ROUTER.cliListRoutes());
+  } else if (sub === 'addroute') {
+    const name = args._[1], profile = args.profile || args._[2];
+    if (!name || !profile) return console.error('Usage: purpclaw profile addroute <name> --profile <p> [flags]');
+    try { PROFILE_ROUTER.addRoute({ name, platform: args.platform||null, guild_id: args.guild||null, chat_id: args.chat||null, thread_id: args.thread||null, profile, enabled: !args.disabled }); console.log('Route added:', name); } catch (e) { console.error('Error:', e.message); }
+  } else if (sub === 'rmroute') {
+    const name = args._[1];
+    if (!name) return console.error('Usage: purpclaw profile rmroute <name>');
+    PROFILE_ROUTER.removeRoute(name); console.log('Route removed:', name);
+  } else if (sub === 'test') {
+    console.log(PROFILE_ROUTER.cliTestRoute(args.platform||'local', args.chat||null, args.thread||null, args.guild||null));
+  } else if (sub === 'active') {
+    console.log('Active:', PROFILE_ROUTER.getActiveProfile());
+  } else {
+    console.log('Profile: list | create <n> [--clone <f>] | switch <n> | routes | addroute <n> --profile <p> [--platform p] [--guild id] [--chat id] [--thread id] | rmroute <n> | test | active');
+  }
+}
+
 // ── guard ────────────────────────────────────────────────────────────────────
-// Skills security scanner — scan externally-sourced skills for threats.
-// Detects: exfiltration, prompt injection, destructive ops, persistence,
-// network pivots, obfuscation, hardcoded secrets, and 70+ patterns.
 async function cmdGuard(args) {
   const G = require(path.join(PURP_DIR, 'lib', 'skills-guard'));
-  const fs = require('fs');
   const sub = (args[0] || '').toLowerCase();
   const target = args[1] || '';
 
@@ -5901,6 +6027,7 @@ async function cmdPlugins(args) {
       return 0;
     }
     case 'cloud':     return cmdCloud(args);
+    case 'checkpoint': return cmdCheckpoint(args);
     case 'plugins':  return cmdPlugins(args);
     case 'doctor':    return cmdDoctor(args);
     case 'app-server': {
@@ -6011,6 +6138,7 @@ async function cmdPlugins(args) {
 case 'registry': return cmdRegistry(args);
     case 'bundles':  return cmdBundles(args);
     case 'guard':    return cmdGuard(args);
+    case 'profile':  return cmdProfile(args);
     case 'install':   return cmdRegistry(['install', ...args]);
     case 'search':    return cmdRegistry(['search', ...args]);
  case 'resume':   return cmdResume(args);
@@ -6496,6 +6624,18 @@ case 'registry': return cmdRegistry(args);
     case 'show':
     case 'stack':
     case 'status':     return cmdStatus(args);
+    case 'cowork':
+    case 'overlay': {
+      const { spawn } = require('child_process');
+      const OVERLAY = require('../lib/cowork-overlay.js');
+      const sub = args[0] || 'start';
+      if (sub === 'start' || sub === 'stop' || sub === 'push' || sub === 'status' || sub === 'watch') {
+        OVERLAY.__proto__.CLI.run([sub].concat(args.slice(1)));
+      } else {
+        console.log('Usage: purpclaw cowork [start|stop|push <msg>|status|watch]');
+      }
+      return null;
+    }
     case 'doctor':     return cmdDoctor(args);
     case 'pulse':     return cmdPulse(args);
     case 'purpflow':
@@ -6515,9 +6655,7 @@ case 'registry': return cmdRegistry(args);
     case 'smoke':
     case 'self-test':
     case 'smoke-test': return cmdSmoke(args);
-    case 'watch':
-    case 'stream':
-    case 'live':      return cmdWatch(args);
+    case 'watch':      return loadCmd('watch').run(args, sharedCtx());
     case 'flow':      return cmdFlow(args);
     case 'heartbeat': return cmdApiRouteWrapper('heartbeat', args);
     case 'mission-data': return cmdApiRouteWrapper('mission-data', args);
@@ -7698,6 +7836,69 @@ async function cmdSession(args) {
       return;
     }
     console.log(JSON.stringify(s, null, 2));
+    return;
+  }
+
+  if (sub === 'portable-export' || sub === 'pexport') {
+    const SP = (() => { try { return require('../lib/session-portability'); } catch { return null; } })();
+    const id = args[1] || work.getCurrentSessionId();
+    if (!id) { console.log(`\n${col(C.red, 'No active session. Specify:')} purpclaw session pexport <id>\n`); return; }
+    if (!SP)  { console.log(`\n${col(C.red, '[X]')} session-portability not available\n`); return; }
+    console.log(`  ${col(C.cyan, 'Exporting')} ${id} ...`);
+    SP.exportSession(id).then(fp => {
+      console.log(`  ${col(C.green, '[OK]')} → ${fp}\n`);
+    }).catch(e => {
+      console.log(`  ${col(C.red, '[X]')} ${e.message}\n`);
+    });
+    return;
+  }
+
+  if (sub === 'portable-import' || sub === 'pimport') {
+    const SP = (() => { try { return require('../lib/session-portability'); } catch { return null; } })();
+    const archivePath = args[1];
+    if (!archivePath) { console.log(`\n${col(C.red, 'Usage:')} purpclaw session pimport <path-to-archive.json.gz>\n`); return; }
+    if (!SP)  { console.log(`\n${col(C.red, '[X]')} session-portability not available\n`); return; }
+    const destKey = args[2] || null;
+    console.log(`  ${col(C.cyan, 'Importing')} ${archivePath} ...`);
+    SP.importSession(archivePath, { targetKey: destKey }).then(r => {
+      console.log(`  ${col(C.green, '[OK]')} Restored as ${r.sessionKey}\n`);
+      console.log(`    files: ${r.filesRestored}, memory: ${r.hasMemory}, soul: ${r.hasSoul}\n`);
+    }).catch(e => {
+      console.log(`  ${col(C.red, '[X]')} ${e.message}\n`);
+    });
+    return;
+  }
+
+  if (sub === 'portable-list') {
+    const SP = (() => { try { return require('../lib/session-portability'); } catch { return null; } })();
+    if (!SP)  { console.log(`\n${col(C.red, '[X]')} session-portability not available\n`); return; }
+    const exports = SP.listExports();
+    if (!exports.length) { console.log(`\n  ${col(C.gray, 'No exports found.')}\n`); return; }
+    console.log(`\n${col(C.bold, 'Export Archives')}\n`);
+    for (const e of exports) {
+      console.log(`  ${col(C.cyan, e.filename)}`);
+      console.log(`    ${e.sessionKey}  ${e.size} bytes  ${e.mtime}\n`);
+    }
+    return;
+  }
+
+  if (sub === 'interrupt') {
+    // Interrupt a running session's agent loop
+    const id = args[1] || work.getCurrentSessionId();
+    if (!id) { console.log(`\n${col(C.red, 'No session. Specify:')} purpclaw session interrupt <id>\n`); return; }
+    // SIGINT injection via session store
+    const SStore = (() => { try { return require('../lib/session-store'); } catch { return null; } })();
+    if (!SStore) { console.log(`\n${col(C.red, '[X]')} session-store not available\n`); return; }
+    const pending = SStore.getResumePendingSessions();
+    const target = pending.find(s => s.key === id);
+    if (target) {
+      SStore.updateSession(id, { interrupt_requested: true });
+      console.log(`\n${col(C.yellow, '[!]')} Interrupt requested for ${id}\n`);
+      console.log(`  Will fire at next turn boundary.\n`);
+    } else {
+      console.log(`\n${col(C.gray, 'Session not running or not found:')} ${id}\n`);
+      console.log(`  ${col(C.gray, 'Pending sessions:')} ${pending.length}\n`);
+    }
     return;
   }
 

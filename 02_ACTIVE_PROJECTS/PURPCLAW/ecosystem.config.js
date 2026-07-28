@@ -166,6 +166,25 @@ module.exports = {
       windowsHide: true
     },
     {
+      name: 'purpclaw-xiaozhi',
+      script: './lib/xiaozhi_bridge.js',
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 50,
+      restart_delay: 10000,
+      max_memory_restart: '512M',
+      autorestart: true,
+      windowsHide: true,
+      env: {
+        XIAOZHI_MCP_URL: XIAOZHI_MCP_URL,
+        XIAOZHI_WS_URL: XIAOZHI_MCP_URL,
+        PURPCLAW_GATEWAY_URL: 'ws://127.0.0.1:18789',
+        KOKORO: 'C:\\Users\\Admin\\.openclaw\\kokoro_send.bat',
+        KOKORO_LONG: 'C:\\Users\\Admin\\.openclaw\\kokoro_long_send.bat',
+      }
+    },
+    {
       name: 'purpclaw-goop',
       script: './lib/goop-playground/goop-playground.js',
       env: {
@@ -193,6 +212,54 @@ module.exports = {
       autorestart: true,
       windowsHide: true
     },
+    // ADDED 2026-07-12 (audit closure): boots the JSON-RPC + A2A gateway
+    // server (lib/agent-gateway-server.js) on port 9119 via the canonical
+    // serve command. Without this, /v1/capabilities, /v1/chat/completions,
+    // /v1/responses, /v1/runs/*, A2A agent-card and SSE streaming are
+    // unreachable — code exists, tests pass, but no live socket.
+    // kill_timeout raised 8s → 15s (2026-07-16): EADDRINUSE on :9119 because
+    // the previous instance hadn't released the socket before pm2 forked the
+    // replacement. Same socket-reap fix as purpclaw-tower above.
+    {
+      name: 'purpclaw-gateway-server',
+      script: './bin/purpclaw.js',
+      args: 'serve --host 127.0.0.1 --port 9119',
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 15000,
+      max_restarts: 10,
+      restart_delay: 15000,
+      max_memory_restart: '256M',
+      autorestart: true,
+      windowsHide: true
+    },
+    {
+      name: 'purpclaw-static-server',
+      script: './static-server.js',
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 10,
+      restart_delay: 5000,
+      max_memory_restart: '128M',
+      autorestart: true,
+      windowsHide: true
+    },
+
+  // PURPCLAW Co-Work Mode — always-on desktop overlay HUD
+  {
+    name: 'purpclaw-cowork',
+    script: 'lib/cowork-overlay.js',
+    args: 'start',
+    instances: 1,
+    exec_mode: 'fork',
+    watch: false,
+    autorestart: true,
+    env: {
+      NODE_ENV: 'production',
+      PURP_DIR: 'E:/god folder/02_ACTIVE_PROJECTS/PURPCLAW',
+    },
+  },
     // REMOVED 2026-06-30: thringlet_bridge.js does not exist.
     // Thringlet colony runs as Next.js API route (app/api/thringlets/) via Bridge service.
     {
@@ -448,11 +515,12 @@ module.exports = {
     // ── Cognitive Spine (single process, replaces memory/modal/rules/neuro/diagnostics/autodream) ──
     {
       name: 'purpclaw-cognitive',
-      script: './cognitive_spine.py',
-      args: '--port 7880',
-      interpreter: PYTHON_BIN,
+      script: './cognitive_gateway.js',
       env: {
         TMPDIR: "E:\\purp-temp",
+        PYTHON_BIN: PYTHON_BIN,
+        COGNITIVE_PUBLIC_PORT: env.COGNITIVE_PUBLIC_PORT || '7880',
+        COGNITIVE_BACKEND_PORT: env.COGNITIVE_BACKEND_PORT || '7888',
         // Default 'lite' = pure-numpy lexical embedder (real recall, no heavy deps).
         // Set PURPCLAW_EMBEDDER_BACKEND=st to opt into sentence-transformers.
         PURPCLAW_EMBEDDER_BACKEND: env.PURPCLAW_EMBEDDER_BACKEND || 'lite'
@@ -502,13 +570,52 @@ module.exports = {
     {
       name: 'purpclaw-telegram',
       script: './lib/gateways/telegram.js',
-      env: { TELEGRAM_BOT_TOKEN: '', PORT: '7795' },
+      env: { PORT: '7795' },
       exec_mode: 'fork',
       wait_ready: false,
       kill_timeout: 5000,
       max_restarts: 50,
       restart_delay: 10000,
       max_memory: '32MB',
+      autorestart: true,
+      windowsHide: true
+    },
+    {
+      name: 'purpclaw-discord',
+      script: './lib/gateways/discord.js',
+      env: { PORT: '7796' },
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 50,
+      restart_delay: 10000,
+      max_memory: '32MB',
+      autorestart: true,
+      windowsHide: true
+    },
+    {
+      name: 'purpclaw-slack',
+      script: './lib/gateways/slack.js',
+      env: { PORT: '7797' },
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 50,
+      restart_delay: 10000,
+      max_memory: '32MB',
+      autorestart: true,
+      windowsHide: true
+    },
+    {
+      name: 'purpclaw-email',
+      script: './lib/gateways/email.js',
+      env: { PORT: '7798' },
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 5000,
+      max_restarts: 50,
+      restart_delay: 10000,
+      max_memory: '64MB',
       autorestart: true,
       windowsHide: true
     },
