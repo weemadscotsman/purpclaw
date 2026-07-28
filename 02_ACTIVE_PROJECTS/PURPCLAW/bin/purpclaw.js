@@ -1170,6 +1170,9 @@ async function cmdRelease(args) {
 async function cmdResume(args) {
   const SESSIONS_DIR = path.join(PURP_DIR, 'agent_work', 'sessions');
   const sub = (args[0] || '').toLowerCase();
+  // Codex parity: --include-non-interactive flag (include batch/background sessions in list)
+  const includeNonInteractive = args.includes('--include-non-interactive');
+  const filterArgs = args.filter(a => !a.startsWith('--'));
 
   // ── resume list ──────────────────────────────────────────────────────────
   if (sub === 'list' || sub === 'ls') {
@@ -1658,8 +1661,14 @@ async function cmdGuard(args) {
       }
     }
     // Determine trust from path
-    if (skillPath.includes('.hermes')) source = 'builtin';
-    else if (skillPath.includes('purpclaw') || skillPath.includes('PURPCLAW')) source = 'agent-created';
+    const absSkillPath = path.resolve(skillPath);
+    const relToPurp  = path.relative(PURP_DIR, absSkillPath).split(path.sep).join('/');
+    const relToHome  = path.relative(process.env.HOME || '', absSkillPath).split(path.sep).join('/');
+    if (relToHome.startsWith('.hermes/skills')) {
+      source = 'builtin';
+    } else if (relToPurp.startsWith('skills/')) {
+      source = 'agent-created';
+    }
   } else if (sub === 'scan') {
     if (!target) return console.log(col(C.gray, '  Usage: purpclaw guard scan <path>'));
     skillPath = path.resolve(target);
@@ -1690,7 +1699,7 @@ async function cmdGuard(args) {
   const { allowed, reason } = G.shouldAllowInstall(result, force);
   const verdictColor = result.verdict === 'safe' ? C.green
     : result.verdict === 'caution' ? C.yellow : C.red;
-  console.log(`  Verdict: ${col(C.bold + verdictColor, result.verdict.toUpperCase())}`);
+  console.log(`  Trust: ${col(C.cyan, result.trust_level)}   Verdict: ${col(C.bold + verdictColor, result.verdict.toUpperCase())}`);
   if (allowed === true)      console.log(`  ${col(C.green, '✓ ALLOWED')}  ${col(C.gray, reason)}`);
   else if (allowed === null) console.log(`  ${col(C.yellow, '⚠ NEEDS CONFIRMATION')}  ${reason}`);
   else                        console.log(`  ${col(C.red, '✗ BLOCKED')}  ${reason}`);
@@ -5670,8 +5679,8 @@ async function cmdPlugins(args) {
     return;
   }
 
-  // ── install ───────────────────────────────────────────────────────────────
-  if (sub === 'install') {
+  // ── install / add (Codex parity) ──────────────────────────────────────────
+  if (sub === 'install' || sub === 'add') {
     ensurePluginsDir();
     let name = null, gitUrl = null, localPath = null;
 
@@ -5934,9 +5943,12 @@ case 'registry': return cmdRegistry(args);
  case 'resume':   return cmdResume(args);
 
     case 'exec': {
-      // Codex parity: purpclaw exec review [--uncommitted|--base <branch>|--commit <sha>]
+      // Codex parity: purpclaw exec [review|archive|delete|unarchive|...]
       const sub = (args[0] || '').toLowerCase();
-      if (sub === 'review') return cmdReview(args.slice(1));
+      if (sub === 'review')    return cmdReview(args.slice(1));
+      if (sub === 'archive')   return cmdArchive(args.slice(1));
+      if (sub === 'delete')    return cmdDelete(args.slice(1));
+      if (sub === 'unarchive') return cmdArchive(args.slice(1), true);
       const execPolicy = require(path.join(PURP_DIR, 'lib', 'exec-policy'));
       if (!args.length) { console.log('  usage: purpclaw exec <command> [args...]\n'); return; }
       const cmdStr = args.join(' ');
@@ -5957,12 +5969,14 @@ case 'registry': return cmdRegistry(args);
     case 'mcp-server': {
       // Codex parity: run PURPCLAW as an MCP server over stdio.
       // `codex mcp-server` — serves MCP protocol on stdin/stdout.
+      // Flags: --strict-config  (require all env vars present, fail if missing)
       const { spawn } = require('child_process');
       const nodeBin = process.execPath;
       const serverScript = path.join(PURP_DIR, 'lib', 'mcp-server.js');
-      const child = spawn(nodeBin, [serverScript], {
+      const strictMode = args.includes('--strict-config');
+      const child = spawn(nodeBin, [serverScript, strictMode ? '--strict' : ''].filter(Boolean), {
         stdio: ['inherit', 'inherit', 'inherit'],
-        env: { ...process.env },
+        env: strictMode ? { ...process.env } : { ...process.env },
         shell: false,
         windowsHide: true,
       });
@@ -5972,6 +5986,7 @@ case 'registry': return cmdRegistry(args);
     }
     case 'hooks':    return loadCmd('hooks').run(args, sharedCtx());
     case 'plugin':   return loadCmd('plugin').run(args, sharedCtx());
+    case 'worktree': return loadCmd('worktree').run(args, sharedCtx());
     case 'mcp':      return loadCmd('mcp').run(args, sharedCtx());
     case 'remote': {
       const fs = require('fs');
