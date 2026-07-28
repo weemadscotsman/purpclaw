@@ -93,7 +93,7 @@ async function main() {
     }
   });
 
-  // ── Test 5: /push truncates long messages ────────────────────────────────
+  // ── Test 5: /push truncates long messages ────────────────────────────
   await test('/push caps messages at 200 chars', async () => {
     await httpPost('/push', { msg: 'B'.repeat(300), type: 'info' });
     const body = JSON.parse((await httpGet('/state')).body);
@@ -101,7 +101,23 @@ async function main() {
     if (last.msg.length > 200) throw new Error('expected <=200, got ' + last.msg.length);
   });
 
-  // ── Test 6: /close terminates ────────────────────────────────────────────
+  // ── Test 5b: /track sets agent+task ───────────────────────────────────
+  await test('/track sets activeAgent and currentTask', async () => {
+    await httpPost('/track', { agent: 'test-agent', task: 'smoke test', type: 'start' });
+    const body = JSON.parse((await httpGet('/state')).body);
+    if (body.activeAgent !== 'test-agent') throw new Error('agent mismatch: ' + body.activeAgent);
+    if (body.currentTask !== 'smoke test') throw new Error('task mismatch: ' + body.currentTask);
+  });
+
+  // ── Test 5c: /track stop clears ────────────────────────────────────────
+  await test('/track stop clears agent and task', async () => {
+    await httpPost('/track', { type: 'stop' });
+    const body = JSON.parse((await httpGet('/state')).body);
+    if (body.activeAgent !== 'idle') throw new Error('expected idle, got: ' + body.activeAgent);
+    if (body.currentTask !== '') throw new Error('expected empty, got: ' + body.currentTask);
+  });
+
+  // ── Test 6: /close terminates ─────────────────────────────────────
   await test('/close stops server', async () => {
     await httpPost('/close', {});
     await new Promise(r => setTimeout(r, 2000));
