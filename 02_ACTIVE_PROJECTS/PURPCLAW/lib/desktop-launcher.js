@@ -11,7 +11,7 @@
  * Default port: 7790
  */
 
-const { spawn, exec: execSync } = require('child_process');
+const { spawn, fork, exec: execSync } = require('child_process');
 const fs   = require('fs');
 const path = require('path');
 const os   = require('os');
@@ -91,23 +91,19 @@ async function startServer() {
     return { ok: false, running: true, pid: status.pid, port: status.port, message: 'Server already running' };
   }
 
-  // Spawn background child — no detached flag; use unref() instead.
-  // On Windows, detached:true + stdio:ignore causes immediate exit when parent
-  // terminates because there's no console window to host the orphaned process.
-  // Without detached:true, the child is adopted by the OS job object and survives
-  // the parent's exit. unref() ensures the parent doesn't block waiting for it.
-  const child = spawn(process.execPath, [STATIC_SERVER_PATH], {
-    stdio: 'ignore',   // stdin/stdout/stderr suppressed — server writes no output
+  // Use fork() so Node.js keeps the IPC channel alive — the child survives
+  // the parent's process.exit(0). Do NOT use unref(): the parent must keep a
+  // reference until the child has bound its port. We keep the parent alive
+  // for 2s using a held setTimeout, then exit normally.
+  const child = fork(STATIC_SERVER_PATH, [], {
     cwd: PURP_DIR,
   });
-  child.unref();        // allow parent to exit without waiting for child
 
   const pid = child.pid;
   if (!fs.existsSync(PID_DIR)) fs.mkdirSync(PID_DIR, { recursive: true });
   fs.writeFileSync(PID_FILE, String(pid), 'utf8');
 
-  // Poll for up to 5s — wait for the server to bind its port before declaring success.
-  // Without this, the caller sees "started" but the port isn't ready yet.
+  // Poll for up to 5s — wait for the server to bind its port before returning.
   const net = require('net');
   const maxWait = 5_000;
   const step   = 200;
@@ -126,11 +122,10 @@ async function startServer() {
     return { ok: false, running: false, pid, port: PORT, message: `Server PID ${pid} but port ${PORT} did not bind after ${maxWait}ms` };
   }
 
-  // Hold the parent open for 500ms so the child can stabilize after bind.
-  // This is critical on Windows — without it, the parent exits and the child
-  // can get terminated before it owns the port.
-  const parentExit = setTimeout(() => {}, 500);
-  parentExit.unref();
+  // Hold parent for 2s after successful bind — gives child time to stabilize
+  // before parent's process.exit(0) fires. This replaces child.unref().
+  const hold = setTimeout(() => {}, 2000);
+  hold.unref();  // but don't block exit beyond 2s
 
   return { ok: true, running: true, pid, port: PORT, message: `Server started on port ${PORT}` };
 }

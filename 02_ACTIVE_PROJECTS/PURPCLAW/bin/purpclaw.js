@@ -4994,6 +4994,23 @@ async function cmdLogin(args) {
   const readline = require('readline');
 
   const sub = (args[0] || '').toLowerCase();
+
+  // ── login status ─────────────────────────────────────────────────────────────
+  if (sub === 'status') {
+    const CS = require(path.join(PURP_DIR, 'lib', 'credentials-store'));
+    const creds = CS.list();
+    if (!creds.length) {
+      console.log('No credentials stored. Run: purpclaw login');
+      return;
+    }
+    console.log('\n  Stored credentials:');
+    for (const c of creds) {
+      console.log('  ' + c.provider + '  ' + c.masked);
+    }
+    console.log('');
+    return;
+  }
+
   const apiKeyIdx = args.indexOf('--api-key');
   const provider = args[args.indexOf('--provider') + 1] || 'openai';
 
@@ -5852,6 +5869,24 @@ async function cmdPlugins(args) {
     case 'fork':      return cmdFork(args);
     case 'sandbox':   return cmdSandbox(args);
     case 'remote-control': return cmdRemoteControl(args);
+    case 'execpolicy': {
+      const EP = require(path.join(PURP_DIR, 'lib', 'exec-policy'));
+      const sub = (args[0] || '').toLowerCase();
+      if (sub === 'check') {
+        const cmd = args.slice(1).join(' ');
+        if (!cmd) { console.log('usage: purpclaw execpolicy check <command>'); return 1; }
+        const result = EP.check(cmd);
+        if (result.allowed) {
+          console.log('allowed  — ' + (result.reason || 'ok'));
+        } else {
+          console.log('denied   — ' + (result.reason || result.source || 'policy'));
+          return 1;
+        }
+        return 0;
+      }
+      console.log('purpclaw execpolicy check <command>');
+      return 0;
+    }
     case 'cloud':     return cmdCloud(args);
     case 'plugins':  return cmdPlugins(args);
     case 'doctor':    return cmdDoctor(args);
@@ -5907,6 +5942,31 @@ async function cmdPlugins(args) {
           const out = execSync('node -p "JSON.stringify({cli:require(\'./package.json\').version,server:process.env.npm_package_version||\'unknown\'})"', { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'pipe' });
           process.stdout.write(out);
         } catch (e) { console.log('{}'); }
+        return 0;
+      }
+
+      if (sub === 'proxy') {
+        // Codex: codex app-server proxy [--sock <path>]
+        const sockIdx = args.indexOf('--sock');
+        const sockPath = sockIdx !== -1 && args[sockIdx + 1] ? args[sockIdx + 1] : null;
+        if (!sockPath) {
+          console.log('usage: purpclaw app-server proxy --sock <socket-path>');
+          return 0;
+        }
+        console.log('proxy to: ' + sockPath);
+        console.log('(Windows named pipe proxy not yet implemented — connect via WebSocket at ws://localhost:9119)');
+        return 0;
+      }
+
+      if (sub === 'generate-ts') {
+        console.log('TypeScript bindings generation requires the TypeScript compiler (tsc).');
+        console.log('This is a Codex IDE integration feature — not applicable to PURPCLAW web runtime.');
+        return 0;
+      }
+
+      if (sub === 'generate-json-schema') {
+        console.log('JSON Schema generation for app-server protocol.');
+        console.log('PURPCLAW uses OpenAPI/REST — schema is auto-generated from route definitions.');
         return 0;
       }
 
@@ -5986,10 +6046,21 @@ case 'registry': return cmdRegistry(args);
     }
     case 'hooks':    return loadCmd('hooks').run(args, sharedCtx());
     case 'plugin':   return loadCmd('plugin').run(args, sharedCtx());
-    case 'app':      return (async () => loadCmd('desktop').run(args, sharedCtx()))();
+    case 'app': {
+      (async () => {
+        try {
+          await loadCmd('desktop').run(args, sharedCtx());
+        } catch (e) {
+          console.error('app error:', e.message);
+        }
+        setImmediate(() => process.exit(0));
+      })();
+      return;
+    }
     case 'secrets':  return loadCmd('secrets').run(args, sharedCtx());
     case 'feedback': return loadCmd('feedback').run(args, sharedCtx());
     case 'worktree': return loadCmd('worktree').run(args, sharedCtx());
+    case 'skills':   return loadCmd('skills').run(args, sharedCtx());
     case 'mcp':      return loadCmd('mcp').run(args, sharedCtx());
     case 'remote': {
       const fs = require('fs');
