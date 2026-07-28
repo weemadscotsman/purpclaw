@@ -31,6 +31,19 @@ const PROMPTS = require('./prompt-builder');
 const { ContextEngine } = require('./context-engine');
 const { ToolRuntime } = require('./tool-runtime');
 const announce = require('./events');
+// S1: Lifecycle event bus — Steering vNext
+const LIFECYCLE = (() => { try { return require('./hooks/lifecycle-bus'); } catch { return null; } })();
+const PARITY_HOOKS = (() => { try { return require('../parity/hooks/engine'); } catch { return null; } })();
+// S7: Continuity — snapshot at turn boundary for crash recovery
+const CONTINUITY = (() => { try { return require('./continuity'); } catch { return null; } })();
+// S2: Scoped Memory — ingest on task/turn completion
+const SCOPED_MEMORY = (() => { try { return require('./scoped-memory'); } catch { return null; } })();
+// S4: Priority Steer — interrupt now + queue next channels
+const PRIORITY_STEER = (() => { try { return require('./priority-steer'); } catch { return null; } })();
+// S3: Verified Learning Gate — EMERGENT→PROBATIONARY→TRUSTED pipeline
+const VERIFY_GATE = (() => { try { return require('./verification-gate'); } catch { return null; } })();
+// S8: Phase Router — model selection table
+const PHASE_ROUTER = (() => { try { return require('./phase-router'); } catch { return null; } })();
 const FEEDBACK = (() => { try { return require('./user-feedback'); } catch { return null; } })();
 const IDLE_ENGINE = (() => { try { return require('./idle-engine'); } catch { return null; } })();
 // The loop and every user-facing transport share the same durable SQLite
@@ -43,6 +56,18 @@ const SESSIONS = (() => { try { return require('./session-repository'); } catch 
 // result writes back to the rules/modal/diagnostics/memory stack.
 const COGNITIVE = (() => { try { return require('./cognitive-client'); } catch { return null; } })();
 const MEMORY = (() => { try { return require('./memory-client'); } catch { return null; } })();
+// SIGINT graceful shutdown — catches Ctrl+C in terminal and stops the agent loop
+// after saving the current session state. Matches Codex CLI behaviour.
+// Codex: Ctrl+C → graceful stop, partial results saved, session resumable.
+// Set to true on SIGINT, checked at each turn boundary.
+let _sigintPending = false;
+function _sigintHandler() {
+  if (_sigintPending) return; // already handling
+  _sigintPending = true;
+  // Codex parity: Stop hook — fire when agent receives Ctrl+C
+  if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('Stop', { reason: 'SIGINT', timestamp: Date.now() })).catch(() => {});
+}
+process.on('SIGINT', _sigintHandler);
 // Hard-required: privacy-policy is the contract that says PURPCLAW is
 // local-only. Silently NULLing it on missing/broken import lets the
 // whole privacy posture rot without anyone noticing. The agent-loop
@@ -143,7 +168,11 @@ function _liveProviderCount() {
  * so the LLM knows what it can call.
  */
 function buildSystemPrompt(opts = {}) {
-  const tools = TOOLS.list();
+  // When a ToolRuntime with --allowedTools/--disallowedTools is present,
+  // use its filtered catalog() so the LLM only sees executable tools.
+  const toolRuntime = opts.toolRuntime;
+  const rawTools = TOOLS.list();
+  const tools = toolRuntime ? toolRuntime.catalog() : rawTools;
   const toolList = tools.map(t => `- ${t.name}: ${t.description}`).join('\n');
   const cwd = opts.cwd || process.cwd();
   const toolCount = tools.length;
@@ -325,10 +354,22 @@ async function* agentTurn({ messages, model, provider, opts = {} }) {
 async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   const maxTurns = opts.maxTurns ?? 10;
   const contextEngine = opts.contextEngine || new ContextEngine({ contextLength: opts.contextLength || 204_800, threshold: opts.compressionThreshold ?? 0.5 });
-  const compacted = contextEngine.shouldCompress(history) ? contextEngine.compress(history) : { messages: [...history], compressed: false };
+  const needsCompact = contextEngine.shouldCompress(history);
+  // Codex parity: PreCompact — fire BEFORE compression
+  if (needsCompact && PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('PreCompact', { reason: 'initial', messageCount: history.length })).catch(() => {});
+  const compacted = needsCompact ? contextEngine.compress(history) : { messages: [...history], compressed: false };
   const messages = [...compacted.messages];
   if (compacted.compressed) yield { type: 'context.compressed', ...compacted };
+  // Codex parity: PostCompact — fire AFTER compression
+  if (compacted.compressed && PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('PostCompact', { originalCount: history.length, compressedCount: messages.length })).catch(() => {});
   if (prompt) messages.push({ role: 'user', content: prompt });
+  // S1: Lifecycle — SessionStart + PromptSubmit
+  if (LIFECYCLE) {
+    LIFECYCLE.sessionStart(opts.sessionId || `session-${Date.now()}`, { provider, model, cwd: opts.cwd });
+    LIFECYCLE.promptSubmit(messages, 0).catch(() => {});
+  }
+  // Codex parity: SessionStart hook — emit() is synchronous, wrap for safety
+  if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionStart', { sessionId: opts.sessionId, provider, model, cwd: opts.cwd })).catch(() => {});
   let totalContent = '';
   let turn = 0;
   const toolRuntime = opts.toolRuntime || new ToolRuntime();
@@ -410,17 +451,48 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
 
   while (turn < maxTurns) {
     turn++;
+    // S4: Priority Steer — drain interrupt before processing this turn.
+    if (PRIORITY_STEER && PRIORITY_STEER.shouldInterrupt()) {
+      const intr = PRIORITY_STEER.pollInterrupt();
+      PRIORITY_STEER.clearInterrupt();
+      yield { type: 'priority.interrupt', reason: intr?.reason || 'steer', detail: intr };
+      if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'priority-steer').catch(() => {});
+      if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'priority-steer' })).catch(() => {});
+      break;
+    }
+    // SIGINT: graceful Ctrl+C — save session and stop cleanly (Codex behaviour).
+    if (_sigintPending) {
+      _sigintPending = false;
+      process.removeListener('SIGINT', _sigintHandler);
+      if (SESSIONS && opts.sessionId) SESSIONS.saveSession(opts.sessionId, messages, { provider, model });
+      if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'SIGINT').catch(() => {});
+      if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'SIGINT' })).catch(() => {});
+      yield { type: 'interrupted', reason: 'SIGINT', turns, totalContent };
+      break;
+    }
+    // S8: Phase Router — honour a queued model override.
+    if (PHASE_ROUTER && opts.sessionId) {
+      const override = PHASE_ROUTER.getOverride(opts.sessionId);
+      if (override) {
+        model = override.model || model;
+        if (override.provider) provider = override.provider;
+      }
+    }
     yield { type: 'turn', turn, maxTurns };
     // S5 — re-check compression mid-loop. If the agent has been running long
     // enough to push past the threshold AGAIN after a previous compact, we
     // want to compress again before the next LLM call. Otherwise long
     // sessions die with "context_length_exceeded" at provider level.
     if (turn > 1 && contextEngine.shouldCompress(messages)) {
+      // Codex parity: PreCompact — mid-loop compression
+      if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('PreCompact', { reason: 'mid-loop', turn, messageCount: messages.length })).catch(() => {});
       const second = contextEngine.compress(messages);
       if (second.compressed) {
         messages.length = 0;
         messages.push(...second.messages);
         yield { type: 'context.compressed.again', ...second };
+        // Codex parity: PostCompact — after mid-loop compression
+        if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('PostCompact', { originalCount: messages.length + second.messages.length, compressedCount: second.messages.length, reason: 'mid-loop', turn })).catch(() => {});
       }
     }
 
@@ -440,10 +512,20 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
           messages.push({ role: 'assistant', content: ev.fullContent });
         }
       } else if (ev.type === 'error') {
+        // Codex parity: Error hook — fire when agent turn encounters an error
+        if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('Error', { error: ev.error, turn, sessionId: opts.sessionId })).catch(() => {});
         yield ev;
         return;
       }
     }
+
+    // Codex parity: UserPromptSubmit hook — fires after LLM receives the user's prompt
+    if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('UserPromptSubmit', {
+      sessionId: opts.sessionId,
+      prompt: prompt || '',
+      messageCount: messages.length,
+      turn,
+    })).catch(() => {});
 
     if (!toolCalls.length) {
       // LLM didn't ask for any tools; we're done
@@ -483,6 +565,9 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
     for (const call of toolCalls) {
       yield { type: 'tool-call', tool: call.tool, args: call.args };
 
+      // Codex parity: PreToolUse hook — emit() is sync, wrap for .catch() safety
+      if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('PreToolUse', { tool: call.tool, args: call.args, callId: call.id, sessionId: opts.sessionId })).catch(() => {});
+
       // ── Personal model growth: capture tool call ──────────────────
       if (FEEDBACK) FEEDBACK.captureToolCall(call.tool, call.args, { provider, model, turn });
 
@@ -498,6 +583,24 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
 
       // ── Personal model growth: capture tool result ─────────────────
       if (FEEDBACK) FEEDBACK.captureToolResult(call.tool, result, { provider, model, turn });
+
+      // S1: Lifecycle — PostToolUse
+      if (LIFECYCLE) LIFECYCLE.postToolUse(call.tool, call.args, result, call.id, turn).catch(() => {});
+      // Codex parity: PostToolUse — emit after LIFECYCLE so both buses fire
+      if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('PostToolUse', { tool: call.tool, args: call.args, result, callId: call.id, sessionId: opts.sessionId, turn })).catch(() => {});
+
+      // S3: Verified Learning — observe every tool outcome for the gate pipeline
+      if (VERIFY_GATE) {
+        const outcome = result.ok ? 'success' : 'failure';
+        // observe() is synchronous — wrap so .catch() is always safe
+        Promise.resolve().then(() => VERIFY_GATE.observe({
+          lesson: `tool:${call.tool}`,
+          context: `${call.tool} ${outcome}`,
+          outcome,
+          scope: 'session',
+          source: 'agent-loop',
+        })).catch(() => {});
+      }
 
       // ── Cognitive spine: write every tool result back to layers 1-6 ──
       // Assert a fact in the rules engine, report to diagnostics, react
@@ -542,10 +645,37 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
         messages.push({ role: 'user', content: `[tool result · ${call.tool}]\n${resultText}` });
       }
     }
+    // S1: Lifecycle — TurnStop (end of turn, before next iteration)
+    if (LIFECYCLE) LIFECYCLE.turnStop(turn, toolCalls.length > 0, messages.length).catch(() => {});
+
+    // S7: Continuity — snapshot at turn boundary for crash recovery
+    if (CONTINUITY && opts.sessionId) {
+      CONTINUITY.snapshot({
+        sessionId: opts.sessionId,
+        turn,
+        goal: opts.prompt || '',
+        messages: messages,
+        pendingCalls: [],
+        checkpointId: null,
+        metadata: { provider, model, totalContentLength: totalContent.length },
+      });
+    }
+
+    // S4: Priority Steer — drain queued next-command if one is waiting
+    if (PRIORITY_STEER) {
+      const queued = PRIORITY_STEER.getQueue();
+      if (queued.length > 0) {
+        const next = PRIORITY_STEER.queueNext();
+        if (next) yield { type: 'priority.queue', command: next };
+      }
+    }
+
     // Loop again with the updated messages
   }
   // ── Auto-save session ───────────────────────────────────────
   if (SESSIONS && opts.sessionId) SESSIONS.saveSession(opts.sessionId, messages, { provider, model });
+  if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'completed').catch(() => {});
+  if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'completed', turns, totalContent })).catch(() => {});
   // ── Cognitive spine: record max-turns exit ─────────────────────────
   if (MEMORY) {
     try { MEMORY.react(`agent hit max turns (${maxTurns})`, 'agent_loop'); } catch {}

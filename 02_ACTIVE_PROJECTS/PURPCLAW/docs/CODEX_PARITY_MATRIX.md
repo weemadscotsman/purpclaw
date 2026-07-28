@@ -11,6 +11,7 @@ Observable behaviours from Codex Rust source vs PURPCLAW source. Verified by run
 
 > **CLI parity: 20/20 supported command domains complete.**
 > **Extended product parity: 20/20 complete.**
+> **`plugin marketplace add/list/upgrade/remove` added 2026-07-28 (plugin subcommand)**
 > **Smoke tests: 12/12 passing.**
 
 ---
@@ -78,7 +79,7 @@ Things that exist at the engine level but are incomplete or missing.
 ### High (usability)
 | Gap | Status | Fix needed |
 |---|---|---|
-| Hook engine: all 11 events | 🔴 PARTIAL | 3/11 wired (SessionStart, PreToolUse, SessionEnd). Remaining: PostToolUse, Stop, PreCompact, PostCompact, UserPromptSubmit, SubagentStart, SubagentStop, Error |
+| Hook engine: all 11 events | ✅ FIXED | 11/11 wired: SessionStart, SessionEnd, PreToolUse, PostToolUse, PreCompact, PostCompact, Stop, Error, UserPromptSubmit (lib/agent-loop.js), SubagentStart, SubagentStop (lib/tools/index.js spawn tool) |
 | Approval TUI | ✅ FIXED | Inline TTY prompt added to `requireApproval()` in `lib/tool-gate.js` — `process.stdin.isTTY` triggers `readline` `[y/N]` prompt with risk summary before queue fallback. Tested: self-check passes, trusted-dir exec bypasses correctly |
 | Agent diversity | 🔴 PARTIAL | 5 agents vs Codex 38 TOML types |
 | Skills system | 🔴 PARTIAL | 380+ skills exist, no `SkillConfigRules`, no dependency system |

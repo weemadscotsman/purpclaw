@@ -1159,6 +1159,12 @@ registry.register({
       }
     }
 
+    // Codex parity: SubagentStart hook — fire before spawning a sub-agent
+    const PARITY_HOOKS_SPAWN = (() => { try { return require('./parity/hooks/engine.js'); } catch { return null; } })();
+    if (PARITY_HOOKS_SPAWN) Promise.resolve().then(() => PARITY_HOOKS_SPAWN.emit('SubagentStart', {
+      agent: agentName, task, source: 'spawn-tool', sessionId: ctx?.sessionId,
+    })).catch(() => {});
+
     try {
       var http = require('http');
       var body = JSON.stringify({ command: task, intent: 'build', target: agentName, source: 'tool-registry-spawn' });
@@ -1171,16 +1177,33 @@ registry.register({
           var data = '';
           res.on('data', function(chunk) { data += chunk; });
           res.on('end', function() {
+            // Codex parity: SubagentStop — on success
+            if (PARITY_HOOKS_SPAWN) Promise.resolve().then(() => PARITY_HOOKS_SPAWN.emit('SubagentStop', {
+              agent: agentName, task, source: 'spawn-tool', sessionId: ctx?.sessionId,
+            })).catch(() => {});
             try { resolve(JSON.parse(data)); }
             catch (e) { resolve({ ok: false, error: 'invalid response from tower' }); }
           });
         });
-        req.on('error', function(e) { resolve({ ok: false, error: 'tower unreachable: ' + e.message }); });
-        req.on('timeout', function() { req.destroy(); resolve({ ok: false, error: 'tower spawn timeout' }); });
+        req.on('error', function(e) {
+          if (PARITY_HOOKS_SPAWN) Promise.resolve().then(() => PARITY_HOOKS_SPAWN.emit('SubagentStop', {
+            agent: agentName, task, source: 'spawn-tool', sessionId: ctx?.sessionId, error: e.message,
+          })).catch(() => {});
+          resolve({ ok: false, error: 'tower unreachable: ' + e.message });
+        });
+        req.on('timeout', function() {
+          if (PARITY_HOOKS_SPAWN) Promise.resolve().then(() => PARITY_HOOKS_SPAWN.emit('SubagentStop', {
+            agent: agentName, task, source: 'spawn-tool', sessionId: ctx?.sessionId, error: 'timeout',
+          })).catch(() => {});
+          req.destroy(); resolve({ ok: false, error: 'tower spawn timeout' });
+        });
         req.write(body);
         req.end();
       });
     } catch (e) {
+      if (PARITY_HOOKS_SPAWN) Promise.resolve().then(() => PARITY_HOOKS_SPAWN.emit('SubagentStop', {
+        agent: agentName, task, source: 'spawn-tool', sessionId: ctx?.sessionId, error: e.message,
+      })).catch(() => {});
       return { ok: false, error: 'spawn failed: ' + e.message };
     }
   },
