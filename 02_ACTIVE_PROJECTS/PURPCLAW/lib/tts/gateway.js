@@ -190,6 +190,12 @@ function readBody(req, max = 65536) {
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://127.0.0.1:${PORT}`);
 
+  // Optional API key auth (skip /health so monitoring works without a key)
+  const API_KEY = process.env.TTS_API_KEY;
+  if (API_KEY && url.pathname !== '/health' && req.headers['x-tts-key'] !== API_KEY) {
+    return sendJson(res, 401, { ok: false, error: 'unauthorized' });
+  }
+
   if (url.pathname === '/health' && req.method === 'GET') {
     return sendJson(res, 200, {
       status: 'ok',
