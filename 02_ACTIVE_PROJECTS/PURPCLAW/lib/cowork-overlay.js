@@ -266,6 +266,8 @@ function createServer() {
     if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
     if (u.pathname === '/state' && req.method === 'GET') {
+      // Reload from disk so external writers (CLI, other processes) can update state
+      loadState();
       // Refresh live fields from context file
       try {
         if (fs.existsSync(CONTEXT_FILE)) {
@@ -304,6 +306,19 @@ function createServer() {
       res.writeHead(200); res.end('ok');
       if (overlayProc) { try { overlayProc.kill(); } catch {} }
       overlayProc = null;
+      if (observerTimer) { clearInterval(observerTimer); observerTimer = null; }
+      // Destroy connections first, then exit — avoids calling close() on null
+      const srv = _srv;
+      _srv = null;
+      if (srv) {
+        // Abort all active connections so they don't keep process alive
+        srv.close(() => setTimeout(() => process.exit(0), 200));
+        srv.on('close', () => setTimeout(() => process.exit(0), 200));
+        // Safety net
+        setTimeout(() => process.exit(0), 1000);
+      } else {
+        process.exit(0);
+      }
       return;
     }
 
@@ -317,6 +332,7 @@ function createServer() {
 // ── Screen Observer ─────────────────────────────────────────────────────────
 
 let observerTimer = null;
+let _srv = null;
 
 async function captureScreen() {
   try {
@@ -344,16 +360,16 @@ switch (cmd) {
   case 'start': {
     loadState();
     state.uptime = Date.now();
-    const srv = createServer();
-    srv.listen(OVERLAY_PORT, '127.0.0.1', () => {
+    _srv = createServer();
+    _srv.listen(OVERLAY_PORT, '127.0.0.1', () => {
       console.log(`[cowork] Co-Work Mode active at http://localhost:${OVERLAY_PORT}/`);
     });
     // Screen observer every 30s
     captureScreen();
     observerTimer = setInterval(captureScreen, 30 * 1000);
 
-    process.on('SIGINT', () => { clearInterval(observerTimer); srv.close(); process.exit(0); });
-    process.on('SIGTERM', () => { clearInterval(observerTimer); srv.close(); process.exit(0); });
+    process.on('SIGINT', () => { clearInterval(observerTimer); _srv && _srv.close(); process.exit(0); });
+    process.on('SIGTERM', () => { clearInterval(observerTimer); _srv && _srv.close(); process.exit(0); });
 
     launchOverlayWindow();
     break;
