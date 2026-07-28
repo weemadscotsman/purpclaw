@@ -76,10 +76,10 @@ async function startCmd(args) {
   }
 }
 
-function stopCmd(args) {
+async function stopCmd(args) {
   const json    = args.includes('--json');
   const verbose = args.includes('--verbose');
-  const result  = launcher.stopServer();
+  const result  = await launcher.stopServer();
 
   if (json) {
     out(JSON.stringify(result));
@@ -236,10 +236,10 @@ async function run(args, ctx = {}) {
       await startCmd(args.slice(1));
       break;
     case 'stop':
-      stopCmd(args.slice(1));
+      await stopCmd(args.slice(1));
       break;
     case 'restart':
-      restartCmd(args.slice(1));
+      await restartCmd(args.slice(1));
       break;
     case 'open':
       openCmd(args.slice(1));
