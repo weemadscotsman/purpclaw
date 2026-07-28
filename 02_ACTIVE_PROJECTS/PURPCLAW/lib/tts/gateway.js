@@ -104,6 +104,7 @@ function startWorker() {
     // Reject all pending
     for (const [id, p] of pending) { p.reject(new Error('worker exited')); }
     pending.clear();
+    workerBusy = false;
   });
 
   // Send init command

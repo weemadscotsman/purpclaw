@@ -58,7 +58,7 @@ function saveState() {
 
 function pushAlert(msg, type = 'info') {
   state.proactiveAlerts.unshift({ ts: Date.now(), msg, type });
-  if (state.proactiveAlerts.length > 5) state.proactiveAlerts.pop();
+  if (state.proactiveAlerts.length > 50) state.proactiveAlerts.length = 50;
   saveState();
   // Speak critical and action alerts aloud — info is silent unless voice_all enabled
   const voiceAll = (process.env.COWORK_VOICE_ALL === 'true');
@@ -122,11 +122,6 @@ function overlayHTML() {
     return `<div class="alert alert-${a.type}">${icon} ${escHtml(a.msg)} <span class="age">${age}s</span></div>`;
   }).join('');
 
-  const decisions = state.recentDecisions || [];
-  const decHTML = decisions.slice(0, 3).map(d =>
-    `<div class="decision">${escHtml(d)}</div>`
-  ).join('');
-
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -164,8 +159,7 @@ body {
 .alert-alert { background: rgba(160, 60, 40, 0.5); color: #e8a898; border-left: 2px solid #c05040; }
 .alert-action { background: rgba(60, 100, 70, 0.4); color: #a8d8b0; border-left: 2px solid #509060; }
 .age { float: right; color: #5a4a7a; font-size: 9px; }
-#decisions { display: flex; flex-direction: column; gap: 1px; }
-.decision { color: #8878a8; font-size: 10px; padding-left: 8px; border-left: 2px solid rgba(100,80,140,0.3); }
+
 #footer { display: flex; justify-content: space-between; margin-top: 2px; }
 #uptime { color: #4a3a6a; font-size: 9px; }
 #mem-pct { color: #6a5a8a; font-size: 9px; }
@@ -204,11 +198,6 @@ body {
   </div>
 
   <div class="divider"></div>
-
-  <div class="segment" id="decisions">
-    <span class="label">Decisions</span>
-    ${decHTML || '<div class="value empty">none yet</div>'}
-  </div>
 
   <div id="footer">
     <span id="uptime">up ${uptime}m</span>
