@@ -5986,6 +5986,9 @@ case 'registry': return cmdRegistry(args);
     }
     case 'hooks':    return loadCmd('hooks').run(args, sharedCtx());
     case 'plugin':   return loadCmd('plugin').run(args, sharedCtx());
+    case 'app':      return loadCmd('desktop').run(args, sharedCtx());
+    case 'secrets':  return loadCmd('secrets').run(args, sharedCtx());
+    case 'feedback': return loadCmd('feedback').run(args, sharedCtx());
     case 'worktree': return loadCmd('worktree').run(args, sharedCtx());
     case 'mcp':      return loadCmd('mcp').run(args, sharedCtx());
     case 'remote': {
@@ -6389,6 +6392,7 @@ case 'registry': return cmdRegistry(args);
     case 'workflows': return cmdWorkflows();
     case 'queue':     return cmdQueue();
     case 'memory':    return cmdMemory(args);
+    case 'marketplace': return loadCmd('marketplace').run(args, sharedCtx());
     case 'serve':     return cmdServe(args);
     case 'dream':     return cmdDream();
     case 'forge':     return cmdForge(args);
@@ -6563,8 +6567,6 @@ case 'registry': return cmdRegistry(args);
     case 'roster':    return loadCmd('roster').run(args, sharedCtx());
     case 'harvest':   return loadCmd('harvest').run(args, sharedCtx());
     case 'training':  return loadCmd('training').run(args, sharedCtx());
-    case 'feedback':
-    case 'personal-training': return cmdTrainingFeedback(args);
     case 'idle':      return cmdIdleEngine(args);
     case 'vector':    return cmdVectorBench(args);
     case 'providers': return cmdProviders(args);
@@ -7856,6 +7858,16 @@ async function cmdPet(args) {
 }
 
 if (require.main === module) {
+  // Global stream redaction — redact secrets (sk-*, Bearer, JWT, AWS keys)
+  // from every byte written to stdout/stderr across ALL commands.
+  // Codex does this at the Rust level on every write. PURPCLAW now does it
+  // from the top of every CLI invocation.
+  try {
+    const redactor = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
+    redactor.wrapStream(process.stdout);
+    redactor.wrapStream(process.stderr);
+  } catch {}
+
   // Global handlers for uncaught sync errors and unhandled async rejections.
   // These are the last line of defense before a silent process exit.
   process.on('uncaughtException', (err) => {
