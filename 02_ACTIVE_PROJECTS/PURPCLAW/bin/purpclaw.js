@@ -1533,6 +1533,58 @@ async function cmdRegistry(args) {
   console.log('');
 }
 
+// ── bundles ──────────────────────────────────────────────────────────────────
+// Skill bundle management — load multiple skills under one slash command.
+// Storage: ~/.purpclaw/skill-bundles/<name>.json
+// E.g. /backend-dev loads github-code-review + test-driven-development + github-pr-workflow.
+async function cmdBundles(args) {
+  const B = require(path.join(PURP_DIR, 'lib', 'skill-bundles'));
+  const sub = (args[0] || '').toLowerCase();
+  const name = args[1] || '';
+
+  if (sub === 'reload') {
+    const diff = B.reloadBundles();
+    console.log(`  ${col(C.green, '✓')} Reloaded — added: ${diff.added.length}, removed: ${diff.removed.length}, total: ${diff.total}`);
+    return;
+  }
+
+  if (sub === 'create') {
+    if (!name) return console.log(col(C.gray, '  Usage: purpclaw bundles create <name>'));
+    const { execSync } = require('child_process');
+    try {
+      execSync(`node "${path.join(PURP_DIR, 'lib', 'skill-bundles.js')}" create "${name}"`, { cwd: PURP_DIR, stdio: 'inherit' });
+    } catch { process.exit(1); }
+    return;
+  }
+
+  if (sub === 'show') {
+    if (!name) return console.log(col(C.gray, '  Usage: purpclaw bundles show <slug>'));
+    const { execSync } = require('child_process');
+    try {
+      execSync(`node "${path.join(PURP_DIR, 'lib', 'skill-bundles.js')}" show "${name}"`, { cwd: PURP_DIR, stdio: 'inherit' });
+    } catch { process.exit(1); }
+    return;
+  }
+
+  // Default: list all bundles
+  const bundles = B.listBundles();
+  if (!bundles.length) {
+    console.log(col(C.gray, '  No bundles found.'));
+    console.log(col(C.gray, '  Create ~/.purpclaw/skill-bundles/<name>.json'));
+    console.log(col(C.gray, '  Or: purpclaw bundles create backend-dev'));
+    return;
+  }
+  console.log(`\n  ${col(C.cyan + C.bold, 'Skill Bundles')}  (${bundles.length})\n`);
+  for (const b of bundles) {
+    console.log(`  ${col(C.bold, '/' + b.slug)}  — ${b.description}`);
+    console.log(`    skills: ${b.skills.join(', ')}`);
+    console.log('');
+  }
+  console.log(col(C.gray, '  Use: purpclaw bundles show <slug>'));
+  console.log(col(C.gray, '  Create: purpclaw bundles create <name>'));
+  console.log('');
+}
+
 // ── run ───────────────────────────────────────────────────────────────────────
 async function cmdRun(args) {
   const approvalArg = args.find(a => a.startsWith('--approval='));
@@ -5004,7 +5056,7 @@ async function cmdReview(args) {
         const diff = run(`git diff ${flags.base}...HEAD --stat 2>/dev/null`);
         return { diff, type: 'base', base: flags.base };
       }
-      case 'commit': {
+    case 'commit': {
         if (!flags.commit) return null;
         const show = run(`git show ${flags.commit} --stat 2>/dev/null`);
         return { show, type: 'commit', sha: flags.commit };
@@ -5278,6 +5330,7 @@ async function cmdPlugins(args) {
     announce.bigboss.started(command, args);
     case 'bg':        return cmdBg(args);
 case 'registry': return cmdRegistry(args);
+    case 'bundles':  return cmdBundles(args);
     case 'install':   return cmdRegistry(['install', ...args]);
     case 'search':    return cmdRegistry(['search', ...args]);
  case 'resume':   return cmdResume(args);
@@ -5303,6 +5356,13 @@ case 'registry': return cmdRegistry(args);
       }
       return 0;
     }
+    case 'mcp-server': {
+      console.log('  MCP server mode: stdio transport');
+      console.log('  Start: purpclaw ask --mcp-server');
+      console.log('  Note: PURPCLAW operates as agent-gateway-server on :9119 (JSON-RPC)');
+      return 0;
+    }
+    case 'mcp':      return loadCmd('mcp').run(args, sharedCtx());
     case 'remote': {
       const fs = require('fs');
       const RC = path.join(PURP_DIR, '.purpclaw', 'remote-config.json');
@@ -5788,6 +5848,32 @@ case 'registry': return cmdRegistry(args);
     case 'wizard':    return loadCmd('setup').run(args, sharedCtx());
     case 'tour':
     case 'walkthrough':return loadCmd('tour').run(args, sharedCtx());
+    case 'completion': {
+      // Codex parity: shell completion generator
+      // Usage: purpclaw completion bash|zsh|fish|powershell
+      const sh = (args[0] || '').toLowerCase();
+      const supported = ['bash', 'zsh', 'fish', 'powershell'];
+      if (!sh || !supported.includes(sh)) {
+        console.log('  usage: purpclaw completion <shell>');
+        console.log('  shells: ' + supported.join(', '));
+        return 1;
+      }
+      try {
+        const { execSync } = require('child_process');
+        const t = `#!/bin/sh\nexec purpclaw "$@"`;
+        console.log('# ' + sh + ' completion for purpclaw');
+        if (sh === 'bash') {
+          console.log('_purpclaw() { compopt +o bashdefault; compopt +o default; completions=$(purpclaw --cmds 2>/dev/null); COMPREPLY=($(compgen -W "$completions" -- "$WORD")); }');
+          console.log('complete -F _purpclaw purpclaw');
+        } else if (sh === 'zsh') {
+          console.log('#compdef purpclaw\n_purpclaw() { _values "commands" $(purpclaw --cmds 2>/dev/null); }');
+        } else if (sh === 'fish') {
+          console.log('complete -c purpclaw -f -a "(purpclaw --cmds 2>/dev/null)"');
+        }
+        console.log('');
+      } catch(e) { console.log('  error: ' + e.message); return 1; }
+      return 0;
+    }
     case 'commit':
         case 'review':
         case 'find':
