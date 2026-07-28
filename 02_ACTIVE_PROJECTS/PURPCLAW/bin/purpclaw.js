@@ -89,6 +89,7 @@ const { trackedSpawn, execSafe, installCleanup, list: listChildren } = require('
 const ECOSYSTEM     = path.join(PURP_DIR, 'ecosystem.config.js');
 const NANOCLAW      = path.join(PURP_DIR, 'scripts', 'nanoclaw.js');
 const AGENT_SCORE   = path.join(PURP_DIR, 'agent_score.json');
+const PURP_SKILLS_DIR = path.join(PURP_DIR, 'skills');
 const SERVICE_REGISTRY = require(path.join(PURP_DIR, 'service_registry.js'));
 const GOVERNANCE = require(path.join(PURP_DIR, 'lib', 'governance.js'));
 const JOB_CONTRACT = require(path.join(PURP_DIR, 'lib', 'job-contract.js'));
@@ -1583,6 +1584,146 @@ async function cmdBundles(args) {
   console.log(col(C.gray, '  Use: purpclaw bundles show <slug>'));
   console.log(col(C.gray, '  Create: purpclaw bundles create <name>'));
   console.log('');
+}
+
+// ── guard ────────────────────────────────────────────────────────────────────
+// Skills security scanner — scan externally-sourced skills for threats.
+// Detects: exfiltration, prompt injection, destructive ops, persistence,
+// network pivots, obfuscation, hardcoded secrets, and 70+ patterns.
+async function cmdGuard(args) {
+  const G = require(path.join(PURP_DIR, 'lib', 'skills-guard'));
+  const fs = require('fs');
+  const sub = (args[0] || '').toLowerCase();
+  const target = args[1] || '';
+
+  if (!sub || sub === 'help') {
+    sectionHead('  GUARD — Skills Security Scanner');
+    console.log(col(C.gray, '  Scan externally-sourced skills for 70+ threat patterns.\n'));
+    console.log(`  ${col(C.cyan, 'purpclaw guard scan <path>')}    scan a skill directory`);
+    console.log(`  ${col(C.cyan, 'purpclaw guard check <name>')}   check an installed skill`);
+    console.log(`  ${col(C.cyan, 'purpclaw guard list')}           list installed skills`);
+    console.log(`  ${col(C.cyan, 'purpclaw guard policy')}        show trust policy`);
+    console.log(col(C.gray, '\n  Verdict: safe | caution | dangerous'));
+    console.log('');
+    return;
+  }
+
+  if (sub === 'policy') {
+    sectionHead('  TRUST POLICY');
+    console.log(`  builtin:       always allow`);
+    console.log(`  trusted:       allow safe/caution; block dangerous`);
+    console.log(`  community:    allow safe; block caution/dangerous`);
+    console.log(`  agent-created: always ask`);
+    console.log(col(C.gray, '\n  --force bypasses non-dangerous blocks.'));
+    console.log('');
+    return;
+  }
+
+  if (sub === 'list') {
+    const SKILLS_DIR = path.join(PURP_DIR, 'skills');
+    if (!fs.existsSync(SKILLS_DIR)) {
+      return console.log(col(C.gray, '  No skills installed.'));
+    }
+    const entries = fs.readdirSync(SKILLS_DIR).filter(e => {
+      const full = path.join(SKILLS_DIR, e);
+      const skillMd = path.join(full, 'SKILL.md');
+      return fs.statSync(full).isDirectory() && fs.existsSync(skillMd);
+    });
+    if (!entries.length) return console.log(col(C.gray, '  No skills installed.'));
+    sectionHead(`  INSTALLED SKILLS (${entries.length})`);
+    for (const e of entries.sort()) {
+      console.log(`  ${col(C.cyan, e)}`);
+    }
+    console.log(col(C.gray, '\n  Scan: purpclaw guard check <name>'));
+    console.log('');
+    return;
+  }
+
+  let skillPath = '';
+  let source = 'community';
+  let skillName = '';
+
+  if (sub === 'check') {
+    if (!target) return console.log(col(C.gray, '  Usage: purpclaw guard check <skill-name>'));
+    const SKILLS_DIR = path.join(PURP_DIR, 'skills');
+    skillPath = path.join(SKILLS_DIR, target);
+    skillName = target;
+    if (!fs.existsSync(skillPath)) {
+      // Try hermes skills dir
+      const HERMES_SKILLS = path.join(process.env.HOME || process.env.USERPROFILE, '.hermes', 'skills', target);
+      if (fs.existsSync(HERMES_SKILLS)) {
+        skillPath = HERMES_SKILLS;
+      } else {
+        return console.log(col(C.red, `  Skill not found: ${target}`));
+      }
+    }
+    // Determine trust from path
+    if (skillPath.includes('.hermes')) source = 'builtin';
+    else if (skillPath.includes('purpclaw') || skillPath.includes('PURPCLAW')) source = 'agent-created';
+  } else if (sub === 'scan') {
+    if (!target) return console.log(col(C.gray, '  Usage: purpclaw guard scan <path>'));
+    skillPath = path.resolve(target);
+    skillName = path.basename(skillPath);
+    if (!fs.existsSync(skillPath)) {
+      return console.log(col(C.red, `  Path not found: ${skillPath}`));
+    }
+  } else {
+    return console.log(col(C.gray, `  Unknown guard subcommand: ${sub}`));
+  }
+
+  const force = args.includes('--force') || args.includes('-f');
+  const cached = args.includes('--no-cache');
+
+  sectionHead('  SCANNING: ' + skillName);
+
+  let result;
+  if (cached) {
+    result = G.scanSkill(skillPath, source);
+  } else {
+    const { result: r } = G.scanSkillCached(skillPath, source);
+    result = r;
+  }
+
+  console.log(formatGuardReport(result));
+  console.log('');
+
+  const { allowed, reason } = G.shouldAllowInstall(result, force);
+  const verdictColor = result.verdict === 'safe' ? C.green
+    : result.verdict === 'caution' ? C.yellow : C.red;
+  console.log(`  Verdict: ${col(C.bold + verdictColor, result.verdict.toUpperCase())}`);
+  if (allowed === true)      console.log(`  ${col(C.green, '✓ ALLOWED')}  ${col(C.gray, reason)}`);
+  else if (allowed === null) console.log(`  ${col(C.yellow, '⚠ NEEDS CONFIRMATION')}  ${reason}`);
+  else                        console.log(`  ${col(C.red, '✗ BLOCKED')}  ${reason}`);
+  console.log('');
+
+  if (allowed === false && !force && !['builtin', 'trusted'].includes(result.trust_level)) {
+    console.log(col(C.gray, '  Run with --force to override.'));
+  }
+}
+
+function formatGuardReport(result) {
+  const lines = [];
+  const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3 };
+
+  if (!result.findings.length) {
+    return col(C.green, '  No threats found.');
+  }
+
+  const sorted = [...result.findings].sort((a, b) =>
+    (SEV_ORDER[a.severity] ?? 4) - (SEV_ORDER[b.severity] ?? 4)
+  );
+
+  for (const f of sorted) {
+    const sev  = f.severity.toUpperCase().padEnd(8);
+    const cat  = f.category.padEnd(14);
+    const loc  = `${f.file}:${f.line}`.padEnd(28);
+    const sevColor = f.severity === 'critical' ? C.red
+      : f.severity === 'high' ? C.yellow
+      : f.severity === 'medium' ? C.cyan : C.gray;
+    const match = f.match.slice(0, 55);
+    lines.push(`  ${col(sevColor, sev)} ${col(C.magenta, cat)} ${col(C.gray, loc)} "${match}"`);
+  }
+  return lines.join('\n');
 }
 
 // ── run ───────────────────────────────────────────────────────────────────────
@@ -5694,8 +5835,88 @@ async function cmdPlugins(args) {
     case 'run':       return cmdRun(args);
     case 'status':    return cmdStatus();
     case 'update':    return cmdUpdate(args);
+    case 'login':     return cmdLogin(args);
+    case 'logout':    return cmdLogout(args);
+    case 'delete':    return cmdDelete(args);
+    case 'archive':   return cmdArchive(args, false);
+    case 'unarchive': return cmdArchive(args, true);
+    case 'fork':      return cmdFork(args);
+    case 'sandbox':   return cmdSandbox(args);
+    case 'remote-control': return cmdRemoteControl(args);
+    case 'cloud':     return cmdCloud(args);
     case 'plugins':  return cmdPlugins(args);
     case 'doctor':    return cmdDoctor(args);
+    case 'app-server': {
+      // Codex parity: `codex app-server` / `codex app-server daemon` management
+      // Subcommands: start, stop, restart, status, version, daemon <sub>
+      const { execSync } = require('child_process');
+      const sub = (args[0] || 'status').toLowerCase();
+      const APP_NAME = 'purpclaw-nextjs';
+
+      if (sub === 'daemon') {
+        const daemonSub = (args[1] || 'status').toLowerCase();
+        const daemonCmds = {
+          start:          'pm2 start ecosystem.config.js --env production',
+          stop:           'pm2 delete purpclaw-nextjs 2>/dev/null; pm2 delete purpclaw-app 2>/dev/null; true',
+          restart:        'pm2 restart purpclaw-nextjs 2>/dev/null || pm2 start ecosystem.config.js --env production',
+          bootstrap:      'echo "Bootstrap: SSH-driven durable daemon setup (manual pm2 config required)"',
+          'enable-remote-control': 'echo "Enable remote control: set PURPCLAW_REMOTE=1 and restart"',
+          'disable-remote-control': 'echo "Disable remote control: unset PURPCLAW_REMOTE and restart"',
+          status:         'pm2 jlist 2>/dev/null | node -e "const d=require(\'fs\').readFileSync(\'/dev/stdin\',\'utf-8\');const j=JSON.parse(d);j.filter(x=>x.name.includes(\'purpclaw\')).forEach(x=>console.log(x.name+\'[\'+x.pm2_env.status+\'] pid:\'+x.pid))" || echo "pm2 not running"',
+        };
+        if (daemonCmds[daemonSub]) {
+          try {
+            const out = execSync(daemonCmds[daemonSub], { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'pipe' });
+            if (out) process.stdout.write(out);
+          } catch (e) { if (e.stdout) process.stdout.write(String(e.stdout)); if (e.stderr) process.stderr.write(String(e.stderr)); }
+        } else {
+          console.log('Daemon subcommands: start, stop, restart, status, bootstrap, enable-remote-control, disable-remote-control');
+        }
+        return 0;
+      }
+
+      if (sub === 'start') {
+        try {
+          execSync('pm2 start ecosystem.config.js --env production', { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'inherit' });
+        } catch (e) { if (e.stdout) process.stdout.write(String(e.stdout)); }
+        return 0;
+      }
+      if (sub === 'stop') {
+        try {
+          execSync('pm2 delete purpclaw-nextjs 2>/dev/null; pm2 delete purpclaw-app 2>/dev/null; true', { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'inherit' });
+        } catch (e) {}
+        return 0;
+      }
+      if (sub === 'restart') {
+        try {
+          execSync('pm2 restart purpclaw-nextjs 2>/dev/null || pm2 start ecosystem.config.js --env production', { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'inherit' });
+        } catch (e) {}
+        return 0;
+      }
+      if (sub === 'version') {
+        try {
+          const out = execSync('node -p "JSON.stringify({cli:require(\'./package.json\').version,server:process.env.npm_package_version||\'unknown\'})"', { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'pipe' });
+          process.stdout.write(out);
+        } catch (e) { console.log('{}'); }
+        return 0;
+      }
+
+      // Default: status
+      try {
+        const out = execSync('pm2 jlist 2>/dev/null || echo "[]"', { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'pipe' });
+        const list = JSON.parse(out);
+        const ours = list.filter(x => x.name && x.name.includes('purpclaw'));
+        if (!ours.length) { console.log('purpclaw-app: no PM2 processes running\n'); return 0; }
+        for (const p of ours) {
+          const ok = p.pm2_env && p.pm2_env.status === 'online';
+          console.log(' ' + (ok ? '\x1b[32m✔\x1b[0m' : '\x1b[31m✖\x1b[0m') + '  \x1b[36m' + p.name + '\x1b[0m  [\x1b[33m' + (p.pm2_env && p.pm2_env.status || '?') + '\x1b[0m]  pid:' + p.pid + '  mem:' + Math.round((p.monit && p.monit.memory) / 1024 / 1024) + 'MB');
+        }
+        console.log('');
+      } catch (e) {
+        console.log('PM2 not available or not running. Run `purpclaw app-server start`\n');
+      }
+      return 0;
+    }
     case 'approve':   return cmdApprove(args);
     case 'reject':    return cmdReject(args);
     case 'jobs':      return cmdJobs(args);
@@ -5707,6 +5928,7 @@ async function cmdPlugins(args) {
     case 'bg':        return cmdBg(args);
 case 'registry': return cmdRegistry(args);
     case 'bundles':  return cmdBundles(args);
+    case 'guard':    return cmdGuard(args);
     case 'install':   return cmdRegistry(['install', ...args]);
     case 'search':    return cmdRegistry(['search', ...args]);
  case 'resume':   return cmdResume(args);
@@ -5749,6 +5971,7 @@ case 'registry': return cmdRegistry(args);
       return 0;
     }
     case 'hooks':    return loadCmd('hooks').run(args, sharedCtx());
+    case 'plugin':   return loadCmd('plugin').run(args, sharedCtx());
     case 'mcp':      return loadCmd('mcp').run(args, sharedCtx());
     case 'remote': {
       const fs = require('fs');
@@ -5831,59 +6054,98 @@ case 'registry': return cmdRegistry(args);
       return;
     }
     case 'apply': {
-      const fs = require('fs');
+      const AP = require(path.join(PURP_DIR, 'lib', 'apply-patch'));
+      const ffs = require('fs');
       const dryRun = args.includes('--dry-run') || args.includes('-n');
       const checkOnly = args.includes('--check') || args.includes('-c');
       let patchContent = '';
       const fileArg = args.find(a => !a.startsWith('-'));
-      if (fileArg) { try { patchContent = fs.readFileSync(fileArg, 'utf-8'); } catch (e) { console.log('  [X] cannot read: ' + fileArg); return 1; } }
-      else if (!process.stdin.isTTY) { process.stdin.setEncoding('utf-8'); const chunks = []; for await (const chunk of process.stdin) chunks.push(chunk); patchContent = chunks.join(''); }
-      else { console.log('  usage: purpclaw apply [--dry-run] [--check] [file.patch]'); return 1; }
+      if (fileArg) {
+        try { patchContent = ffs.readFileSync(fileArg, 'utf-8'); }
+        catch (e) { console.log('  [X] cannot read: ' + fileArg); return 1; }
+      } else if (!process.stdin.isTTY) {
+        process.stdin.setEncoding('utf-8');
+        const chunks = [];
+        for await (const chunk of process.stdin) chunks.push(chunk);
+        patchContent = chunks.join('');
+      } else {
+        console.log('  usage: purpclaw apply [--dry-run] [--check] [file.patch]');
+        return 1;
+      }
       if (!patchContent.trim()) { console.log('  [!] empty patch'); return 0; }
-      const lines = patchContent.split(/\r?\n/);
-      let i = 0;
-      while (i < lines.length && !lines[i].match(/^@@ /)) i++;
-      if (i >= lines.length) { console.log('  [X] no hunks found'); return 1; }
-      const hunks = [];
-      while (i < lines.length) {
-        const line = lines[i];
-        const hunkMatch = line.match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/);
-        if (!hunkMatch) { i++; continue; }
-        const oldStart = parseInt(hunkMatch[1]);
-        const oldCount = parseInt(hunkMatch[2] || '1');
-        const addedLines = [];
-        i++;
-        while (i < lines.length && !lines[i].match(/^@@ /)) {
-          const l = lines[i];
-          if (l.startsWith('+')) addedLines.push(l.slice(1));
-          else if (!l.startsWith('-') && !l.startsWith('\\')) addedLines.push(l);
-          i++;
+      const isCodexFormat = patchContent.includes('*** Begin Patch');
+      if (isCodexFormat) {
+        const result = AP.verifyPatch(patchContent);
+        if (!result.valid) {
+          console.log('  [X]  invalid Codex patch: ' + result.error + ' at line ' + result.line);
+          return 1;
         }
-        hunks.push({ oldStart, oldCount, addedLines });
+        const ops = AP.parsePatch(patchContent);
+        if (checkOnly) {
+          console.log('  [o]  Codex patch valid — ' + ops.length + ' operation(s)');
+          for (const op of ops) console.log('       ' + op.type + '  ' + op.path);
+          return 0;
+        }
+        if (dryRun) { console.log('  [o]  would apply ' + ops.length + ' operation(s)'); return 0; }
+        let applied = 0, errors = 0;
+        for (const op of ops) {
+          try {
+            const res = AP.applyPatch([op], process.cwd(), { dryRun: false });
+            if (res.applied && res.failed === 0) { applied++; console.log('  [*]  ' + op.type + '  ' + op.path); }
+            else { errors++; console.log('  [X]  ' + op.type + '  ' + op.path + '  ' + (res.errors ? res.errors.join('; ') : 'failed')); }
+          } catch (e) { errors++; console.log('  [X]  ' + op.type + '  ' + op.path + '  ' + e.message); }
+        }
+        console.log('  Applied: ' + applied + '  Errors: ' + errors);
+        return errors > 0 ? 1 : 0;
+      } else {
+        const lines = patchContent.split(/\r?\n/);
+        let i = 0;
+        while (i < lines.length && !lines[i].match(/^@@ /)) i++;
+        if (i >= lines.length) { console.log('  [X] no hunks found'); return 1; }
+        const hunks = [];
+        while (i < lines.length) {
+          const line = lines[i];
+          const hunkMatch = line.match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/);
+          if (!hunkMatch) { i++; continue; }
+          const oldStart = parseInt(hunkMatch[1]);
+          const oldCount = parseInt(hunkMatch[2] || '1');
+          const addedLines = [];
+          i++;
+          while (i < lines.length && !lines[i].match(/^@@ /)) {
+            const l = lines[i];
+            if (l.startsWith('+')) addedLines.push(l.slice(1));
+            else if (!l.startsWith('-') && !l.startsWith('\\')) addedLines.push(l);
+            i++;
+          }
+          hunks.push({ oldStart, oldCount, addedLines });
+        }
+        let curFile = null;
+        for (const line of lines) {
+          if (line.startsWith('--- ')) { const m = line.match(/^--- \s+(?:a\/)?(\S+)/); if (m) curFile = m[1]; }
+          if (curFile && line.startsWith('@@ ')) break;
+        }
+        if (!hunks.length) { console.log('  [X] no hunks'); return 1; }
+        let applied = 0, errors = 0;
+        for (const hunk of hunks) {
+          const filePath = curFile || fileArg || '.';
+          const targetPath = path.join(process.cwd(), filePath);
+          let fileContent;
+          try { fileContent = ffs.readFileSync(targetPath, 'utf-8'); }
+          catch (e) { console.log('  [X]  ' + filePath + '  ' + (e.code === 'ENOENT' ? 'file not found' : e.message)); errors++; continue; }
+          const fileLines = fileContent.split(/\r?\n/);
+          const insertIdx = hunk.oldStart - 1;
+          if (insertIdx < 0 || insertIdx > fileLines.length) { console.log('  [X]  ' + filePath + '  hunk offset out of range'); errors++; continue; }
+          const before = fileLines.slice(0, insertIdx);
+          const after = fileLines.slice(insertIdx + hunk.oldCount);
+          const newContent = [...before, ...hunk.addedLines, ...after].join('\n');
+          console.log('  ' + (dryRun || checkOnly ? '[o]' : '[*]') + '  ' + filePath + '  ' + (checkOnly ? 'clean' : dryRun ? 'would apply' : 'applied'));
+          if (!dryRun && !checkOnly) { try { ffs.writeFileSync(targetPath, newContent, 'utf-8'); applied++; } catch (e) { console.log('    [X]  ' + e.message); errors++; } }
+          else applied++;
+        }
+        console.log('  Applied: ' + applied + '  Errors: ' + errors);
+        return errors > 0 ? 1 : 0;
       }
-      let curFile = null;
-      for (const line of lines) { if (line.startsWith('--- ')) { const m = line.match(/^---\s+(?:a\/)?(\S+)/); if (m) curFile = m[1]; } if (curFile && line.startsWith('@@ ')) break; }
-      if (!hunks.length) { console.log('  [X] no hunks'); return 1; }
-      let applied = 0, errors = 0;
-      for (const hunk of hunks) {
-        const filePath = curFile || fileArg || '.';
-        const targetPath = path.join(process.cwd(), filePath);
-        let content;
-        try { content = fs.readFileSync(targetPath, 'utf-8'); } catch (e) { console.log('  [X]  ' + filePath + '  ' + (e.code === 'ENOENT' ? 'file not found' : e.message)); errors++; continue; }
-        const fileLines = content.split(/\r?\n/);
-        const insertIdx = hunk.oldStart - 1;
-        if (insertIdx < 0 || insertIdx > fileLines.length) { console.log('  [X]  ' + filePath + '  hunk offset out of range'); errors++; continue; }
-        const before = fileLines.slice(0, insertIdx);
-        const after = fileLines.slice(insertIdx + hunk.oldCount);
-        const newContent = [...before, ...hunk.addedLines, ...after].join('\n');
-        console.log('  ' + (dryRun || checkOnly ? '[o]' : '[*]') + '  ' + filePath + '  ' + (checkOnly ? 'patch applies cleanly' : dryRun ? 'would apply' : 'applied'));
-        if (!dryRun && !checkOnly) { try { fs.writeFileSync(targetPath, newContent, 'utf-8'); applied++; } catch (e) { console.log('    [X]  ' + e.message); errors++; } }
-        else applied++;
-      }
-      console.log('  ' + applied + ' hunk(s) ' + (checkOnly ? 'would apply' : dryRun ? 'would apply' : 'applied') + ', ' + errors + ' error(s)');
-      return errors > 0 ? 1 : 0;
     }
-
     case 'action':
     case 'do':       return loadCmd('action').run(args, sharedCtx());
     case 'capabilities':
