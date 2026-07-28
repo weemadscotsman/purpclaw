@@ -81,6 +81,7 @@ function _isProcessRunning(pid) {
 
 /**
  * Start the static-server.js as a detached background process.
+ * Uses detached:true + stdio:ignore so the child survives parent exit.
  * Writes PID to ~/.purpclaw/desktop/app.pid
  */
 async function startServer() {
@@ -91,23 +92,30 @@ async function startServer() {
     return { ok: false, running: true, pid: status.pid, port: status.port, message: 'Server already running' };
   }
 
-  // Use fork() so Node.js keeps the IPC channel alive — the child survives
-  // the parent's process.exit(0). Do NOT use unref(): the parent must keep a
-  // reference until the child has bound its port. We keep the parent alive
-  // for 2s using a held setTimeout, then exit normally.
-  const child = fork(STATIC_SERVER_PATH, [], {
-    cwd: PURP_DIR,
+  // Write PID file BEFORE fork — parent can't write after it exits.
+  // Use detached:true + stdio:ignore so child becomes a session leader
+  // that survives the parent process exiting on Windows.
+  const pidFilePid = String(process.pid) + '.tmp';
+  if (!fs.existsSync(PID_DIR)) fs.mkdirSync(PID_DIR, { recursive: true });
+  fs.writeFileSync(pidFilePid, 'starting', 'utf8');
+
+  const child = spawn(process.execPath, [STATIC_SERVER_PATH], {
+    cwd:         PURP_DIR,
+    detached:    true,
+    stdio:       ['ignore', 'ignore', 'ignore'],
+    windowsHide: true,
   });
+  child.unref(); // parent doesn't wait for child
 
   const pid = child.pid;
-  if (!fs.existsSync(PID_DIR)) fs.mkdirSync(PID_DIR, { recursive: true });
   fs.writeFileSync(PID_FILE, String(pid), 'utf8');
+  fs.unlinkSync(pidFilePid);
 
   // Poll for up to 5s — wait for the server to bind its port before returning.
   const net = require('net');
   const maxWait = 5_000;
-  const step   = 200;
-  let waited = 0;
+  const step    = 200;
+  let waited    = 0;
   while (waited < maxWait) {
     const ok = await new Promise(resolve => {
       const s = net.connect(PORT, '127.0.0.1', () => { s.destroy(); resolve(true); });
@@ -121,11 +129,6 @@ async function startServer() {
   if (waited >= maxWait) {
     return { ok: false, running: false, pid, port: PORT, message: `Server PID ${pid} but port ${PORT} did not bind after ${maxWait}ms` };
   }
-
-  // Hold parent for 2s after successful bind — gives child time to stabilize
-  // before parent's process.exit(0) fires. Do NOT unref this — it MUST keep
-  // the event loop alive for 2s or the child gets killed at parent exit.
-  const hold = setTimeout(() => {}, 2000);
 
   return { ok: true, running: true, pid, port: PORT, message: `Server started on port ${PORT}` };
 }
@@ -178,19 +181,24 @@ async function restartServer() {
  * Get current server status.
  * @returns {{ running: boolean, pid: number|null, port: number }}
  */
-function serverStatus() {
+/**
+ * Check if the static server is running — async, uses port connectivity.
+ * @returns {Promise<{ running: boolean, pid: number|null, port: number|null }>}
+ */
+async function serverStatus() {
+  const net = require('net');
+  let portOpen = false;
+  await new Promise(resolve => {
+    const s = net.connect(PORT, '127.0.0.1', () => { s.destroy(); portOpen = true; resolve(); });
+    s.on('error', () => resolve());
+    setTimeout(resolve, 1000); // timeout safety
+  });
+
   const pid = _readPid();
-  const running = pid ? _isProcessRunning(pid) : false;
-
-  // If we have a PID file but the process is dead, clean it up
-  if (pid && !running) {
-    try { fs.unlinkSync(PID_FILE); } catch { /* */ }
-  }
-
   return {
-    running,
-    pid: running ? pid : null,
-    port: running ? PORT : null,
+    running: portOpen,
+    pid:     portOpen ? (pid || null) : null,
+    port:    portOpen ? PORT : null,
   };
 }
 

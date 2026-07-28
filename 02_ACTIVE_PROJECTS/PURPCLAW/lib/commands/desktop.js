@@ -36,10 +36,10 @@ function out(msg)  { process.stdout.write(msg + '\n'); }
 function err(msg)  { process.stderr.write(msg + '\n'); }
 function bare(msg) { process.stdout.write(msg); }
 
-function statusCmd(args) {
+async function statusCmd(args) {
   const json    = args.includes('--json');
   const verbose = args.includes('--verbose');
-  const s       = launcher.serverStatus();
+  const s       = await launcher.serverStatus();
 
   if (json) {
     out(JSON.stringify({ running: s.running, pid: s.pid, port: s.port }));
@@ -212,7 +212,7 @@ async function run(args, ctx = {}) {
   // Equivalent: start server if needed, then open browser.
   if (!sub || sub === 'open' || (sub === 'run' && !args[1])) {
     // Start server if not running, then open browser
-    const s = launcher.serverStatus();
+    const s = await launcher.serverStatus();
     if (!s.running) {
       const start = await launcher.startServer();
       if (!start.ok) {
@@ -230,10 +230,10 @@ async function run(args, ctx = {}) {
 
   switch (sub) {
     case 'status':
-      statusCmd(args.slice(1));
+      await statusCmd(args.slice(1));
       break;
     case 'start':
-      startCmd(args.slice(1));
+      await startCmd(args.slice(1));
       break;
     case 'stop':
       stopCmd(args.slice(1));
@@ -259,7 +259,7 @@ async function run(args, ctx = {}) {
         helpCmd();
       } else {
         // --json with no sub: output status JSON
-        const s = launcher.serverStatus();
+        const s = await launcher.serverStatus();
         out(JSON.stringify({ running: s.running, pid: s.pid, port: s.port }));
       }
       break;
