@@ -60,6 +60,45 @@ function pushAlert(msg, type = 'info') {
   state.proactiveAlerts.unshift({ ts: Date.now(), msg, type });
   if (state.proactiveAlerts.length > 5) state.proactiveAlerts.pop();
   saveState();
+  // Speak critical and action alerts aloud — info is silent unless voice_all enabled
+  const voiceAll = (process.env.COWORK_VOICE_ALL === 'true');
+  if (type === 'alert' || type === 'action' || voiceAll) {
+    speakAlert(msg, type);
+  }
+}
+
+// ── Voice (Kokoro TTS via gateway) ─────────────────────────────────────────
+
+const TTS_HOST = process.env.TTS_HOST || '127.0.0.1';
+const TTS_PORT = process.env.TTS_PORT || '7799';
+const TTS_VOICE = process.env.COWORK_VOICE || 'af_heart';
+const _ttsCooldown = new Map(); // msg → last-spoken timestamp
+
+function speakAlert(text, type) {
+  const key = text.substring(0, 60);
+  const now = Date.now();
+  const last = _ttsCooldown.get(key) || 0;
+  if (now - last < 30_000) return; // debounce: don't repeat same message within 30s
+  _ttsCooldown.set(key, now);
+
+  // Voice selection: alert → deeper voice, action → neutral, info → light
+  const voiceMap = { alert: 'am_george', action: 'af_bella', info: 'af_heart' };
+  const voice = voiceMap[type] || TTS_VOICE;
+  const truncated = text.substring(0, 200); // Kokoro handles ~200 chars well
+
+  const body = JSON.stringify({ text: truncated, voice, blocking: false });
+  const opts = {
+    hostname: TTS_HOST, port: TTS_PORT, path: '/speak', method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
+  };
+  const req = require('http').request(opts, (res) => {
+    // Drain and ignore response — fire and forget
+    res.on('data', () => {});
+    res.on('end', () => {});
+  });
+  req.on('error', () => {}); // TTS failure never breaks alert flow
+  req.write(body);
+  req.end();
 }
 
 // ── Overlay HTML ────────────────────────────────────────────────────────────
@@ -385,9 +424,11 @@ switch (cmd) {
   }
 
   case 'push': {
-    const msg = args.slice(1).join(' ') || 'alert from CLI';
+    const raw = args.slice(1);
+    const type = raw.includes('--alert') ? 'alert' : raw.includes('--action') ? 'action' : 'info';
+    const msg = raw.filter(a => !a.startsWith('--')).join(' ') || 'alert from CLI';
     loadState();
-    pushAlert(msg.substring(0, 200), 'info');
+    pushAlert(msg.substring(0, 200), type);
     console.log('[cowork] Alert pushed:', msg.substring(0, 80));
     break;
   }
