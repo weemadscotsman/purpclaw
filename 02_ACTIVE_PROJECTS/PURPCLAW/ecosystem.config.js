@@ -258,8 +258,36 @@ module.exports = {
     env: {
       NODE_ENV: 'production',
       PURP_DIR: 'E:/god folder/02_ACTIVE_PROJECTS/PURPCLAW',
+      // Co-Work alert routing
+      COWORK_ALERT_HOST: '127.0.0.1',
+      COWORK_ALERT_PORT: '7791',
+      COWORK_ALERT_ENABLED: 'true',
+      // TTS endpoint for overlay's spoken alerts
+      TTS_HOST: '127.0.0.1',
+      TTS_PORT: '7799',
+      TTS_VOICE: 'af_heart',
     },
   },
+
+  // TTS gateway — Kokoro persistent worker, must stay warm
+  {
+    name: 'purpclaw-tts-gateway',
+    script: 'lib/tts/gateway.js',
+    instances: 1,
+    exec_mode: 'fork',
+    watch: false,
+    autorestart: true,
+    env: {
+      NODE_ENV: 'production',
+      PYTHON_BIN: 'C:/Users/Admin/AppData/Local/Programs/Python/Python311/python.exe',
+      KOKORO_SCRIPT: 'E:/god folder/02_ACTIVE_PROJECTS/PURPCLAW/lib/tts/kokoro_worker.py',
+      PORT: '7799',
+      TTS_DEFAULT_VOICE: 'af_heart',
+      TTS_HOST: '127.0.0.1',
+      TTS_PORT: '7799',
+    },
+  },
+
     // REMOVED 2026-06-30: thringlet_bridge.js does not exist.
     // Thringlet colony runs as Next.js API route (app/api/thringlets/) via Bridge service.
     {
