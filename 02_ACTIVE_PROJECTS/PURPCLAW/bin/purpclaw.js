@@ -5986,7 +5986,7 @@ case 'registry': return cmdRegistry(args);
     }
     case 'hooks':    return loadCmd('hooks').run(args, sharedCtx());
     case 'plugin':   return loadCmd('plugin').run(args, sharedCtx());
-    case 'app':      return loadCmd('desktop').run(args, sharedCtx());
+    case 'app':      return (async () => loadCmd('desktop').run(args, sharedCtx()))();
     case 'secrets':  return loadCmd('secrets').run(args, sharedCtx());
     case 'feedback': return loadCmd('feedback').run(args, sharedCtx());
     case 'worktree': return loadCmd('worktree').run(args, sharedCtx());
@@ -6544,7 +6544,7 @@ case 'registry': return cmdRegistry(args);
     }
     case 'commit':
         case 'review':
-        case 'find':
+        case 'find':      return loadCmd('find').run(args, sharedCtx());
         case 'claudecode':return loadCmd('claudecode').run([command, ...args], sharedCtx());
     case 'gc':
     case 'cleanup':   return loadCmd('gc').run(args, sharedCtx());
