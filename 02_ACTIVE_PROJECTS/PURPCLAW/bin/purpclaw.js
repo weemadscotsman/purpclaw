@@ -6073,7 +6073,7 @@ case 'registry': return cmdRegistry(args);
     case 'plugin':   return loadCmd('plugin').run(args, sharedCtx());
     case 'app': {
       const { runAppCmd } = require(path.join(PURP_DIR, 'lib', 'commands', 'app-cmd.js'));
-      (async () => { await runAppCmd(args, { loadCmd, sharedCtx }); process.exit(0); })();
+      (async () => { await runAppCmd(args, { loadCmd, sharedCtx }); })();
       return;
     }
     case 'secrets':  return loadCmd('secrets').run(args, sharedCtx());
@@ -6633,9 +6633,9 @@ case 'registry': return cmdRegistry(args);
       return 0;
     }
     case 'commit':
-        case 'review':
-        case 'find':      return loadCmd('find').run(args, sharedCtx());
-        case 'claudecode':return loadCmd('claudecode').run([command, ...args], sharedCtx());
+    case 'review':  return cmdReview(args);
+    case 'find':    return loadCmd('find').run(args, sharedCtx());
+    case 'claudecode':return loadCmd('claudecode').run([command, ...args], sharedCtx());
     case 'gc':
     case 'cleanup':   return loadCmd('gc').run(args, sharedCtx());
     case 'pocket':    return loadCmd('pocket').run(args, sharedCtx());

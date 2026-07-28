@@ -123,9 +123,9 @@ async function startServer() {
   }
 
   // Hold parent for 2s after successful bind — gives child time to stabilize
-  // before parent's process.exit(0) fires. This replaces child.unref().
+  // before parent's process.exit(0) fires. Do NOT unref this — it MUST keep
+  // the event loop alive for 2s or the child gets killed at parent exit.
   const hold = setTimeout(() => {}, 2000);
-  hold.unref();  // but don't block exit beyond 2s
 
   return { ok: true, running: true, pid, port: PORT, message: `Server started on port ${PORT}` };
 }
