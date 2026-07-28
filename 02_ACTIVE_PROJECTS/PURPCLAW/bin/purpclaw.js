@@ -4832,6 +4832,382 @@ async function cmdDoctors(args = []) {
   }
 
   // Helper: dispatches the command, optionally wrapped in mochi status bars
+"use strict";
+// _missing_cmds.js — 8 genuinely missing Codex parity commands
+// Injected into bin/purpclaw.js at line 4836
+
+// ── login ─────────────────────────────────────────────────────────────────────
+// Codex: codex login [--api-key <key> | --device-auth | --chatgpt]
+// PURPCLAW: credentials-store.js stores keys as TOML in ~/.purpclaw/credentials.toml
+async function cmdLogin(args) {
+  const CS = require(path.join(PURP_DIR, 'lib', 'credentials-store'));
+  const readline = require('readline');
+
+  const sub = (args[0] || '').toLowerCase();
+  const apiKeyIdx = args.indexOf('--api-key');
+  const provider = args[args.indexOf('--provider') + 1] || 'openai';
+
+  banner();
+  sectionHead('  PURPCLAW LOGIN');
+
+  // List existing
+  const existing = CS.list();
+  if (existing.length > 0) {
+    console.log(col(C.gray, '  Currently stored:'));
+    for (const e of existing) {
+      console.log(`  ${col(C.cyan, e.provider.padEnd(16))} ${col(C.gray, e.masked)}`);
+    }
+    console.log('');
+  }
+
+  // Interactive key prompt
+  let apiKey = null;
+  if (apiKeyIdx !== -1 && args[apiKeyIdx + 1]) {
+    apiKey = args[apiKeyIdx + 1];
+  } else if (sub === 'api-key' && args[1]) {
+    apiKey = args[1];
+  }
+
+  if (!apiKey) {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true });
+    apiKey = await new Promise(res => rl.question('  Enter API key: ', res));
+    rl.close();
+    if (!apiKey || !apiKey.trim()) {
+      console.log(col(C.red, '  Cancelled.\n'));
+      return;
+    }
+  }
+
+  apiKey = apiKey.trim();
+  CS.store(provider, apiKey);
+  console.log(`\n  ${col(C.green, 'Saved')} — ${provider} key stored in ~/.purpclaw/credentials.toml`);
+  console.log(col(C.gray, '  Run `purpclaw logout` to remove, `purpclaw doctor` to verify.\n'));
+}
+
+// ── logout ─────────────────────────────────────────────────────────────────────
+// Codex: codex logout [--all | <provider>]
+async function cmdLogout(args) {
+  const CS = require(path.join(PURP_DIR, 'lib', 'credentials-store'));
+  const sub = (args[0] || '').toLowerCase();
+
+  banner();
+  sectionHead('  PURPCLAW LOGOUT');
+
+  if (sub === '--all' || sub === 'all') {
+    const existing = CS.list();
+    if (existing.length === 0) {
+      console.log(col(C.gray, '  No credentials stored.\n'));
+      return;
+    }
+    let count = 0;
+    for (const e of existing) { CS.remove(e.provider); count++; }
+    console.log(`  ${col(C.green, 'Cleared')} — ${count} credential(s) removed`);
+    console.log(col(C.gray, '  ~/.purpclaw/credentials.toml emptied.\n'));
+    return;
+  }
+
+  const provider = args[0] || 'openai';
+  const ok = CS.remove(provider);
+  if (ok) {
+    console.log(`  ${col(C.green, 'Removed')} — ${provider} key deleted`);
+  } else {
+    console.log(`  ${col(C.yellow, 'Not found')} — no key for '${provider}'`);
+  }
+  console.log('');
+}
+
+// ── cmdDelete ─────────────────────────────────────────────────────────────────
+// Codex: codex delete <session-id>
+async function cmdDelete(args) {
+  const SESSIONS_DIR = path.join(PURP_DIR, 'agent_work', 'sessions');
+  const target = (args[0] || '').toLowerCase();
+
+  banner();
+  sectionHead('  PURPCLAW DELETE SESSION');
+
+  if (!target || target === 'list') {
+    console.log(col(C.gray, '  usage: purpclaw delete <session-id>'));
+    console.log(col(C.gray, '  Run `purpclaw resume list` to see session IDs.\n'));
+    return;
+  }
+
+  const sessionFile = path.join(SESSIONS_DIR, target + '.jsonl');
+  if (!fs.existsSync(sessionFile)) {
+    console.log(`  ${col(C.red, 'Not found')} — '${target}' does not exist`);
+    console.log(col(C.gray, '  Run `purpclaw resume list` to see session IDs.\n'));
+    return;
+  }
+
+  fs.unlinkSync(sessionFile);
+  console.log(`  ${col(C.green, 'Deleted')} — ${target}.jsonl`);
+  // Also clean up any metadata
+  const metaFile = path.join(SESSIONS_DIR, target + '.meta.json');
+  if (fs.existsSync(metaFile)) fs.unlinkSync(metaFile);
+  console.log('');
+}
+
+// ── cmdArchive ────────────────────────────────────────────────────────────────
+// Codex: codex archive <session-id>
+async function cmdArchive(args, unarchive) {
+  const SESSIONS_DIR = path.join(PURP_DIR, 'agent_work', 'sessions');
+  const ARCHIVE_DIR = path.join(PURP_DIR, 'agent_work', 'archive');
+  const target = (args[0] || '').toLowerCase();
+  const op = unarchive ? 'Restored' : 'Archived';
+
+  banner();
+  sectionHead(`  PURPCLAW ${unarchive ? 'UNARCHIVE' : 'ARCHIVE'} SESSION`);
+
+  if (!target || target === 'list') {
+    console.log(col(C.gray, `  usage: purpclaw ${unarchive ? 'unarchive' : 'archive'} <session-id>`));
+    if (unarchive) {
+      if (!fs.existsSync(ARCHIVE_DIR)) {
+        console.log(col(C.gray, '  No archived sessions.\n'));
+        return;
+      }
+      const archived = fs.readdirSync(ARCHIVE_DIR).filter(f => f.endsWith('.jsonl'));
+      if (!archived.length) { console.log(col(C.gray, '  No archived sessions.\n')); return; }
+      console.log(col(C.gray, '  Archived:'));
+      for (const f of archived.sort()) {
+        console.log(`  ${col(C.cyan, f.replace('.jsonl', ''))}`);
+      }
+      console.log('');
+    } else {
+      console.log(col(C.gray, '  Run `purpclaw resume list` to see session IDs.\n'));
+    }
+    return;
+  }
+
+  const srcDir = unarchive ? ARCHIVE_DIR : SESSIONS_DIR;
+  const dstDir = unarchive ? SESSIONS_DIR : ARCHIVE_DIR;
+  const srcFile = path.join(srcDir, target + '.jsonl');
+
+  if (!fs.existsSync(srcFile)) {
+    console.log(`  ${col(C.red, 'Not found')} — '${target}' not in ${unarchive ? 'archive' : 'active sessions'}`);
+    return;
+  }
+
+  fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
+  const dstFile = path.join(dstDir, target + '.jsonl');
+  fs.renameSync(srcFile, dstFile);
+  console.log(`  ${col(C.green, op)} — ${target}.jsonl ${unarchive ? 'moved to active' : 'moved to archive'}`);
+  console.log(col(C.gray, `  Run: purpclaw resume ${target}\n`));
+}
+
+// ── cmdFork ───────────────────────────────────────────────────────────────────
+// Codex: codex fork [--last | <session-id>]
+async function cmdFork(args) {
+  const SESSIONS_DIR = path.join(PURP_DIR, 'agent_work', 'sessions');
+  const fs2 = require('fs');
+
+  banner();
+  sectionHead('  PURPCLAW FORK SESSION');
+
+  // Find target session
+  let targetId = null;
+  let sessionFile = null;
+
+  if (args[0] === '--last' || args[0] === 'last') {
+    const files = fs.readdirSync(SESSIONS_DIR).filter(f => f.endsWith('.jsonl')).sort();
+    if (!files.length) { console.log(col(C.red, '  No sessions found.\n')); return; }
+    targetId = files[files.length - 1].replace('.jsonl', '');
+    sessionFile = path.join(SESSIONS_DIR, files[files.length - 1]);
+  } else {
+    targetId = args[0] || '';
+    sessionFile = path.join(SESSIONS_DIR, targetId + '.jsonl');
+    if (!fs.existsSync(sessionFile)) {
+      console.log(`  ${col(C.red, 'Not found')} — '${targetId}'`);
+      console.log(col(C.gray, '  Run `purpclaw resume list`\n'));
+      return;
+    }
+  }
+
+  // Generate new UUID for fork
+  const { randomUUID } = require('crypto');
+  const forkId = randomUUID ? randomUUID() : ('fork-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7));
+  const forkFile = path.join(SESSIONS_DIR, forkId + '.jsonl');
+
+  // Copy session
+  fs.copyFileSync(sessionFile, forkFile);
+  console.log(`  ${col(C.green, 'Forked')} — ${targetId} → ${col(C.cyan, forkId)}`);
+  console.log(col(C.gray, `  File: ${forkFile}`));
+  console.log(col(C.gray, `  Run: purpclaw resume ${forkId}\n`));
+}
+
+// ── cmdSandbox ────────────────────────────────────────────────────────────────
+// Codex: codex sandbox [--list | --create | --destroy <id> | --run <id> <cmd>]
+async function cmdSandbox(args) {
+  const SB = require(path.join(PURP_DIR, 'lib', 'sandbox'));
+
+  banner();
+  sectionHead('  PURPCLAW SANDBOX');
+
+  const sub = (args[0] || '').toLowerCase();
+
+  if (sub === '--list' || sub === 'list' || sub === 'ls' || !sub) {
+    const avail = await SB.dockerAvailable();
+    if (!avail.available) {
+      console.log(`  ${col(C.red, 'Docker not available')}: ${avail.error || 'unknown error'}`);
+      console.log(col(C.gray, '  Install Docker and ensure the daemon is running.\n'));
+      return;
+    }
+    console.log(`  ${col(C.gray, 'Docker')} ${col(C.green, avail.version)}`);
+    const boxes = await SB.listSandboxes();
+    if (!boxes.length) {
+      console.log(col(C.gray, '  No sandbox containers.\n'));
+      console.log(`  ${col(C.gray, 'Create: purpclaw sandbox --create [--name <name>] [--image <image>]')}`);
+    } else {
+      console.log(col(C.gray, '  Containers:'));
+      for (const b of boxes) {
+        const running = b.Status && b.Status.startsWith('Up') ? C.green : C.yellow;
+        console.log(`  ${col(C.cyan, b.ID.slice(0, 12))} ${col(running, b.Status.slice(0, 20).padEnd(20))} ${col(C.white, b.Names)}`);
+      }
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === '--create' || sub === 'create') {
+    const nameIdx = args.indexOf('--name');
+    const imageIdx = args.indexOf('--image');
+    const name = nameIdx !== -1 ? args[nameIdx + 1] : null;
+    const image = imageIdx !== -1 ? args[imageIdx + 1] : 'alpine';
+    try {
+      const box = await SB.createSandbox(name, { image });
+      console.log(`  ${col(C.green, 'Created')} sandbox ${col(C.cyan, box.name)} (${box.id.slice(0, 12)})`);
+      console.log(col(C.gray, `  Image: ${box.image}`));
+    } catch (e) {
+      console.log(`  ${col(C.red, 'Failed')}: ${e.message}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === '--destroy' || sub === 'destroy' || sub === 'rm' || sub === 'delete') {
+    const targetId = args[1] || args[args.indexOf('--destroy') + 1] || '';
+    if (!targetId) {
+      console.log(col(C.gray, '  usage: purpclaw sandbox --destroy <container-id-or-name>\n'));
+      return;
+    }
+    try {
+      await SB.destroySandbox(targetId);
+      console.log(`  ${col(C.green, 'Destroyed')} sandbox ${targetId}`);
+    } catch (e) {
+      console.log(`  ${col(C.red, 'Failed')}: ${e.message}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === '--run' || sub === 'run') {
+    const sandboxId = args[1];
+    const command = args.slice(2).join(' ');
+    if (!sandboxId || !command) {
+      console.log(col(C.gray, '  usage: purpclaw sandbox --run <id> <command>\n'));
+      return;
+    }
+    const result = await SB.runInSandbox(sandboxId, command);
+    if (result.stdout) process.stdout.write(result.stdout);
+    if (result.stderr) process.stderr.write(result.stderr);
+    console.log(col(C.gray, `\n  exit ${result.exitCode}`));
+    return;
+  }
+
+  console.log(col(C.gray, '  usage:'));
+  console.log(col(C.gray, '    purpclaw sandbox [--list]          list containers'));
+  console.log(col(C.gray, '    purpclaw sandbox --create          create new sandbox'));
+  console.log(col(C.gray, '    purpclaw sandbox --destroy <id>   destroy sandbox'));
+  console.log(col(C.gray, '    purpclaw sandbox --run <id> <cmd> run command in sandbox\n'));
+}
+
+// ── cmdRemoteControl ──────────────────────────────────────────────────────────
+// Codex: codex remote-control [start | stop | pair]
+async function cmdRemoteControl(args) {
+  banner();
+  sectionHead('  PURPCLAW REMOTE CONTROL');
+  const sub = (args[0] || '').toLowerCase();
+
+  // Load existing remote config
+  const RC = path.join(PURP_DIR, '.purpclaw', 'remote-config.json');
+  const loadCfg = () => { try { return JSON.parse(fs.readFileSync(RC, 'utf-8')); } catch { return { targets: [], paired: false }; } };
+
+  if (sub === 'start') {
+    console.log(`  ${col(C.green, 'Starting')} remote control daemon...`);
+    const cfg = loadCfg();
+    cfg.enabled = true;
+    cfg.lastStart = new Date().toISOString();
+    fs.mkdirSync(path.dirname(RC), { recursive: true });
+    fs.writeFileSync(RC, JSON.stringify(cfg, null, 2));
+    console.log(`  ${col(C.green, 'Enabled')} — remote control active`);
+    console.log(col(C.gray, '  Note: Requires app-server daemon running (purpclaw start)'));
+    console.log('');
+    return;
+  }
+
+  if (sub === 'stop') {
+    const cfg = loadCfg();
+    cfg.enabled = false;
+    fs.writeFileSync(RC, JSON.stringify(cfg, null, 2));
+    console.log(`  ${col(C.yellow, 'Stopped')} — remote control disabled\n`);
+    return;
+  }
+
+  if (sub === 'pair') {
+    const cfg = loadCfg();
+    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
+    cfg.pairingCode = code;
+    cfg.pairedAt = null;
+    cfg.paired = false;
+    fs.writeFileSync(RC, JSON.stringify(cfg, null, 2));
+    console.log(`  ${col(C.cyan, 'Pairing code')}: ${col(C.white, code)}`);
+    console.log(col(C.gray, '  Enter this code in the remote client within 5 minutes.\n'));
+    return;
+  }
+
+  // Default: status
+  const cfg = loadCfg();
+  console.log(`  ${col(C.gray, 'Status')}: ${cfg.enabled ? col(C.green, 'enabled') : col(C.yellow, 'disabled')}`);
+  if (cfg.lastStart) console.log(`  ${col(C.gray, 'Last start')}: ${cfg.lastStart}`);
+  if (cfg.paired) console.log(`  ${col(C.green, 'Paired')}: yes`);
+  console.log('');
+  console.log(col(C.gray, '  usage: purpclaw remote-control [start | stop | pair]\n'));
+}
+
+// ── cmdCloud ──────────────────────────────────────────────────────────────────
+// Codex: codex cloud — browse Codex Cloud tasks
+async function cmdCloud(args) {
+  banner();
+  sectionHead('  PURPCLAW CLOUD');
+  const sub = (args[0] || '').toLowerCase();
+
+  if (sub === 'list' || sub === 'ls' || !sub) {
+    console.log(col(C.gray, '  Codex Cloud integration'));
+    console.log('');
+    console.log(`  ${col(C.yellow, 'Not configured')} — Codex Cloud requires API credentials`);
+    console.log(col(C.gray, '  Codex Cloud is a hosted service at api.openai.com'));
+    console.log(col(C.gray, '  For PURPCLAW: tasks are managed locally via `purpclaw run` and `purpclaw resume`'));
+    console.log('');
+    console.log(col(C.gray, '  Local job catalog:'));
+    const JOBS_DIR = path.join(PURP_DIR, 'agent_work', 'jobs');
+    if (fs.existsSync(JOBS_DIR)) {
+      const jobs = fs.readdirSync(JOBS_DIR).filter(f => f.endsWith('.jsonl')).sort();
+      if (!jobs.length) {
+        console.log(col(C.gray, '    No jobs yet.'));
+      } else {
+        for (const j of jobs.slice(-10)) {
+          console.log(`    ${col(C.cyan, j.replace('.jsonl', ''))}`);
+        }
+      }
+    } else {
+      console.log(col(C.gray, '    No jobs directory.'));
+    }
+    console.log('');
+    return;
+  }
+
+  console.log(col(C.gray, '  usage: purpclaw cloud [list]\n'));
+}
+
+
 // cmdUpdate — self-update from GitHub releases
 async function cmdUpdate(args) {
   const https = require('https');
@@ -5357,11 +5733,22 @@ case 'registry': return cmdRegistry(args);
       return 0;
     }
     case 'mcp-server': {
-      console.log('  MCP server mode: stdio transport');
-      console.log('  Start: purpclaw ask --mcp-server');
-      console.log('  Note: PURPCLAW operates as agent-gateway-server on :9119 (JSON-RPC)');
+      // Codex parity: run PURPCLAW as an MCP server over stdio.
+      // `codex mcp-server` — serves MCP protocol on stdin/stdout.
+      const { spawn } = require('child_process');
+      const nodeBin = process.execPath;
+      const serverScript = path.join(PURP_DIR, 'lib', 'mcp-server.js');
+      const child = spawn(nodeBin, [serverScript], {
+        stdio: ['inherit', 'inherit', 'inherit'],
+        env: { ...process.env },
+        shell: false,
+        windowsHide: true,
+      });
+      child.on('exit', code => { process.exit(code || 0); });
+      child.on('error', e => { console.error('[mcp-server] ' + e.message); process.exit(1); });
       return 0;
     }
+    case 'hooks':    return loadCmd('hooks').run(args, sharedCtx());
     case 'mcp':      return loadCmd('mcp').run(args, sharedCtx());
     case 'remote': {
       const fs = require('fs');
