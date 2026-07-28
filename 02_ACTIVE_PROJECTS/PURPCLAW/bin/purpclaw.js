@@ -29,7 +29,7 @@
 const path    = require('path');
 const fs      = require('fs');
 const http    = require('http');
-const { URL } = require('url');
+const { URL, pathToFileURL } = require('url');
 
 // ── Project root resolver ─────────────────────────────────────────────────────────
 // The npm global shim lives in AppData on C:. We walk up looking for the real project.
@@ -1179,7 +1179,7 @@ async function cmdCheckpoint(args) {
   // Lazy-load the checkpoint manager
   let CheckpointManager, checkpointManager;
   try {
-    const mod = await import(path.join(PURP_DIR, 'lib', 'checkpoint-manager.mjs'));
+    const mod = await import(pathToFileURL(path.join(PURP_DIR, 'lib', 'checkpoint-manager.mjs')));
     CheckpointManager = mod.CheckpointManager;
     checkpointManager = mod.checkpointManager || mod.default;
     if (!checkpointManager || typeof checkpointManager.createCheckpoint !== 'function') {
@@ -1258,6 +1258,246 @@ async function cmdCheckpoint(args) {
   }
 }
 
+
+// ── compress ───────────────────────────────────────────────────────────────────
+// Manual context compression — invokes the LLM-powered context compressor.
+async function cmdCompress(args) {
+  const { ContextCompressor } = require('./lib/context-compressor');
+  const pathToFileURL = require('url').pathToFileURL;
+  const fs = require('fs');
+  const readline = require('readline');
+
+  // Load most recent session history
+  const sessionsDir = path.join(PURP_DIR, 'agent_work', 'sessions');
+  if (!fs.existsSync(sessionsDir)) {
+    console.log('  No sessions directory found.');
+    return 1;
+  }
+  const files = fs.readdirSync(sessionsDir)
+    .filter(f => f.endsWith('.jsonl') || f.endsWith('.json'))
+    .map(f => ({ f, mtime: fs.statSync(path.join(sessionsDir, f)).mtime.getTime() }))
+    .sort((a, b) => b.mtime - a.mtime);
+  if (!files.length) { console.log('  No session files found.'); return 1; }
+
+  // Default to most recent
+  const sessionFile = path.join(sessionsDir, files[0].f);
+  const lines = fs.readFileSync(sessionFile, 'utf8').split('\n').filter(Boolean);
+  const messages = lines.map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
+
+  if (!messages.length) { console.log('  No messages in session.'); return 1; }
+
+  const focus = args.includes('--focus') ? args[args.indexOf('--focus') + 1] || '' : '';
+  const dry   = args.includes('--dry');
+  const force = args.includes('--force');
+
+  const cc = new ContextCompressor({
+    contextLength: 200_000,
+    threshold: 0.75,
+    protectFirst: 3,
+    protectLast: 20,
+  });
+
+  console.log(`  Compressing ${messages.length} messages (${files[0].f})...`);
+  if (dry) {
+    console.log(`  shouldCompress: ${cc.shouldCompress(messages)}`);
+    console.log(`  estimate: ${cc.thresholdTokens} tokens threshold`);
+    return 0;
+  }
+
+  try {
+    const result = await cc.compress(messages, { force });
+    if (result.compressed) {
+      console.log(`  ✓ Compressed ${messages.length} → ${result.messages.length} messages`);
+      console.log(`  tokens: ${result.tokensBefore} → ${result.tokensAfter} (${result.tokensAfter < result.tokensBefore ? 'saved ' + (result.tokensBefore - result.tokensAfter) + ' tokens' : 'no reduction'})`);
+      if (result.usedFallback) console.log('  ⚠ LLM unavailable — used deterministic fallback');
+      if (result.summary) console.log('\n' + result.summary.slice(0, 500) + (result.summary.length > 500 ? '...' : ''));
+    } else {
+      console.log(`  ✗ Not compressed: ${result.reason || 'already fits'}`);
+    }
+  } catch (err) {
+    console.log(`  ✗ Compression error: ${err.message}`);
+  }
+  return 0;
+}
+
+// ── curator ───────────────────────────────────────────────────────────────────
+// Background skill maintenance: purge stale skills, archive unused ones.
+async function cmdCurator(args) {
+  const Curator = require(path.join(PURP_DIR, 'lib', 'curator'));
+  const sub = (args[0] || '').toLowerCase();
+
+  switch (sub) {
+    case '':
+    case 'status': {
+      const state = Curator.loadState();
+      const enabled = Curator.isEnabled();
+      const paused = Curator.isPaused();
+      sectionHead('  CURATOR — Skill Maintenance');
+      console.log(`  Status:  ${paused ? col(C.yellow, 'PAUSED') : enabled ? col(C.green, 'ACTIVE') : col(C.red, 'DISABLED')}`);
+      const last = state.lastRunAt ? state.lastRunAt.replace('T', ' ').slice(0, 19) : 'never';
+      const dur = state.lastRunDurationSeconds != null ? `${state.lastRunDurationSeconds.toFixed(1)}s` : '—';
+      console.log(`  Last:    ${last} (${dur})`);
+      console.log(`  Runs:    ${state.runCount || 0}`);
+      if (state.lastRunSummary) console.log(`  Summary: ${col(C.gray, state.lastRunSummary)}`);
+      console.log(`\n  Config:  interval=${Curator.getIntervalHours() / 24}d  stale=${Curator.getStaleAfterDays()}d  archive=${Curator.getArchiveAfterDays()}d`);
+      console.log(`\n  Usage:   purpclaw curator run [--dry-run] [--consolidate]`);
+      console.log(`          purpclaw curator pause | resume | status`);
+      return 0;
+    }
+    case 'pause': {
+      Curator.setPaused(true);
+      console.log(col(C.yellow, '  Curator paused.'));
+      return 0;
+    }
+    case 'resume': {
+      Curator.setPaused(false);
+      console.log(col(C.green, '  Curator resumed.'));
+      return 0;
+    }
+    case 'run': {
+      const dryRun = args.includes('--dry-run');
+      const consolidate = args.includes('--consolidate');
+      banner();
+      sectionHead('  CURATOR — Running skill maintenance pass');
+      if (dryRun) console.log(col(C.gray, '  [DRY RUN — no changes will be made]\n'));
+      console.log(col(C.cyan, '  Starting curator pass...\n'));
+      const result = await Curator.runCurator({ dryRun, consolidate });
+      if (result.summary) {
+        console.log('\n' + result.summary);
+      } else {
+        console.log('\n  ' + col(C.green, `Done. ${result.archived || 0} archived, ${result.stale || 0} marked stale.`));
+      }
+      return 0;
+    }
+    default:
+      console.log('Usage: purpclaw curator status | run [--dry-run] [--consolidate] | pause | resume');
+      return 1;
+  }
+}
+
+// ── approvals ──────────────────────────────────────────────────────────────────
+// Dangerous command approval queue.
+async function cmdApprovals(args) {
+  const AQ = require(path.join(PURP_DIR, 'lib', 'approval-queue'));
+  const sub = (args[0] || '').toLowerCase();
+  const id = args[1] || '';
+
+  switch (sub) {
+    case '':
+    case 'list': {
+      sectionHead('  APPROVALS — Pending dangerous command review');
+      // load all pending from queue dir
+      const { getQueueDir } = AQ;
+      const queueDir = getQueueDir ? getQueueDir() : path.join(require('os').homedir(), '.purpclaw', 'approvals');
+      if (!fs.existsSync(queueDir)) {
+        console.log(col(C.gray, '  No approvals yet.\n'));
+        return 0;
+      }
+      const files = fs.readdirSync(queueDir).filter(f => f.endsWith('.json'));
+      const pending = files.filter(f => !f.includes('-resolved')).slice(0, 20);
+      if (!pending.length) {
+        console.log(col(C.gray, '  No pending approvals.\n'));
+        return 0;
+      }
+      pending.forEach(f => {
+        try {
+          const d = JSON.parse(fs.readFileSync(path.join(queueDir, f), 'utf8'));
+          const age = d.createdAt ? `${Math.floor((Date.now() - new Date(d.createdAt)) / 60000)}m ago` : '?';
+          console.log(`  ${col(C.yellow, d.id || f)}  ${age}  ${d.command ? d.command.slice(0, 60) : d.description || '—'}`);
+        } catch (_) {}
+      });
+      console.log(`\n  purpclaw approvals approve <id> | deny <id> | clear`);
+      return 0;
+    }
+    case 'approve': {
+      if (!id) { console.log('Usage: purpclaw approvals approve <id>'); return 1; }
+      const ok = AQ.resolveApproval(id, 'approve');
+      console.log(ok ? col(C.green, `  ✓ Approved: ${id}`) : col(C.red, `  ✗ Not found: ${id}`));
+      return ok ? 0 : 1;
+    }
+    case 'deny': {
+      if (!id) { console.log('Usage: purpclaw approvals deny <id>'); return 1; }
+      const ok = AQ.resolveApproval(id, 'deny');
+      console.log(ok ? col(C.red, `  ✗ Denied: ${id}`) : col(C.red, `  ✗ Not found: ${id}`));
+      return ok ? 0 : 1;
+    }
+    case 'clear': {
+      const { clearExpired } = AQ;
+      if (clearExpired) {
+        const n = clearExpired();
+        console.log(`  Cleared ${n} expired approvals.`);
+      } else {
+        // manual: delete old resolved files
+        console.log(col(C.gray, '  Nothing to clear.'));
+      }
+      return 0;
+    }
+    default:
+      console.log('Usage: purpclaw approvals list | approve <id> | deny <id> | clear');
+      return 1;
+  }
+}
+
+// ── tirith ─────────────────────────────────────────────────────────────────────
+// Claims validation and argument audit for agent outputs.
+async function cmdTirith(args) {
+  const Tirith = require(path.join(PURP_DIR, 'lib', 'tirith-security'));
+  const sub = (args[0] || '').toLowerCase();
+  const target = args[1] || '';
+
+  if (!sub || sub === 'help') {
+    sectionHead('  TIRITH — Claims Validation');
+    console.log(col(C.gray, '  Audit command strings or file content for claim integrity.\n'));
+    console.log(`  ${col(C.bold, 'purpclaw tirith cmd <command>')}   — validate a command string`);
+    console.log(`  ${col(C.bold, 'purpclaw tirith file <path>')}   — scan a file for dangerous claims`);
+    console.log(`  ${col(C.bold, 'purpclaw tirith status')}        — circuit breaker state`);
+    return 0;
+  }
+
+  if (sub === 'status') {
+    const state = Tirith.getCircuitState();
+    console.log(`  Circuit: ${state.circuitOpen ? col(C.red, 'OPEN') : col(C.green, 'CLOSED')}  (${state.crashCount} crash(es))`);
+    return 0;
+  }
+
+  if (sub === 'cmd' || sub === 'command') {
+    if (!target) { console.log('Usage: purpclaw tirith cmd "<command>"'); return 1; }
+    const result = Tirith.checkCommand(target);
+    if (!result.findings.length) {
+      console.log(col(C.green, `  ✓ No issues found in command`));
+      return 0;
+    }
+    console.log(col(C.red, `  ✗ ${result.findings.length} finding(s):`));
+    result.findings.forEach(f => {
+      console.log(`    [${f.severity}] ${f.description}`);
+      if (f.location) console.log(`      → ${f.location}`);
+    });
+    return result.findings.some(f => f.severity === 'critical') ? 1 : 0;
+  }
+
+  if (sub === 'file') {
+    if (!target) { console.log('Usage: purpclaw tirith file <path>'); return 1; }
+    const resolved = path.resolve(target);
+    if (!fs.existsSync(resolved)) { console.log(col(C.red, `  File not found: ${resolved}`)); return 1; }
+    const stat = fs.statSync(resolved);
+    if (stat.isDirectory()) { console.log(col(C.red, `  ${resolved} is a directory.`)); return 1; }
+    const result = Tirith.checkFile(resolved);
+    if (!result.findings.length) {
+      console.log(col(C.green, `  ✓ File is clean (${result.checkedChars} chars scanned)`));
+      return 0;
+    }
+    console.log(col(C.red, `  ✗ ${result.findings.length} finding(s) in ${resolved}:`));
+    result.findings.forEach(f => {
+      console.log(`    [${f.severity}] ${f.description}`);
+      if (f.location) console.log(`      → ${f.location}`);
+    });
+    return result.findings.some(f => f.severity === 'critical') ? 1 : 0;
+  }
+
+  console.log(`Unknown tirith subcommand: ${sub}`);
+  console.log('Usage: purpclaw tirith cmd "<cmd>" | file <path> | status');
+  return 1;
+}
 
 // ── resume ─────────────────────────────────────────────────────────────────────
 // Resume a previous session from agent_work/sessions/
@@ -2083,6 +2323,80 @@ async function cmdAgents() {
     console.log(`\n  ${col(C.gray, `Pool: ${poolData.pool?.total ?? 0} total, ${poolData.busy?.length ?? 0} busy`)}`);
   }
   console.log('');
+}
+
+// ── archetypes ───────────────────────────────────────────────────────────────
+async function cmdArchetypes(args) {
+  const sub = (args[0] || 'list').toLowerCase();
+  const archetypes = (() => {
+    try { return require('../lib/agents/archetypes'); } catch { return null; }
+  })();
+  if (!archetypes) {
+    console.log('\n[X] Archetype loader not available\n');
+    return;
+  }
+
+  if (sub === 'list' || sub === 'ls') {
+    archetypes.cliList();
+    return;
+  }
+
+  if (sub === 'show' || sub === 'get') {
+    const name = args[1];
+    if (!name) { console.log('\nUsage: purpclaw archetype show <name>\n'); return; }
+    archetypes.cliShow(name);
+    return;
+  }
+
+  if (sub === 'search' || sub === 'find') {
+    const q = args.slice(1).join(' ');
+    if (!q) { console.log('\nUsage: purpclaw archetype search <query>\n'); return; }
+    const results = archetypes.searchArchetypes(q);
+    console.log(`\n${results.length} archetype(s) matching "${q}":\n`);
+    for (const r of results) {
+      console.log(`  ${col(C.cyan, r.name)} — ${r.description}`);
+      console.log(`    capabilities: ${(r.capabilities || []).join(', ')}\n`);
+    }
+    return;
+  }
+
+  if (sub === 'validate') {
+    const name = args[1];
+    if (!name) { console.log('\nUsage: purpclaw archetype validate <name>\n'); return; }
+    const v = archetypes.validateArchetype(name);
+    if (v.valid) {
+      console.log(`\n${col(C.green, '[OK]')} Archetype '${name}' is valid\n`);
+    } else {
+      console.log(`\n${col(C.red, '[X]')} Archetype '${name}' has errors:\n`);
+      for (const e of v.errors) console.log(`  - ${e}`);
+      console.log('');
+    }
+    return;
+  }
+
+  if (sub === 'spawn') {
+    const name = args[1];
+    if (!name) { console.log('\nUsage: purpclaw archetype spawn <name>\n'); return; }
+    const v = archetypes.validateArchetype(name);
+    if (!v.valid) {
+      console.log(`\n${col(C.red, '[X]')} Cannot spawn invalid archetype:\n`);
+      for (const e of v.errors) console.log(`  - ${e}`);
+      console.log('');
+      return;
+    }
+    const cfg = archetypes.spawnConfig(name, {
+      model: args[2] || null,
+      temperature: args[3] ? parseFloat(args[3]) : undefined,
+    });
+    console.log(`\n${col(C.green, '[OK]')} Spawn config for '${name}':\n`);
+    console.log(JSON.stringify(cfg, null, 2));
+    console.log('');
+    return;
+  }
+
+  // Default: list
+  archetypes.cliList();
+  console.log(`Usage: purpclaw archetype list|show|search|validate|spawn\n`);
 }
 
 // ── workflows ─────────────────────────────────────────────────────────────────
@@ -6011,23 +6325,75 @@ async function cmdPlugins(args) {
     case 'execpolicy': {
       const EP = require(path.join(PURP_DIR, 'lib', 'exec-policy'));
       const sub = (args[0] || '').toLowerCase();
+      const next = (args[1] || '').toLowerCase();
       if (sub === 'check') {
         const cmd = args.slice(1).join(' ');
         if (!cmd) { console.log('usage: purpclaw execpolicy check <command>'); return 1; }
-        const result = EP.check(cmd);
-        if (result.allowed) {
-          console.log('allowed  — ' + (result.reason || 'ok'));
-        } else {
-          console.log('denied   — ' + (result.reason || result.source || 'policy'));
-          return 1;
-        }
+        const result = EP.checkSync(cmd);
+        if (result.allowed) console.log('allowed  — ' + (result.matched || result.source || 'ok'));
+        else { console.log('denied   — ' + (result.matched || result.source || 'policy')); return 1; }
         return 0;
       }
-      console.log('purpclaw execpolicy check <command>');
+      if (sub === 'watch') {
+        console.log('Watching ' + EP.POLICY_FILE + ' for changes... (Ctrl+C to stop)');
+        EP.watch(() => {
+          const p = EP.list();
+          console.log('\n[policy reloaded] allow:' + p.allow.length + ' deny:' + p.deny.length);
+        });
+        return 0;
+      }
+      if (sub === 'list') {
+        const p = EP.list();
+        console.log('[allow]');
+        if (!p.allow.length) console.log('  (empty)');
+        else p.allow.forEach(x => console.log('  ' + x));
+        console.log('[deny]');
+        if (!p.deny.length) console.log('  (empty)');
+        else p.deny.forEach(x => console.log('  ' + x));
+        const n = EP.networkList();
+        console.log('[network.allow]');
+        if (!n.allow.length) console.log('  (empty)');
+        else n.allow.forEach(x => console.log('  ' + x));
+        console.log('[network.deny]');
+        if (!n.deny.length) console.log('  (empty)');
+        else n.deny.forEach(x => console.log('  ' + x));
+        return 0;
+      }
+      if (sub === 'allow' || sub === 'deny' || sub === 'remove') {
+        const pat = args.slice(1).join(' ');
+        if (!pat) { console.log('usage: purpclaw execpolicy ' + sub + ' <pattern>'); return 1; }
+        if (sub === 'allow') { EP.allow(pat); console.log('allowed: ' + pat); }
+        else if (sub === 'deny') { EP.deny(pat); console.log('denied: ' + pat); }
+        else { EP.remove(pat); console.log('removed: ' + pat); }
+        return 0;
+      }
+      if (sub === 'network') {
+        const act = next; const target = args.slice(2).join(' ');
+        if (!target) { console.log('usage: purpclaw execpolicy network <allow|deny|remove> <target>'); return 1; }
+        if (act === 'allow') { EP.networkAllow(target); console.log('network allowed: ' + target); }
+        else if (act === 'deny') { EP.networkDeny(target); console.log('network denied: ' + target); }
+        else if (act === 'remove') { EP.networkRemove(target); console.log('network removed: ' + target); }
+        else { console.log('usage: purpclaw execpolicy network <allow|deny|remove> <target>'); return 1; }
+        return 0;
+      }
+      if (sub === 'amend') {
+        const result = EP.amend(args.slice(1));
+        if (result.message === 'interactive') {
+          console.log('Interactive policy editor — use --add-allow, --add-deny, --remove-allow, --remove-deny, or --list');
+          return 0;
+        }
+        console.log(result.message);
+        return 0;
+      }
+      console.log('purpclaw execpolicy check <command>\npurpclaw execpolicy watch\npurpclaw execpolicy list\npurpclaw execpolicy allow <pattern>\npurpclaw execpolicy deny <pattern>\npurpclaw execpolicy remove <pattern>\npurpclaw execpolicy amend [--add-allow|--add-deny|--remove-allow|--remove-deny] <pattern>\npurpclaw execpolicy network <allow|deny|remove> <target>');
       return 0;
     }
     case 'cloud':     return cmdCloud(args);
+    case 'compress':  return cmdCompress(args);
     case 'checkpoint': return cmdCheckpoint(args);
+    case 'curator':   return cmdCurator(args);
+    case 'approvals': return cmdApprovals(args);
+    case 'tirith':   return cmdTirith(args);
     case 'plugins':  return cmdPlugins(args);
     case 'doctor':    return cmdDoctor(args);
     case 'app-server': {
@@ -6606,6 +6972,7 @@ case 'registry': return cmdRegistry(args);
     case 'model':     return cmdModel(args);
     case 'models':    return cmdModel(args);
     case 'agents':    return cmdAgents();
+    case 'archetype': return cmdArchetypes(args);
     case 'profiles':  return cmdProfiles();
     case 'workflows': return cmdWorkflows();
     case 'queue':     return cmdQueue();
