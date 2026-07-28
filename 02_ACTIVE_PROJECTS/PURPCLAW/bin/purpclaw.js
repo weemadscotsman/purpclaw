@@ -262,7 +262,7 @@ class Spinner {
 
   succeed(msg) { return this._stop(col(C.green, '✔'), msg); }
   fail(msg)    { return this._stop(col(C.red,   '✖'), msg); }
-  warn(msg)    { return this._stop(col(C.yellow,'⚠'), msg); }
+  warn(msg)    { return this._stop(col(C.yellow,'[!]'), msg); }
   info(msg)    { return this._stop(col(C.cyan,  'ℹ'), msg); }
 
   _stop(icon, msg) {
@@ -469,7 +469,7 @@ function banner() {
     console.log(bRow(
       '  ' + col(C.gray, 'PURPCLAW TUI  ·  One Mission / Many Lenses') +
       ' '.repeat(Math.max(0, inner - 60)) +
-      '  ' + col(C.green + C.bold, '● SYSTEM OPERATIONAL')
+      '  ' + col(C.green + C.bold, '[*] SYSTEM OPERATIONAL')
     ));
 
     console.log(bBot + '\n');
@@ -482,7 +482,7 @@ function sectionHead(title) {
   console.log(`\n${col(C.cyan + C.bold, title)}  ${col(C.gray, '─'.repeat(fill))}`);
 }
 
-function tick(ok) { return ok ? col(C.green, '●') : col(C.red, '○'); }
+function tick(ok) { return ok ? col(C.green, '[*]') : col(C.red, '[o]'); }
 
 // ═════════════════════════════════════════════════════════════════════════════
 //  COMMANDS
@@ -530,11 +530,11 @@ async function cmdStart(args) {
   const names  = target.names;
 
   if (!fs.existsSync(ECOSYSTEM)) {
-    console.error(col(C.red, `  ✗ ecosystem.config.js not found`));
+    console.error(col(C.red, `  [X] ecosystem.config.js not found`));
     process.exit(1);
   }
   if (!names.length) {
-    console.error(col(C.red, `  ✗ No services in profile "${target.label}"`));
+    console.error(col(C.red, `  [X] No services in profile "${target.label}"`));
     process.exit(1);
   }
 
@@ -558,7 +558,7 @@ async function cmdStart(args) {
   try {
     await pm2(['start', 'ecosystem.config.js', '--only', names.join(',')], { silent: true });
   } catch (e) {
-    console.error(col(C.red, `  ✗ PM2 failed: ${e.message}`));
+    console.error(col(C.red, `  [X] PM2 failed: ${e.message}`));
     console.log(col(C.gray, '  Check: npm install -g pm2'));
     process.exit(1);
   }
@@ -634,10 +634,10 @@ async function cmdStart(args) {
     }
   } else {
     if (TAINT_MODE) {
-      console.log(`  ${col(C.yellow + C.bold, '⚠  uh oh bestie')}  ${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length)}  ${col(C.red, coreFailed.length + ' services did a fucky wucky')}`);
+      console.log(`  ${col(C.yellow + C.bold, '[!]  uh oh bestie')}  ${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length)}  ${col(C.red, coreFailed.length + ' services did a fucky wucky')}`);
     } else {
       console.log(
-        `  ${col(C.yellow + C.bold, '⚠  PARTIAL START')}  ` +
+        `  ${col(C.yellow + C.bold, '[!]  PARTIAL START')}  ` +
         `${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length)}  ` +
         `${col(C.red, coreFailed.length + ' required service(s) failed')}`
       );
@@ -667,7 +667,7 @@ async function cmdStop(args) {
   const names  = target.names;
 
   if (!names.length) {
-    console.error(col(C.red, `\n  ✗ No services in profile "${target.label}"\n`));
+    console.error(col(C.red, `\n  [X] No services in profile "${target.label}"\n`));
     process.exit(1);
   }
 
@@ -687,7 +687,7 @@ async function cmdStop(args) {
     const disp = bootDisplayName(n).padEnd(14);
     const reg  = svcMap.get(n) || {};
     const port = reg.port ? col(C.gray, `:${reg.port}`) : '';
-    console.log(`  ${col(C.yellow, '○')}  ${col(C.gray, disp)}  ${port}`);
+    console.log(`  ${col(C.yellow, '[o]')}  ${col(C.gray, disp)}  ${port}`);
   });
 
   const spin = spinner('stopping services').start();
@@ -709,9 +709,9 @@ async function cmdRestart(args) {
     console.log(col(C.cyan, `\n  Restarting ${service}...\n`));
     try {
       await pm2(['restart', service]);
-      console.log(col(C.green, '  ✓ Done.\n'));
+      console.log(col(C.green, '  [OK] Done.\n'));
     } catch (e) {
-      console.error(col(C.red, `  ✗ ${e.message}`));
+      console.error(col(C.red, `  [X] ${e.message}`));
       process.exit(1);
     }
     return;
@@ -721,7 +721,7 @@ async function cmdRestart(args) {
   const names = target.names;
 
   if (!names.length) {
-    console.error(col(C.red, `\n  ✗ No PM2 services found for ${target.label}\n`));
+    console.error(col(C.red, `\n  [X] No PM2 services found for ${target.label}\n`));
     process.exit(1);
   }
 
@@ -736,9 +736,9 @@ async function cmdRestart(args) {
 
   try {
     await pm2(['restart', ...names]);
-    console.log(col(C.green, `  ✓ Restarted ${names.length} service${names.length === 1 ? '' : 's'}.\n`));
+    console.log(col(C.green, `  [OK] Restarted ${names.length} service${names.length === 1 ? '' : 's'}.\n`));
   } catch (e) {
-    console.error(col(C.red, `  ✗ ${e.message}`));
+    console.error(col(C.red, `  [X] ${e.message}`));
     process.exit(1);
   }
 }
@@ -927,7 +927,7 @@ console.log(`  ${col(C.green, '✔')}  Pool service online`);
       console.log(`  Agents spawned : ${col(C.gray, String(ctx.stats.totalAgentsSpawned))}`);
     } else {
       sectionHead('  CONTEXT BUS');
-      console.log(col(C.red, '  ✗ offline'));
+      console.log(col(C.red, '  [X] offline'));
     }
   } catch {
     sectionHead('  KNOWLEDGE POOL');
@@ -1022,12 +1022,12 @@ async function cmdEmbeddings(args) {
   if (sub === 'health') {
     const h = await emb.health();
     if (h.ok) {
-      console.log(`\n  ✓ Embeddings healthy`);
+      console.log(`\n  [OK] Embeddings healthy`);
       console.log(`    Model:    ${h.model}`);
       console.log(`    Dim:      ${h.dim}`);
       console.log(`    Endpoint: ${h.baseUrl}\n`);
     } else {
-      console.log(`\n  ✗ Embeddings unavailable: ${h.reason}\n`);
+      console.log(`\n  [X] Embeddings unavailable: ${h.reason}\n`);
       process.exit(1);
     }
     return;
@@ -1047,7 +1047,7 @@ async function cmdEmbeddings(args) {
       console.log(`\n  ${dim}-dim vector for "${text.substring(0, 40)}${text.length > 40 ? '...' : ''}"`);
       console.log(`  [${head}, ..., ${tail}]\n`);
     } catch (e) {
-      console.log(`\n  ✗ ${e.message}\n`);
+      console.log(`\n  [X] ${e.message}\n`);
       process.exit(1);
     }
     return;
@@ -1091,7 +1091,7 @@ async function cmdRelease(args) {
   if (sub === 'keygen') {
     const kp = rs.generateAndStoreKeypair();
     const pubB64 = kp.publicKeyDer.toString('base64');
-    console.log(`\n  ${col(C.green, '✓')} Ed25519 keypair generated`);
+    console.log(`\n  ${col(C.green, '[OK]')} Ed25519 keypair generated`);
     console.log(`  ${col(C.gray, 'Private:')} ${rs.KEYS_DIR}\\private.pem`);
     console.log(`  ${col(C.gray, 'Public:')}  ${rs.KEYS_DIR}\\public.pem`);
     console.log(`\n  ${col(C.yellow, 'Public key (DER, base64):')}`);
@@ -1111,7 +1111,7 @@ async function cmdRelease(args) {
     manifest.signature = result.signature;
     manifest.publicKey = result.publicKey;
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-    console.log(`\n  ${col(C.green, '✓')} Signed ${manifestPath}`);
+    console.log(`\n  ${col(C.green, '[OK]')} Signed ${manifestPath}`);
     console.log(`  ${col(C.gray, 'Signature:')} ${result.signature.substring(0, 40)}...\n`);
     return;
   }
@@ -1125,7 +1125,7 @@ async function cmdRelease(args) {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     const sig = manifest.signature;
     if (!sig) {
-      console.log(`\n  ${col(C.red, '✗')} No signature in manifest\n`);
+      console.log(`\n  ${col(C.red, '[X]')} No signature in manifest\n`);
       return;
     }
     // Strip signature and embedded publicKey before verifying so we get a
@@ -1134,14 +1134,14 @@ async function cmdRelease(args) {
     delete toVerify.signature;
     delete toVerify.publicKey;
     if (rs.verifyManifest(toVerify, sig)) {
-      console.log(`\n  ${col(C.green, '✓')} Valid signature\n`);
+      console.log(`\n  ${col(C.green, '[OK]')} Valid signature\n`);
     } else {
       // Show more detail
       const kp = rs.loadKeypair();
       if (!kp) {
-        console.log(`\n  ${col(C.red, '✗')} No keypair found — run ${col(C.cyan, 'purpclaw release keygen')} first\n`);
+        console.log(`\n  ${col(C.red, '[X]')} No keypair found — run ${col(C.cyan, 'purpclaw release keygen')} first\n`);
       } else {
-        console.log(`\n  ${col(C.red, '✗')} Invalid signature (stored key does not match signing key)\n`);
+        console.log(`\n  ${col(C.red, '[X]')} Invalid signature (stored key does not match signing key)\n`);
       }
     }
     return;
@@ -1151,11 +1151,11 @@ async function cmdRelease(args) {
   const kp = rs.loadKeypair();
   console.log(`\n  ${col(C.cyan, '🔐 RELEASE SIGNING')}\n`);
   if (kp) {
-    console.log(`  ${col(C.green, '✓')} Keypair present`);
+    console.log(`  ${col(C.green, '[OK]')} Keypair present`);
     console.log(`  ${col(C.gray, '  Private:')} ${rs.KEYS_DIR}\\private.pem`);
     console.log(`  ${col(C.gray, '  Public:')}  ${rs.KEYS_DIR}\\public.pem`);
   } else {
-    console.log(`  ${col(C.yellow, '⚠')} No keypair found — run ${col(C.cyan, 'purpclaw release keygen')}\n`);
+    console.log(`  ${col(C.yellow, '[!]')} No keypair found — run ${col(C.cyan, 'purpclaw release keygen')}\n`);
   }
   console.log(`  ${col(C.cyan, 'purpclaw release keygen')}          generate Ed25519 keypair`);
   console.log(`  ${col(C.cyan, 'purpclaw release sign <file>')}     sign a manifest`);
@@ -1361,7 +1361,7 @@ async function cmdRegistry(args) {
     sectionHead('  SKILLS (' + reg.skills.length + ')');
     for (const s of reg.skills.slice(0, 20)) {
       const installed = fs.existsSync(path.join(LOCAL_SKILLS, s.name, 'SKILL.md'));
-      const tick  = installed ? col(C.green, '✔') : col(C.gray, '○');
+      const tick  = installed ? col(C.green, '✔') : col(C.gray, '[o]');
       const size  = col(C.gray, s.size_kb + 'K');
       const orig  = s.origin ? col(C.gray, '[' + s.origin + ']') : '';
       console.log(`  ${tick}  ${col(C.cyan, s.name.padEnd(32))}  ${col(C.gray, s.description.slice(0, 50))} ${size} ${orig}`);
@@ -1372,7 +1372,7 @@ async function cmdRegistry(args) {
     sectionHead('  AGENTS (' + reg.agents.length + ')');
     for (const a of reg.agents) {
       const installed = fs.existsSync(path.join(LOCAL_AGENTS, a.name + '.md'));
-      const tick  = installed ? col(C.green, '✔') : col(C.gray, '○');
+      const tick  = installed ? col(C.green, '✔') : col(C.gray, '[o]');
       console.log(`  ${tick}  ${col(C.yellow, a.name.padEnd(24))}  ${col(C.gray, a.description.slice(0, 50))}`);
     }
     console.log(col(C.gray, '\n  purpclaw registry install <name>   — install from registry'));
@@ -1537,14 +1537,18 @@ async function cmdRegistry(args) {
 async function cmdRun(args) {
   const approvalArg = args.find(a => a.startsWith('--approval='));
   const approvalId = approvalArg ? approvalArg.split('=')[1] : null;
-  const task = args.filter(a => !a.startsWith('--approval=')).join(' ').trim();
+  const IS_JSON = args.includes('--json');
+  const taskArgs = args.filter(a => !a.startsWith('--approval=') && a !== '--json');
+  const task = taskArgs.join(' ').trim();
   if (!task) {
     console.error(col(C.red, '\n  Usage: purpclaw run "<task>"\n'));
     process.exit(1);
   }
 
-  console.log(`\n  ${col(C.cyan + C.bold, '⚡ PURPCLAW RUN')}\n`);
-  console.log(`  ${col(C.gray, 'Task:')} ${task}\n`);
+  if (!IS_JSON) {
+    console.log(`\n  ${col(C.cyan + C.bold, '⚡ PURPCLAW RUN')}\n`);
+    console.log(`  ${col(C.gray, 'Task:')} ${task}\n`);
+  }
 
   // Subscribe to SSE stream BEFORE sending the task so we catch the first events
   let streamReq = null;
@@ -1558,11 +1562,34 @@ async function cmdRun(args) {
       (evt) => {
         if (evt.type === 'connected') return;
 
-        const ts = col(C.gray, new Date().toLocaleTimeString());
         const type = evt.type || evt.event || 'event';
 
+        // ── JSON mode: emit one JSONL line per event, resolve on completion ──
+        if (IS_JSON) {
+          if (type === 'workflow_complete' || type === 'completed') {
+            const result = evt.result !== undefined ? evt.result : evt.workflow?.result;
+            const workflowId = evt.workflowId || evt.workflow?.workflowId;
+            process.stdout.write(JSON.stringify({ timestamp_ms: Date.now(), type: 'workflow_complete', result, workflowId }) + '\n');
+            if (!resolved) { resolved = true; resolve(); }
+          } else if (type === 'workflow_failed' || type === 'failed') {
+            process.stdout.write(JSON.stringify({ timestamp_ms: Date.now(), type: 'workflow_failed', error: evt.error || '' }) + '\n');
+            if (!resolved) { resolved = true; resolve(); }
+          } else if (type === 'agent_spawned' || type === 'agent_complete' || type === 'step' || type === 'log') {
+            const out = { timestamp_ms: Date.now(), type };
+            if (evt.agent || evt.agentName) out.agent = evt.agent || evt.agentName;
+            if (evt.message) out.message = evt.message;
+            if (evt.description) out.description = evt.description;
+            if (evt.status) out.status = evt.status;
+            process.stdout.write(JSON.stringify(out) + '\n');
+          }
+          return;
+        }
+
+        // ── Human mode ──
+        const ts = col(C.gray, new Date().toLocaleTimeString());
+
         if (type === 'workflow_complete' || type === 'completed') {
-          console.log(`\n  ${col(C.green, '✓ Complete')}  ${col(C.gray, evt.workflowId || '')}`);
+          console.log(`\n  ${col(C.green, '[OK] Complete')}  ${col(C.gray, evt.workflowId || '')}`);
           if (evt.result) {
             console.log(`\n${col(C.gray, '  ─── Result ────────────────────────────────────────────')}`);
             const r = typeof evt.result === 'string' ? evt.result : JSON.stringify(evt.result, null, 2);
@@ -1576,21 +1603,20 @@ async function cmdRun(args) {
           console.log(col(C.gray, '  Rerun:   purpclaw run "<task>" --approval=<id>\n'));
           if (!resolved) { resolved = true; resolve(); }
         } else if (type === 'workflow_failed' || type === 'failed') {
-          console.log(`\n  ${col(C.red, '✗ Failed')}  ${col(C.gray, evt.error || '')}`);
+          console.log(`\n  ${col(C.red, '[X] Failed')}  ${col(C.gray, evt.error || '')}`);
           if (!resolved) { resolved = true; resolve(); }
         } else if (type === 'agent_spawned') {
           console.log(`  ${ts}  ${col(C.blue, '⚙ spawn')}   ${col(C.cyan, evt.agent || evt.agentName || '?')} ${col(C.gray, '→')} ${evt.task || evt.intent || ''}`);
         } else if (type === 'agent_complete') {
-          console.log(`  ${ts}  ${col(C.green, '✓ done ')}   ${col(C.cyan, evt.agent || evt.agentName || '?')}`);
+          console.log(`  ${ts}  ${col(C.green, '[OK] done ')}   ${col(C.cyan, evt.agent || evt.agentName || '?')}`);
         } else if (type === 'step' || type === 'workflow_step') {
-          const icon = evt.status === 'started' ? col(C.yellow, '▶ step ') : col(C.green, '✓ step ');
+          const icon = evt.status === 'started' ? col(C.yellow, '▶ step ') : col(C.green, '[OK] step ');
           console.log(`  ${ts}  ${icon}   ${evt.description || JSON.stringify(evt).substring(0, 80)}`);
         } else if (type === 'log') {
           console.log(`  ${ts}  ${col(C.gray, '·')}          ${evt.message || ''}`);
         } else {
-          // Generic event — show compactly
           const msg = evt.message || evt.description || evt.summary || '';
-          if (msg) console.log(`  ${ts}  ${col(C.gray, '·')}          ${msg.substring(0, 100)}`);
+          if (msg) console.log(`  ${ts}  ${col(C.gray, '·')}          ${String(msg).substring(0, 100)}`);
         }
       },
       (err) => {
@@ -1613,13 +1639,17 @@ async function cmdRun(args) {
     }, 600000); // full swarm pipeline can take minutes; events stream live via SSE meanwhile
 
     if (resp.status >= 400) {
-      console.error(col(C.red, `\n  ✗ Orchestrator rejected task: ${JSON.stringify(resp.body)}\n`));
+      console.error(col(C.red, `\n  [X] Orchestrator rejected task: ${JSON.stringify(resp.body)}\n`));
       streamReq && streamReq.destroy();
       process.exit(1);
     }
 
     const wf = resp.body;
-    console.log(`  ${col(C.gray, 'Workflow:')} ${col(C.cyan, wf.workflowId || '—')}\n`);
+    if (IS_JSON) {
+      process.stdout.write(JSON.stringify({ timestamp_ms: Date.now(), type: 'workflow_start', workflowId: wf.workflowId }) + '\n');
+    } else {
+      console.log(`  ${col(C.gray, 'Workflow:')} ${col(C.cyan, wf.workflowId || '—')}\n`);
+    }
 
     // If the orchestrator returns a result synchronously (non-streaming), print it
     if (wf.status === 'completed' || wf.status === 'failed') {
@@ -1640,7 +1670,7 @@ async function cmdRun(args) {
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true;
-        console.log(col(C.yellow, '\n  ⚠ Timed out waiting for completion signal. Workflow may still be running.'));
+        console.log(col(C.yellow, '\n  [!] Timed out waiting for completion signal. Workflow may still be running.'));
         console.log(col(C.gray,   `  Poll: purpclaw workflows\n`));
       }
     }, 600000);
@@ -1655,13 +1685,13 @@ async function cmdRun(args) {
     if (e.message === 'timeout') {
       // Orchestrator is reachable but the endpoint timed out — likely busy with active workflows.
       // Try purpclaw status to see what's running, or wait for active workflows to drain.
-      console.error(col(C.red, `\n  ✗ Orchestrator timed out [port=${PORTS.orchestrator}]. `) +
+      console.error(col(C.red, `\n  [X] Orchestrator timed out [port=${PORTS.orchestrator}]. `) +
         col(C.yellow, `The dispatch endpoint is busy — likely active workflows consuming capacity.\n`));
       console.error(col(C.gray, `  Run \`purpclaw status\` to see active workflows.\n`));
     } else if (e.code === 'ECONNREFUSED') {
-      console.error(col(C.red, `\n  ✗ Orchestrator not reachable [port=${PORTS.orchestrator}]. Run \`purpclaw start\` first.\n`));
+      console.error(col(C.red, `\n  [X] Orchestrator not reachable [port=${PORTS.orchestrator}]. Run \`purpclaw start\` first.\n`));
     } else {
-      console.error(col(C.red, `\n  ✗ ${e.message}\n`));
+      console.error(col(C.red, `\n  [X] ${e.message}\n`));
     }
     process.exit(1);
   }
@@ -1712,7 +1742,7 @@ async function cmdAgents() {
       const info    = routing[name] || {};
       const score   = scoreData[name];
       const busy    = poolData?.busy?.find(a => a.name === name);
-      const statusDot = busy ? col(C.cyan, '◉') : col(C.gray, '○');
+      const statusDot = busy ? col(C.cyan, '◉') : col(C.gray, '[o]');
       const scoreStr  = score
         ? col(C.gray, ` [${(score.successRate ?? 0).toFixed(0)}% ok, ${score.totalTasks ?? 0} tasks]`)
         : '';
@@ -1753,7 +1783,7 @@ async function cmdWorkflows() {
     if (pipeline.completed?.length) {
       console.log(col(C.gray, `\n  Recent completed: ${pipeline.completed.length}`));
       for (const wf of pipeline.completed.slice(-4)) {
-        console.log(`     ${col(C.green, '✓')} ${col(C.gray, (wf.workflowId || wf.id || '—').padEnd(22))} ${wf.command?.substring(0, 50) ?? ''}`);
+        console.log(`     ${col(C.green, '[OK]')} ${col(C.gray, (wf.workflowId || wf.id || '—').padEnd(22))} ${wf.command?.substring(0, 50) ?? ''}`);
       }
     }
   } catch {
@@ -1836,15 +1866,15 @@ async function cmdMemory(args) {
         importance : 0.7,
       }, 10000);
       if (result.status >= 400) {
-        console.error(col(C.red, `  ✗ ${JSON.stringify(result.body)}\n`));
+        console.error(col(C.red, `  [X] ${JSON.stringify(result.body)}\n`));
         return;
       }
-      console.log(col(C.green, `  ✓ Ingested successfully`));
+      console.log(col(C.green, `  [OK] Ingested successfully`));
       if (result.body?.id) console.log(col(C.gray, `  id: ${result.body.id}`));
     } catch (e) {
       console.error(col(C.red, e.code === 'ECONNREFUSED'
-        ? '  ✗ Memory matrix offline. Run `purpclaw start`.\n'
-        : `  ✗ ${e.message}\n`));
+        ? '  [X] Memory matrix offline. Run `purpclaw start`.\n'
+        : `  [X] ${e.message}\n`));
     }
     console.log('');
     return;
@@ -1861,14 +1891,14 @@ async function cmdMemory(args) {
     try {
       const result = await httpPost(PORTS.memory, '/forget', { query }, 8000);
       if (result.status >= 400) {
-        console.error(col(C.red, `  ✗ ${JSON.stringify(result.body)}\n`)); return;
+        console.error(col(C.red, `  [X] ${JSON.stringify(result.body)}\n`)); return;
       }
       const removed = result.body?.removed ?? result.body?.count ?? '?';
-      console.log(col(C.green, `  ✓ Removed ${removed} memories matching "${query}"\n`));
+      console.log(col(C.green, `  [OK] Removed ${removed} memories matching "${query}"\n`));
     } catch (e) {
       console.error(col(C.red, e.code === 'ECONNREFUSED'
-        ? '  ✗ Memory matrix offline.\n'
-        : `  ✗ ${e.message}\n`));
+        ? '  [X] Memory matrix offline.\n'
+        : `  [X] ${e.message}\n`));
     }
     return;
   }
@@ -1901,7 +1931,7 @@ async function cmdMemory(args) {
   try {
     const result = await httpPost(PORTS.memory, '/query', { query, limit: 5 }, 8000);
     if (result.status >= 400) {
-      console.error(col(C.red, `  ✗ Memory matrix error: ${JSON.stringify(result.body)}\n`));
+      console.error(col(C.red, `  [X] Memory matrix error: ${JSON.stringify(result.body)}\n`));
       return;
     }
     const memories = result.body?.results || result.body?.memories || result.body || [];
@@ -1919,9 +1949,9 @@ async function cmdMemory(args) {
     }
   } catch (e) {
     if (e.code === 'ECONNREFUSED') {
-      console.error(col(C.red, '  ✗ Memory matrix offline. Run `purpclaw start`.\n'));
+      console.error(col(C.red, '  [X] Memory matrix offline. Run `purpclaw start`.\n'));
     } else {
-      console.error(col(C.red, `  ✗ ${e.message}\n`));
+      console.error(col(C.red, `  [X] ${e.message}\n`));
     }
   }
 }
@@ -1936,14 +1966,14 @@ async function cmdDream() {
     console.log(col(C.gray, '  Triggering autoDream consolidation cycle (port 7895)...\n'));
     const result = await httpPost(PORTS.dream, '/dream', { force: true }, 30000);
     if (result.status >= 400) {
-      console.error(col(C.red, `  ✗ Dream error: ${JSON.stringify(result.body)}\n`));
+      console.error(col(C.red, `  [X] Dream error: ${JSON.stringify(result.body)}\n`));
       return;
     }
     const r = result.body;
     if (r.skipped) {
       console.log(`  ${col(C.yellow, '~')} Dream skipped — ${r.skipped}`);
     } else {
-      console.log(`  ${col(C.green, '✓')} Dream cycle complete`);
+      console.log(`  ${col(C.green, '[OK]')} Dream cycle complete`);
       if (r.entriesMerged  !== undefined) console.log(`  Merged     : ${col(C.cyan, String(r.entriesMerged))} entries`);
       if (r.rulesExtracted !== undefined) console.log(`  Rules      : ${col(C.cyan, String(r.rulesExtracted))} extracted`);
       if (r.archived       !== undefined) console.log(`  Archived   : ${col(C.gray, String(r.archived))} old entries`);
@@ -1952,7 +1982,7 @@ async function cmdDream() {
     return;
   } catch (e) {
     if (e.code !== 'ECONNREFUSED') {
-      console.error(col(C.red, `  ✗ ${e.message}\n`));
+      console.error(col(C.red, `  [X] ${e.message}\n`));
       return;
     }
     // autoDream offline — fall through to memory matrix
@@ -1963,11 +1993,11 @@ async function cmdDream() {
   try {
     const result = await httpPost(PORTS.memory, '/dream', { mode: 'full' }, 30000);
     if (result.status >= 400) {
-      console.error(col(C.red, `  ✗ Dream cycle error: ${JSON.stringify(result.body)}\n`));
+      console.error(col(C.red, `  [X] Dream cycle error: ${JSON.stringify(result.body)}\n`));
       return;
     }
     const r = result.body;
-    console.log(`  ${col(C.green, '✓')} Dream cycle complete (via memory matrix)`);
+    console.log(`  ${col(C.green, '[OK]')} Dream cycle complete (via memory matrix)`);
     if (r.phase)        console.log(`  Phase      : ${col(C.cyan, r.phase)}`);
     if (r.consolidated) console.log(`  Consolidated: ${col(C.cyan, String(r.consolidated))} memories`);
     if (r.pruned)       console.log(`  Pruned     : ${col(C.gray, String(r.pruned))} stale memories`);
@@ -1975,9 +2005,9 @@ async function cmdDream() {
     console.log('');
   } catch (e) {
     if (e.code === 'ECONNREFUSED') {
-      console.error(col(C.red, `  ✗ Both autoDream (7895) and memory matrix (7880) offline. Run \`purpclaw start\`.\n`));
+      console.error(col(C.red, `  [X] Both autoDream (7895) and memory matrix (7880) offline. Run \`purpclaw start\`.\n`));
     } else {
-      console.error(col(C.red, `  ✗ ${e.message}\n`));
+      console.error(col(C.red, `  [X] ${e.message}\n`));
     }
   }
 }
@@ -2054,15 +2084,15 @@ async function cmdLora(args) {
     const personalTotal = personalStats.corrections + personalStats.preferences + personalStats.edits;
     console.log(`  \\x1b[36mpersonal data:\\x1b[0m   ${personalTotal} examples (${personalStats.corrections} corrections, ${personalStats.preferences} preferences, ${personalStats.edits} edits)`);
     if (personalTotal >= 10) {
-      console.log(`  \\x1b[32m✓\\x1b[0m  personal data ready. run: \\x1b[36mpurpclaw lora train --personal\\x1b[0m`);
+      console.log(`  \\x1b[32m[OK]\\x1b[0m  personal data ready. run: \\x1b[36mpurpclaw lora train --personal\\x1b[0m`);
     } else if (personalTotal > 0) {
       console.log(`  \\x1b[33m⟳\\x1b[0m  collecting personal data... (${personalTotal}/10, need ${10-personalTotal} more)`);
     } else {
-      console.log(`  \\x1b[90m○\\x1b[0m  no personal data yet. use PurpClaw normally — corrections auto-capture`);
+      console.log(`  \\x1b[90m[o]\\x1b[0m  no personal data yet. use PurpClaw normally — corrections auto-capture`);
     }
     console.log('');
     if (examples < 10 && personalTotal < 10) {
-      console.log(`  \\x1b[33m⚠\\x1b[0m  need at least 10 examples to train (general or personal). let the runtime accumulate.`);
+      console.log(`  \\x1b[33m[!]\\x1b[0m  need at least 10 examples to train (general or personal). let the runtime accumulate.`);
     }
     console.log('');
     return;
@@ -2074,7 +2104,7 @@ async function cmdLora(args) {
       const pd = require(path.join(PURP_DIR, 'lib', 'training', 'personal-dataset'));
       const exported = pd.exportToFile('chatml');
       if (!exported.ready) {
-        console.log(`  \\x1b[33m⚠\\x1b[0m  ${exported.reason}`);
+        console.log(`  \\x1b[33m[!]\\x1b[0m  ${exported.reason}`);
         console.log(`  \\x1b[90mUse PurpClaw normally — every correction auto-captures to ${pd.FEEDBACK_DIR}\\x1b[0m`);
         console.log('');
         return;
@@ -2104,10 +2134,10 @@ async function cmdLora(args) {
       child.on('exit', code => {
         console.log('');
         if (code === 0) {
-          console.log(`  \\x1b[32m✓\\x1b[0m  Personal LoRA training complete.`);
+          console.log(`  \\x1b[32m[OK]\\x1b[0m  Personal LoRA training complete.`);
           console.log(`  \\x1b[90mYour model now knows your preferences. Every correction made it smarter.\\x1b[0m`);
         } else {
-          console.log(`  \\x1b[31m✗\\x1b[0m  personal training exited with code ${code}`);
+          console.log(`  \\x1b[31m[X]\\x1b[0m  personal training exited with code ${code}`);
         }
         console.log('');
       });
@@ -2128,10 +2158,10 @@ async function cmdLora(args) {
     child.on('exit', code => {
       console.log('');
       if (code === 0) {
-        console.log(`  \\x1b[32m✓\\x1b[0m  LoRA pipeline complete.`);
+        console.log(`  \\x1b[32m[OK]\\x1b[0m  LoRA pipeline complete.`);
         console.log(`  \\x1b[90mnext:\\x1b[0m  pm2 restart purpclaw-api  \\x1b[90m— to pick up the new LLM_MODEL\\x1b[0m`);
       } else {
-        console.log(`  \\x1b[31m✗\\x1b[0m  pipeline exited with code ${code}`);
+        console.log(`  \\x1b[31m[X]\\x1b[0m  pipeline exited with code ${code}`);
       }
       console.log('');
     });
@@ -2148,7 +2178,7 @@ async function cmdForge(args) {
   try {
     forgeLib = require(path.join(PURP_DIR, 'lib', 'persona-forge.js'));
   } catch (e) {
-    console.error(col(C.red, `  ✗ persona-forge.js not found: ${e.message}\n`));
+    console.error(col(C.red, `  [X] persona-forge.js not found: ${e.message}\n`));
     return;
   }
 
@@ -2158,7 +2188,7 @@ async function cmdForge(args) {
   try {
     soul = forgeLib.drawSoul();
   } catch (e) {
-    console.error(col(C.red, `  ✗ Gacha failed: ${e.message}\n  Is Python available? Set PYTHON_BIN in .env.\n`));
+    console.error(col(C.red, `  [X] Gacha failed: ${e.message}\n  Is Python available? Set PYTHON_BIN in .env.\n`));
     return;
   }
 
@@ -2198,12 +2228,12 @@ async function cmdForge(args) {
   try {
     result = forgeLib.forge(agentName, soul);
   } catch (e) {
-    console.error(col(C.red, `  ✗ Forge failed: ${e.message}\n`));
+    console.error(col(C.red, `  [X] Forge failed: ${e.message}\n`));
     return;
   }
 
   // Report
-  console.log(`  ${col(C.green, '✓')} Agent forged: ${col(C.bold, agentName)} (${result.slug})`);
+  console.log(`  ${col(C.green, '[OK]')} Agent forged: ${col(C.bold, agentName)} (${result.slug})`);
   console.log(`  ${col(C.dim, 'Directory')} : ${result.dir}`);
   result.files.forEach(f => console.log(`  ${col(C.gray, '·')} ${f}`));
   console.log('');
@@ -2320,7 +2350,7 @@ async function cmdInitWizard(args) {
       const redactor = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
       const result = redactor.sanitizeApiKey(apiKey);
       if (result.warnings.length) {
-        console.log(col(C.yellow, '  ⚠  key sanitiser noticed:'));
+        console.log(col(C.yellow, '  [!]  key sanitiser noticed:'));
         for (const w of result.warnings) console.log(col(C.gray, `     · ${w}`));
       }
       apiKey = result.value;
@@ -2334,12 +2364,12 @@ async function cmdInitWizard(args) {
       const redactor = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
       const result = redactor.sanitizeApiKey(apiKey);
       if (result.warnings.length) {
-        console.log(col(C.yellow, `  ⚠  key sanitiser noticed:`));
+        console.log(col(C.yellow, `  [!]  key sanitiser noticed:`));
         for (const w of result.warnings) console.log(col(C.gray, `     · ${w}`));
       }
       apiKey = result.value;
       if (!result.ok) {
-        console.log(col(C.red, `  ✗ key looks malformed (length ${apiKey.length}); proceeding but auth will likely fail.`));
+        console.log(col(C.red, `  [X] key looks malformed (length ${apiKey.length}); proceeding but auth will likely fail.`));
         console.log(col(C.gray, '     Re-run: purpclaw init --wizard'));
       }
       console.log(col(C.gray, `  Stored as: ${redactor.maskForDisplay(apiKey)}  (length ${apiKey.length})`));
@@ -2559,7 +2589,7 @@ async function cmdInit(args) {
 
   console.log(col(C.bold, '  CHECKS\n'));
   for (const c of checks) {
-    const icon = c.ok ? col(C.green, '  ✓') : col(C.red, '  ✗');
+    const icon = c.ok ? col(C.green, '  [OK]') : col(C.red, '  [X]');
     const hint = c.hint ? col(C.gray, `  ← ${c.hint}`) : '';
     console.log(`${icon}  ${c.label}${hint}`);
   }
@@ -2569,7 +2599,7 @@ async function cmdInit(args) {
     console.log(`\n${col(C.bold, '  SERVICES (running)')}`)
     for (const r of svcResults) {
       const s = r.value || { name: '?', ok: false };
-      const icon = s.ok ? col(C.green, '  ✓') : col(C.gray, '  ·');
+      const icon = s.ok ? col(C.green, '  [OK]') : col(C.gray, '  ·');
       console.log(`${icon}  ${s.name.padEnd(16)}${col(C.gray, s.ok ? 'online' : 'offline')}`);
     }
   } else {
@@ -2579,12 +2609,12 @@ async function cmdInit(args) {
   // ── Result ───────────────────────────────────────────────────────────────────
   console.log('');
   if (issues.length === 0) {
-    console.log(col(C.green + C.bold, '  ✓ All checks passed!\n'));
+    console.log(col(C.green + C.bold, '  [OK] All checks passed!\n'));
     console.log(`  ${col(C.cyan,  'purpclaw start')}   — boot the full stack`);
     console.log(`  ${col(C.cyan,  'purpclaw chat')}    — open the REPL`);
     console.log(`  ${col(C.cyan,  'purpclaw run "<task>"')} — send a task to the swarm`);
   } else {
-    console.log(col(C.yellow + C.bold, `  ⚠ ${issues.length} issue${issues.length > 1 ? 's' : ''} to fix:\n`));
+    console.log(col(C.yellow + C.bold, `  [!] ${issues.length} issue${issues.length > 1 ? 's' : ''} to fix:\n`));
     for (const issue of issues) console.log(`  ${col(C.yellow, '·')}  ${issue}`);
 
     if (!envExists) {
@@ -2628,10 +2658,10 @@ async function cmdInit(args) {
 
     try {
       fs.writeFileSync(envPath, template, 'utf8');
-      console.log(col(C.green, `  ✓ .env template written to ${envPath}`));
+      console.log(col(C.green, `  [OK] .env template written to ${envPath}`));
       console.log(col(C.gray,  '  Edit it with your API key, then run `purpclaw init` again to verify.\n'));
     } catch (e) {
-      console.error(col(C.red, `  ✗ Could not write .env: ${e.message}\n`));
+      console.error(col(C.red, `  [X] Could not write .env: ${e.message}\n`));
     }
   }
 }
@@ -2648,7 +2678,7 @@ async function cmdLogs(args) {
   });
   child.on('close', code => process.exit(code || 0));
   child.on('error', () => {
-    console.error(col(C.red, '  ✗ PM2 not found. Install: npm install -g pm2'));
+    console.error(col(C.red, '  [X] PM2 not found. Install: npm install -g pm2'));
     process.exit(1);
   });
 }
@@ -2664,12 +2694,12 @@ async function cmdChat(args) {
   console.log(`  Orchestrator ${tick(orchOnline)}   Memory ${tick(memOnline)}\n`);
 
   if (!orchOnline) {
-    console.log(col(C.yellow, '  ⚠ Orchestrator is offline — agent routing unavailable.'));
+    console.log(col(C.yellow, '  [!] Orchestrator is offline — agent routing unavailable.'));
     console.log(col(C.gray,   '  Run `purpclaw start` in another terminal to enable full swarm.\n'));
   }
 
   if (!fs.existsSync(NANOCLAW)) {
-    console.error(col(C.red, `  ✗ nanoclaw.js not found at ${NANOCLAW}`));
+    console.error(col(C.red, `  [X] nanoclaw.js not found at ${NANOCLAW}`));
     process.exit(1);
   }
 
@@ -2693,7 +2723,7 @@ async function cmdChat(args) {
 
   child.on('close', code => process.exit(code || 0));
   child.on('error', e => {
-    console.error(col(C.red, `  ✗ Failed to launch nanoclaw: ${e.message}`));
+    console.error(col(C.red, `  [X] Failed to launch nanoclaw: ${e.message}`));
     process.exit(1);
   });
 }
@@ -2860,7 +2890,7 @@ async function cmdConfig(args) {
     const key   = args[1].toUpperCase();
     const value = args.slice(2).join(' ');
     if (!value) {
-      console.log(col(C.red, `  ✗ Usage: purpclaw config set ${key} <value>`));
+      console.log(col(C.red, `  [X] Usage: purpclaw config set ${key} <value>`));
       return;
     }
     writeEnvKey(key, value);
@@ -3093,10 +3123,10 @@ async function cmdDoctor(args) {
     // Detect split-brain conditions
     let detail = null;
     if (online && pm2Available && pm2Name && !pm2Online) {
-      detail = `online :${service.healthPort}  ⚠ ORPHAN (not under PM2)`;
+      detail = `online :${service.healthPort}  [!] ORPHAN (not under PM2)`;
       orphans.push({ name: service.name, port: service.healthPort, pm2: pm2Name });
     } else if (pm2Info && pm2Info.restarts > 50) {
-      detail = `online :${service.healthPort}  ⚠ ${pm2Info.restarts} restarts (crash loop history)`;
+      detail = `online :${service.healthPort}  [!] ${pm2Info.restarts} restarts (crash loop history)`;
       crashLoops.push({ name: service.name, restarts: pm2Info.restarts, pm2: pm2Name });
     } else if (online) {
       detail = `online :${service.healthPort}${service.healthPath}` + (pm2Online ? `  (pm2 pid ${pm2Info.pid})` : '');
@@ -3119,7 +3149,7 @@ async function cmdDoctor(args) {
 
   // ── Split-brain summary ────────────────────────────────────────────────────
   if (orphans.length) {
-    console.log('\n  ' + col(C.yellow + C.bold, '⚠  ORPHAN PROCESSES DETECTED'));
+    console.log('\n  ' + col(C.yellow + C.bold, '[!]  ORPHAN PROCESSES DETECTED'));
     console.log(col(C.gray, '  These services answer on their port but PM2 does NOT manage them.'));
     console.log(col(C.gray, '  They will not auto-restart on crash and they block PM2 siblings.'));
     for (const o of orphans) {
@@ -3130,7 +3160,7 @@ async function cmdDoctor(args) {
     console.log(col(C.cyan,  '             purpclaw safe-start ' + orphans.map(o => o.pm2.replace('purpclaw-', '')).join(' ')));
   }
   if (crashLoops.length) {
-    console.log('\n  ' + col(C.yellow + C.bold, '⚠  CRASH-LOOP HISTORY'));
+    console.log('\n  ' + col(C.yellow + C.bold, '[!]  CRASH-LOOP HISTORY'));
     console.log(col(C.gray, '  These services have restarted >50 times — investigate the cause.'));
     for (const cl of crashLoops) {
       console.log(`    · ${col(C.yellow, cl.name.padEnd(26))} ${cl.restarts} restarts (${cl.pm2})`);
@@ -3172,9 +3202,9 @@ function cmdReject(args) {
   const approvalId = args[0];
   const result = gov.setApprovalStatus(PURP_DIR, approvalId, 'rejected');
   if (!result.id) {
-    console.log(col(C.red, `  ✗ Approval ${approvalId} not found`));
+    console.log(col(C.red, `  [X] Approval ${approvalId} not found`));
   } else {
-    console.log(col(C.yellow, `  ✗ Rejected: ${approvalId}`));
+    console.log(col(C.yellow, `  [X] Rejected: ${approvalId}`));
   }
 }
 
@@ -3199,7 +3229,7 @@ async function cmdContext(args) {
 
   if (sub === 'stats') {
     const s = await ctxGet('/context/stats');
-    if (!s) return console.log(col(C.red, '  ✗ context-bus offline on :' + CTX_PORT));
+    if (!s) return console.log(col(C.red, '  [X] context-bus offline on :' + CTX_PORT));
     console.log('');
     console.log(col(C.bold, '  CONTEXT BUS · CROSS-AGENT STATE'));
     console.log('  ─────────────────────────────────────────────────');
@@ -3216,7 +3246,7 @@ async function cmdContext(args) {
 
   if (sub === 'team' && rest) {
     const team = await ctxGet('/context/team/' + encodeURIComponent(rest));
-    if (!team) return console.log(col(C.red, '  ✗ context-bus offline'));
+    if (!team) return console.log(col(C.red, '  [X] context-bus offline'));
     if (!team.length) return console.log(col(C.gray, `  No active team for "${rest}"`));
     console.log('');
     console.log(col(C.bold, `  TEAM: ${rest.toUpperCase()}`));
@@ -3230,7 +3260,7 @@ async function cmdContext(args) {
 
   if (sub === 'agent' && rest) {
     const a = await ctxGet('/context/agent/' + encodeURIComponent(rest));
-    if (!a) return console.log(col(C.red, '  ✗ context-bus offline'));
+    if (!a) return console.log(col(C.red, '  [X] context-bus offline'));
     if (a.not_found) return console.log(col(C.gray, `  Agent "${rest}" not found`));
     console.log('');
     console.log(col(C.bold, `  AGENT: ${rest}`));
@@ -3241,7 +3271,7 @@ async function cmdContext(args) {
 
   if (sub === 'workflows') {
     const wf = await ctxGet('/context/workflows');
-    if (!wf) return console.log(col(C.red, '  ✗ context-bus offline'));
+    if (!wf) return console.log(col(C.red, '  [X] context-bus offline'));
     const keys = Object.keys(wf);
     if (!keys.length) return console.log(col(C.gray, '  No workflows yet'));
     console.log('');
@@ -3260,9 +3290,9 @@ async function cmdContext(args) {
     return new Promise(resolve => {
       const req = http.request({ hostname: '127.0.0.1', port: CTX_PORT, path: '/context/lock', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, res => {
         let d = ''; res.on('data', c => d += c);
-        res.on('end', () => { try { const r = JSON.parse(d); console.log(col(r.success ? C.green : C.red, `  ${r.success ? '✓' : '✗'} ${resourceId} ${r.success ? 'locked' : (r.reason || r.lockedBy)}`)); } catch { console.log(col(C.red, '  lock failed')); } resolve(); });
+        res.on('end', () => { try { const r = JSON.parse(d); console.log(col(r.success ? C.green : C.red, `  ${r.success ? '[OK]' : '[X]'} ${resourceId} ${r.success ? 'locked' : (r.reason || r.lockedBy)}`)); } catch { console.log(col(C.red, '  lock failed')); } resolve(); });
       });
-      req.on('error', e => { console.log(col(C.red, '  ✗ ' + e.message)); resolve(); });
+      req.on('error', e => { console.log(col(C.red, '  [X] ' + e.message)); resolve(); });
       req.write(body); req.end();
     });
   }
@@ -3319,7 +3349,7 @@ for (const s of res.results) {
       }
       console.log(col(C.gray, `\n  Try: purpclaw pool show <name>\n`));
     } catch (e) {
-      console.error(col(C.red, `  ✗ ${e.message} — is the pool running on :${POOL_PORT}? Try \`purpclaw doctor\`.\n`));
+      console.error(col(C.red, `  [X] ${e.message} — is the pool running on :${POOL_PORT}? Try \`purpclaw doctor\`.\n`));
     }
     return;
   }
@@ -3329,12 +3359,12 @@ for (const s of res.results) {
     sectionHead(`  SKILL · ${rest}`);
     try {
       const res = await poolReq('GET', `/pool/skills/${encodeURIComponent(rest)}`);
-      if (res.error) { console.error(col(C.red, `  ✗ ${res.error}\n`)); return; }
+      if (res.error) { console.error(col(C.red, `  [X] ${res.error}\n`)); return; }
       console.log(col(C.gray, `  ${res.description || ''}\n`));
       console.log(res.content);
       console.log('');
     } catch (e) {
-      console.error(col(C.red, `  ✗ ${e.message}\n`));
+      console.error(col(C.red, `  [X] ${e.message}\n`));
     }
     return;
   }
@@ -3358,7 +3388,7 @@ for (const s of res.results) {
       }
       console.log('');
     } catch (e) {
-      console.error(col(C.red, `  ✗ ${e.message}\n`));
+      console.error(col(C.red, `  [X] ${e.message}\n`));
     }
     return;
   }
@@ -3401,7 +3431,7 @@ for (const s of res.results) {
         console.log('');
       }
     } catch (e) {
-      console.error(col(C.red, `  ✗ pool offline (:${POOL_PORT})  —  ${e.message}\n`));
+      console.error(col(C.red, `  [X] pool offline (:${POOL_PORT})  —  ${e.message}\n`));
       console.log(col(C.gray, '  Boot it:  purpclaw start  (or)  npx pm2 start ecosystem.config.js --only purpclaw-pool\n'));
     }
     return;
@@ -3418,7 +3448,7 @@ for (const s of res.results) {
       }
       console.log('');
     } catch (e) {
-      console.error(col(C.red, `  ✗ ${e.message}\n`));
+      console.error(col(C.red, `  [X] ${e.message}\n`));
     }
     return;
   }
@@ -3806,7 +3836,7 @@ async function cmdSquad(args) {
   console.log('');
   console.log('  === Pet Squad ===');
   for (const pet of status.pets) {
-    const m = pet.mood === 'happy' ? '●' : pet.mood === 'concerned' ? '○' : '◌';
+    const m = pet.mood === 'happy' ? '[*]' : pet.mood === 'concerned' ? '[o]' : '◌';
     console.log(`  ${m} ${pet.slug} (${pet.name})`);
     console.log(`     ${pet.personality} · mood: ${pet.mood} · chats: ${pet.interactions}`);
   }
@@ -3821,7 +3851,7 @@ function cmdTui(args = []) {
   if (sub === 'ask') {
     const TUI_ASK = path.join(PURP_DIR, 'scripts', 'tui-ask.js');
     if (!fs.existsSync(TUI_ASK)) {
-      console.error(col(C.red, `\n  ✗ scripts/tui-ask.js not found at ${TUI_ASK}\n`));
+      console.error(col(C.red, `\n  [X] scripts/tui-ask.js not found at ${TUI_ASK}\n`));
       process.exit(1);
     }
     const child = trackedSpawn(process.execPath, [TUI_ASK, ...args.slice(1)], {
@@ -3832,12 +3862,12 @@ function cmdTui(args = []) {
       cwd  : PURP_DIR,
     });
     child.on('close', code => process.exit(code || 0));
-    child.on('error', e => { console.error(col(C.red, `\n  ✗ tui-ask failed: ${e.message}\n`)); process.exit(1); });
+    child.on('error', e => { console.error(col(C.red, `\n  [X] tui-ask failed: ${e.message}\n`)); process.exit(1); });
     return;
   }
   const TUI_SCRIPT = path.join(PURP_DIR, 'scripts', 'tui.js');
   if (!fs.existsSync(TUI_SCRIPT)) {
-    console.error(col(C.red, `\n  ✗ scripts/tui.js not found at ${TUI_SCRIPT}\n`));
+    console.error(col(C.red, `\n  [X] scripts/tui.js not found at ${TUI_SCRIPT}\n`));
     process.exit(1);
   }
   const child = trackedSpawn(process.execPath, [TUI_SCRIPT, ...args], {
@@ -3849,7 +3879,7 @@ function cmdTui(args = []) {
   });
   child.on('close', code => process.exit(code || 0));
   child.on('error', e => {
-    console.error(col(C.red, `  ✗ TUI failed to launch: ${e.message}`));
+    console.error(col(C.red, `  [X] TUI failed to launch: ${e.message}`));
     process.exit(1);
   });
 }
@@ -4154,7 +4184,7 @@ async function main() {
         console.log(col(C.gray, `     ${id} — ${info.source === 'local' ? 'local' : info.key}`));
       });
     } else {
-      console.log(col(C.yellow, '  ⚠ No API keys detected.'));
+      console.log(col(C.yellow, '  [!] No API keys detected.'));
     }
 
     console.log('');
@@ -4189,14 +4219,14 @@ async function main() {
         } catch {}
 
         if (!backendOk) {
-          console.log(col(C.yellow, '  ⚠ Backend offline — starting services...\n'));
+          console.log(col(C.yellow, '  [!] Backend offline — starting services...\n'));
           try {
             execSync('start cmd /c purpclaw start', { detached: true, stdio: 'ignore', windowsHide: true });
           } catch {}
           console.log(col(C.gray, '  Run `purpclaw start` manually if the browser does not open.\n'));
           console.log(col(C.green, '  Opening WebUI at http://localhost:3030 anyway...\n'));
         } else {
-          console.log(col(C.green, '  ✓ Backend online\n'));
+          console.log(col(C.green, '  [OK] Backend online\n'));
         }
 
         execSync('start http://localhost:3030', { windowsHide: true });
@@ -4348,7 +4378,7 @@ async function cmdWatch(args = []) {
     const route = (t.route || '').slice(0, 22).padEnd(22);
     const detail = (t.detail || '').slice(0, 100);
     const job = (t.jobId || '').slice(0, 14).padEnd(14);
-    console.log(`  ${col(c, '●')} ${col(C.gray, ts)} ${col(C.bold, job)} ${col(C.gray, src)} ${col(c, (stage || 'event').padEnd(11))} ${col(C.gray, route)} ${col(C.gray, detail)}`);
+    console.log(`  ${col(c, '[*]')} ${col(C.gray, ts)} ${col(C.bold, job)} ${col(C.gray, src)} ${col(c, (stage || 'event').padEnd(11))} ${col(C.gray, route)} ${col(C.gray, detail)}`);
   }
   // Replay tail if asked (or a default small tail so you see recent context)
   const initialTail = tailN || 8;
@@ -4398,7 +4428,7 @@ async function cmdFlow(args = []) {
     const ts = String(t.at || '').slice(11, 19);
     const route = (t.route || '').slice(0, 24).padEnd(24);
     const detail = (t.detail || '').slice(0, 120);
-    console.log(`  ${col(c, '●')} ${col(C.gray, ts)} ${col(c, (stage || 'event').padEnd(11))} ${col(C.gray, route)} ${col(C.gray, detail)}`);
+    console.log(`  ${col(c, '[*]')} ${col(C.gray, ts)} ${col(c, (stage || 'event').padEnd(11))} ${col(C.gray, route)} ${col(C.gray, detail)}`);
     if (status === 'done' || status === 'failed') done = true;
   }
   for (const t of (trace.recent(400))) render(t);
@@ -4513,7 +4543,7 @@ async function cmdChain(args = []) {
     if (!rows.length) { console.log(col(C.gray, `  (no chain events yet)\n`)); return; }
     for (const r of rows.slice(-20)) {
       const c = r.status === 'failed' ? C.red : r.status === 'done' ? C.green : C.cyan;
-      console.log(`  ${col(c, '●')} ${col(C.gray, String(r.at || '').slice(11, 19))} ${col(C.bold, (r.jobId || '?').slice(0, 14).padEnd(14))} ${col(c, (String(r.action || '').replace('chain.', '') || '').padEnd(10))} ${col(C.gray, (r.route || '').padEnd(24))} ${col(C.gray, (r.detail || '').slice(0, 70))}`);
+      console.log(`  ${col(c, '[*]')} ${col(C.gray, String(r.at || '').slice(11, 19))} ${col(C.bold, (r.jobId || '?').slice(0, 14).padEnd(14))} ${col(c, (String(r.action || '').replace('chain.', '') || '').padEnd(10))} ${col(C.gray, (r.route || '').padEnd(24))} ${col(C.gray, (r.detail || '').slice(0, 70))}`);
     }
     console.log('');
     return;
@@ -4523,7 +4553,7 @@ async function cmdChain(args = []) {
   console.log(col(C.cyan, `  ${v.jobId} — status=${v.status}, ${v.steps.length} step(s)`));
   for (const s of v.steps) {
     const c = s.status === 'failed' ? C.red : s.status === 'done' ? C.green : C.cyan;
-    console.log(`    ${col(c, '●')} ${col(C.bold, s.stage.padEnd(11))} ${col(c, (s.area || '').padEnd(16))} ${col(C.gray, s.detail || '')}`);
+    console.log(`    ${col(c, '[*]')} ${col(C.bold, s.stage.padEnd(11))} ${col(c, (s.area || '').padEnd(16))} ${col(C.gray, s.detail || '')}`);
   }
   if (v.failedAt) console.log(col(C.red, `\n  FAILED AT ${v.failedAt.area} — ${v.failedAt.detail}\n`));
   else if (v.complete) console.log(col(C.green, `\n  DONE\n`));
@@ -4545,7 +4575,7 @@ async function cmdReceipts(args = []) {
     const s = led.stats();
     console.log(col(C.cyan, `  total receipts: ${s.total || 0}`));
     console.log(`    ${col(C.green, 'verified')}: ${s.verified || 0}   ${col(C.red, 'failed')}: ${s.failed || 0}   ${col(C.yellow, 'rolled-back')}: ${s.rolledBack || 0}`);
-    if (s.fakeGreens > 0) console.log(col(C.red, `    ⚠ fake greens: ${s.fakeGreens} (status=verified/applied but verification!=pass)`));
+    if (s.fakeGreens > 0) console.log(col(C.red, `    [!] fake greens: ${s.fakeGreens} (status=verified/applied but verification!=pass)`));
     else console.log(col(C.green, `    fake greens: 0 (no receipts claim pass without proof)`));
     if (s.byStatus) { console.log(col(C.gray, `\n  by status:`)); for (const [k, v] of Object.entries(s.byStatus)) console.log(col(C.gray, `    ${k}: ${v}`)); }
     if (s.byVerification) { console.log(col(C.gray, `\n  by verification:`)); for (const [k, v] of Object.entries(s.byVerification)) console.log(col(C.gray, `    ${k}: ${v}`)); }
@@ -4562,7 +4592,7 @@ async function cmdReceipts(args = []) {
   for (const r of rows.slice(-30)) {
     const c = r.status === 'verified' ? C.green : r.status === 'failed' ? C.red : C.gray;
     const when = String(r.at || '').slice(11, 19);
-    console.log(`  ${col(c, '●')} ${col(C.gray, when)} ${col(C.bold, (r.agent || '?').slice(0, 14).padEnd(14))} ${col(c, (r.status || '').padEnd(9))} ${col(C.gray, (r.claim || r.action || '').slice(0, 90))}`);
+    console.log(`  ${col(c, '[*]')} ${col(C.gray, when)} ${col(C.bold, (r.agent || '?').slice(0, 14).padEnd(14))} ${col(c, (r.status || '').padEnd(9))} ${col(C.gray, (r.claim || r.action || '').slice(0, 90))}`);
   }
   console.log(col(C.gray, `\n  showing ${Math.min(30, rows.length)} of ${rows.length}\n`));
 }
@@ -4586,7 +4616,7 @@ async function cmdPurpflow(args = []) {
   const loop = await pf.run(mode, objective, {});
   for (const r of loop.receipts) {
     const c = r.result === 'pass' ? C.green : r.result === 'fail' ? C.red : C.gray;
-    console.log(`  ${col(c, '●')} ${col(C.bold, r.step)} ${col(c, r.result || 'info')} — ${col(C.gray, r.detail)}`);
+    console.log(`  ${col(c, '[*]')} ${col(C.bold, r.step)} ${col(c, r.result || 'info')} — ${col(C.gray, r.detail)}`);
     for (const e of (r.evidence || [])) console.log(col(C.gray, `      ${e}`));
   }
   const done = loop.status === 'done';
@@ -4609,7 +4639,7 @@ async function cmdPulse(args = []) {
     if (r.findings && r.findings.length) {
       for (const f of r.findings) {
         const sev = f.severity === 'error' ? C.red : f.severity === 'warn' ? C.yellow : C.green;
-        console.log(`  ${col(sev, '●')} ${col(C.bold, f.title)}: ${col(C.gray, f.body)}`);
+        console.log(`  ${col(sev, '[*]')} ${col(C.bold, f.title)}: ${col(C.gray, f.body)}`);
       }
     } else {
       console.log(col(C.green, '  No new findings. Stack is nominal.'));
@@ -4619,13 +4649,13 @@ async function cmdPulse(args = []) {
 
   if (sub === 'history') {
     const r = await httpJSON('GET', 7780, '/api/pulse/notifications?limit=20');
-    if (r.error) { console.log(col(C.red, '  ✗ ' + r.error)); return 1; }
+    if (r.error) { console.log(col(C.red, '  [X] ' + r.error)); return 1; }
     const nf = r.notifications || [];
     console.log(col(C.gray, `  Last ${nf.length} findings (live from /api/pulse/notifications):`));
     for (const n of nf) {
       const sev = n.severity === 'error' ? C.red : n.severity === 'warn' ? C.yellow : C.green;
       const ts = n.ts ? n.ts.substring(11, 19) : '';
-      console.log(`  ${col(sev, '●')} ${col(C.gray, ts)} ${col(C.bold, n.title)} ${col(C.gray, '(' + (n.kind || '') + ')')}`);
+      console.log(`  ${col(sev, '[*]')} ${col(C.gray, ts)} ${col(C.bold, n.title)} ${col(C.gray, '(' + (n.kind || '') + ')')}`);
       console.log(`     ${col(C.gray, n.body)}`);
     }
     return 0;
@@ -4633,7 +4663,7 @@ async function cmdPulse(args = []) {
 
   const status = await httpJSON('GET', 7780, '/api/pulse');
   if (status.error) {
-    console.log(col(C.red, '  ✗ Pulse unavailable: ' + status.error));
+    console.log(col(C.red, '  [X] Pulse unavailable: ' + status.error));
     return 1;
   }
   console.log(`  ${col(C.bold, 'Tick')}            ${col(C.white, String(status.tickCount))}`);
@@ -4648,7 +4678,7 @@ async function cmdPulse(args = []) {
     console.log(col(C.gray, '  ── Latest findings ──'));
     for (const n of status.latestNotifications.slice(0, 5)) {
       const sev = n.severity === 'error' ? C.red : n.severity === 'warn' ? C.yellow : C.green;
-      console.log(`  ${col(sev, '●')} ${col(C.bold, n.title)} ${col(C.gray, '(' + n.severity + ')')}`);
+      console.log(`  ${col(sev, '[*]')} ${col(C.bold, n.title)} ${col(C.gray, '(' + n.severity + ')')}`);
       console.log(`     ${col(C.gray, n.body)}`);
     }
   }
@@ -4661,7 +4691,7 @@ async function cmdWhoami() {
   sectionHead('  PURPCLAW WHOAMI — the stack, truthfully');
   const w = await httpJSON('GET', 7780, '/api/whoami');
   if (w.error) {
-    console.log(col(C.red, '  ✗ /api/whoami unavailable: ' + w.error));
+    console.log(col(C.red, '  [X] /api/whoami unavailable: ' + w.error));
     console.log(col(C.gray, '    (unified_api :7780 may be down)'));
     return 1;
   }
@@ -4694,7 +4724,7 @@ async function cmdDoctors(args = []) {
   // 1. Pulse status
   const ps = await httpJSON('GET', 7780, '/api/pulse');
   if (ps.error) {
-    console.log(col(C.red, '  ✗ Pulse: ' + ps.error));
+    console.log(col(C.red, '  [X] Pulse: ' + ps.error));
   } else {
     const down = ps.servicesDown && ps.servicesDown.length;
     const status = down ? col(C.red, down + ' DOWN') : col(C.green, 'ALL GREEN');
@@ -4719,7 +4749,7 @@ async function cmdDoctors(args = []) {
     // v2.1 — httpJSON returns the parsed body. A healthy response has 'status' or
     // no error key. A failed one has 'error' set.
     const ok = r && !r.error && (r.status === 'healthy' || r.ok === true || r.tickCount !== undefined || Object.keys(r).length > 0);
-    const tag = ok ? col(C.green, '●') : col(C.red, '○');
+    const tag = ok ? col(C.green, '[*]') : col(C.red, '[o]');
     const label = r && r.error ? col(C.red, r.error.substring(0, 30)) : (ok ? col(C.gray, 'up') : col(C.red, 'down'));
     console.log(`    ${tag}  ${t.name.padEnd(15)} :${t.port}  ${label}`);
   }
@@ -4730,7 +4760,7 @@ async function cmdDoctors(args = []) {
     console.log(col(C.gray, '  ── Recent findings ──'));
     for (const n of ps.latestNotifications.slice(0, 5)) {
       const sev = n.severity === 'error' ? C.red : n.severity === 'warn' ? C.yellow : C.green;
-      console.log(`    ${col(sev, '●')} ${col(C.bold, n.title)} ${col(C.gray, '(' + n.severity + ')')}`);
+      console.log(`    ${col(sev, '[*]')} ${col(C.bold, n.title)} ${col(C.gray, '(' + n.severity + ')')}`);
       console.log(`      ${col(C.gray, n.body)}`);
     }
   }
@@ -4750,6 +4780,480 @@ async function cmdDoctors(args = []) {
   }
 
   // Helper: dispatches the command, optionally wrapped in mochi status bars
+// cmdUpdate — self-update from GitHub releases
+async function cmdUpdate(args) {
+  const https = require('https');
+  const fs = require('fs');
+  const os = require('os');
+  const path = require('path');
+  const { execSync } = require('child_process');
+
+  const check = args.includes('--check');
+  const force = args.includes('--force');
+  const dryRun = args.includes('--dry-run');
+
+  // Get current version from package.json
+  const pkg = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'package.json'), 'utf-8'));
+  const currentVersion = pkg.version || '0.0.0';
+
+  console.log(`\n  ${col(C.cyan + C.bold, 'purpclaw update')}`);
+  console.log(`    current version : ${col(C.white, currentVersion)}`);
+
+  // Fetch latest release from GitHub
+  console.log(`    ${col(C.gray, 'Checking GitHub…')}`);
+  let latestVersion = null;
+  try {
+    latestVersion = await new Promise((resolve, reject) => {
+      const req = https.get({
+        hostname: 'api.github.com',
+        path: '/repos/weemadscotsman/purpclaw/releases/latest',
+        headers: { 'User-Agent': 'purpclaw/' + currentVersion, 'Accept': 'application/vnd.github+json' },
+      }, (res) => {
+        if (res.statusCode === 403) { reject(new Error('rate limited')); return; }
+        if (res.statusCode !== 200) { reject(new Error('HTTP ' + res.statusCode)); return; }
+        let data = '';
+        res.on('data', d => data += d);
+        res.on('end', () => {
+          try { resolve(JSON.parse(data).tag_name || null); } catch { resolve(null); }
+        });
+      });
+      req.on('error', reject);
+      req.setTimeout(8000, () => { req.destroy(); reject(new Error('timeout')); });
+    });
+  } catch (e) {
+    console.log(`    ${col(C.yellow, '[!] Could not check GitHub: ' + e.message)}`);
+    console.log(`    ${col(C.gray, 'Install manually: npm install -g purpclaw')}`);
+    console.log('');
+    return;
+  }
+
+  if (!latestVersion) {
+    console.log(`    ${col(C.yellow, '[!] Could not determine latest version')}`);
+    return;
+  }
+
+  latestVersion = latestVersion.replace(/^v/, '');
+
+  const current = currentVersion.split('.').map(Number);
+  const latest = latestVersion.split('.').map(Number);
+  const outdated = (latest[0] > current[0]) || (latest[0] === current[0] && latest[1] > current[1]) || (latest[0] === current[0] && latest[1] === current[1] && latest[2] > current[2]);
+
+  console.log(`    latest version  : ${outdated ? col(C.yellow, latestVersion) : col(C.green, latestVersion)}`);
+
+  if (check) {
+    if (!outdated) {
+      console.log(`\n  ${col(C.green, '[OK] You are on the latest version')}`);
+    } else {
+      console.log(`\n  ${col(C.yellow, '↑ Update available: ' + currentVersion + ' → ' + latestVersion)}`);
+      console.log(`  ${col(C.gray, 'Run: purpclaw update [--force]')}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (!outdated && !force) {
+    console.log(`\n  ${col(C.green, '[OK] You are on the latest version')}`);
+    console.log('');
+    return;
+  }
+
+  if (dryRun) {
+    console.log(`\n  ${col(C.cyan, 'Dry run — would update from ' + currentVersion + ' to ' + latestVersion)}`);
+    console.log(`  ${col(C.gray, 'Remove --dry-run to actually update')}`);
+    console.log('');
+    return;
+  }
+
+  // Download and install
+  const tmpDir = path.join(os.tmpdir(), 'purpclaw-update-' + Date.now());
+  fs.mkdirSync(tmpDir);
+  const tarballPath = path.join(tmpDir, 'purpclaw-update.tar.gz');
+
+  console.log(`\n  ${col(C.cyan, '↓ Downloading v' + latestVersion + '…')}`);
+  try {
+    await new Promise((resolve, reject) => {
+      const req = https.get({
+        hostname: 'api.github.com',
+        path: '/repos/weemadscotsman/purpclaw/releases/expanded_assets',
+        headers: { 'User-Agent': 'purpclaw/' + currentVersion, 'Accept': 'application/vnd.github+json' },
+      }, (res) => {
+        // Get redirect
+        if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
+          const u = new URL(res.headers.location);
+          const dl = https.get(u, (r) => {
+            const ws = fs.createWriteStream(tarballPath);
+            r.pipe(ws);
+            ws.on('finish', resolve);
+            ws.on('error', reject);
+          });
+          dl.on('error', reject);
+          dl.setTimeout(30000, () => { dl.destroy(); reject(new Error('download timeout')); });
+          return;
+        }
+        reject(new Error('Expected redirect, got ' + res.statusCode));
+      });
+      req.on('error', reject);
+      req.setTimeout(10000, () => { req.destroy(); reject(new Error('request timeout')); });
+      req.end();
+    });
+  } catch (e) {
+    console.log(`  ${col(C.red, '[X] Download failed: ' + e.message)}`);
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    return;
+  }
+
+  // Extract
+  console.log(`  ${col(C.cyan, '↓ Extracting…')}`);
+  fs.mkdirSync(path.join(tmpDir, 'extracted'));
+  try {
+    execSync(`tar -xzf "${tarballPath}" -C "${path.join(tmpDir, 'extracted')}" --strip-components=1`, { stdio: 'pipe' });
+  } catch (e) {
+    console.log(`  ${col(C.red, '[X] Extract failed')}`);
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+    return;
+  }
+
+  // Install deps
+  console.log(`  ${col(C.cyan, '↓ Installing dependencies…')}`);
+  try {
+    execSync('npm install --production --no-audit --no-fund', {
+      cwd: path.join(tmpDir, 'extracted'), stdio: 'pipe', timeout: 120000,
+    });
+  } catch (e) {
+    console.log(`  ${col(C.yellow, '[!] npm install had issues but continuing…')}`);
+  }
+
+  // Copy bin
+  const srcBin = path.join(tmpDir, 'extracted', 'bin', 'purpclaw.js');
+  const dstBin = path.join(PURP_DIR, 'bin', 'purpclaw.js');
+  if (fs.existsSync(srcBin)) {
+    fs.copyFileSync(dstBin, dstBin + '.backup-' + Date.now());
+    fs.copyFileSync(srcBin, dstBin);
+    console.log(`  ${col(C.green, '[OK] Binaries updated')}`);
+  }
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+  console.log(`\n  ${col(C.green, '[OK] Updated to v' + latestVersion)}`);
+  console.log(`  ${col(C.gray, 'Restart: purpclaw chat')}`);
+  console.log('');
+}
+
+// cmdReview — non-interactive code review over git diffs (Codex exec review parity)
+async function cmdReview(args) {
+  const { execSync } = require('child_process');
+  const path = require('path');
+
+  // Parse flags
+  const flags = {};
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--uncommitted') flags.uncommitted = true;
+    else if (args[i] === '--base') flags.base = args[++i];
+    else if (args[i] === '--commit') flags.commit = args[++i];
+    else if (args[i] === '--prompt') flags.prompt = args.slice(i + 1).join(' ');
+    else if (args[i] === '--json') flags.json = true;
+  }
+
+  if (!flags.uncommitted && !flags.base && !flags.commit && !flags.prompt) {
+    console.log(`\n${col(C.bold, 'purpclaw exec review [options]')}`);
+    console.log(`  ${col(C.cyan, '--uncommitted')}   Review staged + unstaged + untracked changes`);
+    console.log(`  ${col(C.cyan, '--base <branch>')} Review changes from <branch> to HEAD`);
+    console.log(`  ${col(C.cyan, '--commit <sha>')}  Review a single commit`);
+    console.log(`  ${col(C.cyan, '--prompt <text>')} Free-form review with your question`);
+    console.log(`  ${col(C.cyan, '--json')}          Machine-readable output\n`);
+    return;
+  }
+
+  const isJson = !!flags.json;
+
+  // Use Git Bash shell on Windows to run git commands reliably
+  function run(cmd) {
+    const envStr = 'GIT_TERMINAL_PROMPT=0 GIT_PAGER=cat';
+    const shell = 'C:/Program Files/Git/bin/bash.exe';
+    try {
+      const r = execSync(`${envStr} ${cmd}`, {
+        encoding: 'utf-8', timeout: 15000,
+        shell,
+        maxBuffer: 10 * 1024 * 1024,
+      });
+      return r;
+    } catch (e) {
+      if (e.stdout) return e.stdout;
+      return '';
+    }
+  }
+
+  function sizeBadge(lines) {
+    if (lines === 0) return col(C.green, '[green]');
+    if (lines < 20) return col(C.green, `[+${lines}]`);
+    if (lines < 100) return col(C.yellow, `[+${lines}]`);
+    return col(C.red, `[+${lines}]`);
+  }
+
+  function getDiff(selector) {
+    switch (selector) {
+      case 'uncommitted': {
+        const staged = run('git diff --cached --stat 2>/dev/null');
+        // Note: bare `git diff --stat` hangs on Windows — always specify HEAD
+        const unstaged = run('git diff --stat HEAD 2>/dev/null');
+        const untracked = run('git status --porcelain 2>/dev/null')
+          .split('\n').filter(l => l.startsWith('??')).map(l => l.slice(3));
+        return { staged, unstaged, untracked, type: 'uncommitted' };
+      }
+      case 'base': {
+        if (!flags.base) return null;
+        const diff = run(`git diff ${flags.base}...HEAD --stat 2>/dev/null`);
+        return { diff, type: 'base', base: flags.base };
+      }
+      case 'commit': {
+        if (!flags.commit) return null;
+        const show = run(`git show ${flags.commit} --stat 2>/dev/null`);
+        return { show, type: 'commit', sha: flags.commit };
+      }
+      default: return null;
+    }
+  }
+
+  if (flags.prompt) {
+    const diff = run('git diff HEAD 2>/dev/null');
+    const status = run('git status --short 2>/dev/null');
+    const context = `\n=== GIT STATUS ===\n${status}\n=== GIT DIFF ===\n${diff}\n=== END ===`;
+    const body = `Review request:\n\n${flags.prompt}\n\n${context}`;
+    if (isJson) {
+      console.log(JSON.stringify({ ok: true, prompt: flags.prompt, diff_lines: diff.split('\n').length, status_lines: status.split('\n').length }, null, 2));
+    } else {
+      console.log(`\n  ${col(C.cyan + C.bold, 'Code Review')}`);
+      console.log(`    ${diff.split('\n').length} diff lines, ${status.split('\n').length} status lines`);
+      console.log(`    ${col(C.gray, 'Submit to LLM for review:')}`);
+      console.log(`    purpclaw chat "${flags.prompt.slice(0, 100)}..."`);
+    }
+    return;
+  }
+
+  const diff = getDiff(flags.uncommitted ? 'uncommitted' : flags.base ? 'base' : 'commit');
+  if (!diff) return;
+
+  const isUncommitted = diff.type === 'uncommitted';
+
+  if (isJson) {
+    console.log(JSON.stringify({ type: diff.type, ...diff }, null, 2));
+    return;
+  }
+
+  // Summary output
+  console.log(`\n  ${col(C.cyan + C.bold, 'Code Review Summary')}`);
+  if (isUncommitted) {
+    const stagedLines = diff.staged ? diff.staged.trim().split('\n').length : 0;
+    const unstagedLines = diff.unstaged ? diff.unstaged.trim().split('\n').length : 0;
+    console.log(`    staged:     ${sizeBadge(stagedLines)} ${diff.staged || col(C.gray, '(none)')}`);
+    console.log(`    unstaged:   ${sizeBadge(unstagedLines)} ${diff.unstaged ? diff.unstaged.trim().split('\n')[0] : col(C.gray, '(none)')}`);
+    console.log(`    untracked:  ${col(C.gray, diff.untracked.length + ' file(s)')}`);
+    if (diff.untracked.length > 0) {
+      console.log(`      ${diff.untracked.slice(0, 5).map(f => '? ' + f).join('\n      ')}`);
+      if (diff.untracked.length > 5) console.log(`      ${col(C.gray, '… and ' + (diff.untracked.length - 5) + ' more')}`);
+    }
+  } else if (diff.type === 'base') {
+    console.log(`    ${col(C.cyan, diff.base + '...HEAD:')} ${diff.diff.split('\n')[0]}`);
+  } else if (diff.type === 'commit') {
+    console.log(`    ${col(C.cyan, diff.sha + ':')} ${diff.show.split('\n')[0]}`);
+  }
+  console.log('');
+}
+
+
+// cmdPlugins — plugin lifecycle management (install/remove/enable/disable/list)
+async function cmdPlugins(args) {
+  const HR = require(path.join(PURP_DIR, 'lib', 'hooks-runtime'));
+  const fs = require('fs');
+  const { execSync } = require('child_process');
+
+  const sub = (args[0] || 'list').toLowerCase();
+  const PLUGINS_DIR = path.join(PURP_DIR, 'plugins');
+
+  function ensurePluginsDir() {
+    if (!fs.existsSync(PLUGINS_DIR)) fs.mkdirSync(PLUGINS_DIR, { recursive: true });
+  }
+
+  // ── list ─────────────────────────────────────────────────────────────────
+  if (sub === 'list' || sub === 'ls') {
+    const plugins = HR.listPlugins();
+    if (!plugins.length) {
+      console.log(col(C.gray, '\n  no plugins installed.'));
+      console.log(`  Install from:`);
+      console.log(`    purpclaw plugins install <name> --path <dir>`);
+      console.log(`    purpclaw plugins install <name> --git <url>`);
+      return;
+    }
+    console.log(`\n  ${col(C.cyan + C.bold, 'Plugins')}  (${PLUGINS_DIR})`);
+    for (const p of plugins) {
+      const manifest = loadManifest(p.path);
+      const version = manifest ? manifest.version : col(C.gray, '?');
+      const enabled = isEnabled(p.path) ? col(C.green, '[OK]') : col(C.gray, '[o]');
+      const error = manifest === false ? ' ' + col(C.red, '[manifest error]') : '';
+      console.log(`    ${enabled}  ${p.name.padEnd(32)} ${version}${error}`);
+    }
+    console.log(`\n  ${plugins.length} plugin(s) installed`);
+    console.log(`  ${plugins.filter(p => isEnabled(p.path)).length} enabled, ${plugins.filter(p => !isEnabled(p.path)).length} disabled`);
+    console.log(`\n  ${col(C.gray, 'Manage:')}`);
+    console.log(`    purpclaw plugins install <name> [--git <url>] [--path <dir>]`);
+    console.log(`    purpclaw plugins remove <name>`);
+    console.log(`    purpclaw plugins enable <name>`);
+    console.log(`    purpclaw plugins disable <name>`);
+    return;
+  }
+
+  // ── install ───────────────────────────────────────────────────────────────
+  if (sub === 'install') {
+    ensurePluginsDir();
+    let name = null, gitUrl = null, localPath = null;
+
+    for (let i = 1; i < args.length; i++) {
+      if (args[i] === '--git' || args[i] === '-g') gitUrl = args[++i];
+      else if (args[i] === '--path' || args[i] === '-p') localPath = args[++i];
+      else if (!args[i].startsWith('-')) name = args[i];
+    }
+
+    if (!name) {
+      console.log(col(C.red, '\n  usage: purpclaw plugins install <name> [--git <url>] [--path <dir>]'));
+      return;
+    }
+
+    const targetDir = path.join(PLUGINS_DIR, name);
+    if (fs.existsSync(targetDir)) {
+      console.log(col(C.yellow, `\n  Plugin "${name}" already installed at ${targetDir}`));
+      return;
+    }
+
+    if (gitUrl) {
+      console.log(`\n  ${col(C.cyan, `Cloning ${gitUrl}…`)}`);
+      try {
+        execSync(`git clone --depth=1 "${gitUrl}" "${targetDir}"`, {
+          stdio: 'pipe', timeout: 60000,
+          shell: 'C:/Program Files/Git/bin/bash.exe',
+        });
+        console.log(col(C.green, `  [OK] Installed ${name} from git`));
+      } catch (e) {
+        console.log(col(C.red, `  [X] Git clone failed: ${e.message}`));
+        return;
+      }
+    } else if (localPath) {
+      if (!fs.existsSync(localPath)) {
+        console.log(col(C.red, `  [X] Source path not found: ${localPath}`));
+        return;
+      }
+      fs.mkdirSync(targetDir, { recursive: true });
+      copyDirRecursive(localPath, targetDir);
+      console.log(col(C.green, `  [OK] Installed ${name} from ${localPath}`));
+    } else {
+      // Try skills dir
+      const skillPath = path.join(PURP_DIR, 'skills', name);
+      if (fs.existsSync(skillPath)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+        copyDirRecursive(skillPath, targetDir);
+        console.log(col(C.green, `  [OK] Installed ${name} from skills/${name}`));
+      } else {
+        console.log(col(C.red, `\n  Plugin "${name}" not found in skills/`));
+        console.log(`  ${col(C.gray, 'Usage:')}`);
+        console.log(`    purpclaw plugins install <name> --path <source-dir>`);
+        console.log(`    purpclaw plugins install <name> --git <repo-url>`);
+        return;
+      }
+    }
+
+    const manifest = loadManifest(targetDir);
+    if (manifest === false) {
+      console.log(col(C.red, `  [X] Plugin installed but manifest has errors`));
+    } else {
+      console.log(`  ${col(C.green, '[OK]')} manifest valid: ${manifest.name} v${manifest.version || '?'}`);
+      console.log(`  ${col(C.green, '[OK]')} plugin ready — run "purpclaw plugins enable ${name}" to activate`);
+    }
+    return;
+  }
+
+  // ── remove ────────────────────────────────────────────────────────────────
+  if (sub === 'remove' || sub === 'rm' || sub === 'uninstall') {
+    const name = args[1];
+    if (!name) { console.log(col(C.red, '\n  usage: purpclaw plugins remove <name>')); return; }
+    const targetDir = path.join(PLUGINS_DIR, name);
+    if (!fs.existsSync(targetDir)) {
+      console.log(col(C.red, `  Plugin "${name}" not found at ${targetDir}`));
+      return;
+    }
+    fs.rmSync(targetDir, { recursive: true, force: true });
+    console.log(col(C.green, `  [OK] Removed plugin "${name}"`));
+    return;
+  }
+
+  // ── enable ────────────────────────────────────────────────────────────────
+  if (sub === 'enable') {
+    const name = args[1];
+    if (!name) { console.log(col(C.red, '\n  usage: purpclaw plugins enable <name>')); return; }
+    const targetDir = path.join(PLUGINS_DIR, name);
+    if (!fs.existsSync(targetDir)) { console.log(col(C.red, `  Plugin "${name}" not found`)); return; }
+    const manifest = loadManifest(targetDir);
+    if (manifest === false) { console.log(col(C.red, `  Cannot enable — invalid manifest`)); return; }
+    fs.writeFileSync(path.join(targetDir, '.enabled'), '1');
+    console.log(col(C.green, `  [OK] Enabled plugin "${name}"`));
+    return;
+  }
+
+  // ── disable ───────────────────────────────────────────────────────────────
+  if (sub === 'disable') {
+    const name = args[1];
+    if (!name) { console.log(col(C.red, '\n  usage: purpclaw plugins disable <name>')); return; }
+    const targetDir = path.join(PLUGINS_DIR, name);
+    if (!fs.existsSync(targetDir)) { console.log(col(C.red, `  Plugin "${name}" not found`)); return; }
+    const ef = path.join(targetDir, '.enabled');
+    if (fs.existsSync(ef)) fs.unlinkSync(ef);
+    console.log(col(C.yellow, `  [o] Disabled plugin "${name}"`));
+    return;
+  }
+
+  // Default: list
+  const plugins = HR.listPlugins();
+  console.log(`\n  ${col(C.cyan + C.bold, 'Plugins')}`);
+  if (!plugins.length) {
+    console.log(`  ${col(C.gray, 'no plugins installed')}`);
+  } else {
+    for (const p of plugins) {
+      const enabled = isEnabled(p.path);
+      console.log(`    ${enabled ? col(C.green, '[OK]') : col(C.gray, '[o]')}  ${p.name}`);
+    }
+  }
+  console.log(`\n  ${col(C.gray, 'usage: purpclaw plugins <list|install|remove|enable|disable> [args]')}`);
+
+  // ── helpers ────────────────────────────────────────────────────────────────
+  function loadManifest(dir) {
+    for (const f of ['manifest.json', 'package.json']) {
+      const fp = path.join(dir, f);
+      if (fs.existsSync(fp)) {
+        try {
+          const m = JSON.parse(fs.readFileSync(fp, 'utf8'));
+          return { name: m.name, version: m.version || '0.0.0', description: m.description || '' };
+        } catch (e) {
+          console.log(col(C.red, `  manifest parse error in ${f}: ${e.message}`));
+          return false;
+        }
+      }
+    }
+    return { name: path.basename(dir), version: '0.0.0', description: '' };
+  }
+
+  function isEnabled(dir) {
+    return fs.existsSync(path.join(dir, '.enabled')) && !fs.existsSync(path.join(dir, '.disabled'));
+  }
+
+  function copyDirRecursive(src, dest) {
+    fs.mkdirSync(dest, { recursive: true });
+    for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+      const s = path.join(src, entry.name);
+      const d = path.join(dest, entry.name);
+      if (entry.isDirectory()) copyDirRecursive(s, d);
+      else fs.copyFileSync(s, d);
+    }
+  }
+}
+
+
   async function dispatch() {
     switch (command.toLowerCase()) {
     case 'tui':
@@ -4761,6 +5265,8 @@ async function cmdDoctors(args = []) {
     case 'chat':      return cmdChat(args);
     case 'run':       return cmdRun(args);
     case 'status':    return cmdStatus();
+    case 'update':    return cmdUpdate(args);
+    case 'plugins':  return cmdPlugins(args);
     case 'doctor':    return cmdDoctor(args);
     case 'approve':   return cmdApprove(args);
     case 'reject':    return cmdReject(args);
@@ -4775,8 +5281,162 @@ case 'registry': return cmdRegistry(args);
     case 'install':   return cmdRegistry(['install', ...args]);
     case 'search':    return cmdRegistry(['search', ...args]);
  case 'resume':   return cmdResume(args);
-    case 'context':  return cmdContext(args);
-    case 'pool':     return cmdPool(args);
+
+    case 'exec': {
+      // Codex parity: purpclaw exec review [--uncommitted|--base <branch>|--commit <sha>]
+      const sub = (args[0] || '').toLowerCase();
+      if (sub === 'review') return cmdReview(args.slice(1));
+      const { execPolicy } = require(path.join(PURP_DIR, 'lib', 'exec-policy'));
+      if (!args.length) { console.log('  usage: purpclaw exec <command> [args...]\n'); return; }
+      const cmdStr = args.join(' ');
+      const check = execPolicy.check(cmdStr);
+      if (!check.allowed) { console.log(`${col(C.red, '[X] blocked by policy:')} ${check.reason || check.source || 'unknown'}`); return 1; }
+      const [cmd, ...cmdArgs] = args;
+      try {
+        const { execSync } = require('child_process');
+        const out = execSync(cmd, { encoding: 'utf-8', stdio: 'pipe', timeout: 60000, shell: 'C:/Program Files/Git/bin/bash.exe' });
+        process.stdout.write(out);
+      } catch (e) {
+        if (e.stdout) process.stdout.write(e.stdout);
+        if (e.stderr) process.stderr.write(e.stderr);
+        return e.status || 1;
+      }
+      return 0;
+    }
+    case 'remote': {
+      const fs = require('fs');
+      const RC = path.join(PURP_DIR, '.purpclaw', 'remote-config.json');
+      const loadCfg = () => { try { return JSON.parse(fs.readFileSync(RC, 'utf-8')); } catch { return { targets: [] }; } };
+      const saveCfg = cfg => fs.writeFileSync(RC, JSON.stringify(cfg, null, 2));
+      const sub = (args[0] || '').toLowerCase();
+      if (sub === 'list' || !sub) {
+        const cfg = loadCfg();
+        if (!cfg.targets.length) { console.log('\n  Remote Targets  (0 configured)\n    no targets \u2014 add: purpclaw remote add <name> <host> [user] [port]\n'); return; }
+        console.log('\n  Remote Targets\n');
+        for (const t of cfg.targets) console.log('    ' + t.name + '  ' + t.user + '@' + t.host + ':' + t.port);
+        console.log('');
+        return;
+      }
+      if (sub === 'add') {
+        const [name, host, user, port] = args.slice(1);
+        if (!name || !host) { console.log('  usage: purpclaw remote add <name> <host> [user] [port]'); return 1; }
+        const cfg = loadCfg();
+        const existing = cfg.targets.findIndex(t => t.name === name);
+        const entry = { name, host, user: user || 'root', port: port ? parseInt(port) : 22, key: null, addedAt: new Date().toISOString() };
+        if (existing >= 0) cfg.targets[existing] = entry; else cfg.targets.push(entry);
+        saveCfg(cfg);
+        console.log(`  \u2713 target '${name}' saved`);
+        return;
+      }
+      if (sub === 'remove') {
+        const name = args[1];
+        if (!name) { console.log('  usage: purpclaw remote remove <name>'); return 1; }
+        const cfg = loadCfg();
+        const idx = cfg.targets.findIndex(t => t.name === name);
+        if (idx < 0) { console.log('  target ' + name + ' not found'); return 1; }
+        cfg.targets.splice(idx, 1);
+        saveCfg(cfg);
+        console.log(`  \u2713 removed '${name}'`);
+        return;
+      }
+      console.log('  usage: purpclaw remote <list|add|remove>');
+      return 1;
+    }
+    case 'debug': {
+      const sub = (args[0] || '').toLowerCase();
+      if (sub === 'models' || sub === 'model' || sub === 'providers') {
+        const llm = require(path.join(PURP_DIR, 'lib', 'llm-provider.js'));
+        try {
+          const providers = llm.listProviders();
+          const catalog = providers.map(p => ({ name: p.name, format: p.format, local: !!p.local, defaultModel: p.defaultModel || null }));
+          console.log(JSON.stringify({ providers: catalog, count: catalog.length }, null, 2));
+        } catch (e) { console.log(JSON.stringify({ error: e.message }, null, 2)); }
+        return;
+      }
+      if (sub === 'app-server' || sub === 'appserver') {
+        const http = require('http');
+        const targets = [{ name: 'agent-gateway', port: 9119, path: '/health' }, { name: 'unified-api', port: 7780, path: '/api/health' }, { name: 'orchestrator', port: 7784, path: '/api/health' }];
+        console.log('\n  App-server diagnostics\n');
+        for (const t of targets) {
+          try {
+            const r = await new Promise(res => {
+              const req = http.get({ hostname: '127.0.0.1', port: t.port, path: t.path, timeout: 2000 }, res2 => { let d = ''; res2.on('data', c => d += c); res2.on('end', () => res({ ok: true, body: d })); });
+              req.on('error', e => res({ ok: false, error: e.message }));
+              req.on('timeout', () => { req.destroy(); res({ ok: false, error: 'timeout' }); });
+            });
+            console.log('    ' + (r.ok ? '[*]' : '[o]') + '  ' + t.name.padEnd(18) + ' :' + t.port + '  ' + (r.ok ? 'up' : r.error));
+          } catch { console.log('    [o]  ' + t.name.padEnd(18) + ' :' + t.port + '  error'); }
+        }
+        console.log('');
+        return;
+      }
+      if (sub === 'clear-memories' || sub === 'clearmemories') {
+        const MEM_DIR = path.join(PURP_DIR, 'memory');
+        try {
+          const files = fs.readdirSync(MEM_DIR).filter(f => f.endsWith('.json') || f.endsWith('.md'));
+          let cleared = 0;
+          for (const f of files) { try { fs.unlinkSync(path.join(MEM_DIR, f)); cleared++; } catch {} }
+          console.log('  [OK] cleared ' + cleared + ' memory file(s)');
+        } catch (e) { console.log('  [X] ' + e.message); }
+        return;
+      }
+      console.log('\n  purpclaw debug  \u2014 diagnostic subcommands\n    models          render model catalog\n    app-server     app-server diagnostics\n    clear-memories reset local memory state\n');
+      return;
+    }
+    case 'apply': {
+      const fs = require('fs');
+      const dryRun = args.includes('--dry-run') || args.includes('-n');
+      const checkOnly = args.includes('--check') || args.includes('-c');
+      let patchContent = '';
+      const fileArg = args.find(a => !a.startsWith('-'));
+      if (fileArg) { try { patchContent = fs.readFileSync(fileArg, 'utf-8'); } catch (e) { console.log('  [X] cannot read: ' + fileArg); return 1; } }
+      else if (!process.stdin.isTTY) { process.stdin.setEncoding('utf-8'); const chunks = []; for await (const chunk of process.stdin) chunks.push(chunk); patchContent = chunks.join(''); }
+      else { console.log('  usage: purpclaw apply [--dry-run] [--check] [file.patch]'); return 1; }
+      if (!patchContent.trim()) { console.log('  [!] empty patch'); return 0; }
+      const lines = patchContent.split(/\r?\n/);
+      let i = 0;
+      while (i < lines.length && !lines[i].match(/^@@ /)) i++;
+      if (i >= lines.length) { console.log('  [X] no hunks found'); return 1; }
+      const hunks = [];
+      while (i < lines.length) {
+        const line = lines[i];
+        const hunkMatch = line.match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/);
+        if (!hunkMatch) { i++; continue; }
+        const oldStart = parseInt(hunkMatch[1]);
+        const oldCount = parseInt(hunkMatch[2] || '1');
+        const addedLines = [];
+        i++;
+        while (i < lines.length && !lines[i].match(/^@@ /)) {
+          const l = lines[i];
+          if (l.startsWith('+')) addedLines.push(l.slice(1));
+          else if (!l.startsWith('-') && !l.startsWith('\\')) addedLines.push(l);
+          i++;
+        }
+        hunks.push({ oldStart, oldCount, addedLines });
+      }
+      let curFile = null;
+      for (const line of lines) { if (line.startsWith('--- ')) { const m = line.match(/^---\s+(?:a\/)?(\S+)/); if (m) curFile = m[1]; } if (curFile && line.startsWith('@@ ')) break; }
+      if (!hunks.length) { console.log('  [X] no hunks'); return 1; }
+      let applied = 0, errors = 0;
+      for (const hunk of hunks) {
+        const filePath = curFile || fileArg || '.';
+        const targetPath = path.join(process.cwd(), filePath);
+        let content;
+        try { content = fs.readFileSync(targetPath, 'utf-8'); } catch (e) { console.log('  [X]  ' + filePath + '  ' + (e.code === 'ENOENT' ? 'file not found' : e.message)); errors++; continue; }
+        const fileLines = content.split(/\r?\n/);
+        const insertIdx = hunk.oldStart - 1;
+        if (insertIdx < 0 || insertIdx > fileLines.length) { console.log('  [X]  ' + filePath + '  hunk offset out of range'); errors++; continue; }
+        const before = fileLines.slice(0, insertIdx);
+        const after = fileLines.slice(insertIdx + hunk.oldCount);
+        const newContent = [...before, ...hunk.addedLines, ...after].join('\n');
+        console.log('  ' + (dryRun || checkOnly ? '[o]' : '[*]') + '  ' + filePath + '  ' + (checkOnly ? 'patch applies cleanly' : dryRun ? 'would apply' : 'applied'));
+        if (!dryRun && !checkOnly) { try { fs.writeFileSync(targetPath, newContent, 'utf-8'); applied++; } catch (e) { console.log('    [X]  ' + e.message); errors++; } }
+        else applied++;
+      }
+      console.log('  ' + applied + ' hunk(s) ' + (checkOnly ? 'would apply' : dryRun ? 'would apply' : 'applied') + ', ' + errors + ' error(s)');
+      return errors > 0 ? 1 : 0;
+    }
+
     case 'action':
     case 'do':       return loadCmd('action').run(args, sharedCtx());
     case 'capabilities':
@@ -4936,7 +5596,7 @@ case 'registry': return cmdRegistry(args);
         console.log('  🟡 Weathered:    ' + report.weathered);
         console.log('  🟠 Faded:        ' + report.faded);
         console.log('  💀 Cold cases:   ' + report.cold_cases);
-        if (report.fragmented > 0) console.log('  ⚠ Fragmented:   ' + report.fragmented);
+        if (report.fragmented > 0) console.log('  [!] Fragmented:   ' + report.fragmented);
         console.log('  Avg confidence:  ' + report.avg_confidence + '%');
       } else if (action === 'coldcases' || sub === 'coldcases') {
         const Erosion = require('../lib/erosion');
@@ -5005,6 +5665,7 @@ case 'registry': return cmdRegistry(args);
     case 'workflows': return cmdWorkflows();
     case 'queue':     return cmdQueue();
     case 'memory':    return cmdMemory(args);
+    case 'serve':     return cmdServe(args);
     case 'dream':     return cmdDream();
     case 'forge':     return cmdForge(args);
     case 'look':      return cmdLook(args);
@@ -5160,6 +5821,7 @@ case 'registry': return cmdRegistry(args);
     case 'route':    return cmdRoute(args);
     case 'brain':    return cmdBrain(args);
     case 'pet':      return cmdPet(args);
+    case 'serve':    return cmdServe(args);
     default:
       // A leading --flag is a mistyped/misplaced option, not a task. Error
       // clearly instead of silently running "--typo" as an inline task.
@@ -5203,7 +5865,7 @@ async function cmdTrainingFeedback(args) {
     console.log('');
     console.log('  🧠  PERSONAL MODEL GROWTH');
     console.log('  ═════════════════════════');
-    console.log(`  Status:      ${s.enabled ? col(C.green, '● ACTIVE') : col(C.yellow, '○ OFF')}`);
+    console.log(`  Status:      ${s.enabled ? col(C.green, '[*] ACTIVE') : col(C.yellow, '[o] OFF')}`);
     console.log(`  Session:     ${s.sessionId.substring(0, 8)}...`);
     console.log(`  Captures:    ${s.stats.total} total`);
     console.log(`  Corrections: ${s.stats.corrections} (need ≥10 for training)`);
@@ -5232,7 +5894,7 @@ async function cmdTrainingFeedback(args) {
 
   if (sub === 'reset') {
     const r = FB.reset();
-    console.log(col(C.green, `\n  ✓ Feedback data cleared. New session: ${r.sessionId.substring(0, 8)}...\n`));
+    console.log(col(C.green, `\n  [OK] Feedback data cleared. New session: ${r.sessionId.substring(0, 8)}...\n`));
     return;
   }
 
@@ -5242,20 +5904,20 @@ async function cmdTrainingFeedback(args) {
     const outPath = path.join(FB.FEEDBACK_DIR, `personal-training-${format}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(outPath, JSON.stringify(data, null, 2), 'utf8');
-    console.log(col(C.green, `\n  ✓ Exported ${data.length} training examples to ${outPath}`));
+    console.log(col(C.green, `\n  [OK] Exported ${data.length} training examples to ${outPath}`));
     console.log(col(C.gray, `  Format: ${format}  |  Ready for: purpclaw lora train --dataset ${outPath}\n`));
     return;
   }
 
   if (sub === 'off') {
     process.env.PURPCLAW_FEEDBACK_OFF = '1';
-    console.log(col(C.yellow, '\n  ○ Personal model growth DISABLED. Set PURPCLAW_FEEDBACK_OFF=0 to re-enable.\n'));
+    console.log(col(C.yellow, '\n  [o] Personal model growth DISABLED. Set PURPCLAW_FEEDBACK_OFF=0 to re-enable.\n'));
     return;
   }
 
   if (sub === 'on') {
     delete process.env.PURPCLAW_FEEDBACK_OFF;
-    console.log(col(C.green, '\n  ● Personal model growth ENABLED. All interactions will be captured locally.\n'));
+    console.log(col(C.green, '\n  [*] Personal model growth ENABLED. All interactions will be captured locally.\n'));
     return;
   }
 
@@ -5274,7 +5936,7 @@ async function cmdIdleEngine(args) {
     console.log('');
     console.log('  Results:');
     for (const [phase, r] of Object.entries(results.phases || {})) {
-      const icon = r.ok ? col(C.green, '✓') : col(C.yellow, '○');
+      const icon = r.ok ? col(C.green, '[OK]') : col(C.yellow, '[o]');
       console.log(`    ${icon} ${phase}: ${r.count ? r.count + ' examples' : r.reason || r.error || 'done'}`);
     }
     console.log('');
@@ -5291,7 +5953,7 @@ async function cmdIdleEngine(args) {
     console.log('');
     console.log('  🦀  IDLE ENGINE — the beast that wakes when you stop typing');
     console.log('  ════════════════════════════════════════════════════════');
-    console.log(`  Status:        ${s.active ? col(C.green, '● USER ACTIVE') : col(C.magenta, '◌ IDLE — beast watching')}`);
+    console.log(`  Status:        ${s.active ? col(C.green, '[*] USER ACTIVE') : col(C.magenta, '◌ IDLE — beast watching')}`);
     console.log(`  Sessions:      ${s.sessionCount}`);
     console.log(`  Idle cycles:   ${s.idleCycles}`);
     console.log(`  Last activity: ${s.lastActivityAt || 'never'}`);
@@ -5305,7 +5967,7 @@ async function cmdIdleEngine(args) {
     console.log(`  Verdict:       ${ag.verdict}`);
     console.log('');
     console.log(`  Personal data: ${s.personalStats.corrections} corrections, ${s.personalStats.preferences} preferences`);
-    console.log(`  Ready to train: ${s.readyForAutoTrain ? col(C.green, '✓ YES') : col(C.yellow, `○ need ${s.minNewForTrain - (s.personalStats.corrections + s.personalStats.preferences + s.personalStats.edits)} more`)}`);
+    console.log(`  Ready to train: ${s.readyForAutoTrain ? col(C.green, '[OK] YES') : col(C.yellow, `[o] need ${s.minNewForTrain - (s.personalStats.corrections + s.personalStats.preferences + s.personalStats.edits)} more`)}`);
     console.log('');
     console.log(col(C.gray, '  purpclaw idle trigger    force optimization cycle now'));
     console.log(col(C.gray, '  The engine fires automatically 30s after each session ends'));
@@ -5328,7 +5990,7 @@ async function cmdVectorBench(args) {
     const topK = args[3] || '10';
     const cmd = ['node', benchPath, count, dim, topK];
     const child = trackedSpawn(cmd[0], cmd.slice(1), { tag: 'vector-bench', stdio: 'inherit', timeoutMs: 120000 });
-    child.on('exit', code => { if (code !== 0) console.log(col(C.red, `\n  ✗ Bench exited with code ${code}\n`)); });
+    child.on('exit', code => { if (code !== 0) console.log(col(C.red, `\n  [X] Bench exited with code ${code}\n`)); });
     return;
   }
 
@@ -5339,7 +6001,7 @@ async function cmdVectorBench(args) {
     console.log('  🦀  VECTOR PROVIDER STATUS');
     console.log('  ══════════════════════════');
     console.log(`  Default:    ${s.defaultProvider}`);
-    console.log(`  FAISS:      ${s.faiss?.ready ? col(C.green, '● ONLINE') : col(C.yellow, '○ no index')} (${s.faiss?.indexed || 0} indexed, ${s.faiss?.tombstones || 0} tombstoned)`);
+    console.log(`  FAISS:      ${s.faiss?.ready ? col(C.green, '[*] ONLINE') : col(C.yellow, '[o] no index')} (${s.faiss?.indexed || 0} indexed, ${s.faiss?.tombstones || 0} tombstoned)`);
     console.log(`  TurboVec:   ${col(C.yellow, '◌ PARKED — requires AVX2 CPU')}`);
     console.log('');
     return;
@@ -5419,7 +6081,7 @@ async function cmdStatus(args) {
   console.log(bRow(
     '  ' + col(C.gray, 'PURPCLAW TUI  ·  One Mission / Many Lenses') +
     ' '.repeat(Math.max(0, inner - 65)) +
-    '  ' + col(C.green + C.bold, '● SYSTEM OPERATIONAL')
+    '  ' + col(C.green + C.bold, '[*] SYSTEM OPERATIONAL')
   ));
   console.log(bBot + '\n');
 
@@ -5442,7 +6104,7 @@ async function cmdStatus(args) {
   const offlineCount = cores.length - liveCount;
   if (offlineCount > 0) {
     console.log('');
-    console.log(col(C.yellow, `    ⚠ ${offlineCount}/${cores.length} core services OFFLINE — run \`purpclaw start\` to boot them`));
+    console.log(col(C.yellow, `    [!] ${offlineCount}/${cores.length} core services OFFLINE — run \`purpclaw start\` to boot them`));
   }
   console.log('');
   console.log('  🧠 COGNITIVE SPINE:' + (spine && spine.ok ? '' : ' 🔴 DOWN'));
@@ -5510,7 +6172,7 @@ async function cmdStatus(args) {
   if (liveCount === cores.length) {
     console.log('  ║     🔥 THE CLAW IS AWAKE. 🦀               ║');
   } else {
-    console.log('  ║     ⚠  CLAW ASLEEP. RUN \`purpclaw start\`.  ║');
+    console.log('  ║     [!]  CLAW ASLEEP. RUN \`purpclaw start\`.  ║');
   }
   console.log('  ╚══════════════════════════════════════════════╝');
   console.log('');
@@ -6132,7 +6794,7 @@ async function cmdSession(args) {
   if (sub === 'new') {
     const title = args.slice(1).join(' ') || null;
     const s = work.createSession({ title: title || 'New Chat' });
-    console.log(`\n${col(C.green, '✓')} Session created\n`);
+    console.log(`\n${col(C.green, '[OK]')} Session created\n`);
     console.log(`  id:     ${col(C.cyan, s.id)}`);
     console.log(`  title:  ${s.title}`);
     console.log(`  date:   ${dateStr(s.createdAt)}\n`);
@@ -6148,11 +6810,11 @@ async function cmdSession(args) {
     }
     const s = work.loadSession(id);
     if (!s) {
-      console.log(`\n${col(C.red, '✗')} Session not found: ${id}\n`);
+      console.log(`\n${col(C.red, '[X]')} Session not found: ${id}\n`);
       return;
     }
     work.setCurrentSessionId(id);
-    console.log(`\n${col(C.green, '✓')} Switched to session\n`);
+    console.log(`\n${col(C.green, '[OK]')} Switched to session\n`);
     console.log(`  id:     ${col(C.cyan, s.id)}`);
     console.log(`  title:  ${s.title}`);
     console.log(`  model:  ${s.model ? col(C.yellow, s.model) : col(C.gray, '(none)')}`);
@@ -6178,7 +6840,7 @@ async function cmdSession(args) {
       return;
     }
     const result = work.deleteSession(id);
-    console.log(`\n${col(C.green, '✓')} Deleted${result.archived ? ' (archived)' : ''}: ${id}\n`);
+    console.log(`\n${col(C.green, '[OK]')} Deleted${result.archived ? ' (archived)' : ''}: ${id}\n`);
     return;
   }
 
@@ -6190,7 +6852,7 @@ async function cmdSession(args) {
     }
     const s = work.loadSession(id);
     if (!s) {
-      console.log(`\n${col(C.red, '✗')} Session not found: ${id}\n`);
+      console.log(`\n${col(C.red, '[X]')} Session not found: ${id}\n`);
       return;
     }
     console.log(JSON.stringify(s, null, 2));
@@ -6316,6 +6978,24 @@ async function cmdBrain(args) {
   console.log(`  ${col(C.cyan, 'purpclaw brain -v')}          show full config with fallbacks\n`);
 }
 
+// ── serve — JSON-RPC + A2A gateway server on port 9119 ──────────────────
+async function cmdServe(args) {
+  const { AgentGatewayServer } = require(path.join(PURP_DIR, 'lib', 'agent-gateway-server'));
+  const host = args.includes('--host') ? args[args.indexOf('--host') + 1] : '127.0.0.1';
+  const port = parseInt(args.find(a => /^\d+$/.test(a)) || '9119', 10);
+  console.log(col(C.cyan, `\n  Starting gateway server on ${host}:${port}...`));
+  console.log(col(C.gray, '  JSON-RPC  POST /rpc'));
+  console.log(col(C.gray, '  A2A       POST /a2a  |  GET /.well-known/agent-card.json'));
+  console.log(col(C.gray, '  Chat      POST /v1/chat/completions'));
+  console.log(col(C.gray, '  WebSocket ws://localhost:' + port));
+  const server = new AgentGatewayServer({ host, port });
+  server.listen();
+  console.log(col(C.green, `  Gateway listening on http://${host}:${port}`));
+  // Block until the process is terminated
+  process.stdin.resume();
+  await new Promise(resolve => process.on('SIGINT', resolve) || process.on('SIGTERM', resolve));
+}
+
 async function cmdPet(args) {
   // Companion — fun reactions, not enforcement
   let comp;
@@ -6431,9 +7111,9 @@ if (require.main === module) {
   process.on('uncaughtException', (err) => {
     const hint = err.message ? '' : ' (no message — possible non-Error rejection)';
     if (TAINT_MODE) {
-      console.error(col(C.magenta, `\n  ✗ uncaughtException${hint}: ${err.message || err}\n`));
+      console.error(col(C.magenta, `\n  [X] uncaughtException${hint}: ${err.message || err}\n`));
     } else {
-      console.error(col(C.red, `\n  ✗ Unhandled error${hint}: ${err.message || err}\n`));
+      console.error(col(C.red, `\n  [X] Unhandled error${hint}: ${err.message || err}\n`));
     }
     if (err.stack) {
       err.stack.split('\n').slice(1, 5).forEach(l => console.error('  ' + l.trim()));
@@ -6445,9 +7125,9 @@ if (require.main === module) {
   process.on('unhandledRejection', (reason) => {
     const msg = reason instanceof Error ? reason.message : String(reason || 'unknown');
     if (TAINT_MODE) {
-      console.error(col(C.magenta, `\n  ✗ unhandledRejection: ${msg}\n`));
+      console.error(col(C.magenta, `\n  [X] unhandledRejection: ${msg}\n`));
     } else {
-      console.error(col(C.red, `\n  ✗ Unhandled rejection: ${msg || '(empty)'}\n`));
+      console.error(col(C.red, `\n  [X] Unhandled rejection: ${msg || '(empty)'}\n`));
     }
     if (reason instanceof Error && reason.stack) {
       reason.stack.split('\n').slice(1, 4).forEach(l => console.error('  ' + l.trim()));
@@ -6457,10 +7137,10 @@ if (require.main === module) {
 
   main().catch(e => {
     if (TAINT_MODE) {
-      console.error(col(C.magenta, `\n  ✗ ${taintError(e.message)}\n`));
+      console.error(col(C.magenta, `\n  [X] ${taintError(e.message)}\n`));
     } else {
       const msg = e && e.message ? e.message : String(e || 'unknown error');
-      console.error(col(C.red, `\n  ✗ Unhandled error: ${msg}\n`));
+      console.error(col(C.red, `\n  [X] Unhandled error: ${msg}\n`));
       if (e && e.stack && !e.message) {
         e.stack.split('\n').slice(1, 3).forEach(l => console.error('  ' + l.trim()));
       }

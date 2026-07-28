@@ -27,10 +27,16 @@ const path = require('path');
 const fs   = require('fs');
 
 const TOOLS = require('./tools');
+const PROMPTS = require('./prompt-builder');
+const { ContextEngine } = require('./context-engine');
+const { ToolRuntime } = require('./tool-runtime');
 const announce = require('./events');
 const FEEDBACK = (() => { try { return require('./user-feedback'); } catch { return null; } })();
 const IDLE_ENGINE = (() => { try { return require('./idle-engine'); } catch { return null; } })();
-const SESSIONS = (() => { try { return require('./session-store'); } catch { return null; } })();
+// The loop and every user-facing transport share the same durable SQLite
+// repository. Keeping the legacy JSON store here caused split-brain history:
+// a failed tool run could be visible to the CLI but disappear from desktop.
+const SESSIONS = (() => { try { return require('./session-repository'); } catch { return null; } })();
 // Cognitive spine + memory layers — wired in 2026-06-22 to close the
 // "spine running, agent blind" gap. Every prompt now asks the spine
 // for context (recall + lifted facts + cognitive snapshot), every tool
@@ -169,40 +175,12 @@ function buildSystemPrompt(opts = {}) {
           `\n# Latest findings (use these to answer "what's going on")\n${recent}`;
       } catch { return ''; }
     })();
-  return [
-    SYSTEM_PROMPT_BASE,
-    '',
-    liveStackBlock,
-    '',
-    '# Available tools',
-    toolList,
-    '',
-    // Native tool-calling mode: the API carries tool schemas, so the
-    // JSON-line protocol would only teach the model to double-call.
-    ...(opts.structuredTools ? [
-      'Call tools natively via the API tool-calling mechanism.',
-      'Do NOT emit JSON tool-call lines in your text.',
-      '',
-    ] : [
-      '# Tool call format',
-      'Emit a JSON line: {"tool": "<name>", "args": {...}}',
-      'You can emit text and tool calls in the same response. After the tool',
-      'runs, you\'ll see the result and can continue.',
-      '',
-    ]),
-    PRIVACY ? PRIVACY.privacyPromptBlock() : '',
-    '',
-    ...(opts.structuredTools ? [] : [
-      'Examples:',
-      '  Read a file: {"tool": "read", "args": {"path": "src/main.js"}}',
-      '  Search symbols: {"tool": "mcp__omnicode__search_symbols", "args": {"path": ".", "query": "User"}}',
-      '  Check MCP health: {"tool": "mcp__omnicode__health_check", "args": {}}',
-      '  Do NOT call MCP tools via the shell tool — call them directly.',
-      '',
-    ]),
-    `# Current working directory: ${cwd}`,
-    opts.model ? `# Default model: ${opts.model}` : '',
-  ].filter(Boolean).join('\n');
+  return PROMPTS.buildPrompt({
+    base: SYSTEM_PROMPT_BASE, tools, privacy: PRIVACY.privacyPromptBlock(),
+    structuredTools: opts.structuredTools, cwd, model: opts.model,
+    platform: opts.platform, sessionId: opts.sessionId, liveStack: liveStackBlock,
+    goal: opts.goal,
+  }).text;
 }
 
 /**
@@ -240,6 +218,8 @@ async function* agentTurn({ messages, model, provider, opts = {} }) {
   const fullMessages = [{ role: 'system', content: systemPrompt }, ...messages];
 
   let buffer = '';
+  let displayBuffer = '';
+  let insideReasoning = false;
   let nativeCalls = [];
   let stream = null;
   try {
@@ -248,6 +228,7 @@ async function* agentTurn({ messages, model, provider, opts = {} }) {
       provider: provider || undefined,
       temperature: opts.temperature ?? 0.2,
       maxTokens: opts.maxTokens ?? 4096,
+      taskId: opts.taskId || opts.jobId || null,
       ...(structured ? {
         tools: TOOLS.list().map(t => ({
           type: 'function',
@@ -260,7 +241,10 @@ async function* agentTurn({ messages, model, provider, opts = {} }) {
       } : {}),
     });
   } catch (e) {
-    yield { type: 'error', error: e.message };
+    const nested = Array.isArray(e && e.errors)
+      ? e.errors.map(x => x && (x.message || x.code)).filter(Boolean).join('; ')
+      : '';
+    yield { type: 'error', error: e.message || nested || e.code || String(e) };
     return;
   }
 
@@ -273,13 +257,37 @@ async function* agentTurn({ messages, model, provider, opts = {} }) {
     for await (const chunk of stream) {
       if (chunk.content) {
         buffer += chunk.content;
-        yield { type: 'token', content: chunk.content, model: chunk.model };
+        displayBuffer += chunk.content;
+        // MiniMax and some OpenAI-compatible reasoning models put private
+        // chain-of-thought in <think> blocks. Parse across chunk boundaries
+        // and emit only user-visible text; keep a short tail so split tags
+        // cannot leak through streaming transports.
+        while (displayBuffer) {
+          if (insideReasoning) {
+            const end = displayBuffer.indexOf('</think>');
+            if (end < 0) { displayBuffer = displayBuffer.slice(-7); break; }
+            displayBuffer = displayBuffer.slice(end + 8); insideReasoning = false;
+          } else {
+            const start = displayBuffer.indexOf('<think>');
+            if (start >= 0) {
+              const visible = displayBuffer.slice(0, start);
+              if (visible) yield { type: 'token', content: visible, model: chunk.model };
+              displayBuffer = displayBuffer.slice(start + 7); insideReasoning = true;
+            } else {
+              const safeLength = Math.max(0, displayBuffer.length - 6);
+              if (!safeLength) break;
+              const visible = displayBuffer.slice(0, safeLength); displayBuffer = displayBuffer.slice(safeLength);
+              if (visible) yield { type: 'token', content: visible, model: chunk.model };
+            }
+          }
+        }
       }
       if (chunk.done) {
         if (Array.isArray(chunk.toolCalls) && chunk.toolCalls.length) nativeCalls = chunk.toolCalls;
         break;
       }
     }
+    if (!insideReasoning && displayBuffer) yield { type: 'token', content: displayBuffer, model };
   } catch (e) {
     yield { type: 'error', error: e.message };
     return;
@@ -316,10 +324,14 @@ async function* agentTurn({ messages, model, provider, opts = {} }) {
  */
 async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   const maxTurns = opts.maxTurns ?? 10;
-  const messages = [...history];
+  const contextEngine = opts.contextEngine || new ContextEngine({ contextLength: opts.contextLength || 204_800, threshold: opts.compressionThreshold ?? 0.5 });
+  const compacted = contextEngine.shouldCompress(history) ? contextEngine.compress(history) : { messages: [...history], compressed: false };
+  const messages = [...compacted.messages];
+  if (compacted.compressed) yield { type: 'context.compressed', ...compacted };
   if (prompt) messages.push({ role: 'user', content: prompt });
   let totalContent = '';
   let turn = 0;
+  const toolRuntime = opts.toolRuntime || new ToolRuntime();
 
   // ── Personal model growth: capture the user prompt ──────────────────
   if (FEEDBACK && prompt) {
@@ -360,7 +372,7 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   // Pulls memory recall + lifted facts + counterfactual branches into the
   // system prompt so the LLM makes decisions with full spine context.
   // Silent fail — if spine is offline we just run blind (the old behaviour).
-  if (prompt && (COGNITIVE || MEMORY)) {
+  if (!opts.noSpine && prompt && (COGNITIVE || MEMORY)) {
     try {
       const [recall, snapshot, lifted] = await Promise.all([
         MEMORY  ? MEMORY.recall(prompt, { limit: 4 }) : Promise.resolve({ formatted: '' }),
@@ -399,6 +411,18 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   while (turn < maxTurns) {
     turn++;
     yield { type: 'turn', turn, maxTurns };
+    // S5 — re-check compression mid-loop. If the agent has been running long
+    // enough to push past the threshold AGAIN after a previous compact, we
+    // want to compress again before the next LLM call. Otherwise long
+    // sessions die with "context_length_exceeded" at provider level.
+    if (turn > 1 && contextEngine.shouldCompress(messages)) {
+      const second = contextEngine.compress(messages);
+      if (second.compressed) {
+        messages.length = 0;
+        messages.push(...second.messages);
+        yield { type: 'context.compressed.again', ...second };
+      }
+    }
 
     let turnText = '';
     let toolCalls = [];
@@ -462,7 +486,15 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       // ── Personal model growth: capture tool call ──────────────────
       if (FEEDBACK) FEEDBACK.captureToolCall(call.tool, call.args, { provider, model, turn });
 
-      const result = await TOOLS.invoke(call.tool, call.args);
+      const result = await toolRuntime.invoke(call.tool, call.args, {
+        signal: opts.signal,
+        sessionId: opts.sessionId,
+        operatorInitiated: opts.operatorInitiated,
+        permissionProfile: opts.permissionProfile,
+        approvalCallback: opts.approvalCallback,
+        callId: call.id,
+        dependencies: opts.dependencies,
+      });
 
       // ── Personal model growth: capture tool result ─────────────────
       if (FEEDBACK) FEEDBACK.captureToolResult(call.tool, result, { provider, model, turn });
