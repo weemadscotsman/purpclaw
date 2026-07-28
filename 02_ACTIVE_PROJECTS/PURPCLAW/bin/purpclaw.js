@@ -4966,12 +4966,12 @@ async function cmdReview(args) {
   const isJson = !!flags.json;
 
   // Use Git Bash shell on Windows to run git commands reliably
-  function run(cmd) {
+  function run(cmd, timeout = 15000) {
     const envStr = 'GIT_TERMINAL_PROMPT=0 GIT_PAGER=cat';
     const shell = 'C:/Program Files/Git/bin/bash.exe';
     try {
       const r = execSync(`${envStr} ${cmd}`, {
-        encoding: 'utf-8', timeout: 15000,
+        encoding: 'utf-8', timeout,
         shell,
         maxBuffer: 10 * 1024 * 1024,
       });
@@ -4992,12 +4992,12 @@ async function cmdReview(args) {
   function getDiff(selector) {
     switch (selector) {
       case 'uncommitted': {
-        const staged = run('git diff --cached --stat 2>/dev/null');
         // Note: bare `git diff --stat` hangs on Windows — always specify HEAD
-        const unstaged = run('git diff --stat HEAD 2>/dev/null');
-        const untracked = run('git status --porcelain 2>/dev/null')
-          .split('\n').filter(l => l.startsWith('??')).map(l => l.slice(3));
-        return { staged, unstaged, untracked, type: 'uncommitted' };
+        const staged = run('git diff --cached --stat 2>/dev/null', 15000);
+        const unstaged = run('git diff --stat HEAD 2>/dev/null', 15000);
+        const untrackedRaw = run('git status --porcelain 2>/dev/null', 30000);
+        const untracked = untrackedRaw.split('\n').filter(l => l.startsWith('??')).map(l => l.slice(3)).slice(0, 50);
+        return { staged, unstaged, untracked, type: 'uncommitted', untrackedTotal: untrackedRaw.split('\n').filter(l => l.startsWith('??')).length };
       }
       case 'base': {
         if (!flags.base) return null;
@@ -5046,10 +5046,10 @@ async function cmdReview(args) {
     const unstagedLines = diff.unstaged ? diff.unstaged.trim().split('\n').length : 0;
     console.log(`    staged:     ${sizeBadge(stagedLines)} ${diff.staged || col(C.gray, '(none)')}`);
     console.log(`    unstaged:   ${sizeBadge(unstagedLines)} ${diff.unstaged ? diff.unstaged.trim().split('\n')[0] : col(C.gray, '(none)')}`);
-    console.log(`    untracked:  ${col(C.gray, diff.untracked.length + ' file(s)')}`);
+    console.log(`    untracked:  ${col(C.gray, (diff.untrackedTotal || diff.untracked.length) + ' file(s)')}`);
     if (diff.untracked.length > 0) {
       console.log(`      ${diff.untracked.slice(0, 5).map(f => '? ' + f).join('\n      ')}`);
-      if (diff.untracked.length > 5) console.log(`      ${col(C.gray, '… and ' + (diff.untracked.length - 5) + ' more')}`);
+      if (diff.untracked.length > 5) console.log(`      ${col(C.gray, '… and ' + (diff.untrackedTotal - 5) + ' more')}`);
     }
   } else if (diff.type === 'base') {
     console.log(`    ${col(C.cyan, diff.base + '...HEAD:')} ${diff.diff.split('\n')[0]}`);
@@ -5286,11 +5286,11 @@ case 'registry': return cmdRegistry(args);
       // Codex parity: purpclaw exec review [--uncommitted|--base <branch>|--commit <sha>]
       const sub = (args[0] || '').toLowerCase();
       if (sub === 'review') return cmdReview(args.slice(1));
-      const { execPolicy } = require(path.join(PURP_DIR, 'lib', 'exec-policy'));
+      const execPolicy = require(path.join(PURP_DIR, 'lib', 'exec-policy'));
       if (!args.length) { console.log('  usage: purpclaw exec <command> [args...]\n'); return; }
       const cmdStr = args.join(' ');
       const check = execPolicy.check(cmdStr);
-      if (!check.allowed) { console.log(`${col(C.red, '[X] blocked by policy:')} ${check.reason || check.source || 'unknown'}`); return 1; }
+      if (check.allowed === false) { console.log(`${col(C.red, '[X] blocked by policy:')} ${check.reason || check.source || 'unknown'}`); return 1; }
       const [cmd, ...cmdArgs] = args;
       try {
         const { execSync } = require('child_process');
