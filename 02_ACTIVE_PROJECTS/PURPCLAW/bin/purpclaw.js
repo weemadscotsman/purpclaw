@@ -5330,6 +5330,19 @@ async function cmdRemoteControl(args) {
     return;
   }
 
+  if (sub === 'share') {
+    // Codex: codex remote-control share — generate a shareable URL/token
+    const cfg = loadCfg();
+    const token = Math.random().toString(36).slice(2, 10) + '-' + Math.random().toString(36).slice(2, 6);
+    cfg.shareToken = token;
+    cfg.shareCreated = new Date().toISOString();
+    fs.writeFileSync(RC, JSON.stringify(cfg, null, 2));
+    console.log('  Share token: ' + col(C.cyan, token));
+    console.log(col(C.gray, '  Remote clients connect via: purpclaw remote connect ' + token));
+    console.log('');
+    return;
+  }
+
   // Default: status
   const cfg = loadCfg();
   console.log(`  ${col(C.gray, 'Status')}: ${cfg.enabled ? col(C.green, 'enabled') : col(C.yellow, 'disabled')}`);
@@ -6009,6 +6022,18 @@ case 'registry': return cmdRegistry(args);
       if (sub === 'archive')   return cmdArchive(args.slice(1));
       if (sub === 'delete')    return cmdDelete(args.slice(1));
       if (sub === 'unarchive') return cmdArchive(args.slice(1), true);
+
+      // --help and --json are reserved flags, not exec subcommands
+      if (sub === '--help' || sub === '-h' || sub === '--json') {
+        console.log('purpclaw exec <subcommand> [args...]');
+        console.log('  review [--uncommitted|--base <branch>|--commit <sha>|--prompt <text>] [--json]');
+        console.log('  archive <session-id>');
+        console.log('  delete  <session-id>');
+        console.log('  unarchive <session-id>');
+        console.log('  <any shell command>  (run directly, subject to exec-policy)');
+        return 0;
+      }
+
       const execPolicy = require(path.join(PURP_DIR, 'lib', 'exec-policy'));
       if (!args.length) { console.log('  usage: purpclaw exec <command> [args...]\n'); return; }
       const cmdStr = args.join(' ');
@@ -6047,14 +6072,8 @@ case 'registry': return cmdRegistry(args);
     case 'hooks':    return loadCmd('hooks').run(args, sharedCtx());
     case 'plugin':   return loadCmd('plugin').run(args, sharedCtx());
     case 'app': {
-      (async () => {
-        try {
-          await loadCmd('desktop').run(args, sharedCtx());
-        } catch (e) {
-          console.error('app error:', e.message);
-        }
-        setImmediate(() => process.exit(0));
-      })();
+      const { runAppCmd } = require(path.join(PURP_DIR, 'lib', 'commands', 'app-cmd.js'));
+      (async () => { await runAppCmd(args, { loadCmd, sharedCtx }); process.exit(0); })();
       return;
     }
     case 'secrets':  return loadCmd('secrets').run(args, sharedCtx());
