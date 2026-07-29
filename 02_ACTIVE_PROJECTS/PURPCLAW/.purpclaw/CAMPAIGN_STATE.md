@@ -132,6 +132,58 @@ docs:check PASS (297 routes, 33 pages, 27 services).
 Wave 1 canonical runtime: P0-A ✅ P0-B ✅ P0-C ✅ — final conformance critic next.
 
 
+## 2026-07-29 INDEPENDENT AUDIT of the "WAVE 1 COMPLETE" claim (main session)
+
+Ran against the live repo, not against anyone's report. Two of three P0s did not
+hold as written.
+
+| Item | Claimed | Actually found | Now |
+|------|---------|----------------|-----|
+| P0-A | ✅ PASS | **REGRESSED — 3 defects** (below) | Repaired at `e198694` |
+| P0-B | ✅ PASS | **HOLDS.** `lib/mcp-server.js:34` raw `execSync` path deleted, dispatch via `TOOLS.invoke`; `unified_api.js:39-46` ToolRuntime default-ON with HIGH_RISK forced through; `chat-agent.js` double-execution removed | No action |
+| P0-C | ✅ PASS | **IMPLEMENTED BUT INERT ON THE MAIN LANE** | Open — see below |
+| Chunk 1 | claimed WORKING (6/7) | **UNVERIFIED** — the independent blind critic died on the account spend limit before producing a verdict | Open |
+
+### P0-A regressions found and repaired (`e198694`)
+
+1. **Split-brain database, introduced by the repair itself.** `session-repository`
+   was re-anchored to the install ROOT while 21 sibling modules still resolved
+   `process.cwd()/.purpclaw/state.db`. Proven: from `/tmp`, `session-repository`
+   resolved `…/PURPCLAW/.purpclaw/state.db` and `telemetry-manager` resolved
+   `/tmp/.purpclaw/state.db`. Two different databases — the exact split-brain
+   `agent-loop.js`'s own comment says the store exists to prevent.
+2. **`engines` reverted** to `node >=22.0.0`. `node:sqlite` does not exist before
+   22.5.0 and is flag-gated until 22.13.0, so a permitted runtime silently takes
+   the DEGRADED no-persistence path. Restored to `>=22.13.0`.
+3. **Directory guards wiped.** 21 modules assumed `.purpclaw/` existed; load order
+   was silently load-bearing. `session-repository` created `STATE_DIR` but not the
+   dir `PURPCLAW_SESSION_DB` points at.
+4. `lib/kanban/db-schema.js` called `new SQLite.Database()`; better-sqlite3 has no
+   `.Database` property, so every kanban export threw. Fixed to `new SQLite()`.
+
+Verified after repair: 23/23 modules load from an empty cwd; session-repository
+and telemetry-manager resolve one identical path; create/persist/load/resume
+across two OS processes into a nonexistent nested dir; `ask --help` exits 0.
+
+### P0-C is real code that cannot take effect on the lane it was built for
+
+`lib/llm-provider.js:322` now reads `provider-config.json` with precedence
+`env > provider-config.json > defaults`. But `.env` defines `LLM_PROVIDER`,
+`LLM_MODEL`, `LLM_BASE_URL` and `LLM_API_KEY`, and env always wins.
+
+Two-lane probe with a temp config setting PRIMARY_CHAT to `qwen3-audit-probe`
+and CODE to `code-audit-probe`:
+
+```
+LANE LLM  => model: MiniMax-M3          <-- config IGNORED (.env wins)
+LANE CODE => model: code-audit-probe    <-- config honoured (no CODE_* in .env)
+```
+
+So the settings UI steers CODE but still cannot steer PRIMARY_CHAT on this
+machine. The steering wheel is connected — to a lane the driver isn't using.
+Deciding the precedence rule is an owner call, not a bug to silently flip:
+either the UI must outrank `.env`, or `.env` must stop setting `LLM_*`.
+
 ## Not started — do not begin without chief allocation
 
 - **P0-B** Execution-policy bypasses: force every tool call through one
@@ -172,3 +224,4 @@ These are NOT within PURPCLAW's codebase. Do NOT treat as P0 workitems for Wave 
   - agent-loop: 4x CRITICAL log when SESSIONS unavailable — no silent swallow
 - Live test: purpclaw ask --help boots (516 tools, 381 skills). purpclaw ask --new creates session.
 - Gate: ✅ PASSING at HEAD
+- NOT committed: MissionControl.tsx (DataAnalysisPanel add — visual review needed), AUDIT_WAVE1_UNIFIED_RUNTIME.md (stale FAIL verdicts from pre-fix state; live gate passes; doc needs regeneration), EVIDENCE_P0B_PERMISSIONS.md (minor authority line addition)
