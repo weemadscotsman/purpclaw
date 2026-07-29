@@ -62,6 +62,7 @@
     "pm2:restart": "pm2 restart ecosystem.config.js",
     "pm2:status": "pm2 list",
     "docs:check": "node scripts/validate-docs.js",
+    "parity:check": "node scripts/parity-authority-check.js",
   "version:status": "node scripts/manifest.js status",
   "version:diff": "node scripts/manifest.js diff",
   "stamp": "node scripts/manifest.js stamp",

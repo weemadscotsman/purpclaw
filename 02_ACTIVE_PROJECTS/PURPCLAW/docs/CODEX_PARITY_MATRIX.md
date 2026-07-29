@@ -1,3 +1,5 @@
+> **SUPERSEDED:** This document is retained for historical reference only. The sole authoritative parity roadmap is [`docs/parity/CANONICAL_PARITY_PRIORITY.md`](parity/CANONICAL_PARITY_PRIORITY.md). Do not use this file to define current scope, completion, priorities, or parity status.
+
 # Codex Harness Parity Matrix
 **Date**: 2026-07-30 (Round 4 audit — canonical)
 **Codex Reference**: `github.com/openai/codex` — `codex-rs/` crate analysis
