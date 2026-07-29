@@ -241,7 +241,11 @@ const handlers = {
     }
 
     try {
-      const result = await TOOLS.invoke(canonicalName, args);
+      // P0-B: route through ToolRuntime — permission profile + governance + approval + guardrails
+      const result = await TOOL_RUNTIME.invoke(canonicalName, args, {
+        permissionProfile: SESSION_PROFILE,
+        operatorInitiated: true,
+      });
       if (result.ok) {
         response(id, {
           content: [{ type: 'text', text: result.content || result.stdout || '' }],
