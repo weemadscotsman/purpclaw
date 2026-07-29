@@ -2681,6 +2681,32 @@ async function cmdArchetypes(args) {
 async function cmdCost(args) {
   const UP = (() => { try { return require('../lib/usage-pricing'); } catch { return null; } })();
   if (!UP) { console.log('\n[X] usage-pricing not available\n'); return; }
+
+  const sub = (args[0] || 'calc').toLowerCase();
+
+  // purpclaw cost summary — read accumulated cost ledger
+  if (sub === 'summary' || sub === 'report') {
+    const CL = (() => { try { return require('../lib/cost-ledger'); } catch { return null; } })();
+    if (!CL) { console.log('\n[X] cost-ledger not available\n'); return; }
+    const { tasks, totalCost, totalCalls } = CL.summary();
+    console.log(`\n  ${col(C.bold || C.white, 'COST SUMMARY')}  ${col(C.gray, '· from cost-ledger.jsonl')}\n`);
+    if (!tasks.length) {
+      console.log(`  ${col(C.gray, 'No recorded calls yet.')}\n`);
+      return;
+    }
+    console.log(`  ${col(C.cyan, 'total cost:')}   ${col(C.green, '$' + totalCost)}`);
+    console.log(`  ${col(C.cyan, 'total calls:')}  ${col(C.white, totalCalls)}\n`);
+    console.log(`  ${col(C.gray, 'by task:')}`);
+    for (const t of tasks.slice(0, 20)) {
+      const rate = t.cost < 0.01 ? C.gray : t.cost < 0.10 ? C.yellow : C.red;
+      console.log(`    ${col(C.cyan, t.taskId.padEnd(20))}  ${col(C.white, String(t.calls).padStart(3))} calls  ${col(rate, '$' + t.cost)}`);
+    }
+    if (tasks.length > 20) console.log(`  ${col(C.gray, `...and ${tasks.length - 20} more tasks`)}`);
+    console.log('');
+    return;
+  }
+
+  // Default: cost calculator
   const provider = args[0] || 'openai';
   const model    = args[1] || 'gpt-4o';
   const inputTok = parseInt(args[2] || '1000', 10);
@@ -4972,6 +4998,7 @@ function cmdHelp() {
     ['purpclaw route "<task>"',     'Show which lane a task routes to'],
     ['purpclaw providers status',    'Provider readiness: configured / verified / auth_failed'],
     ['purpclaw providers verify',    'Re-probe all providers with live calls'],
+    ['purpclaw cost summary',       'Cost by task from cost-ledger'],
   ]);
 
   section('🐾  COMPANION PET', [
@@ -5043,6 +5070,7 @@ function cmdHelp() {
     ['purpclaw autofix-pr plan',       'Scan for build/PR issues (read-only)'],
     ['purpclaw autofix-pr run <plan>', 'Execute a repair plan (governance-gated)'],
     ['purpclaw autofix-pr verify',     'Confirm repairs landed'],
+    ['purpclaw stats',                'Tool/session/permission/compaction analytics'],
   ]);
 
   section('🧹  HOUSEKEEPING  (keep the workshop tidy)', [
@@ -7309,6 +7337,7 @@ async function cmdPlugins(args) {
     case 'spring':   return loadCmd('hivemind').run(command.toLowerCase() === 'spring' ? ['spring', ...args] : args, sharedCtx());
     case 'registries':
     case 'registry-audit': return loadCmd('registry-audit').run(args, sharedCtx());
+    case 'stats':         return loadCmd('stats').run(args, sharedCtx());
     // ── Advisory agents (read-only): system conditions + foresight ──
     case 'weather':
     case 'weatherman': return loadCmd('weather').run(args, sharedCtx());
