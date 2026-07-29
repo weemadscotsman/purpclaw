@@ -28,7 +28,7 @@ const fs   = require('fs');
 
 const TOOLS = require('./tools');
 const PROMPTS = require('./prompt-builder');
-const { ContextEngine } = require('./context-engine');
+const { ContextCompressor } = require('./context-compressor');
 const { ToolRuntime } = require('./tool-runtime');
 const announce = require('./events');
 // S1: Lifecycle event bus — Steering vNext
@@ -36,6 +36,8 @@ const LIFECYCLE = (() => { try { return require('./hooks/lifecycle-bus'); } catc
 const PARITY_HOOKS = (() => { try { return require('../parity/hooks/engine'); } catch { return null; } })();
 // S7: Continuity — snapshot at turn boundary for crash recovery
 const CONTINUITY = (() => { try { return require('./continuity'); } catch { return null; } })();
+// S8: Session Lifecycle — crash recovery, resume_pending, stuck-loop, agent LRU cache
+const SESSION_STORE = (() => { try { return require('./session-store'); } catch { return null; } })();
 // S2: Scoped Memory — ingest on task/turn completion
 const SCOPED_MEMORY = (() => { try { return require('./scoped-memory'); } catch { return null; } })();
 // S4: Priority Steer — interrupt now + queue next channels
@@ -49,13 +51,54 @@ const IDLE_ENGINE = (() => { try { return require('./idle-engine'); } catch { re
 // The loop and every user-facing transport share the same durable SQLite
 // repository. Keeping the legacy JSON store here caused split-brain history:
 // a failed tool run could be visible to the CLI but disappear from desktop.
-const SESSIONS = (() => { try { return require('./session-repository'); } catch { return null; } })();
+// NOT optional like the modules above: a null here means every turn this
+// process runs is unrecoverable, and nothing else in the loop will say so.
+// It stayed silent for as long as the require was broken, which is how a
+// dead DatabaseSync import went unnoticed across 23 modules.
+const SESSIONS = (() => {
+  try { return require('./session-repository'); }
+  catch (e) {
+    console.error(
+      `[agent-loop] DEGRADED RUNTIME: session persistence is DISABLED.\n` +
+      `  cause: ${e && e.message}\n` +
+      `  effect: this session will not be saved, listed, resumed, or visible to other surfaces.\n` +
+      `  note: the session store needs node:sqlite (Node >=22.5); this process is ${process.version}.`
+    );
+    return null;
+  }
+})();
 // Cognitive spine + memory layers — wired in 2026-06-22 to close the
 // "spine running, agent blind" gap. Every prompt now asks the spine
 // for context (recall + lifted facts + cognitive snapshot), every tool
 // result writes back to the rules/modal/diagnostics/memory stack.
 const COGNITIVE = (() => { try { return require('./cognitive-client'); } catch { return null; } })();
 const MEMORY = (() => { try { return require('./memory-client'); } catch { return null; } })();
+
+// S9: File watcher — hot-reload skills and config on file changes.
+// Watches the skills/ directory (and subdirs) for .md/.js changes and
+// reloads the skill registry. Also watches config.json in PURP_DIR.
+// Passive by default (no-op); set FILE_WATCHER=1 or start via
+// `purpclaw watch <dir>` to activate.
+let _fileWatcher = null;
+function _initFileWatcher() {
+  if (_fileWatcher) return; // already running
+  if (process.env.FILE_WATCHER !== '1') return;
+  try {
+    const { createFileWatcher, makeReloadCallbacks } = require('./file-watcher');
+    const PURP_DIR = process.env.PURP_DIR || path.join(process.env.HOME || process.env.USERPROFILE || '/tmp', '.purpclaw');
+    const skillsDir = path.join(process.env.PWD || process.cwd(), 'skills');
+    const configPath = path.join(PURP_DIR, 'config.json');
+    const cbs = makeReloadCallbacks({ skillsDir, configPath });
+    _fileWatcher = createFileWatcher(process.cwd(), cbs);
+    console.log('[agent-loop] file watcher active — watching:', process.cwd());
+    // Clean up on process exit
+    process.on('exit', () => { if (_fileWatcher) { _fileWatcher.close(); _fileWatcher = null; } });
+  } catch (err) {
+    console.warn('[agent-loop] file watcher init failed:', err.message);
+  }
+}
+_initFileWatcher();
+
 // SIGINT graceful shutdown — catches Ctrl+C in terminal and stops the agent loop
 // after saving the current session state. Matches Codex CLI behaviour.
 // Codex: Ctrl+C → graceful stop, partial results saved, session resumable.
@@ -204,12 +247,34 @@ function buildSystemPrompt(opts = {}) {
           `\n# Latest findings (use these to answer "what's going on")\n${recent}`;
       } catch { return ''; }
     })();
-  return PROMPTS.buildPrompt({
+  const text = PROMPTS.buildPrompt({
     base: SYSTEM_PROMPT_BASE, tools, privacy: PRIVACY.privacyPromptBlock(),
     structuredTools: opts.structuredTools, cwd, model: opts.model,
     platform: opts.platform, sessionId: opts.sessionId, liveStack: liveStackBlock,
     goal: opts.goal,
   }).text;
+  const repoMap = _repoMapBlock(cwd, opts);
+  return repoMap ? `${text}\n\n${repoMap}` : text;
+}
+
+// ── Repo map injection ────────────────────────────────────────────────────────
+// Opt-in structural map of the project, ranked by how many files reference each
+// file. Off unless REPO_MAP=1 (or opts.repoMap === true); opts.repoMap === false
+// always wins, which is what --no-repo-map sets.
+// ponytail: cached per cwd for the process lifetime — buildGraph crawls the whole
+// tree and buildSystemPrompt runs every turn. Restart to pick up new files.
+const _repoMapCache = new Map();
+function _repoMapBlock(cwd, opts = {}) {
+  const enabled = opts.repoMap !== undefined ? opts.repoMap : process.env.REPO_MAP === '1';
+  if (!enabled) return '';
+  if (_repoMapCache.has(cwd)) return _repoMapCache.get(cwd);
+  let block = '';
+  try {
+    const maxTokens = parseInt(process.env.REPO_MAP_TOKENS || '2048', 10);
+    block = require('./repo-mapper').runMap({ root: cwd, maxTokens });
+  } catch { block = ''; }  // never let the map break a turn
+  _repoMapCache.set(cwd, block);
+  return block;
 }
 
 /**
@@ -353,11 +418,11 @@ async function* agentTurn({ messages, model, provider, opts = {} }) {
  */
 async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   const maxTurns = opts.maxTurns ?? 10;
-  const contextEngine = opts.contextEngine || new ContextEngine({ contextLength: opts.contextLength || 204_800, threshold: opts.compressionThreshold ?? 0.5 });
+  const contextEngine = opts.contextEngine || new ContextCompressor({ contextLength: opts.contextLength || 204_800, threshold: opts.compressionThreshold ?? 0.75 });
   const needsCompact = contextEngine.shouldCompress(history);
   // Codex parity: PreCompact — fire BEFORE compression
   if (needsCompact && PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('PreCompact', { reason: 'initial', messageCount: history.length })).catch(() => {});
-  const compacted = needsCompact ? contextEngine.compress(history) : { messages: [...history], compressed: false };
+  const compacted = needsCompact ? await contextEngine.compress(history) : { messages: [...history], compressed: false };
   const messages = [...compacted.messages];
   if (compacted.compressed) yield { type: 'context.compressed', ...compacted };
   // Codex parity: PostCompact — fire AFTER compression
@@ -415,10 +480,19 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   // Silent fail — if spine is offline we just run blind (the old behaviour).
   if (!opts.noSpine && prompt && (COGNITIVE || MEMORY)) {
     try {
+      // Wrap each service call with a 5-second timeout — prevents one hanging
+      // service from blocking the entire first LLM turn indefinitely.
+      const withTimeout = (p, ms) => {
+        let timer;
+        return Promise.race([
+          p,
+          new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('timeout')), ms); }),
+        ]).finally(() => clearTimeout(timer));
+      };
       const [recall, snapshot, lifted] = await Promise.all([
-        MEMORY  ? MEMORY.recall(prompt, { limit: 4 }) : Promise.resolve({ formatted: '' }),
-        COGNITIVE ? COGNITIVE.getCognitiveSnapshot() : Promise.resolve(null),
-        COGNITIVE ? COGNITIVE.getLiftedFacts()      : Promise.resolve(null),
+        MEMORY    ? withTimeout(MEMORY.recall(prompt, { limit: 4 }), 5000).catch(() => ({ formatted: '' })) : Promise.resolve({ formatted: '' }),
+        COGNITIVE ? withTimeout(COGNITIVE.getCognitiveSnapshot(), 5000).catch(() => null) : Promise.resolve(null),
+        COGNITIVE ? withTimeout(COGNITIVE.getLiftedFacts(), 5000).catch(() => null) : Promise.resolve(null),
       ]);
       const recallBlock = recall?.formatted || '';
       const liftedList  = Array.isArray(lifted?.lifted_facts)
@@ -458,6 +532,8 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       yield { type: 'priority.interrupt', reason: intr?.reason || 'steer', detail: intr };
       if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'priority-steer').catch(() => {});
       if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'priority-steer' })).catch(() => {});
+      process.removeListener('SIGINT', _sigintHandler);
+      yield { type: 'priority.queue', command: next };
       break;
     }
     // SIGINT: graceful Ctrl+C — save session and stop cleanly (Codex behaviour).
@@ -486,7 +562,7 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
     if (turn > 1 && contextEngine.shouldCompress(messages)) {
       // Codex parity: PreCompact — mid-loop compression
       if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('PreCompact', { reason: 'mid-loop', turn, messageCount: messages.length })).catch(() => {});
-      const second = contextEngine.compress(messages);
+      const second = await contextEngine.compress(messages);
       if (second.compressed) {
         messages.length = 0;
         messages.push(...second.messages);
@@ -514,7 +590,21 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       } else if (ev.type === 'error') {
         // Codex parity: Error hook — fire when agent turn encounters an error
         if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('Error', { error: ev.error, turn, sessionId: opts.sessionId })).catch(() => {});
-        yield ev;
+        // ── Full cleanup (mirrors normal exit path lines 703–727) ──────────
+        if (SESSIONS && opts.sessionId) SESSIONS.saveSession(opts.sessionId, messages, { provider, model });
+        if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'error').catch(() => {});
+        if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'error', turns, totalContent })).catch(() => {});
+        if (MEMORY) { try { MEMORY.react(`agent error: ${ev.error}`, 'agent_loop'); } catch {} }
+        if (COGNITIVE) {
+          try {
+            COGNITIVE.learn('PURPCLAW_CORE', 'attending_task', false);
+            COGNITIVE.setBelief('PURPCLAW_CORE', 'last_turn_succeeded', 0.0);
+            COGNITIVE.reportEvent({ source: 'agent_loop', event: 'agent_error', severity: 'ERROR', data: { error: ev.error, turn } });
+          } catch {}
+        }
+        if (IDLE_ENGINE) IDLE_ENGINE.markIdle('agent-loop-error');
+        if (SESSION_STORE) SESSION_STORE.writeCleanShutdown();
+        yield { type: 'done', turns: turn, totalContent, error: ev.error };
         return;
       }
     }
@@ -673,6 +763,8 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
     // Loop again with the updated messages
   }
   // ── Auto-save session ───────────────────────────────────────
+  // Always remove SIGINT handler on normal exit — prevents accumulation.
+  process.removeListener('SIGINT', _sigintHandler);
   if (SESSIONS && opts.sessionId) SESSIONS.saveSession(opts.sessionId, messages, { provider, model });
   if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'completed').catch(() => {});
   if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'completed', turns, totalContent })).catch(() => {});
@@ -694,6 +786,8 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   }
   // ── Idle engine: session ended (max turns or natural) ──────────────
   if (IDLE_ENGINE) IDLE_ENGINE.markIdle('agent-loop-max-turns');
+  // S8: Graceful exit — write clean shutdown marker so next startup skips crash recovery
+  if (SESSION_STORE) SESSION_STORE.writeCleanShutdown();
   yield { type: 'done', turns: turn, totalContent, maxTurnsHit: true };
 }
 
