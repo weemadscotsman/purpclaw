@@ -37,10 +37,8 @@ const LLM = require('./lib/llm-provider');
 const whoamiCache = { data: null, cachedAt: 0, TTL: 15000 };
 
 // P0-B: Module-level ToolRuntime for executeTool gate.
-// Ships behind PURPCLAW_API_TOOL_GATE=1. When disabled, runTool handles
-// all dispatch (previous behavior). When enabled, tools not in runTool's
-// switch fallthrough go through ToolRuntime with 'standard' permission
-// profile — adding permission checks, path-security, approval, guardrails.
+// Default: ENABLED (gate goes through ToolRuntime with 'standard' permission).
+// Disable with PURPCLAW_API_TOOL_GATE=0 — returns to legacy runTool-only dispatch.
 let _toolRuntime = null;
 function getToolRuntime() {
   if (!_toolRuntime) {
@@ -1120,14 +1118,12 @@ async function executeTool(name, args) {
     } catch (e) { result = ok(`Dynamic Skill Error: ${e.message}`); }
   } else {
     // P0-B: Try runTool first — it handles ~80 hardcoded desktop/screen/browser/OCR cases.
-    // If runTool doesn't recognize the tool AND PURPCLAW_API_TOOL_GATE=1 is set,
-    // route through ToolRuntime with 'standard' permission profile.
-    // This adds permission checks, path-security, approval, guardrails, and checkpoints
-    // to the 515-tool surface reachable via the HTTP API.
+    // Unknown tools route through ToolRuntime with 'standard' permission profile by default.
+    // Disable (revert to legacy): PURPCLAW_API_TOOL_GATE=0
     try {
       result = await runTool(name, args);
       if (!result.ok && result.content && result.content.startsWith('Unknown tool')) {
-        if (process.env.PURPCLAW_API_TOOL_GATE === '1') {
+        if (process.env.PURPCLAW_API_TOOL_GATE !== '0') {
           const tr = getToolRuntime();
           const trResult = await tr.invoke(name, args, { operatorInitiated: true });
           result = ok(trResult.ok
