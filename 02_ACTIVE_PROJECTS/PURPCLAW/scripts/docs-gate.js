@@ -233,8 +233,8 @@ if (!manifest) {
 
 let validateOk = true;
 try {
-  const { execSync } = require('child_process');
-  const out = execSync('node scripts/validate-docs.js', {
+  const { execFileSync } = require('child_process');
+  const out = execFileSync(process.execPath, ['scripts/validate-docs.js'], {
     cwd: ROOT,
     timeout: 30_000,
     encoding: 'utf8',
@@ -250,8 +250,8 @@ try {
 
 // GATE 7: parity authority - one canonical roadmap, every other parity doc points at it
 try {
-  const { execSync } = require('child_process');
-  const out = execSync('node scripts/parity-authority-check.js', {
+  const { execFileSync } = require('child_process');
+  const out = execFileSync(process.execPath, ['scripts/parity-authority-check.js'], {
     cwd: ROOT,
     timeout: 60_000,
     encoding: 'utf8',
@@ -291,6 +291,10 @@ const parityDocs = findParityDocs(ROOT);
 for (const docPath of parityDocs) {
   const content = read(path.relative(ROOT, docPath)) || '';
   const docName = path.relative(ROOT, docPath);
+
+  // Superseded docs are frozen historical evidence — their contradictions and
+  // stale counts are the point. Only the canonical roadmap is held to account.
+  if (/\*\*SUPERSEDED:\*\*|"_superseded"/.test(content)) continue;
 
   // 1. Self-contradiction check: same feature keyword marked both done and not-done
   const doneMap = {};
@@ -365,4 +369,6 @@ if (errors.length) {
   console.log('DOC GATE PASSED');
   process.exit(0);
 }
+
+
 

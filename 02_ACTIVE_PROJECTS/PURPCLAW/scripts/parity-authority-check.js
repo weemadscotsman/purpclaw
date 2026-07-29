@@ -37,7 +37,10 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const CANON_REL = 'docs/parity/CANONICAL_PARITY_PRIORITY.md';
 const CANON_BASENAME = 'CANONICAL_PARITY_PRIORITY.md';
-const AUTHORITY_MARKER = 'Status: **CANONICAL**';
+// Prefix match, not the full literal: the canonical doc's status line gets
+// reworded ("**CANONICAL — SOLE AUTHORITATIVE...**") and an exact match makes
+// the gate fail on a copy-edit rather than on a real second claimant.
+const AUTHORITY_MARKER = 'Status: **CANONICAL';
 
 const EXCLUDE_DIRS = new Set([
   '.git', 'node_modules', 'vendor', 'agent_work', '.omnicode',
