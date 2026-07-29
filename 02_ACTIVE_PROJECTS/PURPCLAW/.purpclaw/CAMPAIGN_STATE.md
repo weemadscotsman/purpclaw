@@ -128,3 +128,25 @@ Wave 1 canonical runtime: P0-A ✅ P0-B ✅ P0-C ✅ — final conformance criti
 - **P0-C** Provider settings: one config source; `resolveLane()` consumed by
   actual model execution; two lanes proven to route to two configured providers.
 - Chunks 2–5 of the CLI parity work.
+
+## Post-campaign security findings (Hermes gateway — not PURPCLAW)
+
+These were surfaced by the P0-B critic auditing SSE paths. They belong to the
+Hermes gateway, not PURPCLAW. Recorded here for awareness and separate triage:
+
+| # | Finding | System | Severity |
+|---|---------|--------|----------|
+| H-SSE-1 | `/v1/runs/{run_id}/events` SSE has no sessionId in response headers | Hermes gateway | High |
+| H-SSE-2 | `_derive_chat_session_id` uses SHA256(system_prompt + first_msg) — same first msg = same session across users | Hermes gateway | High |
+| H-SSE-3 | No per-stream auth on SSE after initial API_SERVER_KEY check | Hermes gateway | High |
+| H-SSE-4 | `X-Hermes-Session-Id` request header has no HMAC integrity check | Hermes gateway | Medium |
+
+These are NOT within PURPCLAW's codebase. Do NOT treat as P0 workitems for Wave 1.
+
+## 2026-07-29 late session 2
+
+| # | Role | Task | Status |
+|---|------|------|--------|
+| 13 | P0-B blind critic (corrected) | Review PURPCLAW P0-B commits 9181100/9ea6ac1/d2ccd1e | Running — deleg_9cf5cc09 |
+| 14 | P0-C blind critic | Review PURPCLAW P0-C commit 8d73427 | Running — deleg_40f690c1 |
+

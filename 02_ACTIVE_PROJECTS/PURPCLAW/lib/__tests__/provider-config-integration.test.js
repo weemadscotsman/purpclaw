@@ -56,3 +56,13 @@ console.log('✔ T5: user-config model alias resolved correctly');
 
 cleanup();
 console.log('\n✅ ALL INTEGRATION TESTS PASS — provider-config.json → routing-decisions bridge verified');
+
+// ── TEST 6: auto-classification path also receives user-config override ──────────
+// Critic noted: when a message auto-classifies to a lane with a user override,
+// the bridge should apply. This closes the conditional pass gap.
+setup({ reason: { provider: 'deepseek', model: 'deepseek-ai/deepseek-v4-pro' } });
+const r6 = resolve({ message: 'plan the architecture for the new service' });
+console.assert(r6.provider === 'deepseek', `T6: expected deepseek, got ${r6.provider}`);
+console.assert(r6.model === 'deepseek-ai/deepseek-v4-pro', `T6: model=${r6.model}`);
+console.assert(r6.reason === "user settings for 'reason'", `T6: reason=${r6.reason}`);
+console.log('✔ T6: auto-classify + user-config override applies correctly');

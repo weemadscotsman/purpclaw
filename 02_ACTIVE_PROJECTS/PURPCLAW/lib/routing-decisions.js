@@ -342,20 +342,26 @@ function resolve(opts = {}) {
     }
   }
 
+// ── Apply user-config.json settings on top of a resolved lane ──────────────────
+// Makes the settings page actually change runtime behavior.
+// Returns a new resolved object; original is unmodified.
+function _applyUserSettings(resolved, laneName) {
+  const pc = _loadProviderConfig();
+  const userLane = pc ? pc.getLane(laneName) : null;
+  if (userLane && (userLane.provider || userLane.model)) {
+    const next = { ...resolved };
+    if (userLane.provider) { next.provider = userLane.provider; }
+    if (userLane.model)    { next.model = resolveAlias(userLane.model); }
+    next.reason = `user settings for '${laneName}'`;
+    return next;
+  }
+  return resolved;
+}
+
   // 2. Explicit lane
   if (explicitLane && LANES[explicitLane]) {
-    // Apply user settings from provider-config.json first (settings page overrides).
-    // This is what makes the settings UI actually change runtime behavior.
-    const pc = _loadProviderConfig();
-    const userLane = pc ? pc.getLane(explicitLane) : null;
-    const resolved = { ...LANES[explicitLane], lane: explicitLane };
-    if (userLane && (userLane.provider || userLane.model)) {
-      if (userLane.provider) { resolved.provider = userLane.provider; }
-      if (userLane.model)    { resolved.model = resolveAlias(userLane.model); }
-      resolved.reason = `user settings for '${explicitLane}'`;
-    } else {
-      resolved.reason = 'explicit lane';
-    }
+    const resolved = _applyUserSettings({ ...LANES[explicitLane], lane: explicitLane }, explicitLane);
+    if (!resolved.reason) resolved.reason = 'explicit lane';
     // Explicit overrides always win over both lane defaults and user settings
     if (explicitModel) {
       resolved.model = resolveAlias(explicitModel);
@@ -407,12 +413,14 @@ function resolve(opts = {}) {
     for (const [l, s] of Object.entries(scores)) {
       if (s > bestScore) { best = l; bestScore = s; }
     }
-    const resolved = { ...LANES[best], lane: best, reason: bestScore ? `classified '${best}' (score ${bestScore})` : 'default lane' };
+    let resolved = { ...LANES[best], lane: best, reason: bestScore ? `classified '${best}' (score ${bestScore})` : 'default lane' };
+    resolved = _applyUserSettings(resolved, best);
     return nimRedirect(resolved);
   }
 
   // 6. Fall back to default lane
-  const resolved = { ...LANES[DEFAULT_LANE], lane: DEFAULT_LANE, reason: 'default lane' };
+  let resolved = { ...LANES[DEFAULT_LANE], lane: DEFAULT_LANE, reason: 'default lane' };
+  resolved = _applyUserSettings(resolved, DEFAULT_LANE);
   return nimRedirect(resolved);
 }
 
