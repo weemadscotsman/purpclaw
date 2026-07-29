@@ -320,8 +320,40 @@ function firstEnv(keys = []) {
 // ── Config resolution ─────────────────────────────────────────────────────────
 
 function resolveConfig(envPrefix = 'LLM') {
-  const providerName = (process.env[`${envPrefix}_PROVIDER`] || 'openai').toLowerCase();
-  const provider     = PROVIDERS[providerName] || PROVIDERS.openai;
+  // P0-C: Check provider-config.json for user settings (from WebUI settings page).
+  // Precedence: env vars > provider-config.json > hardcoded defaults.
+  // The settings UI writes to ~/.purpclaw/provider-config.json (lane: {provider, model}).
+  // If env vars are not set, resolveConfig now reads that file so the WebUI
+  // settings actually steer the runtime instead of being ignored.
+  let configProvider = null, configModel = null;
+  try {
+    const os = require('os');
+    const path = require('path');
+    const cfgPath = process.env.PROVIDER_CONFIG_PATH
+      || path.join(os.homedir(), '.purpclaw', 'provider-config.json');
+    const fs = require('fs');
+    const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+    // Map LLM env prefix to a lane name. Default 'LLM' → PRIMARY_CHAT.
+    const laneName = envPrefix === 'LLM' ? 'PRIMARY_CHAT'
+      : envPrefix === 'SWARM' ? 'SWARM'
+      : envPrefix === 'CODE' ? 'CODE'
+      : envPrefix === 'DIVISION' ? 'DIVISION'
+      : envPrefix === 'REASONING' ? 'REASONING'
+      : envPrefix === 'FALLBACK' ? 'FALLBACK'
+      : 'PRIMARY_CHAT';
+    const lane = (cfg.lanes || {})[laneName] || {};
+    if (lane.provider) configProvider = lane.provider;
+    if (lane.model) configModel = lane.model;
+  } catch (e) { /* config file absent or unreadable — fall through */ }
+
+  const providerName = (process.env[`${envPrefix}_PROVIDER`] || configProvider || 'openai').toLowerCase();
+  const provider     = PROVIDERS[providerName];
+  if (!provider) {
+    const known = Object.keys(PROVIDERS).join(', ');
+    console.warn(`[LLM] Unknown ${envPrefix}_PROVIDER="${providerName}" — falling back to openai. Known providers: ${known}`);
+    return resolveConfig('OPENAI'); // recurse to get a valid config; will warn again about missing API key
+  }
+  const _provider = provider;
 
   const aliases  = PROVIDER_ENV_ALIASES[providerName] || {};
   // Native providers own their own baseUrl. Without this guard, a shared
@@ -335,7 +367,9 @@ function resolveConfig(envPrefix = 'LLM') {
     ? (process.env[`${envPrefix}_BASE_URL`] || firstEnv(aliases.baseUrl) || provider.baseUrl)
     : (                          firstEnv(aliases.baseUrl) || provider.baseUrl);
   const apiKey   = process.env[`${envPrefix}_API_KEY`]  || firstEnv(aliases.apiKey)  || provider.apiKey || '';
-  const model    = process.env[`${envPrefix}_MODEL`]    || firstEnv(aliases.model)   || provider.defaultModel;
+  const model    = (process.env[`${envPrefix}_MODEL`] && process.env[`${envPrefix}_MODEL`].trim())
+                   || (configModel && configModel.trim())
+                   || firstEnv(aliases.model) || provider.defaultModel;
 
   if (!apiKey && providerName !== 'ollama' && providerName !== 'lmstudio' && providerName !== 'custom') {
     // Warn once, don't spam
@@ -996,7 +1030,32 @@ function dispatchStreamChat(cfg, messages, opts) {
  *   LLM_FALLBACK_MODEL     default per-provider (Ollama default: qwen2.5:3b)
  * Returns null when fallback is disabled.
  */
+/**
+ * Deterministic three-tier fallback chain:
+ *
+ * Tier 1 — Primary (cfg.providerName):
+ *   Set by LLM_PROVIDER env var or opts.provider per-call override.
+ *   Never silently replaced; this is the caller's intent.
+ *
+ * Tier 2 — Local fallback (fb.providerName):
+ *   Set by LLM_FALLBACK env var (default: ollama, mode: lmstudio).
+ *   Respects LLM_FALLBACK=off | none | 0 to disable.
+ *   Also disabled when LLM_NO_AUTO_FALLBACK=1.
+ *
+ * Tier 3 — Global provider (resolveConfig('LLM')):
+ *   Only used when BOTH Tier 1 AND Tier 2 have failed.
+ *   Guards against a per-agent provider key (e.g. NVIDIA) expiring
+ *   mid-mission while the global provider (MINIMAX) still has quota.
+ *   Set LLM_NO_AUTO_FALLBACK=1 to disable all three tiers at once.
+ *
+ * Opt-out flag: LLM_NO_AUTO_FALLBACK=1
+ *   Disables Tier 2 and Tier 3. Tier 1 failure → immediate throw
+ *   with the real error, no silent re-routing.
+ *
+ * Debug: PURPCLAW_LLM_DEBUG=1 logs every fallback transition.
+ */
 function fallbackConfig() {
+  if (process.env.LLM_NO_AUTO_FALLBACK === '1') return null;
   const mode = (process.env.LLM_FALLBACK || 'ollama').toLowerCase().trim();
   if (mode === 'off' || mode === 'none' || mode === '0') return null;
   const providerName = mode === 'lmstudio' ? 'lmstudio' : 'ollama';
@@ -1125,10 +1184,12 @@ async function chat(messages, opts = {}, cfgOverride = null) {
   messages = sanitizeToolHistory(messages);
   let cfg = cfgOverride || mainConfig();
   // Honor `opts.provider` — explicit provider override per-call.
-  // Falls through to env-based cfg if no provider was passed.
+  // Builds cfg fresh from the provider definition so env vars CANNOT
+  // override opts.provider. Only provider-specific env vars
+  // (DEEPSEEK_API_KEY, etc.) are consulted; LLM_* vars are ignored
+  // when an explicit opts.provider is set.
   if (opts.provider && PROVIDERS[opts.provider]) {
-    cfg = resolveConfig('LLM');
-    cfg.providerName = opts.provider;
+    cfg = { providerName: opts.provider };
     const p = PROVIDERS[opts.provider];
     cfg.provider = p;
     cfg.baseUrl  = opts.baseUrl || process.env[`${(opts.provider || 'LLM').toUpperCase()}_BASE_URL`] || p.baseUrl;
@@ -1271,9 +1332,10 @@ async function* streamChat(messages, opts = {}, cfgOverride = null) {
   messages = sanitizeToolHistory(messages);
   let cfg = cfgOverride || mainConfig();
   // Honor `opts.provider` — explicit per-call override.
+  // Builds cfg fresh from the provider definition so env vars CANNOT
+  // override opts.provider. Only provider-specific env vars are consulted.
   if (opts.provider && PROVIDERS[opts.provider]) {
-    cfg = resolveConfig('LLM');
-    cfg.providerName = opts.provider;
+    cfg = { providerName: opts.provider };
     const p = PROVIDERS[opts.provider];
     cfg.provider = p;
     cfg.baseUrl  = opts.baseUrl || process.env[`${opts.provider.toUpperCase()}_BASE_URL`] || p.baseUrl;
