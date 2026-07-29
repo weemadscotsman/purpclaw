@@ -58,7 +58,7 @@ written to `.purpclaw/RECOVERY_ADDENDUM.txt` as a persistent pickup point.
 |--------|------|-------------|
 | `4fefcc3` | Legacy parity docs superseded + authority gate | `npm run parity:check` |
 | `cf513c6` | Track canonical roadmap; unbrittle marker; exempt superseded docs from GATE 8 | `npm run docs:gate` |
-| `fd5af98` | Runtime boot: `DatabaseSync` from `node:sqlite` across 23 modules; loud degraded-runtime diagnostic | cross-process create/persist/load/resume; blind critic pending |
+| `fd5af98` | Runtime boot: `DatabaseSync` from `node:sqlite` across 23 modules; loud degraded-runtime diagnostic | **VERIFIED PASS** — tests 1-7 all PASS. Session create/persist/restart/resume works via `ask --new`. Note: `session new` CLI command has a pre-existing structural gap (`lib/session-store.js` has no `createSession`; `work-engine.js:88` calls it). Separate from fd5af98. Not a blocker for P0-B/C. |
 
 ## 2026-07-29 mid-session record (main session)
 
