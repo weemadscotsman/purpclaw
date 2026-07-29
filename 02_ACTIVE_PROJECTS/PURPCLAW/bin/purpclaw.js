@@ -30,6 +30,7 @@ const path    = require('path');
 const fs      = require('fs');
 const http    = require('http');
 const { URL, pathToFileURL } = require('url');
+const Secrets = require(path.join(__dirname, '..', 'lib', 'secrets'));
 
 // ── Project root resolver ─────────────────────────────────────────────────────────
 // The npm global shim lives in AppData on C:. We walk up looking for the real project.
@@ -59,6 +60,7 @@ function resolveProjectRoot() {
 }
 
 const PURP_DIR      = resolveProjectRoot();
+const { recordLesson, recordEvolution, recordMemory } = require(path.join(PURP_DIR, 'lib', 'agent-sync'))(PURP_DIR);
 const { trackedSpawn, execSafe, installCleanup, list: listChildren } = require('../lib/child-registry');
 
 // ── Root and config ───────────────────────────────────────────────────────────
@@ -95,6 +97,8 @@ const GOVERNANCE = require(path.join(PURP_DIR, 'lib', 'governance.js'));
 const JOB_CONTRACT = require(path.join(PURP_DIR, 'lib', 'job-contract.js'));
 const PROACTIVE = require(path.join(PURP_DIR, 'lib', 'proactive-maintenance.js'));
 const SPAGHETTI = require(path.join(PURP_DIR, 'lib', 'spaghetti-audit.js'));
+const { loadProjectRequirements, mergeWithEnv, checkCommandAllowed, requiresConfirmation } =
+  require(path.join(PURP_DIR, 'lib', 'project-requirements.js'));
 
 const CTX_PORT = parseInt(process.env.CONTEXT_PORT || '7881', 10);
 
@@ -1170,11 +1174,16 @@ async function cmdRelease(args) {
 // purpclaw checkpoint list [dir]    — list checkpoints
 // purpclaw checkpoint rollback <id> [dir] — roll back to a checkpoint
 // purpclaw checkpoint prune [dir]  — prune old checkpoints
+// purpclaw checkpoint ... --json    — output result as JSON
 async function cmdCheckpoint(args) {
-  const sub = (args[0] || '').toLowerCase();
-  const wd = args[1] && !args[1].startsWith('-')
-    ? path.resolve(args[1])
+  const wantJson = args.includes('--json');
+  const cleanArgs = args.filter(a => !a.startsWith('--'));
+  const sub = (cleanArgs[0] || '').toLowerCase();
+  const wd = cleanArgs[1] && !cleanArgs[1].startsWith('-')
+    ? path.resolve(cleanArgs[1])
     : process.cwd();
+  const jsonOut = (obj) => wantJson && console.log(JSON.stringify(obj));
+
 
   // Lazy-load the checkpoint manager
   let CheckpointManager, checkpointManager;
@@ -1192,77 +1201,115 @@ async function cmdCheckpoint(args) {
     return 1;
   }
 
-  switch (sub) {
-    case 'create': {
-      const msg = args.slice(2).join(' ') || `manual checkpoint from CLI`;
-      const result = await checkpointManager.createCheckpoint(wd, msg);
-      if (result) {
-        console.log(`✓ Checkpoint created: ${result.checkpointId} (${result.commitHash.slice(0, 8)})`);
-        return 0;
-      } else {
-        console.log('✗ No checkpoint created (no changes or git unavailable)');
-        return 1;
+  let exitCode = 0;
+  try {
+    switch (sub) {
+      case 'status': {
+        const st = await checkpointManager.status(wd);
+        const out = { action: 'status', ...st, success: true };
+        jsonOut(out);
+        if (!wantJson) {
+          console.log(`Git:        ${st.gitAvailable ? 'available' : 'not available'}`);
+          console.log(`Checkpoints: ${st.checkpointCount}`);
+          console.log(`Store:      ${st.storePath}  (${st.storeSizeMb} MB)`);
+          console.log(`Has index:  ${st.hasIndex ? 'yes' : 'no'}`);
+        }
+        recordLesson({ task: 'checkpoint status', success: true, outputPreview: `checkpoints=${st.checkpointCount}` });
+        break;
+      }
+
+      case 'create': {
+        const msg = cleanArgs.slice(1).join(' ') || `manual checkpoint from CLI`;
+        const result = await checkpointManager.createCheckpoint(wd, msg);
+        if (result) {
+          console.log(`✓ Checkpoint created: ${result.checkpointId} (${result.commitHash.slice(0, 8)})`);
+          jsonOut({ action: 'create', checkpointId: result.checkpointId, commitHash: result.commitHash, success: true });
+          exitCode = 0;
+        } else {
+          console.log('✗ No checkpoint created (no changes or git unavailable)');
+          jsonOut({ action: 'create', success: false, error: 'no changes or git unavailable' });
+          exitCode = 1;
+        }
+        break;
+      }
+
+      case 'list': {
+        const checkpoints = await checkpointManager.listCheckpoints(wd);
+        if (!checkpoints.length) {
+          if (!wantJson) console.log(`No checkpoints found for ${wd}`);
+          jsonOut({ action: 'list', checkpoints: [], workingDir: wd, success: true });
+          exitCode = 0;
+          break;
+        }
+        const cpList = checkpoints.map((cp, i) => ({ id: i + 1, checkpointId: cp.checkpointId, createdAt: cp.createdAt, message: cp.message || null }));
+        if (wantJson) {
+          jsonOut({ action: 'list', checkpoints: cpList, workingDir: wd, success: true });
+        } else {
+          console.log(`📸 Checkpoints for ${wd}:\n`);
+          checkpoints.forEach((cp, i) => {
+            const ts = cp.createdAt ? cp.createdAt.replace('T', ' ').slice(0, 19) : '?';
+            console.log(`  ${i + 1}. ${cp.checkpointId}  ${ts}  ${cp.message}`);
+          });
+          console.log('\n  purpclaw checkpoint rollback <id> [dir]  — restore a checkpoint');
+        }
+        exitCode = 0;
+        break;
+      }
+
+      case 'rollback': {
+        const id = cleanArgs[1];
+        if (!id) {
+          console.log('Usage: purpclaw checkpoint rollback <checkpoint-id> [dir]');
+          exitCode = 1;
+          break;
+        }
+        const targetDir = cleanArgs[2] && !cleanArgs[2].startsWith('-')
+          ? path.resolve(cleanArgs[2])
+          : wd;
+        const ok = await checkpointManager.rollback(targetDir, id);
+        if (ok) {
+          console.log(`✓ Rolled back ${targetDir} to checkpoint ${id.slice(0, 16)}`);
+          jsonOut({ action: 'rollback', checkpointId: id, targetDir, success: true });
+          exitCode = 0;
+        } else {
+          console.log(`✗ Rollback failed (checkpoint not found or invalid id: ${id})`);
+          jsonOut({ action: 'rollback', checkpointId: id, targetDir, success: false, error: 'not found or invalid' });
+          exitCode = 1;
+        }
+        break;
+      }
+
+      case 'prune': {
+        const retentionDays = parseInt(cleanArgs.find(a => a.startsWith('--days='))?.split('=')[1] || '7', 10);
+        const result = await checkpointManager.pruneCheckpoints(wd, retentionDays);
+        console.log(`✓ Pruned ${result.deleted} checkpoints, freed ~${result.freedMb} MB`);
+        jsonOut({ action: 'prune', retentionDays, deleted: result.deleted, freedMb: result.freedMb, success: true });
+        exitCode = 0;
+        break;
+      }
+
+      default: {
+        console.log('Usage:');
+        console.log('  purpclaw checkpoint create [dir]            — take a manual checkpoint');
+        console.log('  purpclaw checkpoint list [dir]              — list checkpoints');
+        console.log('  purpclaw checkpoint rollback <id> [dir]     — roll back to a checkpoint');
+        console.log('  purpclaw checkpoint prune [dir]             — prune old checkpoints');
+        console.log('  purpclaw checkpoint prune [dir] --days=30   — prune checkpoints older than 30 days');
+        exitCode = 0;
+        break;
       }
     }
-
-    case 'list': {
-      const checkpoints = await checkpointManager.listCheckpoints(wd);
-      if (!checkpoints.length) {
-        console.log(`No checkpoints found for ${wd}`);
-        return 0;
-      }
-      console.log(`📸 Checkpoints for ${wd}:\n`);
-      checkpoints.forEach((cp, i) => {
-        const ts = cp.createdAt ? cp.createdAt.replace('T', ' ').slice(0, 19) : '?';
-        console.log(`  ${i + 1}. ${cp.checkpointId}  ${ts}  ${cp.message}`);
-      });
-      console.log('\n  purpclaw checkpoint rollback <id> [dir]  — restore a checkpoint');
-      return 0;
-    }
-
-    case 'rollback': {
-      const id = args[1];
-      if (!id) {
-        console.log('Usage: purpclaw checkpoint rollback <checkpoint-id> [dir]');
-        return 1;
-      }
-      const targetDir = args[2] && !args[2].startsWith('-')
-        ? path.resolve(args[2])
-        : wd;
-      const ok = await checkpointManager.rollback(targetDir, id);
-      if (ok) {
-        console.log(`✓ Rolled back ${targetDir} to checkpoint ${id.slice(0, 16)}`);
-        return 0;
-      } else {
-        console.log(`✗ Rollback failed (checkpoint not found or invalid id: ${id})`);
-        return 1;
-      }
-    }
-
-    case 'prune': {
-      const retentionDays = parseInt(args.find(a => a.startsWith('--days='))?.split('=')[1] || '7', 10);
-      const result = await checkpointManager.pruneCheckpoints(wd, retentionDays);
-      console.log(`✓ Pruned ${result.deleted} checkpoints, freed ~${result.freedMb} MB`);
-      return 0;
-    }
-
-    default: {
-      console.log('Usage:');
-      console.log('  purpclaw checkpoint create [dir]            — take a manual checkpoint');
-      console.log('  purpclaw checkpoint list [dir]              — list checkpoints');
-      console.log('  purpclaw checkpoint rollback <id> [dir]     — roll back to a checkpoint');
-      console.log('  purpclaw checkpoint prune [dir]             — prune old checkpoints');
-      console.log('  purpclaw checkpoint prune [dir] --days=30   — prune checkpoints older than 30 days');
-      return 0;
-    }
+  } finally {
+    recordLesson({ task: `checkpoint ${args.join(' ')}`, success: exitCode === 0, outputPreview: `exit=${exitCode}` });
   }
+  return exitCode;
 }
 
 
 // ── compress ───────────────────────────────────────────────────────────────────
 // Manual context compression — invokes the LLM-powered context compressor.
 async function cmdCompress(args) {
-  const { ContextCompressor } = require('./lib/context-compressor');
+  const { ContextCompressor } = require(path.join(PURP_DIR, 'lib', 'context-compressor'));
   const pathToFileURL = require('url').pathToFileURL;
   const fs = require('fs');
   const readline = require('readline');
@@ -1301,6 +1348,7 @@ async function cmdCompress(args) {
   if (dry) {
     console.log(`  shouldCompress: ${cc.shouldCompress(messages)}`);
     console.log(`  estimate: ${cc.thresholdTokens} tokens threshold`);
+    recordLesson({ task: 'compress --dry', success: true, outputPreview: `shouldCompress=${cc.shouldCompress(messages)}` });
     return 0;
   }
 
@@ -1311,11 +1359,14 @@ async function cmdCompress(args) {
       console.log(`  tokens: ${result.tokensBefore} → ${result.tokensAfter} (${result.tokensAfter < result.tokensBefore ? 'saved ' + (result.tokensBefore - result.tokensAfter) + ' tokens' : 'no reduction'})`);
       if (result.usedFallback) console.log('  ⚠ LLM unavailable — used deterministic fallback');
       if (result.summary) console.log('\n' + result.summary.slice(0, 500) + (result.summary.length > 500 ? '...' : ''));
+      recordLesson({ task: 'compress', success: true, outputPreview: `compressed=${result.messages.length} msgs tokens=${result.tokensAfter}` });
     } else {
       console.log(`  ✗ Not compressed: ${result.reason || 'already fits'}`);
+      recordLesson({ task: 'compress', success: false, outputPreview: result.reason || 'already fits' });
     }
   } catch (err) {
     console.log(`  ✗ Compression error: ${err.message}`);
+    recordLesson({ task: 'compress', success: false, outputPreview: `error: ${err.message}` });
   }
   return 0;
 }
@@ -1324,7 +1375,10 @@ async function cmdCompress(args) {
 // Background skill maintenance: purge stale skills, archive unused ones.
 async function cmdCurator(args) {
   const Curator = require(path.join(PURP_DIR, 'lib', 'curator'));
-  const sub = (args[0] || '').toLowerCase();
+  const wantJson = args.includes('--json');
+  const cleanArgs = args.filter(a => !a.startsWith('--'));
+  const sub = (cleanArgs[0] || '').toLowerCase();
+  const jsonOut = (obj) => wantJson && console.log(JSON.stringify(obj));
 
   switch (sub) {
     case '':
@@ -1332,45 +1386,81 @@ async function cmdCurator(args) {
       const state = Curator.loadState();
       const enabled = Curator.isEnabled();
       const paused = Curator.isPaused();
-      sectionHead('  CURATOR — Skill Maintenance');
-      console.log(`  Status:  ${paused ? col(C.yellow, 'PAUSED') : enabled ? col(C.green, 'ACTIVE') : col(C.red, 'DISABLED')}`);
-      const last = state.lastRunAt ? state.lastRunAt.replace('T', ' ').slice(0, 19) : 'never';
-      const dur = state.lastRunDurationSeconds != null ? `${state.lastRunDurationSeconds.toFixed(1)}s` : '—';
-      console.log(`  Last:    ${last} (${dur})`);
-      console.log(`  Runs:    ${state.runCount || 0}`);
-      if (state.lastRunSummary) console.log(`  Summary: ${col(C.gray, state.lastRunSummary)}`);
-      console.log(`\n  Config:  interval=${Curator.getIntervalHours() / 24}d  stale=${Curator.getStaleAfterDays()}d  archive=${Curator.getArchiveAfterDays()}d`);
-      console.log(`\n  Usage:   purpclaw curator run [--dry-run] [--consolidate]`);
-      console.log(`          purpclaw curator pause | resume | status`);
+      const result = {
+        status: paused ? 'PAUSED' : enabled ? 'ACTIVE' : 'DISABLED',
+        enabled, paused,
+        lastRunAt: state.lastRunAt,
+        lastRunDurationSeconds: state.lastRunDurationSeconds,
+        runCount: state.runCount || 0,
+        lastRunSummary: state.lastRunSummary || null,
+        intervalDays: Curator.getIntervalHours() / 24,
+        staleAfterDays: Curator.getStaleAfterDays(),
+        archiveAfterDays: Curator.getArchiveAfterDays(),
+      };
+      if (wantJson) {
+        jsonOut(result);
+      } else {
+        sectionHead('  CURATOR — Skill Maintenance');
+        console.log(`  Status:  ${paused ? col(C.yellow, 'PAUSED') : enabled ? col(C.green, 'ACTIVE') : col(C.red, 'DISABLED')}`);
+        const last = state.lastRunAt ? state.lastRunAt.replace('T', ' ').slice(0, 19) : 'never';
+        const dur = state.lastRunDurationSeconds != null ? `${state.lastRunDurationSeconds.toFixed(1)}s` : '—';
+        console.log(`  Last:    ${last} (${dur})`);
+        console.log(`  Runs:    ${state.runCount || 0}`);
+        if (state.lastRunSummary) console.log(`  Summary: ${col(C.gray, state.lastRunSummary)}`);
+        console.log(`\n  Config:  interval=${Curator.getIntervalHours() / 24}d  stale=${Curator.getStaleAfterDays()}d  archive=${Curator.getArchiveAfterDays()}d`);
+        console.log(`\n  Usage:   purpclaw curator run [--dry-run] [--consolidate]`);
+        console.log(`          purpclaw curator pause | resume | status`);
+      }
+      recordLesson({ task: `curator ${args.join(' ')}`, success: true, outputPreview: `curator ${sub || 'status'}` });
       return 0;
     }
     case 'pause': {
       Curator.setPaused(true);
-      console.log(col(C.yellow, '  Curator paused.'));
+      if (wantJson) jsonOut({ action: 'pause', success: true });
+      else console.log(col(C.yellow, '  Curator paused.'));
+      recordLesson({ task: `curator ${args.join(' ')}`, success: true, outputPreview: 'paused' });
       return 0;
     }
     case 'resume': {
       Curator.setPaused(false);
-      console.log(col(C.green, '  Curator resumed.'));
+      if (wantJson) jsonOut({ action: 'resume', success: true });
+      else console.log(col(C.green, '  Curator resumed.'));
+      recordLesson({ task: `curator ${args.join(' ')}`, success: true, outputPreview: 'resumed' });
       return 0;
     }
     case 'run': {
-      const dryRun = args.includes('--dry-run');
-      const consolidate = args.includes('--consolidate');
-      banner();
-      sectionHead('  CURATOR — Running skill maintenance pass');
-      if (dryRun) console.log(col(C.gray, '  [DRY RUN — no changes will be made]\n'));
-      console.log(col(C.cyan, '  Starting curator pass...\n'));
+      const dryRun = cleanArgs.includes('--dry-run');
+      const consolidate = cleanArgs.includes('--consolidate');
       const result = await Curator.runCurator({ dryRun, consolidate });
-      if (result.summary) {
-        console.log('\n' + result.summary);
+      const out = {
+        action: 'run',
+        dryRun,
+        consolidate,
+        archived: result.archived || 0,
+        stale: result.stale || 0,
+        summary: result.summary || null,
+        success: true,
+      };
+      if (wantJson) {
+        jsonOut(out);
       } else {
-        console.log('\n  ' + col(C.green, `Done. ${result.archived || 0} archived, ${result.stale || 0} marked stale.`));
+        banner();
+        sectionHead('  CURATOR — Running skill maintenance pass');
+        if (dryRun) console.log(col(C.gray, '  [DRY RUN — no changes will be made]\n'));
+        console.log(col(C.cyan, '  Starting curator pass...\n'));
+        if (result.summary) {
+          console.log('\n' + result.summary);
+        } else {
+          console.log('\n  ' + col(C.green, `Done. ${result.archived || 0} archived, ${result.stale || 0} marked stale.`));
+        }
       }
+      recordLesson({ task: `curator run`, success: true, outputPreview: `archived=${result.archived || 0} stale=${result.stale || 0}` });
       return 0;
     }
     default:
-      console.log('Usage: purpclaw curator status | run [--dry-run] [--consolidate] | pause | resume');
+      if (wantJson) jsonOut({ error: 'unknown subcommand', success: false });
+      else console.log('Usage: purpclaw curator status | run [--dry-run] [--consolidate] | pause | resume');
+      recordLesson({ task: `curator ${args.join(' ')}`, success: false, outputPreview: 'unknown subcommand' });
       return 1;
   }
 }
@@ -1379,61 +1469,80 @@ async function cmdCurator(args) {
 // Dangerous command approval queue.
 async function cmdApprovals(args) {
   const AQ = require(path.join(PURP_DIR, 'lib', 'approval-queue'));
-  const sub = (args[0] || '').toLowerCase();
-  const id = args[1] || '';
+  const wantJson = args.includes('--json');
+  const cleanArgs = args.filter(a => !a.startsWith('--'));
+  const sub = (cleanArgs[0] || '').toLowerCase();
+  const id = cleanArgs[1] || '';
+  const jsonOut = (obj) => wantJson && console.log(JSON.stringify(obj));
 
   switch (sub) {
     case '':
     case 'list': {
-      sectionHead('  APPROVALS — Pending dangerous command review');
-      // load all pending from queue dir
       const { getQueueDir } = AQ;
       const queueDir = getQueueDir ? getQueueDir() : path.join(require('os').homedir(), '.purpclaw', 'approvals');
       if (!fs.existsSync(queueDir)) {
-        console.log(col(C.gray, '  No approvals yet.\n'));
+        jsonOut({ action: 'list', pending: [], success: true, note: 'no queue dir' });
+        if (!wantJson) console.log(col(C.gray, '  No approvals yet.\n'));
+        recordLesson({ task: 'approvals list', success: true, outputPreview: 'no queue dir' });
         return 0;
       }
       const files = fs.readdirSync(queueDir).filter(f => f.endsWith('.json'));
-      const pending = files.filter(f => !f.includes('-resolved')).slice(0, 20);
-      if (!pending.length) {
-        console.log(col(C.gray, '  No pending approvals.\n'));
-        return 0;
+      const pendingFiles = files.filter(f => !f.includes('-resolved')).slice(0, 20);
+      const pending = pendingFiles.map(f => {
+        try { const d = JSON.parse(fs.readFileSync(path.join(queueDir, f), 'utf8')); return d; } catch { return null; }
+      }).filter(Boolean);
+      if (wantJson) {
+        jsonOut({ action: 'list', pending, success: true });
+      } else {
+        sectionHead('  APPROVALS — Pending dangerous command review');
+        if (!pending.length) {
+          console.log(col(C.gray, '  No pending approvals.\n'));
+        } else {
+          pending.forEach(d => {
+            const age = d.createdAt ? Math.floor((Date.now() - new Date(d.createdAt)) / 60000) + 'm ago' : '?';
+            const label = (d.id || '?');
+            const cmd = d.command ? d.command.slice(0, 60) : (d.description || '\u2014');
+            console.log('  ' + col(C.yellow, label) + '  ' + age + '  ' + cmd);
+          });
+          console.log(`\n  purpclaw approvals approve <id> | deny <id> | clear`);
+        }
       }
-      pending.forEach(f => {
-        try {
-          const d = JSON.parse(fs.readFileSync(path.join(queueDir, f), 'utf8'));
-          const age = d.createdAt ? `${Math.floor((Date.now() - new Date(d.createdAt)) / 60000)}m ago` : '?';
-          console.log(`  ${col(C.yellow, d.id || f)}  ${age}  ${d.command ? d.command.slice(0, 60) : d.description || '—'}`);
-        } catch (_) {}
-      });
-      console.log(`\n  purpclaw approvals approve <id> | deny <id> | clear`);
+      recordLesson({ task: 'approvals list', success: true, outputPreview: `pending=${pending.length}` });
       return 0;
     }
     case 'approve': {
       if (!id) { console.log('Usage: purpclaw approvals approve <id>'); return 1; }
       const ok = AQ.resolveApproval(id, 'approve');
-      console.log(ok ? col(C.green, `  ✓ Approved: ${id}`) : col(C.red, `  ✗ Not found: ${id}`));
+      jsonOut({ action: 'approve', id, success: ok });
+      if (!wantJson) console.log(ok ? col(C.green, `  ✓ Approved: ${id}`) : col(C.red, `  ✗ Not found: ${id}`));
+      recordLesson({ task: `approvals approve ${id}`, success: ok, outputPreview: ok ? 'approved' : 'not found' });
       return ok ? 0 : 1;
     }
     case 'deny': {
       if (!id) { console.log('Usage: purpclaw approvals deny <id>'); return 1; }
       const ok = AQ.resolveApproval(id, 'deny');
-      console.log(ok ? col(C.red, `  ✗ Denied: ${id}`) : col(C.red, `  ✗ Not found: ${id}`));
+      jsonOut({ action: 'deny', id, success: ok });
+      if (!wantJson) console.log(ok ? col(C.red, `  ✗ Denied: ${id}`) : col(C.red, `  ✗ Not found: ${id}`));
+      recordLesson({ task: `approvals deny ${id}`, success: ok, outputPreview: ok ? 'denied' : 'not found' });
       return ok ? 0 : 1;
     }
     case 'clear': {
       const { clearExpired } = AQ;
-      if (clearExpired) {
-        const n = clearExpired();
-        console.log(`  Cleared ${n} expired approvals.`);
-      } else {
-        // manual: delete old resolved files
-        console.log(col(C.gray, '  Nothing to clear.'));
+      let n = 0;
+      if (clearExpired) n = clearExpired();
+      const result = { action: 'clear', cleared: n, success: true };
+      jsonOut(result);
+      if (!wantJson) {
+        if (n > 0) console.log(`  Cleared ${n} expired approvals.`);
+        else console.log(col(C.gray, '  Nothing to clear.'));
       }
+      recordLesson({ task: 'approvals clear', success: true, outputPreview: `cleared=${n}` });
       return 0;
     }
     default:
-      console.log('Usage: purpclaw approvals list | approve <id> | deny <id> | clear');
+      jsonOut({ error: 'unknown subcommand', success: false });
+      if (!wantJson) console.log('Usage: purpclaw approvals list | approve <id> | deny <id> | clear');
+      recordLesson({ task: `approvals ${args.join(' ')}`, success: false, outputPreview: 'unknown subcommand' });
       return 1;
   }
 }
@@ -1442,37 +1551,51 @@ async function cmdApprovals(args) {
 // Claims validation and argument audit for agent outputs.
 async function cmdTirith(args) {
   const Tirith = require(path.join(PURP_DIR, 'lib', 'tirith-security'));
-  const sub = (args[0] || '').toLowerCase();
-  const target = args[1] || '';
+  const wantJson = args.includes('--json');
+  const cleanArgs = args.filter(a => !a.startsWith('--'));
+  const sub = (cleanArgs[0] || '').toLowerCase();
+  const target = cleanArgs[1] || '';
+  const jsonOut = (obj) => wantJson && console.log(JSON.stringify(obj));
 
   if (!sub || sub === 'help') {
-    sectionHead('  TIRITH — Claims Validation');
-    console.log(col(C.gray, '  Audit command strings or file content for claim integrity.\n'));
-    console.log(`  ${col(C.bold, 'purpclaw tirith cmd <command>')}   — validate a command string`);
-    console.log(`  ${col(C.bold, 'purpclaw tirith file <path>')}   — scan a file for dangerous claims`);
-    console.log(`  ${col(C.bold, 'purpclaw tirith status')}        — circuit breaker state`);
+    if (!wantJson) {
+      sectionHead('  TIRITH — Claims Validation');
+      console.log(col(C.gray, '  Audit command strings or file content for claim integrity.\n'));
+      console.log(`  ${col(C.bold, 'purpclaw tirith cmd <command>')}   — validate a command string`);
+      console.log(`  ${col(C.bold, 'purpclaw tirith file <path>')}   — scan a file for dangerous claims`);
+      console.log(`  ${col(C.bold, 'purpclaw tirith status')}        — circuit breaker state`);
+    }
     return 0;
   }
 
   if (sub === 'status') {
     const state = Tirith.getCircuitState();
-    console.log(`  Circuit: ${state.circuitOpen ? col(C.red, 'OPEN') : col(C.green, 'CLOSED')}  (${state.crashCount} crash(es))`);
+    const out = { action: 'status', circuitOpen: state.circuitOpen, crashCount: state.crashCount, success: true };
+    jsonOut(out);
+    if (!wantJson) console.log(`  Circuit: ${state.circuitOpen ? col(C.red, 'OPEN') : col(C.green, 'CLOSED')}  (${state.crashCount} crash(es))`);
+    recordLesson({ task: 'tirith status', success: true, outputPreview: `circuit=${state.circuitOpen ? 'OPEN' : 'CLOSED'}` });
     return 0;
   }
 
   if (sub === 'cmd' || sub === 'command') {
     if (!target) { console.log('Usage: purpclaw tirith cmd "<command>"'); return 1; }
     const result = Tirith.checkCommand(target);
-    if (!result.findings.length) {
-      console.log(col(C.green, `  ✓ No issues found in command`));
-      return 0;
+    const out = { action: 'cmd', command: target, findings: result.findings, safe: !result.findings.length, success: true };
+    jsonOut(out);
+    if (!wantJson) {
+      if (!result.findings.length) {
+        console.log(col(C.green, `  ✓ No issues found in command`));
+      } else {
+        console.log(col(C.red, `  ✗ ${result.findings.length} finding(s):`));
+        result.findings.forEach(f => {
+          console.log(`    [${f.severity}] ${f.description}`);
+          if (f.location) console.log(`      → ${f.location}`);
+        });
+      }
     }
-    console.log(col(C.red, `  ✗ ${result.findings.length} finding(s):`));
-    result.findings.forEach(f => {
-      console.log(`    [${f.severity}] ${f.description}`);
-      if (f.location) console.log(`      → ${f.location}`);
-    });
-    return result.findings.some(f => f.severity === 'critical') ? 1 : 0;
+    const critical = result.findings.some(f => f.severity === 'critical');
+    recordLesson({ task: `tirith cmd "${target.slice(0, 50)}"`, success: !critical, outputPreview: `findings=${result.findings.length} critical=${critical}` });
+    return critical ? 1 : 0;
   }
 
   if (sub === 'file') {
@@ -1482,20 +1605,25 @@ async function cmdTirith(args) {
     const stat = fs.statSync(resolved);
     if (stat.isDirectory()) { console.log(col(C.red, `  ${resolved} is a directory.`)); return 1; }
     const result = Tirith.checkFile(resolved);
-    if (!result.findings.length) {
-      console.log(col(C.green, `  ✓ File is clean (${result.checkedChars} chars scanned)`));
-      return 0;
+    const out = { action: 'file', path: resolved, checkedChars: result.checkedChars, findings: result.findings, safe: !result.findings.length, success: true };
+    jsonOut(out);
+    if (!wantJson) {
+      if (!result.findings.length) {
+        console.log(col(C.green, `  ✓ File is clean (${result.checkedChars} chars scanned)`));
+      } else {
+        console.log(col(C.red, `  ✗ ${result.findings.length} finding(s) in ${resolved}:`));
+        result.findings.forEach(f => {
+          console.log(`    [${f.severity}] ${f.description}`);
+          if (f.location) console.log(`      → ${f.location}`);
+        });
+      }
     }
-    console.log(col(C.red, `  ✗ ${result.findings.length} finding(s) in ${resolved}:`));
-    result.findings.forEach(f => {
-      console.log(`    [${f.severity}] ${f.description}`);
-      if (f.location) console.log(`      → ${f.location}`);
-    });
-    return result.findings.some(f => f.severity === 'critical') ? 1 : 0;
+    const critical = result.findings.some(f => f.severity === 'critical');
+    recordLesson({ task: `tirith file ${target}`, success: !critical, outputPreview: `findings=${result.findings.length}` });
+    return critical ? 1 : 0;
   }
 
-  console.log(`Unknown tirith subcommand: ${sub}`);
-  console.log('Usage: purpclaw tirith cmd "<cmd>" | file <path> | status');
+  console.log('Usage: purpclaw tirith status | cmd "<command>" | file <path>');
   return 1;
 }
 
@@ -1959,6 +2087,14 @@ async function cmdProfile(args) {
   }
 }
 
+// ── graph ─────────────────────────────────────────────────────────────────────
+// Learning graph — skill nodes, edges, memory cards, memory→skill links.
+async function cmdGraph(args) {
+  const G = require(path.join(PURP_DIR, 'lib', 'learning-graph'));
+  G.cmdGraph(args);
+  return 0;
+}
+
 // ── guard ────────────────────────────────────────────────────────────────────
 async function cmdGuard(args) {
   const G = require(path.join(PURP_DIR, 'lib', 'skills-guard'));
@@ -2074,6 +2210,14 @@ async function cmdGuard(args) {
   if (allowed === false && !force && !['builtin', 'trusted'].includes(result.trust_level)) {
     console.log(col(C.gray, '  Run with --force to override.'));
   }
+
+  // TDO: notify other agents of skill guard scan
+  const allowedBool = allowed === true;
+  recordLesson({
+    task: `guard ${sub} ${target}`,
+    success: allowedBool,
+    outputPreview: `verdict=${result.verdict} trust=${result.trust_level} allowed=${allowedBool}`,
+  });
 }
 
 function formatGuardReport(result) {
@@ -2397,6 +2541,64 @@ async function cmdArchetypes(args) {
   // Default: list
   archetypes.cliList();
   console.log(`Usage: purpclaw archetype list|show|search|validate|spawn\n`);
+}
+
+// ── cost ──────────────────────────────────────────────────────────────────────
+async function cmdCost(args) {
+  const UP = (() => { try { return require('../lib/usage-pricing'); } catch { return null; } })();
+  if (!UP) { console.log('\n[X] usage-pricing not available\n'); return; }
+  const provider = args[0] || 'openai';
+  const model    = args[1] || 'gpt-4o';
+  const inputTok = parseInt(args[2] || '1000', 10);
+  const outputTok= parseInt(args[3] || '500', 10);
+  const result = UP.estimateCost(provider, model, { input_tokens: inputTok, output_tokens: outputTok });
+  console.log(`\nProvider: ${col(C.cyan, provider)}`);
+  console.log(`Model:    ${col(C.white, model)}`);
+  console.log(`Input:    ${inputTok.toLocaleString()} tokens`);
+  console.log(`Output:   ${outputTok.toLocaleString()} tokens`);
+  console.log(`Cost:     ${col(C.green, '$' + result.cost_usd)} (${result.pricing_mode})`);
+  console.log('');
+}
+
+// ── usage ─────────────────────────────────────────────────────────────────────
+async function cmdUsage(args) {
+  const UP = (() => { try { return require('../lib/usage-pricing'); } catch { return null; } })();
+  if (!UP) { console.log('\n[X] usage-pricing not available\n'); return; }
+  const tracker = new UP.UsageTracker();
+  const sub = (args[0] || 'stats').toLowerCase();
+  if (sub === 'stats') {
+    console.log('\nUsage tracker (session):\n');
+    const s = tracker.stats();
+    console.log(`  Input tokens:       ${s.usage.input_tokens.toLocaleString()}`);
+    console.log(`  Output tokens:      ${s.usage.output_tokens.toLocaleString()}`);
+    console.log(`  Total tokens:      ${s.usage.total_tokens.toLocaleString()}`);
+    console.log(`  Cache read:        ${s.usage.cache_read_tokens.toLocaleString()}`);
+    console.log(`  Cache write:        ${s.usage.cache_write_tokens.toLocaleString()}`);
+    console.log(`  Reasoning tokens:   ${s.usage.reasoning_tokens.toLocaleString()}`);
+    console.log(`  Requests:          ${s.usage.request_count}`);
+    console.log(`  Session duration:   ${s.session_seconds}s`);
+    console.log(`  Cost (estimated):   $${s.cost_usd}`);
+    console.log('');
+  } else if (sub === 'add') {
+    const input = parseInt(args[1] || '0', 10);
+    const output= parseInt(args[2] || '0', 10);
+    tracker.add({ input_tokens: input, output_tokens: output });
+    console.log(`\n✅ Added: in=${input} out=${output}\n`);
+  } else if (sub === 'save') {
+    const file = tracker.save();
+    console.log(`\n✅ Saved to ${file}\n`);
+  } else if (sub === 'table') {
+    const table = UP.buildPricingTable();
+    console.log('\nDefault pricing table ($/M tokens):\n');
+    for (const [model, entry] of Object.entries(table)) {
+      const ic = entry.input_cost_per_million != null ? `in:$${entry.input_cost_per_million}` : 'in:—';
+      const oc = entry.output_cost_per_million != null ? `out:$${entry.output_cost_per_million}` : 'out:—';
+      console.log(`  ${model.padEnd(35)} ${ic.padEnd(12)} ${oc}`);
+    }
+    console.log('');
+  } else {
+    console.log('\nUsage: purpclaw usage stats|add <input> [output]|save|table\n');
+  }
 }
 
 // ── workflows ─────────────────────────────────────────────────────────────────
@@ -3697,13 +3899,15 @@ async function cmdDoctor(args) {
   sectionHead('  PURPCLAW DOCTOR');
 
   const checks = [];
-  const add = (label, ok, detail = '') => checks.push({ label, ok: Boolean(ok), detail });
+  const add = (label, ok, detail = '', cat = 'runtime') => checks.push({ label, ok: Boolean(ok), detail, cat });
+  const catFilter = (args.includes('--category') ? args[args.indexOf('--category') + 1] : null);
+  const showCat = (c) => !catFilter || c === catFilter;
 
-  add('package.json', fs.existsSync(path.join(PURP_DIR, 'package.json')), 'runtime manifest');
-  add('node_modules/next', fs.existsSync(path.join(PURP_DIR, 'node_modules', 'next', 'dist', 'bin', 'next')), 'Next.js CLI installed');
-  add('ecosystem.config.js', fs.existsSync(ECOSYSTEM), 'PM2 service config');
-  add('service_registry.js', fs.existsSync(path.join(PURP_DIR, 'service_registry.js')), 'single service map');
-  add('.env', fs.existsSync(path.join(PURP_DIR, '.env')), 'local keys/config');
+  add('package.json', fs.existsSync(path.join(PURP_DIR, 'package.json')), 'runtime manifest', 'runtime');
+  add('node_modules/next', fs.existsSync(path.join(PURP_DIR, 'node_modules', 'next', 'dist', 'bin', 'next')), 'Next.js CLI installed', 'runtime');
+  add('ecosystem.config.js', fs.existsSync(ECOSYSTEM), 'PM2 service config', 'runtime');
+  add('service_registry.js', fs.existsSync(path.join(PURP_DIR, 'service_registry.js')), 'single service map', 'runtime');
+  add('.env', fs.existsSync(path.join(PURP_DIR, '.env')), 'local keys/config', 'runtime');
 
   // ── NVIDIA NIM probe (if --nim flag) ─────────────────────────
   if (args.includes('--nim') || args.includes('--embeddings')) {
@@ -3711,27 +3915,27 @@ async function cmdDoctor(args) {
       const emb = require(path.join(PURP_DIR, 'lib', 'embeddings.js'));
       const h = await emb.health();
       if (h.ok) {
-        add('NVIDIA NIM bge-m3', true, `${h.model} · ${h.dim}-dim · ${h.baseUrl}`);
+        add('NVIDIA NIM bge-m3', true, `${h.model} · ${h.dim}-dim · ${h.baseUrl}`, 'nim');
       } else {
-        add('NVIDIA NIM bge-m3', false, h.reason || 'unreachable');
+        add('NVIDIA NIM bge-m3', false, h.reason || 'unreachable', 'nim');
       }
     } catch (e) {
-      add('NVIDIA NIM bge-m3', false, e.message);
+      add('NVIDIA NIM bge-m3', false, e.message, 'nim');
     }
   }
 
   try {
-    const py = execSync('py -3.11 -c "import sys; print(sys.version.split()[0])"', { cwd: PURP_DIR, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] }).trim();
-    add('Python 3.11', true, py);
+    const py = execSync('py --version 2>&1 || python --version 2>&1', { cwd: PURP_DIR, encoding: 'utf8', timeout: 5000, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+    add('Python 3.11', true, py, 'runtime');
   } catch {
-    add('Python 3.11', false, 'py -3.11 unavailable');
+    add('Python 3.11', false, 'py -3.11 unavailable', 'runtime');
   }
 
   try {
     const info = await screenLook.listScreens();
-    add('screen capture deps', !info.error && info.count > 0, info.error || `${info.count} monitor(s)`);
+    add('screen capture deps', !info.error && info.count > 0, info.error || `${info.count} monitor(s)`, 'runtime');
   } catch (e) {
-    add('screen capture deps', false, e.message);
+    add('screen capture deps', false, e.message, 'runtime');
   }
 
   // ── Cross-reference PM2's actual managed process list ──────────────────────
@@ -3754,7 +3958,7 @@ async function cmdDoctor(args) {
 
   for (const service of registry.getServices()) {
     if (!service.healthPort || !service.healthPath) {
-      add(`${service.name} (${service.group})`, !service.required, service.note || 'no health endpoint');
+      add(`${service.name} (${service.group})`, !service.required, service.note || 'no health endpoint', 'services');
       continue;
     }
     const online = await ping(service.healthPort, service.healthPath);
@@ -3779,11 +3983,20 @@ async function cmdDoctor(args) {
     }
 
     const ok = service.required ? online : true;
-    add(`${service.name} (${service.group})`, ok, detail);
+    add(`${service.name} (${service.group})`, ok, detail, 'services');
   }
 
   let failures = 0;
+  if (catFilter) {
+    const cats = [...new Set(checks.map(c => c.cat))];
+    if (!cats.includes(catFilter)) {
+      console.log('Available categories: ' + cats.join(', '));
+      return 1;
+    }
+    console.log(col(C.gray, `  [--category ${catFilter}]`));
+  }
   for (const check of checks) {
+    if (!showCat(check.cat)) continue;
     if (!check.ok) failures++;
     const icon = check.ok ? col(C.green, 'OK') : col(C.red, 'NO');
     console.log(`  ${icon}  ${check.label.padEnd(30)} ${col(C.gray, check.detail)}`);
@@ -5409,8 +5622,21 @@ async function cmdDoctors(args = []) {
   return 0;
 }
 
+  // Cache loaded commands — avoids repeated require() syscalls for the
+  // same module (e.g. 'hooks', 'plugin' called on every tick).
+  const _cmdCache = new Map();
   function loadCmd(name) {
-    return require(path.join(PURP_DIR, 'lib', 'commands', name + '.js'));
+    if (_cmdCache.has(name)) return _cmdCache.get(name);
+    try {
+      const mod = require(path.join(PURP_DIR, 'lib', 'commands', name + '.js'));
+      _cmdCache.set(name, mod);
+      return mod;
+    } catch (e) {
+      if (e.code === 'MODULE_NOT_FOUND' || e.code === 'ENOENT') {
+        throw new Error(`purpclaw: command '${name}' not found — lib/commands/${name}.js does not exist`);
+      }
+      throw e;
+    }
   }
 
   // Shared context object passed to all lib/commands modules
@@ -5795,36 +6021,79 @@ async function cmdRemoteControl(args) {
 // ── cmdCloud ──────────────────────────────────────────────────────────────────
 // Codex: codex cloud — browse Codex Cloud tasks
 async function cmdCloud(args) {
-  banner();
-  sectionHead('  PURPCLAW CLOUD');
-  const sub = (args[0] || '').toLowerCase();
+  const CS = (() => { try { return require('../lib/cloud-sync'); } catch { return null; } })();
+  if (!CS) {
+    banner();
+    sectionHead('  PURPCLAW CLOUD');
+    console.log(`  ${col(C.red, '[X]')} cloud-sync not available\n`);
+    return;
+  }
 
-  if (sub === 'list' || sub === 'ls' || !sub) {
-    console.log(col(C.gray, '  Codex Cloud integration'));
-    console.log('');
-    console.log(`  ${col(C.yellow, 'Not configured')} — Codex Cloud requires API credentials`);
-    console.log(col(C.gray, '  Codex Cloud is a hosted service at api.openai.com'));
-    console.log(col(C.gray, '  For PURPCLAW: tasks are managed locally via `purpclaw run` and `purpclaw resume`'));
-    console.log('');
-    console.log(col(C.gray, '  Local job catalog:'));
-    const JOBS_DIR = path.join(PURP_DIR, 'agent_work', 'jobs');
-    if (fs.existsSync(JOBS_DIR)) {
-      const jobs = fs.readdirSync(JOBS_DIR).filter(f => f.endsWith('.jsonl')).sort();
-      if (!jobs.length) {
-        console.log(col(C.gray, '    No jobs yet.'));
-      } else {
-        for (const j of jobs.slice(-10)) {
-          console.log(`    ${col(C.cyan, j.replace('.jsonl', ''))}`);
-        }
-      }
-    } else {
-      console.log(col(C.gray, '    No jobs directory.'));
-    }
+  const sub = (args[0] || 'status').toLowerCase();
+
+  if (sub === 'status' || sub === 'st') {
+    CS.cliStatus();
+    return;
+  }
+
+  if (sub === 'push' || sub === 'upload') {
+    const sessionId = args[1];
+    if (!sessionId) { console.log(`\n  ${col(C.red, 'Usage:')} purpclaw cloud push <session-id>\n`); return; }
+    console.log(`  ${col(C.cyan, 'Pushing')} ${sessionId} ...`);
+    CS.push(sessionId).then(r => {
+      if (!r.ok) { console.log(`  ${col(C.red, '[X]')} ${r.error}\n`); return; }
+      console.log(`  ${col(C.green, '[OK]')} pushed to cloud${r.size ? ` (${r.size} bytes)` : ''}\n`);
+    });
+    return;
+  }
+
+  if (sub === 'pull' || sub === 'download') {
+    const sessionId = args[1];
+    if (!sessionId) { console.log(`\n  ${col(C.red, 'Usage:')} purpclaw cloud pull <session-id>\n`); return; }
+    console.log(`  ${col(C.cyan, 'Pulling')} ${sessionId} ...`);
+    CS.pull(sessionId).then(r => {
+      if (!r.ok) { console.log(`  ${col(C.red, '[X]')} ${r.error}\n`); return; }
+      console.log(`  ${col(C.green, '[OK]')} restored as ${r.sessionId}\n`);
+    });
+    return;
+  }
+
+  if (sub === 'configure' || sub === 'config') {
+    const cfg = CS.getConfig();
+    console.log(`\n  Cloud Sync Configuration`);
+    console.log(`  ─────────────────────────`);
+    console.log(`  Backend:  ${cfg.backend}`);
+    console.log(`  Auto-sync: ${cfg.autoSync ? 'on' : 'off'}`);
+    console.log(`  Interval:  ${cfg.syncIntervalMs / 1000 / 60}min`);
+    console.log(`\n  Usage: purpclaw cloud configure --backend localfs|gist|webhook`);
+    console.log(`         purpclaw cloud configure --gist-token <token>`);
+    console.log(`         purpclaw cloud configure --gist-id <id>`);
+    console.log(`         purpclaw cloud configure --auto-sync --interval-ms <ms>`);
+    console.log(`         purpclaw cloud configure --webhook-url <url>`);
     console.log('');
     return;
   }
 
-  console.log(col(C.gray, '  usage: purpclaw cloud [list]\n'));
+  if (sub === 'backend' || sub === 'set-backend') {
+    const backend = args[1];
+    if (!backend || !CS.backends[backend]) {
+      console.log(`\n  ${col(C.red, 'Usage:')} purpclaw cloud backend <name>`);
+      console.log(`  Available: ${Object.keys(CS.backends).join(', ')}\n`);
+      return;
+    }
+    CS.configure({ backend });
+    console.log(`\n  ${col(C.green, '[OK]')} backend set to ${backend}\n`);
+    return;
+  }
+
+  console.log(`\n  Cloud Sync`);
+  console.log(`  ──────────`);
+  console.log(`  status / st        — show sync status`);
+  console.log(`  push <session-id>  — upload session to cloud`);
+  console.log(`  pull <session-id>  — download session from cloud`);
+  console.log(`  configure           — show / update config`);
+  console.log(`  backend <name>     — switch backend (${Object.keys(CS.backends).join('|')})`);
+  console.log('');
 }
 
 
@@ -5986,6 +6255,71 @@ async function cmdUpdate(args) {
   console.log('');
 }
 
+// cmdFileSearch — fuzzy file search CLI (fuzzaldrin-plus engine)
+// Codex: purpclaw file-search [--cwd <dir>] [--limit N] <query>
+async function cmdFileSearch(args) {
+  const Fuzzy = (() => { try { return require('fuzzaldrin-plus'); } catch { return null; } })();
+  if (!Fuzzy) { console.log('\n[X] fuzzaldrin-plus not installed\n'); return; }
+  const path = require('path');
+  const fs   = require('fs');
+
+  let cwd     = PURP_DIR;
+  let limit   = 10;
+  let query   = '';
+
+  // Parse flags
+  for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--cwd' && args[i+1]) cwd = path.resolve(args[++i]);
+    else if (args[i] === '--limit' && args[i+1]) limit = parseInt(args[++i], 10);
+    else if (args[i] === '--help' || args[i] === '-h') {
+      console.log('\nUsage: purpclaw file-search [--cwd <dir>] [--limit N] <query>\n');
+      console.log('  Fuzzy file search using fuzzaldrin-plus scoring');
+      console.log('  Searches filenames and paths recursively\n');
+      return;
+    }
+    else query = args[i];
+  }
+
+  if (!query) { console.log('\n[X] Provide a search query\n'); return; }
+
+  // Collect all files
+  const files = [];
+  function walk(dir) {
+    let entries;
+    try { entries = fs.readdirSync(dir); }
+    catch { return; }
+    for (const entry of entries) {
+      if (entry === 'node_modules' || entry === '.git' || entry === '.next' ||
+          entry === 'dist' || entry === 'coverage' || entry === '.cache') continue;
+      const full = path.join(dir, entry);
+      try {
+        const stat = fs.statSync(full);
+        if (stat.isDirectory()) walk(full);
+        else files.push({ name: entry, path: full, mtime: stat.mtime });
+      } catch { /* skip */ }
+    }
+  }
+
+  walk(cwd);
+
+  // Score and rank
+  const scored = files
+    .map(f => ({ ...f, score: Fuzzy.score(f.name, query) + Fuzzy.score(f.path, query) * 0.5 }))
+    .filter(f => f.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
+
+  if (!scored.length) { console.log(`\nNo results for "${query}"\n`); return; }
+
+  console.log(`\n${scored.length} result(s) for "${query}" in ${cwd}:\n`);
+  for (const f of scored) {
+    const name = f.name.padEnd(40);
+    const dir  = f.path.replace(cwd, '.').replace(/\\/g, '/');
+    console.log(`  ${name}  ${f.score.toFixed(0).padStart(6)}  ${dir}`);
+  }
+  console.log('');
+}
+
 // cmdReview — non-interactive code review over git diffs (Codex exec review parity)
 async function cmdReview(args) {
   const { execSync } = require('child_process');
@@ -6014,9 +6348,14 @@ async function cmdReview(args) {
   const isJson = !!flags.json;
 
   // Use Git Bash shell on Windows to run git commands reliably
+  // Detect shell: prefer Git Bash bash.exe on Windows, fall back to system $SHELL
+  const isWin = process.platform === 'win32';
+  const defaultShell = isWin
+    ? (fs.existsSync('C:/Program Files/Git/bin/bash.exe') ? 'C:/Program Files/Git/bin/bash.exe' : 'cmd.exe')
+    : (process.env.SHELL || '/bin/sh');
   function run(cmd, timeout = 15000) {
     const envStr = 'GIT_TERMINAL_PROMPT=0 GIT_PAGER=cat';
-    const shell = 'C:/Program Files/Git/bin/bash.exe';
+    const shell = defaultShell;
     try {
       const r = execSync(`${envStr} ${cmd}`, {
         encoding: 'utf-8', timeout,
@@ -6393,7 +6732,9 @@ async function cmdPlugins(args) {
     case 'checkpoint': return cmdCheckpoint(args);
     case 'curator':   return cmdCurator(args);
     case 'approvals': return cmdApprovals(args);
-    case 'tirith':   return cmdTirith(args);
+    case 'cost':      return cmdCost(args);
+    case 'usage':     return cmdUsage(args);
+    case 'tirith':    return cmdTirith(args);
     case 'plugins':  return cmdPlugins(args);
     case 'doctor':    return cmdDoctor(args);
     case 'app-server': {
@@ -6499,11 +6840,12 @@ async function cmdPlugins(args) {
     case 'policy':    return cmdPolicies(args);
     case 'introspect': return cmdIntrospect(args);
     case 'rollback':  return cmdRollback(args);
-    announce.bigboss.started(command, args);
-    case 'bg':        return cmdBg(args);
+    case 'bg':       return cmdBg(args);
 case 'registry': return cmdRegistry(args);
     case 'bundles':  return cmdBundles(args);
     case 'guard':    return cmdGuard(args);
+    case 'secrets':  return Secrets.cmdSecrets(args);
+    case 'graph':    return cmdGraph(args);
     case 'profile':  return cmdProfile(args);
     case 'install':   return cmdRegistry(['install', ...args]);
     case 'search':    return cmdRegistry(['search', ...args]);
@@ -6532,11 +6874,25 @@ case 'registry': return cmdRegistry(args);
       if (!args.length) { console.log('  usage: purpclaw exec <command> [args...]\n'); return; }
       const cmdStr = args.join(' ');
       const check = execPolicy.check(cmdStr);
-      if (check.allowed === false) { console.log(`${col(C.red, '[X] blocked by policy:')} ${check.reason || check.source || 'unknown'}`); return 1; }
-      const [cmd, ...cmdArgs] = args;
+      if (check.allowed === false) { console.log(`${col(C.red, '[X] blocked by policy:')} ${check.source || 'unknown'}`); return 1; }
+
+      // Split into file + args. Dangerous chars (; & | $ ` \n etc) in the
+      // command word itself get blocked — only alphanumeric/./-/_ are safe in cmd/file.
+      const unsafeCmdPat = /[;&|`$<>\\]/;
+      if (unsafeCmdPat.test(args[0])) {
+        console.log(`${col(C.red, '[X] blocked:')} command contains unsafe shell characters`);
+        return 1;
+      }
+
+      const [cmdFile, ...cmdArgs] = args;
+      const { execFileSync } = require('child_process');
+      const isWin = process.platform === 'win32';
+      // Windows always use cmd.exe — it's always present and handles all shell logic.
+      // Git Bash / MSYS2 bash would require finding the right install path.
+      const shell = isWin ? 'cmd.exe' : (process.env.SHELL || '/bin/sh');
+      const shellArgs = isWin ? ['/c', cmdStr] : ['-c', cmdStr];
       try {
-        const { execSync } = require('child_process');
-        const out = execSync(cmd, { encoding: 'utf-8', stdio: 'pipe', timeout: 60000, shell: 'C:/Program Files/Git/bin/bash.exe' });
+        const out = execFileSync(shell, shellArgs, { encoding: 'utf-8', timeout: 60000, stdio: 'pipe' });
         process.stdout.write(out);
       } catch (e) {
         if (e.stdout) process.stdout.write(e.stdout);
@@ -6567,8 +6923,14 @@ case 'registry': return cmdRegistry(args);
     case 'plugin':   return loadCmd('plugin').run(args, sharedCtx());
     case 'app': {
       const { runAppCmd } = require(path.join(PURP_DIR, 'lib', 'commands', 'app-cmd.js'));
-      (async () => { await runAppCmd(args, { loadCmd, sharedCtx }); })();
-      return;
+      let exitCode = 0;
+      try {
+        await runAppCmd(args, { loadCmd, sharedCtx });
+      } catch (e) {
+        console.error(col(C.red, `  app error: ${e.message}`));
+        exitCode = 1;
+      }
+      return exitCode;
     }
     case 'secrets':  return loadCmd('secrets').run(args, sharedCtx());
     case 'feedback': return loadCmd('feedback').run(args, sharedCtx());
@@ -7076,18 +7438,48 @@ case 'registry': return cmdRegistry(args);
     case 'upload': return cmdApiRouteWrapper('upload', args);
     case 'voice-command': return cmdApiRouteWrapper('voice-command', args);
     case 'yo': return cmdApiRouteWrapper('yo', args);
+    case 'proxy':
+    case 'proxy-stop':
+    case 'proxy-status': {
+      const rp = require(path.join(PURP_DIR, 'lib', 'responses-proxy'));
+      const sub = (args[0] || 'status').toLowerCase();
+      if (args[0] === 'stop' || sub === 'proxy-stop') {
+        const result = rp.stopProxy();
+        if (result.alreadyStopped) console.log(col(C.gray, '  Proxy not running'));
+        else console.log(col(C.green, '  Proxy stopped'));
+      } else if (args[0] === 'status' || sub === 'proxy-status') {
+        const s = rp.getProxyStatus();
+        if (!s.running) console.log(col(C.gray, '  Responses proxy: stopped'));
+        else {
+          console.log(col(C.green, `  Responses proxy: running on ${s.host}:${s.port}`));
+          if (s.budgetLimit > 0) console.log(col(C.cyan, `  Budget: $${s.budgetSpent.toFixed(6)} / $${s.budgetLimit.toFixed(6)}`));
+          console.log(col(C.cyan, `  Rate limit: ${s.rateLimitRpm} req/min`));
+        }
+      } else {
+        // start
+        const portArg = args.includes('--port') ? args[args.indexOf('--port') + 1] : undefined;
+        const port    = portArg ? parseInt(portArg, 10) : 7891;
+        const result  = rp.startProxy({ port });
+        if (result.alreadyRunning) console.log(col(C.yellow, `  Proxy already running on ${result.host}:${result.port}`));
+        else {
+          console.log(col(C.green, `  Responses proxy started on ${result.host}:${result.port}`));
+          console.log(col(C.gray, `  POST http://${result.host}:${result.port}/v1/responses`));
+          console.log(col(C.gray, `  Health: GET  http://${result.host}:${result.port}/health`));
+        }
+      }
+      return;
+    }
     case 'api':
     case 'call':      return cmdApiCall(args);
     case 'parity-audit':
     case 'parity-scan': return cmdParityAudit(args);
     case 'team':     { const r = await loadCmd('team').run(args, sharedCtx()); if (typeof r === 'string') console.log(r); return r; }
-    case 'whoami':    return cmdWhoami();
-    case 'doctors':   return cmdDoctors(args);
-    case 'audit':      return cmdAudit(args);
     case 'whoami':
-    case 'about':      return cmdWhoami(args);
-    case 'release':    return cmdRelease(args);
-    case 'health':     return cmdHealth(args);
+    case 'about':    return cmdWhoami(args);
+    case 'doctors':  return cmdDoctors(args);
+    case 'audit':    return cmdAudit(args);
+    case 'release':  return cmdRelease(args);
+    case 'health':   return cmdHealth(args);
     case 'identity':   return loadCmd('identity').run(args, sharedCtx());
     case 'liveforge':  return loadCmd('liveforge').run(args, sharedCtx());
     case 'mycelium':
@@ -7140,6 +7532,7 @@ case 'registry': return cmdRegistry(args);
     case 'commit':
     case 'review':  return cmdReview(args);
     case 'find':    return loadCmd('find').run(args, sharedCtx());
+    case 'file-search': return cmdFileSearch(args);
     case 'claudecode':return loadCmd('claudecode').run([command, ...args], sharedCtx());
     case 'gc':
     case 'cleanup':   return loadCmd('gc').run(args, sharedCtx());
@@ -7169,6 +7562,8 @@ case 'registry': return cmdRegistry(args);
     case 'brain':    return cmdBrain(args);
     case 'pet':      return cmdPet(args);
     case 'serve':    return cmdServe(args);
+    case 'project':   return cmdProject(args);
+    case 'exec':      return cmdExec(args);
     default:
       // A leading --flag is a mistyped/misplaced option, not a task. Error
       // clearly instead of silently running "--typo" as an inline task.
@@ -8378,6 +8773,179 @@ async function cmdRoute(args) {
   }
 
   console.log(`\n${col(C.gray, 'reason: ' + result.reason)}\n`);
+}
+
+// ── project — Show loaded project requirements.toml context ─────────────────────
+async function cmdProject(args) {
+  const sub = (args.filter(a => !a.startsWith('--'))[0] || 'show').toLowerCase();
+  const projectDir = args.includes('--dir')
+    ? path.resolve(args[args.indexOf('--dir') + 1])
+    : process.cwd();
+  const { requirements, path: reqPath, errors } = loadProjectRequirements(projectDir);
+  const jsonOut = args.includes('--json');
+
+  if (sub === 'show' || sub === '' || sub === 'status') {
+    if (!requirements) {
+      if (jsonOut) console.log(JSON.stringify({ projectDir, hasRequirements: false, path: null }));
+      else console.log(col(C.gray, `  No requirements.toml found in ${projectDir}/.purpclaw/`));
+      return 0;
+    }
+    if (jsonOut) {
+      console.log(JSON.stringify({ projectDir, path: reqPath, requirements, errors }, null, 2));
+    } else {
+      banner();
+      sectionHead('  PROJECT CONTEXT — ' + (requirements.project && requirements.project.name || projectDir));
+      if (reqPath) console.log('  File:   ' + col(C.gray, reqPath));
+      console.log('  Root:   ' + col(C.cyan, projectDir));
+      if (requirements.project) {
+        console.log('  Name:   ' + col(C.white, requirements.project.name || '—'));
+        console.log('  Ver:    ' + col(C.white, requirements.project.version || '—'));
+      }
+      if (requirements.requirements) {
+        const r = requirements.requirements;
+        if (r.skills && r.skills.length) console.log('  Skills: ' + col(C.cyan, r.skills.join(', ')));
+        if (r.providers && r.providers.length) console.log('  Providers: ' + col(C.cyan, r.providers.join(', ')));
+        if (r['default-model']) console.log('  Model:  ' + col(C.cyan, r['default-model']));
+      }
+      if (requirements.execution) {
+        const e = requirements.execution;
+        const flags = [];
+        if (e.sandbox) flags.push('sandbox');
+        if (e['allow-managed-hooks-only']) flags.push('managed-hooks-only');
+        if (e['require-confirmation'] && e['require-confirmation'].length) flags.push('confirm-required');
+        if (flags.length) console.log('  Policy: ' + col(C.yellow, flags.join(', ')));
+        if (e['allowed-commands'] && e['allowed-commands'].length) console.log('  Allow:  ' + col(C.green, e['allowed-commands'].join(', ')));
+        if (e['disallowed-commands'] && e['disallowed-commands'].length) console.log('  Deny:   ' + col(C.red, e['disallowed-commands'].join(', ')));
+      }
+      if (requirements.hooks && requirements.hooks['allow-managed-hooks-only']) {
+        console.log('  Hooks:  ' + col(C.yellow, 'managed-hooks-only (no undeclared hooks)'));
+      }
+      if (errors.length) {
+        console.log(col(C.red, '  Errors: ') + errors.join('; '));
+      }
+      console.log('');
+    }
+    return 0;
+  }
+
+  if (sub === 'init') {
+    const destDir = args.includes('--dir') ? args[args.indexOf('--dir') + 1] : process.cwd();
+    const reqFile = path.join(destDir, '.purpclaw', 'requirements.toml');
+    if (fs.existsSync(reqFile)) {
+      console.log(col(C.yellow, '  Already exists: ') + reqFile);
+      return 1;
+    }
+    fs.mkdirSync(path.join(destDir, '.purpclaw'), { recursive: true });
+    const defaultToml = `# PurpClaw project requirements
+# Generated ${new Date().toISOString()}
+
+[project]
+name = "${path.basename(destDir)}"
+version = "0.1.0"
+
+[requirements]
+# skills = ["code-review", "testing"]
+# providers = ["openrouter", "anthropic"]
+
+[hooks]
+# allow-managed-hooks-only = true
+# pre-run = ["echo 'starting'"]
+# post-run = ["echo 'done'"]
+
+[execution]
+# sandbox = true
+# allowed-commands = ["git", "node", "npm", "python"]
+# require-confirmation = ["git push", "npm publish"]
+`;
+    fs.writeFileSync(reqFile, defaultToml, 'utf8');
+    console.log(col(C.green, '  [OK]') + ' Created: ' + reqFile);
+    return 0;
+  }
+
+  console.log('Usage: purpclaw project [show|init] [--dir <path>] [--json]');
+  return 1;
+}
+
+// ── exec — Run a command with project execution policy enforcement ─────────────
+async function cmdExec(args) {
+  const dirIdx = args.indexOf('--dir');
+  const projectDir = dirIdx >= 0 ? path.resolve(args[dirIdx + 1]) : process.cwd();
+  const noPolicy = args.includes('--no-policy');
+  // Remove --flags and the command name itself to get subcommand + command args
+  const rawArgs = args.filter(a => !a.startsWith('--'));
+  const cleanArgs = rawArgs.slice(1);  // drop 'exec'
+  const sub = (cleanArgs[0] || '').toLowerCase();
+  const jsonOut = args.includes('--json');
+
+  const { requirements } = loadProjectRequirements(projectDir);
+
+  if (sub === 'policy' || sub === 'show') {
+    if (!requirements || !requirements.execution) {
+      console.log(col(C.gray, '  No execution policy in project requirements.toml'));
+      return 0;
+    }
+    const e = requirements.execution;
+    console.log(col(C.cyan, '  Execution Policy:'));
+    if (e.sandbox) console.log('  ' + col(C.green, '  sandbox: enabled'));
+    if (e['allowed-commands']) console.log('  ' + col(C.green, '  allowed:  ') + e['allowed-commands'].join(', '));
+    if (e['disallowed-commands']) console.log('  ' + col(C.red, '  denied:   ') + e['disallowed-commands'].join(', '));
+    if (e['require-confirmation']) console.log('  ' + col(C.yellow, '  confirm:  ') + e['require-confirmation'].join(', '));
+    console.log('  max-file-size-kb: ' + (e['max-file-size-kb'] || 'unlimited'));
+    console.log('  max-runtime-sec:  ' + (e['max-runtime-sec'] || 'unlimited'));
+    return 0;
+  }
+
+  if (sub === 'check' || sub === 'test') {
+    if (noPolicy || !requirements || !requirements.execution) {
+      console.log(col(C.gray, '  No policy to check against'));
+      return 0;
+    }
+    const cmdToCheck = cleanArgs.slice(1).join(' ') || 'echo "test"';
+    const check = checkCommandAllowed(cmdToCheck, requirements);
+    if (jsonOut) {
+      console.log(JSON.stringify({ command: cmdToCheck, ...check }));
+    } else if (check.allowed) {
+      console.log(col(C.green, '  ALLOWED: ') + cmdToCheck);
+    } else {
+      console.log(col(C.red, '  BLOCKED: ') + check.reason);
+    }
+    return check.allowed ? 0 : 1;
+  }
+
+  // Run a command with policy enforcement
+  const rawCmd = cleanArgs.slice(1).join(' ');
+  if (!rawCmd) {
+    console.log('Usage: purpclaw exec [--dir <path>] [--no-policy] <command>');
+    console.log('       purpclaw exec [--dir <path>] policy');
+    console.log('       purpclaw exec [--dir <path>] check <command>');
+    return 1;
+  }
+
+  if (!noPolicy && requirements && requirements.execution) {
+    const check = checkCommandAllowed(rawCmd, requirements);
+    if (!check.allowed) {
+      console.log(col(C.red, '  BLOCKED by project policy: ') + check.reason);
+      if (jsonOut) console.log(JSON.stringify({ allowed: false, reason: check.reason }));
+      return 1;
+    }
+    if (requiresConfirmation(rawCmd, requirements)) {
+      console.log(col(C.yellow, '  ⚠ Confirmation required for: ') + rawCmd);
+      const readline = require('readline');
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      const answer = await new Promise(resolve => rl.question('  Proceed? [y/N] ', resolve));
+      rl.close();
+      if (answer.toLowerCase() !== 'y') {
+        console.log(col(C.gray, '  Aborted.'));
+        return 1;
+      }
+    }
+  }
+
+  const { spawn } = require('child_process');
+  const child = spawn(rawCmd, [], { shell: true, cwd: projectDir });
+  child.stdout.pipe(process.stdout);
+  child.stderr.pipe(process.stderr);
+  return new Promise(resolve => child.on('close', code => resolve(code || 0)));
 }
 
 async function cmdBrain(args) {

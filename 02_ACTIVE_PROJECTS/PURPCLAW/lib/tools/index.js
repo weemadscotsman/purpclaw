@@ -17,6 +17,13 @@
 const path = require('path');
 const fs   = require('fs');
 
+// ── PTY session map ──────────────────────────────────────────────
+// Module-level map persists for the Node.js process lifetime.
+// Clean up on process exit so long-running PM2 daemons don't accumulate
+// entries from killed/restarted processes.
+const _ptySessions = new Map();
+process.on('exit', () => { _ptySessions.forEach(s => { try { s.kill(); } catch {} }); });
+
 // All tools use the central child-registry for safe spawns.
 // Tools live at lib/tools/index.js, registry is at lib/child-registry.js.
 const { trackedSpawn, execSafe } = require('../child-registry');
@@ -59,13 +66,24 @@ function registerMcpTools(tools, caller) {
 class ToolRegistry {
   constructor() {
     this.tools = new Map();
+    this.aliasMap = new Map(); // alias → canonical name
   }
   register(tool) {
     if (!tool.name || typeof tool.execute !== 'function') {
       throw new Error(`invalid tool: ${JSON.stringify(Object.keys(tool))}`);
     }
     this.tools.set(tool.name, tool);
+    // Build alias map
+    if (tool.aliases && Array.isArray(tool.aliases)) {
+      for (const alias of tool.aliases) {
+        this.aliasMap.set(alias, tool.name);
+      }
+    }
     return this;
+  }
+  // Resolve alias to canonical name, return as-is if already canonical
+  _resolve(name) {
+    return this.aliasMap.get(name) || name;
   }
   list() {
     const builtin = [...this.tools.values()].map(t => ({
@@ -80,11 +98,15 @@ class ToolRegistry {
     }));
     return [...builtin, ...mcp];
   }
-  has(name) { return this.tools.has(name) || _mcpTools.some(t => t.name === name); }
+  has(name) {
+    const resolved = this._resolve(name);
+    return this.tools.has(resolved) || _mcpTools.some(t => t.name === resolved);
+  }
   async invoke(name, args) {
+    const resolved = this._resolve(name);
     // Built-in tool?
-    if (this.tools.has(name)) {
-      const tool = this.tools.get(name);
+    if (this.tools.has(resolved)) {
+      const tool = this.tools.get(resolved);
       try {
         const result = await tool.execute(args || {});
         return { ok: true, ...result };
@@ -299,7 +321,7 @@ registry.register({
 
 // pty_session — open a long-lived PTY session. Returns a session id that
 // the agent can read/write/kill via pty_io. For interactive workflows.
-const _ptySessions = new Map();
+// _ptySessions is declared at module level (line ~24) and cleaned up on process exit.
 let _ptySeq = 0;
 registry.register({
   name: 'pty_session',
@@ -444,6 +466,77 @@ registry.register({
       return { matches, count: matches.length, engine: 'node-fallback' };
     })();
     if (result && result.ok !== false) TC.put(cacheKey, result, { tool: 'grep', args: { pattern, path: root, maxLines, glob }, ttlMs: 60000 });
+    return { ...result, _cache: 'miss' };
+  },
+});
+
+// ── fuzzy-find (nucleo-grade fuzzy file search) ────────────────────────────
+// Uses fuzzaldrin-plus (Atom's fuzzy matcher) for ranking.
+// Walks directories, collects file paths + names, scores each against query,
+// returns top-N ranked results with scores. No server, no native deps.
+registry.register({
+  name: 'fuzzy_find',
+  description: 'Fuzzy file search. Finds files by fuzzy-matching their paths against a query string, ranking by relevance score. Faster than grep for "I know the name but not the content" queries.',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      query:    { type: 'string', description: 'Fuzzy query string (e.g. "purpclaw.js" matches "purpclaw.js", "purpclw", "prpclaw")' },
+      path:     { type: 'string', description: 'Root directory to search', default: '.' },
+      maxResults: { type: 'integer', description: 'Max results to return', default: 20 },
+      skipDirs: { type: 'array', items: { type: 'string' }, description: 'Directories to skip', default: ['node_modules', '.git', '.next', 'dist', 'build', '__pycache__', 'vendor'] },
+    },
+    required: ['query'],
+  },
+  execute: async ({ query, path: root = '.', maxResults = 20, skipDirs = ['node_modules', '.git', '.next', 'dist', 'build', '__pycache__', 'vendor'] }) => {
+    const TC = require('../tool-cache');
+    const cacheKey = TC.keyFor('fuzzy_find', { query, root: path.resolve(root), maxResults });
+    const cached = TC.get(cacheKey);
+    if (cached) return { ...cached, _cache: 'hit' };
+
+    const result = await (async () => {
+      let fuzzaldrin;
+      try { fuzzaldrin = require('fuzzaldrin-plus'); } catch { return { ok: false, error: 'fuzzaldrin-plus not installed' }; }
+
+      // Collect all file paths under root
+      const files = [];
+      const SKIP = new Set(skipDirs);
+      function walk(dir, depth = 0) {
+        if (depth > 12) return;
+        let entries;
+        try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
+        for (const e of entries) {
+          if (e.isDirectory()) {
+            if (SKIP.has(e.name)) continue;
+            walk(path.join(dir, e.name), depth + 1);
+          } else if (e.isFile()) {
+            files.push(path.join(dir, e.name));
+          }
+        }
+      }
+      walk(path.resolve(root));
+
+      // Score each file: fuzzaldrin-plus scores the filename against the query,
+      // we also score the full relative path so "src/agent/foo.js" matches "agent foo"
+      const scored = files.map(f => {
+        const rel = path.relative(root, f).replace(/\\/g, '/');
+        const name = path.basename(f);
+        const nameScore = fuzzaldrin.score(name, query);
+        const pathScore = fuzzaldrin.score(rel, query);
+        const bestScore = Math.max(nameScore, pathScore * 0.7); // slight preference for name match
+        return { file: rel, score: bestScore };
+      });
+
+      scored.sort((a, b) => b.score - a.score);
+      const top = scored.slice(0, maxResults).filter(r => r.score > 0);
+
+      return {
+        ok: true,
+        results: top,
+        total: files.length,
+      };
+    })();
+
+    if (result && result.ok) TC.put(cacheKey, result, { tool: 'fuzzy_find', args: { query, root: path.resolve(root), maxResults }, ttlMs: 30000 });
     return { ...result, _cache: 'miss' };
   },
 });
@@ -1128,7 +1221,7 @@ registry.register({
     },
     required: ['agent', 'task'],
   },
-  execute: async (args, ctx = {}) => {
+  execute: async (args, _ctx) => {
     var agentName = (args.agent || '').toLowerCase();
     var task = args.task || '';
     if (!agentName || !task) return { ok: false, error: 'agent and task are required' };
@@ -1265,6 +1358,15 @@ registry.register({
   },
   aliases: ['image_payload_info'],
 });
+
+// ── Code Interpreter (Python REPL — matches Codex code interpreter)
+try {
+  const { registerCodeInterpreter } = require('../code-interpreter');
+  registerCodeInterpreter(registry);
+  console.log('[CODE] Registered Python code interpreter');
+} catch (e) {
+  console.log(`[CODE] Code interpreter registration skipped: ${e.message}`);
+}
 
 // ── Register the spine parity tools (steer/stack/chain/receipts/insight/
 //    purpflow/agent-health/agent-list/memory/truth/parity — 22 native tools
@@ -1566,22 +1668,27 @@ registry.register({
 
     // Build the patch command.
     // NO -d flag — MSYS2 patch -d /unix/path fails on Windows paths.
-    // Instead: cd to absDir + use -i with absolute patch file + strip arg.
+    // Build patch command as separate args — no shell interpolation.
+    // patch -p<strip> --fuzz=3 -i <absPatchFile> [extra]
     const stripArg = base !== undefined ? 0 : (strip || 0);
     const absPatchFile = path.resolve(patchFile);
     const absDir = path.resolve(cwd);
-    const patchCmd = (extra = '') =>
-      `patch -p${stripArg} --fuzz=3 ${extra} -i "${absPatchFile}"`.trim();
+
+    // Use execFile with array args — no shell injection possible.
+    const { execFileSync } = require('child_process');
+    function patchExec(extraArgs = [], timeout = 30_000) {
+      return execFileSync('patch', ['-p' + stripArg, '--fuzz=3', '-i', absPatchFile, ...extraArgs], {
+        timeout,
+        encoding: 'utf-8',
+        stdio: ['pipe', 'pipe', 'pipe'],
+        cwd: absDir,
+      });
+    }
 
     // Step 1: dry-run to validate without touching files.
     let dryRunResult;
     try {
-      const out = execSync(patchCmd('--dry-run'), {
-        timeout: 30_000,
-        encoding: 'utf-8',
-        shell: true,
-        cwd: absDir,  // cd to target dir so relative paths resolve correctly
-      });
+      const out = patchExec(['--dry-run']);
       dryRunResult = { ok: true, output: out, hunksOk: true, failedHunks: [] };
     } catch (e) {
       // patch --dry-run exits non-zero when there are failures. That's expected.
@@ -1622,12 +1729,7 @@ registry.register({
     // Step 3: apply for real.
     let applied;
     try {
-      const out = execSync(patchCmd(''), {
-        timeout: 30_000,
-        encoding: 'utf-8',
-        shell: true,
-        cwd: absDir,
-      });
+      const out = patchExec([]);
       applied = { ok: true, output: out };
     } catch (e) {
       const stderr = e.stderr || e.stdout || '';
