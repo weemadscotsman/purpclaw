@@ -44,7 +44,7 @@ const AUTHORITY_MARKER = 'Status: **CANONICAL';
 
 const EXCLUDE_DIRS = new Set([
   '.git', 'node_modules', 'vendor', 'agent_work', '.omnicode',
-  '.next', 'dist', 'build', 'coverage', 'public',
+  '.next', 'dist', 'build', 'coverage', 'public', '.worktrees',
 ]);
 
 function walk(dir, out = []) {
