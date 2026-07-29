@@ -93,12 +93,14 @@ Campaign state file updated by main session only. No Ultra/Max spawned.
 | 5 | P0-A verifier | Standard | High | End-to-end session persistence verification of fd5af98 | ✅ PASS — 4/4 tests |
 | 6 | P0-A blind critic | Standard | High | 10-criterion acceptance review | ✅ PASS — all criteria met |
 | 7 | Audit verifier | Standard | High | AUDIT_WAVE1_UNIFIED_RUNTIME.md claims vs live repo | ✅ PASS — §1.1 BLOCKER resolved, doc updated at 75b392a |
-| 8 | P0-B builder | Standard | High | Close 3 execution-policy bypasses | Running — `deleg_21830ccc task-0` |
-| 9 | P0-B blind critic | Standard | High | Blind review of P0-B commits | Pending delivery — `deleg_21830ccc task-1` |
+| 8 | P0-B builder | Standard | High | Close 3 execution-policy bypasses | ✅ 3/3 committed — 9181100, 9ea6ac1, docs:check PASS |
+| 9 | P0-B blind critic | Standard | High | Blind review of P0-B commits | Running — `deleg_c445364b task-0` |
 
 P0-A: CONDITIONAL PASS (runtime works, commit contains bundled agent-loop changes). Audit doc updated: §1.1 BLOCKER → RESOLVED.
 
-P0-B: Three fixes in progress (unified_api executeTool → ToolRuntime; mcp-server raw execSync → command tool; chat-agent double-execution removed).
+P0-B: All 3 bypasses closed — 10/10 acceptance tests PASS. Blind critic running.
+
+P0-C: Routing-decisions.js committed at 8d73427 (another session landed this).
 
 ## Not started — do not begin without chief allocation
 
