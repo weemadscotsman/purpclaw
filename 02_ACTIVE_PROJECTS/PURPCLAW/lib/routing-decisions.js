@@ -51,6 +51,17 @@ if (fs.existsSync(envFile)) {
     if (key && valueParts.length) env[key.trim()] = valueParts.join('=').trim();
   });
 }
+
+// ── User settings (provider-config.json — settings page) ─────────────────────
+// provider-config.js reads ~/.purpclaw/provider-config.json and respects
+// user-config > env > lane-default precedence.
+let _providerConfig = null;
+function _loadProviderConfig() {
+  if (!_providerConfig) {
+    try { _providerConfig = require('./runtime/provider-config'); } catch (_) { _providerConfig = null; }
+  }
+  return _providerConfig;
+}
 function envVal(key, fallback) {
   return process.env[key] || env[key] || fallback;
 }
@@ -333,8 +344,19 @@ function resolve(opts = {}) {
 
   // 2. Explicit lane
   if (explicitLane && LANES[explicitLane]) {
-    const resolved = { ...LANES[explicitLane], lane: explicitLane, reason: 'explicit lane' };
-    // Explicit model overrides the lane default model
+    // Apply user settings from provider-config.json first (settings page overrides).
+    // This is what makes the settings UI actually change runtime behavior.
+    const pc = _loadProviderConfig();
+    const userLane = pc ? pc.getLane(explicitLane) : null;
+    const resolved = { ...LANES[explicitLane], lane: explicitLane };
+    if (userLane && (userLane.provider || userLane.model)) {
+      if (userLane.provider) { resolved.provider = userLane.provider; }
+      if (userLane.model)    { resolved.model = resolveAlias(userLane.model); }
+      resolved.reason = `user settings for '${explicitLane}'`;
+    } else {
+      resolved.reason = 'explicit lane';
+    }
+    // Explicit overrides always win over both lane defaults and user settings
     if (explicitModel) {
       resolved.model = resolveAlias(explicitModel);
       resolved.reason += ` (model override: ${explicitModel})`;
