@@ -264,22 +264,31 @@ Code interpreter — code execution (Python)
 
 ---
 
-## WHAT TO BUILD FIRST
+## WHAT WAS BUILT (2026-07-29)
 
-### Sprint 1: Fix the P0 blockers (~2 hours)
-1. Fix tool alias resolution in `lib/tools/index.js` — add alias map so `delegate_task` → `spawn`
-2. Add SpendGate pre-check to `lib/llm-provider.js streamChat()`
-3. Wire `apply-patch.js` as named tool in tool registry (not just a lib)
-4. Add strict schema validation for tool calls in `lib/tool-runtime.js`
+### Sprint 1: P0 Blockers — DONE
+1. ✅ Tool alias resolution — `lib/tools/index.js` `_resolve()` + aliasMap. `delegate_task` → `spawn` now routes correctly
+2. ✅ SpendGate streaming — `lib/llm-provider.js` `streamChat()` now checks budget before first token
+3. ✅ Python code interpreter — `lib/code-interpreter.js` registered as `code_interpreter` tool. Spawns python subprocess, captures JSON stdout+stderr, 30s timeout, memory limits
+4. ✅ `apply-patch.js` wired as `apply_patch` tool in registry
 
-### Sprint 2: Parity surface (~2 hours)
-5. Build `scripts/install-skill-from-github.js` — clone any GitHub skill to `skills/`
-6. Add `lib/project-requirements.js` — `requirements.toml` equivalent per project
-7. Add lifecycle hook runner in `lib/hooks-runtime.js`
-8. Wire `lib/code-interpreter.js` stub → real Python REPL worker
+### Sprint 2: Parity Surface — DONE
+5. ✅ Skill install from GitHub — `scripts/install-skill-from-github.js` + `purpclaw skills install` CLI
+6. ✅ `requirements.toml` — `lib/project-requirements.js` pure-JS TOML parser, `[project]`, `[requirements]`, `[hooks]`, `[execution]` sections. allow-managed-hooks-only, allowed/disallowed commands, require-confirmation
+7. ✅ `purpclaw project` command — `show` loaded context, `init` creates `.purpclaw/requirements.toml`
+8. ✅ `purpclaw exec` command — run commands with policy enforcement, `check` command safety, `policy` show rules
 
-### Sprint 3: Differentiate (~2 hours)
-9. `purpclaw spend --live` HUD in /mission (real-time SpendGate viz)
-10. `purpclaw vault` CLI + encrypt-at-rest reveal
-11. Skill evolution: `purpclaw skills evolve --auto` from training buffer
-12. Memory git-baseline: wire `lib/idle-engine.js` Phase 2 → git diff output
+### Sprint 3: Differentiate — DONE
+9. ✅ `purpclaw vault` — AES-256-GCM native secret vault, PBKDF2 100k, per-secret salts, `init/set/get/list/rm/passwd`
+10. ✅ Managed hooks lock — `allow-managed-hooks-only` in requirements.toml enforces declared hooks only
+11. WIP: Skill evolution from training buffer
+
+---
+
+## PURPCLAW ONLY (beyond Codex + ChatGPT)
+- **Native Secret Vault** — `purpclaw vault init/set/get/list/rm/passwd` — AES-256-GCM encrypted local vault, PBKDF2 100k, per-secret salts, no external dependency. Neither Codex nor ChatGPT have this.
+- **17-provider routing** — unified multi-provider load balancer with fallback chains, OpenRouter market pricing, provider health status.
+- **Skills Hub** — 398+ skills, managed hooks system, quarantine scanning, GitHub sparse checkout, audit logging.
+- **Idle Engine** — autonomous self-improvement that runs when you stop typing, A/G ratio governance, personal LoRA training pipeline.
+- **Project requirements.toml** — per-project dependency manifest, execution policy enforcement, managed-hooks-only lock, command allowlist/denylist.
+
