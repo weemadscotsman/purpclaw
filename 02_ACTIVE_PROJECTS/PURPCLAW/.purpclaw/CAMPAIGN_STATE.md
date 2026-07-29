@@ -165,6 +165,33 @@ Verified after repair: 23/23 modules load from an empty cwd; session-repository
 and telemetry-manager resolve one identical path; create/persist/load/resume
 across two OS processes into a nonexistent nested dir; `ask --help` exits 0.
 
+### Chunk 1 — INDEPENDENTLY VERIFIED by the chief (spend limit killed the critic agent)
+
+Re-ran every capability against the live CLI with `OPENCLAUDE_CONFIG_DIR` and env
+files pointed at scratch paths. The builder's self-report was accurate: **6/7
+WORKING, 1 genuinely absent.**
+
+| # | Capability | Verdict | Evidence |
+|---|-----------|---------|----------|
+| 1 | Provider management | WORKING | `save auditprofile` → landed in temp dir, not real config; `list` shows it; `load doesnotexist` → "not found. Available: auditprofile" |
+| 2 | GitHub Models onboarding | **NOT IMPLEMENTED** | see defect below |
+| 3 | Buddy | WORKING | `list` fires narrow-terminal fallback ("width 80 < 100 cols"); `mute`→`unmute` round trip |
+| 4 | Repository map | WORKING | 603 files ranked, ~2059 tokens; injection PROVEN — `REPO_MAP` unset → absent from system prompt, `=1` → present |
+| 5 | Background sessions | WORKING | dispatch → `ps` shows `done` with real log path → `kill <id>` → `ps` shows `killed`. Job id reaches `kill` (no arg-slice bug). `logs <non-job>` still routes to PM2, so the collision fix did not break service logs |
+| 6 | Provider env file | WORKING | loaded 1 of 5 lines (comment, blank, malformed, empty-key all skipped, no throw, no values echoed); command still ran as `provider list`, so flag+path were stripped |
+| 7 | Feature parity registry | WORKING | 14 targets, 14 unique, 0 duplicates; `parity --json` emits valid JSON |
+
+**Caveat confirmed:** `bg` is not truly detached — the dispatch command blocks
+until the child exits, which is *what makes* the completion status update.
+
+**Defect found that the builder did not report:** `purpclaw onboard-github`
+falls through to the natural-language handler and **silently dispatches a
+workflow** (`Treating as task: "onboard-github"` → `wf-1785360536789-0`). This
+is the NL fallback working as designed, so it is not strictly a bug — but it
+means any typo'd or unimplemented command silently starts an orchestrator run
+instead of erroring. Owner call whether known-command-prefix typos should fail
+loudly first.
+
 ### P0-C is real code that cannot take effect on the lane it was built for
 
 `lib/llm-provider.js:322` now reads `provider-config.json` with precedence
