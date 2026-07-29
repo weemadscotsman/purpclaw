@@ -85,6 +85,21 @@ context; written to `.purpclaw/SCOPE_ADDENDUM_WAVE1_BLOCKED.txt`.
 
 Campaign state file updated by main session only. No Ultra/Max spawned.
 
+## 2026-07-29 late-session record
+
+| # | Role | Model | Reasoning | Task | Status |
+|---|------|-------|-----------|------|--------|
+| — | Chief (main session) | Opus 5 | session default | Orchestration, P0-A+AUDIT committed; P0-B builder running | Ongoing |
+| 5 | P0-A verifier | Standard | High | End-to-end session persistence verification of fd5af98 | ✅ PASS — 4/4 tests |
+| 6 | P0-A blind critic | Standard | High | 10-criterion acceptance review | ✅ PASS — all criteria met |
+| 7 | Audit verifier | Standard | High | AUDIT_WAVE1_UNIFIED_RUNTIME.md claims vs live repo | ✅ PASS — §1.1 BLOCKER resolved, doc updated at 75b392a |
+| 8 | P0-B builder | Standard | High | Close 3 execution-policy bypasses | Running — `deleg_21830ccc task-0` |
+| 9 | P0-B blind critic | Standard | High | Blind review of P0-B commits | Pending delivery — `deleg_21830ccc task-1` |
+
+P0-A: CONDITIONAL PASS (runtime works, commit contains bundled agent-loop changes). Audit doc updated: §1.1 BLOCKER → RESOLVED.
+
+P0-B: Three fixes in progress (unified_api executeTool → ToolRuntime; mcp-server raw execSync → command tool; chat-agent double-execution removed).
+
 ## Not started — do not begin without chief allocation
 
 - **P0-B** Execution-policy bypasses: force every tool call through one
