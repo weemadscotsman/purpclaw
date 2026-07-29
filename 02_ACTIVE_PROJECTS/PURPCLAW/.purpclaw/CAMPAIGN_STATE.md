@@ -19,6 +19,31 @@ chief's tier. That is the exact waste the policy forbids; recorded rather than
 quietly omitted. Every spawn from now on carries an explicit model and a
 RESOURCE BUDGET block.
 
+## Commit contamination — 2026-07-29, both directions
+
+The git root is `E:\god folder`, one level above this project, so every agent
+on this machine shares ONE index. Two agents cannot stage or commit at the same
+time. This is not theoretical; it happened twice in one hour:
+
+- **`fd5af98` (chief) is contaminated.** It added 105 lines to
+  `lib/agent-loop.js`; only ~14 are the degraded-runtime diagnostic its message
+  describes. The rest is the Chunk 1 agent's repo-map injection plus other
+  in-flight work, staged wholesale because `git add <tracked file>` takes the
+  whole working-tree state, not the part you wrote. History not rewritten:
+  `d3c954b` builds on it and the swept-in code is legitimate and tested by its
+  author. Attribution is wrong; the tree is correct.
+- **`5259be0`** committed the Chunk 1 agent's in-flight tree from another
+  session before that agent was finished.
+- The Chunk 1 agent's first commit attempt swallowed two chief files
+  (`scripts/validate-docs.js`, `docs/PARITY_BLIND_CRITIC.md`) and undid it with
+  `reset --soft`.
+
+RULE GOING FORWARD: only one agent may hold the index at a time. Before staging,
+check `git diff --cached --name-only` is empty or contains only your own paths.
+Never `git add` a tracked file another agent may be editing — stage a synthetic
+blob of HEAD-plus-your-change instead (`git hash-object` + `git update-index`),
+which is what the parity cleanup agent did correctly.
+
 ## Known concurrency hazard
 
 A second Chunk 1 recovery agent (`deleg_66df8b61`) was dispatched from a Hermes
