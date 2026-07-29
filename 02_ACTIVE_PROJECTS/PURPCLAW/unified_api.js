@@ -36,6 +36,20 @@ const LLM = require('./lib/llm-provider');
 // v2.1 — Cache the full whoami snapshot so the Next.js proxy doesn't timeout.
 const whoamiCache = { data: null, cachedAt: 0, TTL: 15000 };
 
+// P0-B: Module-level ToolRuntime for executeTool gate.
+// Ships behind PURPCLAW_API_TOOL_GATE=1. When disabled, runTool handles
+// all dispatch (previous behavior). When enabled, tools not in runTool's
+// switch fallthrough go through ToolRuntime with 'standard' permission
+// profile — adding permission checks, path-security, approval, guardrails.
+let _toolRuntime = null;
+function getToolRuntime() {
+  if (!_toolRuntime) {
+    const { ToolRuntime } = require('./lib/tool-runtime');
+    _toolRuntime = new ToolRuntime({ permissionProfile: 'standard' });
+  }
+  return _toolRuntime;
+}
+
 // v2.1 — Pulse: the stack's own heartbeat. Wakes itself, talks to the bus,
 // surfaces findings to the cockpit and the agent prompt.
 require('./lib/pulse').start();
@@ -1105,8 +1119,22 @@ async function executeTool(name, args) {
       result = ok(res);
     } catch (e) { result = ok(`Dynamic Skill Error: ${e.message}`); }
   } else {
+    // P0-B: Try runTool first — it handles ~80 hardcoded desktop/screen/browser/OCR cases.
+    // If runTool doesn't recognize the tool AND PURPCLAW_API_TOOL_GATE=1 is set,
+    // route through ToolRuntime with 'standard' permission profile.
+    // This adds permission checks, path-security, approval, guardrails, and checkpoints
+    // to the 515-tool surface reachable via the HTTP API.
     try {
       result = await runTool(name, args);
+      if (!result.ok && result.content && result.content.startsWith('Unknown tool')) {
+        if (process.env.PURPCLAW_API_TOOL_GATE === '1') {
+          const tr = getToolRuntime();
+          const trResult = await tr.invoke(name, args, { operatorInitiated: true });
+          result = ok(trResult.ok
+            ? (trResult.content || trResult.stdout || '')
+            : `ToolRuntime denied: ${trResult.error}`);
+        }
+      }
       console.log(`[TOOL] OK ${name} (${Date.now() - t0}ms)`);
     } catch (e) { result = ok(`Error: ${e.message}`); }
   }
