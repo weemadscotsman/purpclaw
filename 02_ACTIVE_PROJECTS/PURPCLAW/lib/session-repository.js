@@ -5,7 +5,7 @@ const path = require('path');
 const { DatabaseSync } = require('node:sqlite');
 
 const ROOT = path.resolve(__dirname, '..');
-const STATE_DIR = process.env.PURPCLAW_STATE_DIR || path.join(process.cwd(), '.purpclaw');
+const STATE_DIR = process.env.PURPCLAW_STATE_DIR || path.join(ROOT, '.purpclaw');
 const DB_PATH = process.env.PURPCLAW_SESSION_DB || path.join(STATE_DIR, 'state.db');
 const LEGACY_DIR = path.join(STATE_DIR, 'sessions');
 

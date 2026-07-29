@@ -5,7 +5,7 @@ export const runtime = 'nodejs';
 
 function store() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  return require('../../../lib/session-store.js');
+  return require('../../../lib/session-repository.js');
 }
 
 function trace(action: string, status: string, detail: string, sessionId = '') {
@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
   const title = typeof body.title === 'string' ? body.title : 'New Chat';
   const id = typeof body.id === 'string' && body.id.trim()
     ? body.id.trim()
-    : store().createSession(title, provider, model).id;
-  const session = store().saveSession(id, messages, { title, provider, model });
+    : store().createSession(title, provider, model, { source: 'web' }).id;
+  const session = store().saveSession(id, messages, { title, provider, model, source: 'web' });
   trace('save_session', session ? 'ok' : 'error', `${messages.length} message(s)`, id);
   return NextResponse.json({ ok: !!session, session });
 }

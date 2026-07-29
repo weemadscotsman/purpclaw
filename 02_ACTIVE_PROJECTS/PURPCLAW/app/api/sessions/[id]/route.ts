@@ -5,7 +5,7 @@ export const runtime = 'nodejs';
 
 function store() {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  return require('../../../../lib/session-store.js');
+  return require('../../../../lib/session-repository.js');
 }
 
 function trace(action: string, status: string, detail: string, sessionId: string) {

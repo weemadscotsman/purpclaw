@@ -7782,6 +7782,9 @@ async function cmdPlugins(args) {
     case 'serve':    return cmdServe(args);
     case 'project':   return cmdProject(args);
     case 'exec':      return cmdExec(args);
+    case 'train':     return loadCmd('training').run(args, sharedCtx());
+    case 'permissions':return loadCmd('permissions').run(args, sharedCtx());
+    case 'schedule':  return loadCmd('schedule').run(args, sharedCtx());
     default:
       // A leading --flag is a mistyped/misplaced option, not a task. Error
       // clearly instead of silently running "--typo" as an inline task.
