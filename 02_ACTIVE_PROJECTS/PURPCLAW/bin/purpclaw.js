@@ -465,7 +465,7 @@ function banner() {
       col(C.gray, '|  ') +
       col(C.white, '501 TOOLS') + '  ' +
       col(C.gray, '|  ') +
-      col(C.gray, 'v0.9.0-rc') + '  ' +
+      col(C.gray, 'v1.2.0') + '  ' +
       ' '.repeat(Math.max(0, inner - 100)) +
       '  ' + col(C.gray, ts)
     ));
@@ -6845,6 +6845,7 @@ case 'registry': return cmdRegistry(args);
     case 'bundles':  return cmdBundles(args);
     case 'guard':    return cmdGuard(args);
     case 'secrets':  return Secrets.cmdSecrets(args);
+    case 'vault':    return loadCmd('vault').run(args.slice(1), sharedCtx());
     case 'graph':    return cmdGraph(args);
     case 'profile':  return cmdProfile(args);
     case 'install':   return cmdRegistry(['install', ...args]);
@@ -7816,7 +7817,7 @@ async function cmdStatus(args) {
     col(C.gray, '|  ') +
     col(C.white, '501 TOOLS') + '  ' +
     col(C.gray, '|  ') +
-    col(C.gray, 'v0.9.0-rc') + '  ' +
+    col(C.gray, 'v1.2.0') + '  ' +
     ' '.repeat(Math.max(0, inner - 110)) +
     '  ' + col(C.gray, ts)
   ));
