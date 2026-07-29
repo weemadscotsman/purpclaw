@@ -6,12 +6,10 @@
  * Every other parity document is historical input. This gate keeps it that way.
  *
  * FAILS (exit 1) when:
- *   a. a parity-named doc neither IS the canonical roadmap nor points at it.
- *      Candidate = file whose BASENAME contains "parity" (case-insensitive) with
- *      extension .md or .json, outside the excluded dirs below. "Points at it"
- *      means the file text contains the string "CANONICAL_PARITY_PRIORITY.md"
- *      (covers the markdown banner link in .md files and the "_superseded"
- *      field in .json files).
+ *   a. a Markdown or JSON document inside docs/parity neither IS the canonical
+ *      roadmap nor points at it. Parity-named documents elsewhere in the repo
+ *      are checked too. "Points at it" means the file text contains the string
+ *      "CANONICAL_PARITY_PRIORITY.md".
  *   b. AGENT.md no longer contains the literal path
  *      "docs/parity/CANONICAL_PARITY_PRIORITY.md".
  *   c. more than one document carries the AUTHORITY MARKER. The marker is
@@ -37,6 +35,7 @@ const path = require('path');
 const ROOT = path.resolve(__dirname, '..');
 const CANON_REL = 'docs/parity/CANONICAL_PARITY_PRIORITY.md';
 const CANON_BASENAME = 'CANONICAL_PARITY_PRIORITY.md';
+const PARITY_DIR_REL = 'docs/parity';
 // Prefix match, not the full literal: the canonical doc's status line gets
 // reworded ("**CANONICAL — SOLE AUTHORITATIVE...**") and an exact match makes
 // the gate fail on a copy-edit rather than on a real second claimant.
@@ -46,7 +45,6 @@ const EXCLUDE_DIRS = new Set([
   '.git', 'node_modules', 'vendor', 'agent_work', '.omnicode',
   '.next', 'dist', 'build', 'coverage', 'public', '.worktrees',
 ]);
-
 function walk(dir, out = []) {
   let entries;
   try { entries = fs.readdirSync(dir, { withFileTypes: true }); } catch { return out; }
@@ -66,16 +64,35 @@ const files = walk(ROOT);
 const rel = (f) => path.relative(ROOT, f).replace(/\\/g, '/');
 
 // ── a. every parity-named doc must point at the canonical roadmap ────────────
-let checked = 0;
+// First enforce the entire docs/parity authority domain.
+let parityTreeChecked = 0;
+const parityTreeDocs = new Set();
 for (const abs of files) {
+  const relative = rel(abs);
+  if (!relative.startsWith(`${PARITY_DIR_REL}/`)) continue;
+  const base = path.basename(abs);
+  if (!/\.(md|json)$/i.test(base)) continue;
+  if (relative === CANON_REL) continue;
+  parityTreeDocs.add(relative);
+  parityTreeChecked++;
+  const text = fs.readFileSync(abs, 'utf8');
+  if (!text.includes(CANON_BASENAME)) {
+    errors.push(`${relative}: docs/parity document does not point at ${CANON_REL}`);
+  }
+}
+
+// Then enforce parity-named documents outside that directory.
+let parityNamedChecked = 0;
+for (const abs of files) {
+  const relative = rel(abs);
   const base = path.basename(abs);
   if (!/parity/i.test(base)) continue;
   if (!/\.(md|json)$/i.test(base)) continue;
-  if (rel(abs) === CANON_REL) continue;
-  checked++;
+  if (relative === CANON_REL || parityTreeDocs.has(relative)) continue;
+  parityNamedChecked++;
   const text = fs.readFileSync(abs, 'utf8');
   if (!text.includes(CANON_BASENAME)) {
-    errors.push(`${rel(abs)}: parity doc does not point at ${CANON_REL}`);
+    errors.push(`${relative}: parity-named document does not point at ${CANON_REL}`);
   }
 }
 
@@ -107,7 +124,8 @@ if (claimants.length !== 1 || claimants[0] !== CANON_REL) {
 // ── Report ───────────────────────────────────────────────────────────────────
 console.log('=== PARITY AUTHORITY CHECK ===');
 console.log(`Canonical: ${CANON_REL}`);
-console.log(`Superseded parity docs checked: ${checked}`);
+console.log(`docs/parity documents checked: ${parityTreeChecked}`);
+console.log(`Other parity-named documents checked: ${parityNamedChecked}`);
 console.log(`Authority claimants: ${claimants.length} (${claimants.join(', ') || 'none'})`);
 
 if (errors.length) {
