@@ -100,7 +100,19 @@ P0-A: CONDITIONAL PASS (runtime works, commit contains bundled agent-loop change
 
 P0-B: OVERALL PASS ✅ — All 3 bypasses closed. chat-agent double-exec removed. executeTool gated by default. MCP execSync replaced with TOOLS.invoke.
 
-P0-C: Routing-decisions.js committed at 8d73427 (another session). Chief found critical gap: routing-decisions.js ignored provider-config.json. Fixed in 9e70743 — 5/5 integration tests PASS. Critic running — deleg_99c8b80f.
+P0-C: PASS ✅ — 8e70743 + dde6423. Provider-config.json now wired into routing-decisions resolve() for all paths (explicit, auto-classify, default). 6/6 integration tests. Critic CONDITIONAL PASS resolved.
+
+WAVE 1 COMPLETE ✅
+
+| Priority | Fix | Commit | Status |
+|---|---|---|---|
+| P0-A | DatabaseSync → node:sqlite | fd5af98 | ✅ PASS |
+| P0-B Fix 1 | chat-agent double-execution removed | 9ea6ac1 | ✅ PASS |
+| P0-B Fix 2 | executeTool gated default-on | 13880a6 | ✅ PASS |
+| P0-B Fix 3 | MCP raw execSync → TOOLS.invoke | 9181100 | ✅ PASS |
+| P0-C | routing-decisions wired to provider-config.json | dde6423 | ✅ PASS |
+
+docs:check PASS (297 routes, 33 pages, 27 services).
 
 ## 2026-07-29 final session (main, this CLI)
 
