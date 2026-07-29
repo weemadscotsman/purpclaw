@@ -1,62 +1,43 @@
+> **SUPERSEDED:** This document is retained for historical reference only. The sole authoritative parity roadmap is [`docs/parity/CANONICAL_PARITY_PRIORITY.md`](parity/CANONICAL_PARITY_PRIORITY.md). Do not use this file to define current scope, completion, priorities, or parity status.
+
 # CODEX PARITY — CANONICAL STATUS
-**As of: 2026-07-29 | Commit: b494710**
+**Last updated:** 2026-07-28
+**Canonical wording:** See below. Do not use other scorecards.
 
 ---
 
-## CLI Parity: COMPLETE
-**20/20 command domains matched. No stubs.**
+## CLI Parity: 20/20 ✅ COMPLETE
+All supported command domains matched. No stubs. No outstanding CLI gaps.
 
-| Domain | Commands | Status |
-|--------|----------|--------|
-| Auth | login, logout | ✅ |
-| Shell | exec, exec review | ✅ |
-| Sessions | resume, fork, archive, unarchive, delete, session list | ✅ |
-| Diff/Apply | apply, apply --dry-run/--check | ✅ |
-| Self-update | update, update --check | ✅ |
-| Diagnostics | doctor, sandbox, debug models, debug clear-memories | ✅ |
-| Completion | completion bash/zsh/fish/powershell | ✅ |
-| MCP | mcp list/get/add/remove/login/logout/tools/status/reload | ✅ |
-| MCP Server | mcp-server, mcp-server --strict-config | ✅ |
-| Plugins | plugin list/info/install/add/remove/enable/disable | ✅ |
-| Remote | remote, remote-control start/stop/status/pair | ✅ |
-| App Server | app-server start/stop/restart/status/version, daemon variants | ✅ |
-| Features | features | ✅ |
-| Cloud | cloud list | ✅ |
-| Init | init | ✅ |
-| Model | model list/show | ✅ |
-| Config | config get/set/list/unset | ✅ |
-| Hooks | hooks list/add/remove/run | ✅ |
-| Registry | registry install/remove/list | ✅ |
-| Help | --help, help | ✅ |
+## Extended Product Parity: 20/22 ✅
+Two surfaces genuinely outstanding (not CLI gaps — separate product surfaces):
+
+| # | Surface | Status | Notes |
+|---|---|---|---|
+| 1 | **Marketplace** | Outstanding | Source registries, add/list/remove/update, persistence |
+| 2 | **Desktop App** | Outstanding | Launcher, server lifecycle, window integration, install/package path |
+
+## Smoke Tests: 12/12 ✅ PASSING
 
 ---
 
-## Extended Product Parity: 20/22
-**2 genuine gaps — separate product surfaces, not CLI commands**
+## What "20/20 CLI complete" means
+Codex has ~29 CLI commands. 20 are fully matched. The remaining ~7 in Codex are:
+- Hidden/internal (stdio-to-uds, responses-api-proxy, execpolicy) — not applicable
+- Architecture differences (exec-server is a separate binary; PURPCLAW is a unified runtime)
+- **Not gaps**: these are design choices, not missing features
 
-| Gap | Size | Notes |
-|-----|------|-------|
-| **Marketplace** | days of work | Registry system, source discovery, add/list/upgrade/remove |
-| **Desktop App** | days + desktop surface | Launcher, browser integration, install/download flow |
-
----
-
-## Smoke Tests: 12/12 PASSING
-All command paths exercised end-to-end. No stubs, no cosplay.
+## What "Marketplace + Desktop outstanding" means
+These are not CLI flag gaps. They are separate product surfaces requiring:
+- Marketplace: registry system, source adapters, persistence layer, tests
+- Desktop App: Electron/desktop surface, launcher, server lifecycle, window management
 
 ---
 
-## What This Is NOT
-- `exec-server` / `responses-api-proxy` / `stdio-to-uds` — architecture differences, not gaps
-- `debug trace-reduce` — internal Codex tooling, not user-facing
-- `debug prompt-input` — Codex internal diagnostic
+## Lane assignments
+- **Lane 1 — Marketplace:** Source registries, add/list/remove/update, persistence, tests
+- **Lane 2 — Desktop App:** Launcher, server lifecycle, window integration, install/package
+- **Lane 3 — Parity Verifier ONLY:** Tests finished surfaces against Codex/Hermes. No implementation.
 
----
-
-## What's Next
-Two workstreams only:
-
-1. **Marketplace** — npm/git registry, `plugin marketplace add/list/upgrade/remove`
-2. **Desktop** — Electron/web launcher, `app` command, install path
-
-No more parity audits. Verify against the matrix above.
+## What this document is NOT
+This is not a living audit that gets re-run for discovery. It is a status document. The verifier agent updates it; it does not grow it.
