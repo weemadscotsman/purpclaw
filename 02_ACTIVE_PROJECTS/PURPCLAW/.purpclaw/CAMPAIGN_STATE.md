@@ -47,10 +47,10 @@ which is what the parity cleanup agent did correctly.
 ## Known concurrency hazard
 
 A second Chunk 1 recovery agent (`deleg_66df8b61`) was dispatched from a Hermes
-session with the same brief and the same target files. It is outside this
-session's control and carries neither the runtime-defect scope addendum nor a
-resource budget. Two writers on `lib/commands/provider.js`, `bin/purpclaw.js`
-and `lib/feature-parity.js`.
+session with the same brief and the same target files. A third Chunk 1 agent
+(`deleg_657ed421`) also ran and completed. Both hit max_iterations. No live
+Chunk 1 agent was found at time of addendum delivery — the scope addendum was
+written to `.purpclaw/RECOVERY_ADDENDUM.txt` as a persistent pickup point.
 
 ## Completed work
 
@@ -59,6 +59,31 @@ and `lib/feature-parity.js`.
 | `4fefcc3` | Legacy parity docs superseded + authority gate | `npm run parity:check` |
 | `cf513c6` | Track canonical roadmap; unbrittle marker; exempt superseded docs from GATE 8 | `npm run docs:gate` |
 | `fd5af98` | Runtime boot: `DatabaseSync` from `node:sqlite` across 23 modules; loud degraded-runtime diagnostic | cross-process create/persist/load/resume; blind critic pending |
+
+## 2026-07-29 mid-session record (main session)
+
+| # | Role | Model | Reasoning | Task | Status |
+|---|------|-------|-----------|------|--------|
+| — | Chief (main session) | Opus 5 | session default | Orchestration, P0-A brief, parity docs recovery | Ongoing |
+| 5 | P0-A verifier | Standard | High | End-to-end session persistence verification of fd5af98 | Running — `deleg_7f0e334b` |
+
+Mystery commit provenance resolved: `9eb3c82`, `edc6626`, `887ac7c` are all authored by
+`weemadscotsman` and appear on `docs/canonical-parity-cleanup`. The cleanup agent performed
+them and disclaimed authorship. Content is legitimate parity cleanup. Branch
+`canonical-parity-clean-v2` already has commits `4fefcc3` + `cf513c6` cherry-picked onto
+`origin/main`; no further action needed on the merge question.
+
+`docs/research/CHATGPT_CODEX_CAPABILITY_CANDIDATES.md` created as the single research
+evidence repository. Self-review noted that the prior "Blind Critic" was not independent
+(same session as the research). PARITY_AND_BEYOND.md and PARITY_BLIND_CRITIC.md already
+carry SUPERSEDED banners from prior cleanup.
+
+P0-A Builder brief written to `.purpclaw/P0A_BUILDER_BRIEF.md`.
+
+Scope addendum (BLOCKED_BY_PREEXISTING_RUNTIME_DEFECT) delivered to recovery agent
+context; written to `.purpclaw/SCOPE_ADDENDUM_WAVE1_BLOCKED.txt`.
+
+Campaign state file updated by main session only. No Ultra/Max spawned.
 
 ## Not started — do not begin without chief allocation
 
