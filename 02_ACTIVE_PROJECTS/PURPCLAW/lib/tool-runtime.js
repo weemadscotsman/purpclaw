@@ -86,13 +86,15 @@ class ToolRuntime extends EventEmitter {
     let checkpoint = null;
     const paths = context.checkpoint === false ? [] : mutationPaths(name, args);
     if (paths.length) {
-      checkpoint = CHECKPOINTS.create(paths, {
-        automatic: true,
-        sessionId: context.sessionId || null,
-        callId,
-        tool: name,
-      });
-      this.emit('checkpoint.created', { call_id: callId, tool: name, checkpoint_id: checkpoint.id, paths });
+      const checkpointManager = await CHECKPOINTS;
+      const created = await checkpointManager.createCheckpoint(
+        context.cwd || ROOT,
+        `tool ${name}: ${paths.join(', ')}`,
+      );
+      if (created) {
+        checkpoint = { ...created, id: created.checkpointId };
+        this.emit('checkpoint.created', { call_id: callId, tool: name, checkpoint_id: checkpoint.id, paths });
+      }
     }
 
     this.emit('tool.start', { call_id: callId, tool: name, arguments: args, checkpoint_id: checkpoint?.id });

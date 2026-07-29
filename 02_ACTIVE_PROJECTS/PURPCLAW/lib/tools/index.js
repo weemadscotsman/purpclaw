@@ -58,9 +58,20 @@ function rgBin() {
 // merged in at runtime via registerMcpTools().
 let _mcpTools = [];
 let _mcpCaller = null;
-function registerMcpTools(tools, caller) {
+let _mcpPermissionProfile = 'standard'; // default; overridden by registerMcpTools
+
+function registerMcpTools(tools, caller, permissionProfile) {
   _mcpTools = tools || [];
   _mcpCaller = caller;
+  _mcpPermissionProfile = permissionProfile || 'standard';
+}
+
+/**
+ * Update the permission profile used for MCP tool evaluation.
+ * Called by the /permissions slash command when the user switches profiles.
+ */
+function setMcpPermissionProfile(profile) {
+  _mcpPermissionProfile = profile || 'standard';
 }
 
 class ToolRegistry {
@@ -117,6 +128,20 @@ class ToolRegistry {
     // MCP tool?
     const mcpTool = _mcpTools.find(t => t.name === name);
     if (mcpTool && mcpTool.mcp) {
+      // ── P0-B: MCP tools go through canonical permission evaluator ─────
+      let PERMISSIONS;
+      try { PERMISSIONS = require('../permission-manager'); } catch { PERMISSIONS = null; }
+      if (PERMISSIONS) {
+        const result = PERMISSIONS.evaluate(_mcpPermissionProfile, name);
+        if (result.action === 'deny') {
+          return {
+            ok: false,
+            error: `${name} is denied by permission profile '${_mcpPermissionProfile}' (${result.profile})`,
+            code: 'PERMISSION_DENIED',
+          };
+        }
+        // 'ask' / 'defer' — pass through; ToolRuntime handles approval
+      }
       try {
         const r = await _mcpCaller(mcpTool.mcp.server, mcpTool.mcp.tool, args || {});
         return r;
@@ -623,6 +648,20 @@ registry.register({
     required: ['url'],
   },
   execute: async ({ url }) => {
+    // Gate: check network policy before making outbound request.
+    // Build tcp://host:port from the URL for policy evaluation.
+    try {
+      const parsed = new URL(url);
+      const networkTarget = `tcp://${parsed.host}`;
+      const netResult = execPolicy.checkNetwork(networkTarget);
+      if (netResult.allowed === false) {
+        return { error: `network denied by policy: ${netResult.matched}`, url };
+      }
+    } catch {
+      // If URL is unparseable or checkNetwork throws, block it.
+      return { error: 'network policy check failed', url };
+    }
+
     const https = require('https');
     const http  = require('http');
     return new Promise((resolve) => {
@@ -1394,6 +1433,7 @@ try {
 
 module.exports = registry;
 module.exports.__registerMcpTools = registerMcpTools;
+module.exports.__setMcpPermissionProfile = setMcpPermissionProfile;
 
 // ── Auto-register all Hermes skills as native PurpClaw tools ────────
 try {
@@ -2028,4 +2068,15 @@ registry.register({
     return { ok: true, path: root, count: out.length, truncated: out.length >= limit, entries: out };
   },
 });
+
+// ── screen + camera tools (G3) ────────────────────────────────────────────────
+try {
+  const { registerScreenCapture, registerCameraCapture, registerCameraList, registerScreenList } = require('../screen-camera-tools');
+  registerScreenCapture(registry);
+  registerCameraCapture(registry);
+  registerCameraList(registry);
+  registerScreenList(registry);
+} catch (err) {
+  // screen + camera tools require ffmpeg; skip silently if unavailable
+}
 

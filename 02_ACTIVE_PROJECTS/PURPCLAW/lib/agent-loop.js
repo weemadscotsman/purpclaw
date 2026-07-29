@@ -540,7 +540,11 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
     if (_sigintPending) {
       _sigintPending = false;
       process.removeListener('SIGINT', _sigintHandler);
-      if (SESSIONS && opts.sessionId) SESSIONS.saveSession(opts.sessionId, messages, { provider, model });
+      if (SESSIONS && opts.sessionId) {
+        SESSIONS.saveSession(opts.sessionId, messages, { provider, model });
+      } else if (!SESSIONS) {
+        console.error(`[CRITICAL] session persistence unavailable — session ${opts.sessionId || '(no id)'} will not be saved`);
+      }
       if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'SIGINT').catch(() => {});
       if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'SIGINT' })).catch(() => {});
       yield { type: 'interrupted', reason: 'SIGINT', turns, totalContent };
@@ -591,7 +595,11 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
         // Codex parity: Error hook — fire when agent turn encounters an error
         if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('Error', { error: ev.error, turn, sessionId: opts.sessionId })).catch(() => {});
         // ── Full cleanup (mirrors normal exit path lines 703–727) ──────────
-        if (SESSIONS && opts.sessionId) SESSIONS.saveSession(opts.sessionId, messages, { provider, model });
+        if (SESSIONS && opts.sessionId) {
+        SESSIONS.saveSession(opts.sessionId, messages, { provider, model });
+      } else if (!SESSIONS) {
+        console.error(`[CRITICAL] session persistence unavailable — session ${opts.sessionId || '(no id)'} will not be saved`);
+      }
         if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'error').catch(() => {});
         if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'error', turns, totalContent })).catch(() => {});
         if (MEMORY) { try { MEMORY.react(`agent error: ${ev.error}`, 'agent_loop'); } catch {} }
@@ -620,7 +628,11 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
     if (!toolCalls.length) {
       // LLM didn't ask for any tools; we're done
       // ── Auto-save session ───────────────────────────────────────
-      if (SESSIONS && opts.sessionId) SESSIONS.saveSession(opts.sessionId, messages, { provider, model });
+      if (SESSIONS && opts.sessionId) {
+        SESSIONS.saveSession(opts.sessionId, messages, { provider, model });
+      } else if (!SESSIONS) {
+        console.error(`[CRITICAL] session persistence unavailable — session ${opts.sessionId || '(no id)'} will not be saved`);
+      }
       // ── Cognitive spine: ingest final response, set belief, dream ──
       if (MEMORY || COGNITIVE) {
         try {
@@ -765,7 +777,11 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   // ── Auto-save session ───────────────────────────────────────
   // Always remove SIGINT handler on normal exit — prevents accumulation.
   process.removeListener('SIGINT', _sigintHandler);
-  if (SESSIONS && opts.sessionId) SESSIONS.saveSession(opts.sessionId, messages, { provider, model });
+  if (SESSIONS && opts.sessionId) {
+    SESSIONS.saveSession(opts.sessionId, messages, { provider, model });
+  } else if (!SESSIONS) {
+    console.error(`[CRITICAL] session persistence unavailable — session ${opts.sessionId || '(no id)'} will not be saved`);
+  }
   if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'completed').catch(() => {});
   if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'completed', turns, totalContent })).catch(() => {});
   // ── Cognitive spine: record max-turns exit ─────────────────────────
