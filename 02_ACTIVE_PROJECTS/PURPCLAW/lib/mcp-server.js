@@ -6,27 +6,56 @@
  * This module does the same for PURPCLAW.
  *
  * MCP stdio protocol:
- *   - Server reads JSON-RPC requests (one per line) from stdin
+ *   - Server reads JSON-RPC requests (one per line, \n-terminated) from stdin
  *   - Server writes JSON-RPC responses (one per line) to stdout
  *   - Notifications (no id) are fire-and-forget
  *
  * Implements MCP protocol version 2024-11-05:
- *   - initialize       — protocol handshake
- *   - tools/list       — enumerate available tools
- *   - tools/call       — invoke a tool
- *   - resources/list   — enumerate resources
- *   - resources/read   — read a resource
- *   - prompts/list     — enumerate prompts
- *   - prompts/get      — get a prompt
+ *   - initialize              — protocol handshake
+ *   - tools/list              — enumerate available tools
+ *   - tools/call              — invoke a tool (all go through ToolRuntime)
+ *   - resources/list          — enumerate resources
+ *   - resources/read          — read a resource
+ *   - prompts/list            — enumerate prompts
+ *   - prompts/get             — get a prompt
  *   - notifications/initialized — client ready signal
  *
+ * Permission model:
+ *   All tool calls go through ToolRuntime with the canonical permission
+ *   evaluator (lib/permission-manager.js). The active profile is set via
+ *   the MCP_INITIAL_PROFILE env var (default: 'workspace-read-only').
+ *
  * Usage:
- *   node bin/purpclaw.js mcp-server [--strict-config]
+ *   MCP_INITIAL_PROFILE=trusted node bin/purpclaw.js mcp-server
+ *   MCP_INITIAL_PROFILE=deny-by-default node bin/purpclaw.js mcp-server
  */
 
-const fs   = require('fs');
-const path = require('path');
-const os   = require('os');
+// P0-B: Gate MCP builtin tools through ToolRuntime with permission enforcement.
+// handleBuiltinTool (raw execSync/readFileSync) is deleted — no more permission bypass.
+// Tool name mapping: MCP names → canonical tool names.
+const { ToolRuntime } = require('./tool-runtime');
+const TOOL_RUNTIME = new ToolRuntime({ permissionProfile: 'standard' });
+
+// Map MCP tool names to canonical tool registry names
+const MCP_TO_REGISTRY = {
+  bash:            'shell',
+  shell:           'shell',
+  read_file:       'read',
+  write_file:      'write',
+  list_directory:  'list',
+  file_exists:     'file_exists',
+};
+
+// ── Tool registry (canonical — all surfaces use this) ──────────────────────────
+const TOOLS = require('./tools');
+
+// ── Permission evaluator (canonical — all surfaces use this) ────────────────────
+const PERMISSIONS = require('./permission-manager');
+
+// Active permission profile for this MCP session.
+// Default: workspace-read-only — MCP servers should be restricted until
+// the operator explicitly upgrades the session profile.
+const SESSION_PROFILE = process.env.MCP_INITIAL_PROFILE || 'workspace-read-only';
 
 // ── JSON-RPC line reader ──────────────────────────────────────────────────────
 
@@ -180,9 +209,56 @@ const handlers = {
       return;
     }
 
-    // Built-in tools (simple subset)
-    const builtinResults = handleBuiltinTool(name, args);
-    response(id, builtinResults);
+    // P0-B FIX: Route all non-MCP tool calls through the canonical tool registry.
+    // Previously handleBuiltinTool used raw execSync('bash ...') and fs.writeFileSync
+    // directly — bypassing ToolRuntime entirely: no permission profile, no
+    // path-security, no approval queue, no guardrails, no checkpoints.
+    // Now dispatch through TOOLS.invoke() which is wrapped by ToolRuntime.
+    //
+    // Tool-name aliases (MCP-client-friendly names → canonical names):
+    //   read          → read_file
+    //   write         → write_file
+    //   list          → list_directory
+    //   exists        → file_exists
+    //   shell / bash  → bash
+    const ALIASES = {
+      read:    'read_file',
+      write:   'write_file',
+      list:    'list_directory',
+      exists:  'file_exists',
+      shell:   'bash',
+    };
+    const canonicalName = ALIASES[name] || name;
+
+    // Pre-permission check using canonical permission evaluator (early deny)
+    const permResult = PERMISSIONS.evaluate(SESSION_PROFILE, canonicalName);
+    if (permResult.action === 'deny') {
+      response(id, {
+        content: [{ type: 'text', text: `[permission denied] ${canonicalName} is denied by profile '${SESSION_PROFILE}'` }],
+        isError: true,
+      });
+      return;
+    }
+
+    try {
+      const result = await TOOLS.invoke(canonicalName, args);
+      if (result.ok) {
+        response(id, {
+          content: [{ type: 'text', text: result.content || result.stdout || '' }],
+          isError: false,
+        });
+      } else {
+        response(id, {
+          content: [{ type: 'text', text: `[error] ${result.error}` }],
+          isError: true,
+        });
+      }
+    } catch (e) {
+      response(id, {
+        content: [{ type: 'text', text: `[exception] ${e.message}` }],
+        isError: true,
+      });
+    }
   },
 
   async 'resources/list'(id) {
@@ -205,58 +281,6 @@ const handlers = {
     error(id, METHOD_NOT_FOUND, 'prompts/get not implemented');
   },
 };
-
-// ── Built-in tool handler (subset of PURPCLAW tools) ─────────────────────────
-
-function handleBuiltinTool(name, args) {
-  const results = [];
-  try {
-    switch (name) {
-      case 'bash':
-      case 'shell': {
-        const { command } = args;
-        if (!command) throw new Error('missing required arg: command');
-        const { execSync } = require('child_process');
-        const out = execSync(command, { encoding: 'utf-8', stdio: 'pipe', timeout: 30000 });
-        results.push({ type: 'text', text: out || '(no output)' });
-        break;
-      }
-      case 'read_file': {
-        const { path: filePath, offset, limit } = args;
-        if (!filePath) throw new Error('missing required arg: path');
-        const content = fs.readFileSync(filePath, 'utf-8');
-        results.push({ type: 'text', text: content.slice(offset || 0, (limit || 1000) + (offset || 0)) });
-        break;
-      }
-      case 'write_file': {
-        const { path: filePath, content } = args;
-        if (!filePath || content === undefined) throw new Error('missing required args: path, content');
-        fs.writeFileSync(filePath, content, 'utf-8');
-        results.push({ type: 'text', text: `wrote ${content.length} bytes to ${filePath}` });
-        break;
-      }
-      case 'list_directory': {
-        const { path: dirPath } = args;
-        const dir = dirPath || '.';
-        const entries = fs.readdirSync(dir, { withFileTypes: true });
-        const text = entries.map(e => `${e.isDirectory() ? 'd' : '-'}  ${e.name}`).join('\n');
-        results.push({ type: 'text', text: text || '(empty)' });
-        break;
-      }
-      case 'file_exists': {
-        const { path: filePath } = args;
-        results.push({ type: 'text', text: fs.existsSync(filePath) ? 'true' : 'false' });
-        break;
-      }
-      default:
-        results.push({ type: 'text', text: `[unknown tool: ${name}]` });
-    }
-  } catch (e) {
-    results.length = 0;
-    results.push({ type: 'text', text: `[error] ${e.message}` });
-  }
-  return { content: results, isError: results.length && results[0].type === 'text' && results[0].text.startsWith('[error]') };
-}
 
 // ── Main dispatch loop ────────────────────────────────────────────────────────
 
