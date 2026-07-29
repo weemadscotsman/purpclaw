@@ -4,7 +4,7 @@
 
 ## Thesis
 
-PURPCLAW is a local-first AI organisation runtime.
+PURPCLAW is a local-first AI workstation OS.
 
 The core abstraction is no longer "many agents answering a user." The current architecture is:
 

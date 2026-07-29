@@ -2,7 +2,7 @@
 
 > Version: 0.3.0 - Updated: 2026-06-29 - Verified against: local CLI audit - Status: CURRENT
 
-PURPCLAW is a local-first AI organisation runtime.
+PURPCLAW is a local-first AI workstation OS.
 
 It is not just a chatbot, an agent list, or a dashboard. It is a terminal-first system that combines provider routing, agents, workflows, memory, Studio/Council sessions, operational weather, and a governed self-evolution loop.
 

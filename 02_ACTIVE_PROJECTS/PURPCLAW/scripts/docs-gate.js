@@ -101,10 +101,12 @@ for (const rel of CANON_DOCS) {
   const content = read(rel);
   if (!content) continue;
 
-  // Check for wrong product label
-  const wrongLabels = content.match(WRONG_PRODUCT_LABEL_RE) || [];
+  // Check for wrong product label — only flag hits that are NOT the correct label
+  const CORRECT_LABEL = 'AI workstation OS';
+  const wrongLabels = (content.match(WRONG_PRODUCT_LABEL_RE) || [])
+    .filter(l => l !== CORRECT_LABEL);
   for (const label of wrongLabels) {
-    errors.push(`${rel}: contains wrong product label '${label}' (expected 'AI workstation OS')`);
+    errors.push(`${rel}: contains wrong product label '${label}' (expected '${CORRECT_LABEL}')`);
   }
 
   // Check for stale version strings (0.9.x, 0.x.x older than current)
@@ -113,7 +115,7 @@ for (const rel of CANON_DOCS) {
   const contentSlice = content.slice(0, 2000); // check header only
   while ((match = stalePattern.exec(contentSlice)) !== null) {
     const v = match[0];
-    if (v !== EXPECTED_VERSION) {
+    if (v.trim() !== EXPECTED_VERSION.trim()) {
       errors.push(`${rel}: contains stale version reference '${v}' (expected '${EXPECTED_VERSION}')`);
     }
   }
