@@ -1,6 +1,6 @@
 'use strict';
 const path=require('path'),crypto=require('crypto');const{DatabaseSync}=require('node:sqlite');
-const DB=process.env.PURPCLAW_SESSION_DB||path.join(process.cwd(),'.purpclaw','state.db'),db=new DatabaseSync(DB);
+const DB=process.env.PURPCLAW_SESSION_DB||path.join(path.resolve(__dirname,'..'),'.purpclaw','state.db'),db=(require('fs').mkdirSync(path.dirname(DB),{recursive:true}),new DatabaseSync(DB));
 db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;CREATE TABLE IF NOT EXISTS a2a_tasks(id TEXT PRIMARY KEY,context_id TEXT,session_id TEXT,status TEXT NOT NULL,task TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);CREATE INDEX IF NOT EXISTS idx_a2a_context ON a2a_tasks(context_id,updated_at);`);
 const uid=prefix=>`${prefix}-${crypto.randomUUID()}`,now=()=>new Date().toISOString(),terminal=new Set(['completed','failed','canceled','rejected']);
 function textParts(value={}){return(value.parts||[]).map(part=>part.text??part.root?.text??'').filter(Boolean).join('\n');}

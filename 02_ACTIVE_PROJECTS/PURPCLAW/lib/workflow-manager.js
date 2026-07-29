@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('fs'),path=require('path'),yaml=require('js-yaml'),STATE=require('./workflow-state'); const {DatabaseSync}=require('node:sqlite');
-const DB=process.env.PURPCLAW_SESSION_DB||path.join(process.cwd(),'.purpclaw','state.db'),db=new DatabaseSync(DB);
+const DB=process.env.PURPCLAW_SESSION_DB||path.join(path.resolve(__dirname,'..'),'.purpclaw','state.db'),db=(require('fs').mkdirSync(path.dirname(DB),{recursive:true}),new DatabaseSync(DB));
 db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;CREATE TABLE IF NOT EXISTS workflow_runs(run_id TEXT PRIMARY KEY,name TEXT NOT NULL,spec TEXT NOT NULL,status TEXT NOT NULL,current_node TEXT,context TEXT NOT NULL,completed TEXT NOT NULL,error TEXT,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);CREATE TABLE IF NOT EXISTS workflow_checkpoints(id INTEGER PRIMARY KEY AUTOINCREMENT,run_id TEXT NOT NULL,node_id TEXT,status TEXT NOT NULL,context TEXT NOT NULL,output TEXT,created_at TEXT NOT NULL);CREATE INDEX IF NOT EXISTS idx_workflow_checkpoints ON workflow_checkpoints(run_id,id);`);
 const clone=v=>JSON.parse(JSON.stringify(v??null)),rid=()=>`flow-${Date.now()}-${Math.random().toString(36).slice(2,9)}`;
 function interpolate(value,ctx){if(typeof value==='string')return value.replace(/\{\{\s*([^}]+)\s*\}\}/g,(_,key)=>String(key.trim().split('.').reduce((o,k)=>o?.[k],ctx)??''));if(Array.isArray(value))return value.map(v=>interpolate(v,ctx));if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([k,v])=>[k,interpolate(v,ctx)]));return value;}

@@ -1,6 +1,6 @@
 'use strict';
 const path=require('path'),crypto=require('crypto');const{DatabaseSync}=require('node:sqlite');
-const DB=process.env.PURPCLAW_SESSION_DB||path.join(process.cwd(),'.purpclaw','state.db'),db=new DatabaseSync(DB);
+const DB=process.env.PURPCLAW_SESSION_DB||path.join(path.resolve(__dirname,'..'),'.purpclaw','state.db'),db=(require('fs').mkdirSync(path.dirname(DB),{recursive:true}),new DatabaseSync(DB));
 db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;CREATE TABLE IF NOT EXISTS agent_teams(id TEXT PRIMARY KEY,name TEXT NOT NULL,config TEXT NOT NULL,state TEXT NOT NULL,status TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);`);
 const uid=()=>`team-${crypto.randomUUID()}`,now=()=>new Date().toISOString(),clone=value=>JSON.parse(JSON.stringify(value??null));
 function validate(config){if(!config?.name)throw new Error('team name is required');if(!Array.isArray(config.participants)||!config.participants.length)throw new Error('team requires participants');const names=new Set();for(const agent of config.participants){if(!agent.name)throw new Error('participant name is required');if(names.has(agent.name))throw new Error(`duplicate participant: ${agent.name}`);names.add(agent.name);}if(!['round_robin','selector','swarm','hierarchical'].includes(config.mode||'round_robin'))throw new Error(`unsupported team mode: ${config.mode}`);return{version:'1.0',mode:'round_robin',termination:[{type:'max_messages',value:20}],...clone(config)};}

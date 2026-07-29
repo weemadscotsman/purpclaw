@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('fs'),path=require('path'),crypto=require('crypto');const{DatabaseSync}=require('node:sqlite');
-const DB=process.env.PURPCLAW_SESSION_DB||path.join(process.cwd(),'.purpclaw','state.db'),db=new DatabaseSync(DB);
+const DB=process.env.PURPCLAW_SESSION_DB||path.join(path.resolve(__dirname,'..'),'.purpclaw','state.db'),db=(require('fs').mkdirSync(path.dirname(DB),{recursive:true}),new DatabaseSync(DB));
 db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS session_artifacts(
 id TEXT PRIMARY KEY,session_id TEXT NOT NULL,name TEXT NOT NULL,path TEXT,mime TEXT,kind TEXT NOT NULL,size INTEGER,sha256 TEXT,content TEXT,source_tool TEXT,created_at TEXT NOT NULL);CREATE INDEX IF NOT EXISTS idx_artifacts_session ON session_artifacts(session_id,created_at);`);
 if(!db.prepare('PRAGMA table_info(session_artifacts)').all().some(column=>column.name==='version')){db.exec('ALTER TABLE session_artifacts ADD COLUMN version INTEGER');const counters=new Map(),update=db.prepare('UPDATE session_artifacts SET version=? WHERE id=?');for(const row of db.prepare('SELECT id,session_id,name FROM session_artifacts ORDER BY created_at,id').all()){const key=`${row.session_id}\0${row.name}`,value=(counters.get(key)||0)+1;counters.set(key,value);update.run(value,row.id);}}db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_artifact_version ON session_artifacts(session_id,name,version);');

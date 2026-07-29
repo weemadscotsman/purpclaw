@@ -62,7 +62,7 @@ const SESSIONS = (() => {
       `[agent-loop] DEGRADED RUNTIME: session persistence is DISABLED.\n` +
       `  cause: ${e && e.message}\n` +
       `  effect: this session will not be saved, listed, resumed, or visible to other surfaces.\n` +
-      `  note: the session store needs node:sqlite (Node >=22.5); this process is ${process.version}.`
+      `  note: the session store needs node:sqlite (Node >=22.13); this process is ${process.version}.`
     );
     return null;
   }

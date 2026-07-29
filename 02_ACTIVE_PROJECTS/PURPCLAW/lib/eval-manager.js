@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('fs'),path=require('path'),crypto=require('crypto'),yaml=require('js-yaml');const{DatabaseSync}=require('node:sqlite'),SCHEMA=require('./schema-validator'),LEDGER=require('./event-ledger'),TRACE=require('./trace-manager');
-const DB=process.env.PURPCLAW_SESSION_DB||path.join(process.cwd(),'.purpclaw','state.db'),db=new DatabaseSync(DB),customScorers=new Map();
+const DB=process.env.PURPCLAW_SESSION_DB||path.join(path.resolve(__dirname,'..'),'.purpclaw','state.db'),db=(require('fs').mkdirSync(path.dirname(DB),{recursive:true}),new DatabaseSync(DB)),customScorers=new Map();
 db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;CREATE TABLE IF NOT EXISTS eval_runs(id TEXT PRIMARY KEY,name TEXT,status TEXT NOT NULL,report TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);`);
 const uid=()=>`eval-${crypto.randomUUID()}`,now=()=>new Date().toISOString();
 function score(output,expected,scorer={type:'contains'}){const type=typeof scorer==='string'?scorer:scorer.type;switch(type){case'exact':return String(output).trim()===String(expected).trim()?1:0;case'regex':return new RegExp(scorer.pattern??expected,scorer.flags||'i').test(String(output))?1:0;case'json_schema':return SCHEMA.parseAndValidate(output,scorer.schema||expected).ok?1:0;case'length':{const length=String(output).length,min=scorer.min??0,max=scorer.max??Infinity;return length>=min&&length<=max?1:0;}case'contains':default:return String(output).toLowerCase().includes(String(expected).toLowerCase())?1:0;}}

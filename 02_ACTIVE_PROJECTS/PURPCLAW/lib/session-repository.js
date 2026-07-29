@@ -10,6 +10,10 @@ const DB_PATH = process.env.PURPCLAW_SESSION_DB || path.join(STATE_DIR, 'state.d
 const LEGACY_DIR = path.join(STATE_DIR, 'sessions');
 
 fs.mkdirSync(STATE_DIR, { recursive: true });
+// PURPCLAW_SESSION_DB can point outside STATE_DIR (tests, alternate profiles).
+// Creating STATE_DIR alone then leaves the real target dir missing and sqlite
+// fails with the unhelpful "unable to open database file".
+fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
 const db = new DatabaseSync(DB_PATH);
 db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; PRAGMA foreign_keys=ON;');
 db.exec(`

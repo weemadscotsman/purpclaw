@@ -1,6 +1,6 @@
 'use strict';
 const path=require('path'),crypto=require('crypto');const{DatabaseSync}=require('node:sqlite');
-const DB=process.env.PURPCLAW_SESSION_DB||path.join(process.cwd(),'.purpclaw','state.db'),db=new DatabaseSync(DB),processors=new Set();
+const DB=process.env.PURPCLAW_SESSION_DB||path.join(path.resolve(__dirname,'..'),'.purpclaw','state.db'),db=(require('fs').mkdirSync(path.dirname(DB),{recursive:true}),new DatabaseSync(DB)),processors=new Set();
 db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;CREATE TABLE IF NOT EXISTS traces(trace_id TEXT PRIMARY KEY,name TEXT NOT NULL,status TEXT NOT NULL,metadata TEXT,started_at TEXT NOT NULL,ended_at TEXT);CREATE TABLE IF NOT EXISTS spans(span_id TEXT PRIMARY KEY,trace_id TEXT NOT NULL,parent_id TEXT,name TEXT NOT NULL,kind TEXT NOT NULL,status TEXT NOT NULL,input TEXT,output TEXT,error TEXT,metadata TEXT,started_at TEXT NOT NULL,ended_at TEXT);CREATE INDEX IF NOT EXISTS idx_spans_trace ON spans(trace_id,started_at);`);
 const id=prefix=>`${prefix}-${Date.now()}-${Math.random().toString(36).slice(2,10)}`,safe=(value,sensitive)=>JSON.stringify(sensitive?'[REDACTED]':value??null),notify=(hook,value)=>{for(const processor of processors)try{processor[hook]?.(value);}catch{}};
 function startTrace(name,metadata={}){const traceId=id('trace'),startedAt=new Date().toISOString(),value={traceId,name,status:'running',metadata,startedAt};db.prepare('INSERT INTO traces VALUES(?,?,?,?,?,NULL)').run(traceId,name,'running',JSON.stringify(metadata),startedAt);notify('onTraceStart',value);return traceId;}

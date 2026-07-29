@@ -1,6 +1,6 @@
 'use strict';
 const fs=require('fs'),path=require('path'),crypto=require('crypto');const{DatabaseSync}=require('node:sqlite');
-const DB=process.env.PURPCLAW_SESSION_DB||path.join(process.cwd(),'.purpclaw','state.db'),db=new DatabaseSync(DB);
+const DB=process.env.PURPCLAW_SESSION_DB||path.join(path.resolve(__dirname,'..'),'.purpclaw','state.db'),db=(require('fs').mkdirSync(path.dirname(DB),{recursive:true}),new DatabaseSync(DB));
 db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS attachments(
 id TEXT PRIMARY KEY,session_id TEXT,name TEXT NOT NULL,path TEXT NOT NULL,mime TEXT,kind TEXT NOT NULL,size INTEGER NOT NULL,sha256 TEXT NOT NULL,preview TEXT,created_at TEXT NOT NULL);CREATE INDEX IF NOT EXISTS idx_attachments_session ON attachments(session_id,created_at);`);
 const TEXT_EXT=new Set(['.txt','.md','.json','.js','.ts','.tsx','.jsx','.py','.css','.html','.csv','.yml','.yaml','.sql','.sh','.log','.xml','.toml','.ini','.env']);

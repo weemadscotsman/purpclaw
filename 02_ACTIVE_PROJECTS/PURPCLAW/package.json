@@ -1,7 +1,7 @@
 {
   "name": "purpclaw",
   "version": "0.3.0",
-  "private": true,
+  "private": false,
   "packageManager": "pnpm@9.15.0",
   "workspaces": [
     "apps/*",
@@ -28,7 +28,6 @@
   },
   "homepage": "https://purpclaw.dev",
   "license": "MIT",
-  "private": false,
   "bin": {
     "purpclaw": "bin/purpclaw.js"
   },
@@ -67,17 +66,17 @@
     "audit:runtime-evidence": "node scripts/verify-unified-runtime-audit.js --write",
     "test:cross-surface-session": "node scripts/test-cross-surface-session.js",
     "test:cross-surface-session:e2e": "node scripts/test-cross-surface-session-e2e.js",
-  "version:status": "node scripts/manifest.js status",
-  "version:diff": "node scripts/manifest.js diff",
-  "stamp": "node scripts/manifest.js stamp",
-  "sync:agents": "node scripts/sync-agents.js",
-  "sync:registry": "node scripts/sync-registry.js",
-  "drift": "node lib/drift-watcher.js",
-  "drift:fix": "node lib/drift-watcher.js --fix",
-  "drift:watch": "node lib/drift-watcher.js --watch --fix --interval=60",
-  "drift:json": "node lib/drift-watcher.js --json",
-  "weather": "node lib/weatherman.js",
-  "oracle": "node lib/oracle.js",
+    "version:status": "node scripts/manifest.js status",
+    "version:diff": "node scripts/manifest.js diff",
+    "stamp": "node scripts/manifest.js stamp",
+    "sync:agents": "node scripts/sync-agents.js",
+    "sync:registry": "node scripts/sync-registry.js",
+    "drift": "node lib/drift-watcher.js",
+    "drift:fix": "node lib/drift-watcher.js --fix",
+    "drift:watch": "node lib/drift-watcher.js --watch --fix --interval=60",
+    "drift:json": "node lib/drift-watcher.js --json",
+    "weather": "node lib/weatherman.js",
+    "oracle": "node lib/oracle.js",
     "lint": "eslint .",
     "verify:hivemind": "node scripts/verify-hivemind.js",
     "verify:hivemind:rank1": "node scripts/verify-hivemind.js --rank=1",
@@ -128,7 +127,7 @@
     "ws": "^8.20.0"
   },
   "engines": {
-    "node": ">=22.0.0 <25.0.0",
+    "node": ">=22.13.0 <25.0.0",
     "npm": ">=10.0.0"
   },
   "os": [

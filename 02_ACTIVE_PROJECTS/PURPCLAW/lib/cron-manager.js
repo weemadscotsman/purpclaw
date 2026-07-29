@@ -4,7 +4,8 @@ const path = require('path');
 const { DatabaseSync } = require('node:sqlite');
 const NL = require('./scheduler/nl-cron');
 
-const DB = process.env.PURPCLAW_SESSION_DB || path.join(process.cwd(), '.purpclaw', 'state.db');
+const DB = process.env.PURPCLAW_SESSION_DB || path.join(path.resolve(__dirname, '..'), '.purpclaw', 'state.db');
+require('fs').mkdirSync(path.dirname(DB), { recursive: true });
 const db = new DatabaseSync(DB);
 db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;
 CREATE TABLE IF NOT EXISTS cron_jobs(
