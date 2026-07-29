@@ -100,7 +100,7 @@ P0-A: CONDITIONAL PASS (runtime works, commit contains bundled agent-loop change
 
 P0-B: OVERALL PASS ✅ — All 3 bypasses closed. chat-agent double-exec removed. executeTool gated by default. MCP execSync replaced with TOOLS.invoke.
 
-P0-C: Routing-decisions.js committed at 8d73427 (another session). Verifying against brief, then dispatching blind critic.
+P0-C: Routing-decisions.js committed at 8d73427 (another session). Chief found critical gap: routing-decisions.js ignored provider-config.json. Fixed in 9e70743 — 5/5 integration tests PASS. Critic running — deleg_99c8b80f.
 
 ## 2026-07-29 final session (main, this CLI)
 
