@@ -31,8 +31,8 @@ engine, skills, hooks, memory and configuration.
 
 | Criterion | Status | Evidence |
 |---|---|---|
-| Single agent loop | **FAIL (partial)** | `lib/agent-loop.js:382 runAgent` is the only real loop, but three different *entries* wrap it with different options: gateway (`lib/agent-gateway.js:219`), raw router (`unified_api.js:503`, `lib/commands/ask.js:671`), raw loop (`agent_tower.js:424`, `lib/core/work-engine.js:235`, `lib/chat-agent.js:68`). |
-| Single tool registry | **FAIL** | Three registries: `lib/tools/index.js` (515 tools), `unified_api.js:1005` (70 hardcoded tools + `runTool` at `:1151`), `lib/mcp-server.js:210 handleBuiltinTool` (own `execSync` bash / `fs.writeFileSync`). |
+|| Single agent loop | **FAIL (partial)** | Improved: gateway now loads. Bypass paths remain (§1.2 entry points 1b, 8b, 9). |
+|| Single tool registry | **FAIL** | Three registries: `lib/tools/index.js` (515 tools), `unified_api.js:1005` (72 hardcoded tools + `runTool` at `:1151`), `lib/mcp-server.js:210 handleBuiltinTool` (own `execSync` bash / `fs.writeFileSync`). |
 | Single provider layer | **FAIL** | `lib/llm-provider.js:333 resolveConfig` (env-only) is what the agent loop actually uses; `lib/runtime/provider-router.js:71 resolveLane` (user-config aware) is used only by `/api/providers`, `/api/heartbeat`, `lib/system-manifest.js`, `lib/model-sentinel.js`, `scripts/heartbeat.js`. The settings UI does not steer the runtime. |
 | Single session store | **FAIL** | Four stores, three with live data on disk (§3.1). |
 | Single permission engine | **FAIL** | `lib/tool-runtime.js` is bypassed by `unified_api.js:1097 executeTool`, `lib/mcp-server.js:210`, `lib/chat-agent.js:41`. |
@@ -40,7 +40,7 @@ engine, skills, hooks, memory and configuration.
 | Hooks | **FAIL (two buses)** | `lib/hooks/lifecycle-bus` and `parity/hooks/engine` are both fired side by side from `lib/agent-loop.js:35-36`, `:641-643`. Surfaces that never enter the loop fire neither. |
 | Memory | **UNKNOWN / at least two** | `lib/memory-client.js` (HTTP :7880) and `lib/scoped-memory.js` (SQLite) are both wired into `lib/agent-loop.js:60,42`. Whether they converge behind the spine service was not established — the spine is not running. |
 | Configuration | **FAIL** | Read from `.env` (with and without `override:true`), PM2 `env:` blocks, `~/.purpclaw/provider-config.json`, `~/.purpclaw/config.json`, `purpclaw_policy.json`, `lib/runtime/settings-registry.js`. Precedence differs per reader (§4). |
-| **Session started in CLI resumes in web with identical tools, permissions and history** | **FAIL** | (a) `purpclaw ask` and web `/api/chat` both currently throw at import (§1.1); (b) even when working, the store path is `process.cwd()`-relative, so a CLI run outside the repo writes a different DB; (c) `purpclaw session list` reads a different store entirely (§3.1); (d) tools and permission profiles differ per surface (§5). |
+| **Session started in CLI resumes in web with identical tools, permissions and history** | **FAIL** | Improved: gateway now loads (was throwing). Store mismatch, cwd-relative DB path, and surface permission divergence unchanged. |
 
 **Overall: FAIL.** A credible canonical runtime exists in design
 (`AgentGateway` → `runAgentRouted` → `runAgent` → `ToolRuntime` → `lib/tools`)
