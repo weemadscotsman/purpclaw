@@ -37,7 +37,7 @@ const PARITY_HOOKS = (() => { try { return require('../parity/hooks/engine'); } 
 // S7: Continuity — snapshot at turn boundary for crash recovery
 const CONTINUITY = (() => { try { return require('./continuity'); } catch { return null; } })();
 // S8: Session Lifecycle — crash recovery, resume_pending, stuck-loop, agent LRU cache
-const SESSION_STORE = (() => { try { return require('./session-store'); } catch { return null; } })();
+const SESSION_STORE = (() => { try { return require('./session-store'); } catch (e) { console.error(`[CRITICAL] session-store unavailable — persistence disabled: ${e && e.message}`); return null; } })();
 // S2: Scoped Memory — ingest on task/turn completion
 const SCOPED_MEMORY = (() => { try { return require('./scoped-memory'); } catch { return null; } })();
 // S4: Priority Steer — interrupt now + queue next channels

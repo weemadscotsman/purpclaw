@@ -20,6 +20,10 @@ confirmed to exist.
 
 ## 0. Definition of done — PASS / FAIL / UNKNOWN
 
+> **UPDATE 2026-07-29:** §1.1 BLOCKER is resolved (see §1.1). "Single agent
+> loop" and "CLI→web resume" have improved but other FAILs remain. §3.2 registry 2
+> count updated: 70 → 72 tools.
+
 P0-1 requires: *"a session started in the CLI resumes unchanged in desktop and
 web, with identical tools, permissions and history"*, and that every surface
 shares one agent loop, tool registry, provider layer, session store, permission
@@ -47,9 +51,13 @@ and several surfaces are already correctly wired to it — but it is currently
 
 ## 1. Runtime entry points
 
-### 1.1 BLOCKER — the canonical runtime is dead-on-require right now
+### 1.1 BLOCKER — ~~the canonical runtime is dead-on-require~~ RESOLVED by `fd5af98`
 
-`lib/session-repository.js:5`:
+> **UPDATE 2026-07-29:** §1.1 BLOCKER is resolved. Commit `fd5af98` fixed all 22
+> `DatabaseSync` wrong imports. The canonical runtime now boots. §1.1 is retained
+> as historical record; it describes the state at audit time.
+
+~~`lib/session-repository.js:5`:~~
 
 ```js
 const { DatabaseSync } = require('better-sqlite3');
