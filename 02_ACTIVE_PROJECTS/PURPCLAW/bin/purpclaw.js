@@ -1013,7 +1013,60 @@ async function cmdHealth(args) {
 async function cmdAudit(args) {
   const { runFast, runFull } = require('../lib/deep-audit');
   const isFast = args.includes('--fast') || args.includes('-f');
+  const isWatch = args.includes('--watch') || args.includes('--daemon');
+  const isDiff = args.includes('--diff');
+  const isStatus = args.includes('--status');
+  const isJson = args.includes('--json');
+
+  // Continuous audit modes (file-change tracking + delta manifest)
+  if (isStatus) {
+    // Show current audit state without running deep-audit
+    const { execSync } = require('child_process');
+    const result = execSync(
+      `node "${path.join(PURP_DIR, 'scripts', 'continuous-audit.js')}" status`,
+      { cwd: PURP_DIR, encoding: 'utf8', timeout: 15000 }
+    );
+    console.log(result);
+    return;
+  }
+  if (isDiff) {
+    const { execSync } = require('child_process');
+    const result = execSync(
+      `node "${path.join(PURP_DIR, 'scripts', 'continuous-audit.js')}" diff`,
+      { cwd: PURP_DIR, encoding: 'utf8', timeout: 15000 }
+    );
+    console.log(result);
+    return;
+  }
+  if (isWatch) {
+    const { execSync } = require('child_process');
+    const interval = (args.includes('--interval') && args[args.indexOf('--interval') + 1])
+      ? args[args.indexOf('--interval') + 1]
+      : '300000';
+    console.log('[audit] Starting continuous audit daemon...');
+    execSync(
+      `node "${path.join(PURP_DIR, 'scripts', 'continuous-audit.js')}" daemon --watch --interval ${interval}`,
+      { cwd: PURP_DIR, stdio: 'inherit' }
+    );
+    return;
+  }
+
+  // Standard deep audit
   const result = isFast ? await runFast() : await runFull();
+
+  // Also run continuous audit snapshot (fast, updates delta manifest + parity report)
+  if (!isFast) {
+    try {
+      const { execSync } = require('child_process');
+      execSync(
+        `node "${path.join(PURP_DIR, 'scripts', 'continuous-audit.js')}"`,
+        { cwd: PURP_DIR, encoding: 'utf8', timeout: 60000 }
+      );
+    } catch (e) {
+      // Non-fatal — deep audit result is what matters
+    }
+  }
+
   process.exit(result.fail > 0 ? 1 : 0);
 }
 
@@ -1737,62 +1790,143 @@ async function cmdResume(args) {
 // ── bg ─────────────────────────────────────────────────────────────────────────
 // Fire-and-forget background task dispatch
 async function cmdBg(args) {
-  const task = args.join(' ').trim();
-  if (!task) {
+  const BG_DIR = path.join(PURP_DIR, 'agent_work', 'bg-sessions');
+  if (!fs.existsSync(BG_DIR)) fs.mkdirSync(BG_DIR, { recursive: true });
+
+  const sub = (args[0] || '').toLowerCase();
+
+  // purpclaw ps — list all jobs
+  if (sub === 'ps' || (!sub && args.length === 0)) {
     banner();
     sectionHead('  BACKGROUND TASKS');
-    console.log(col(C.gray, '  purpclaw bg "<task>"  — dispatch and forget\n'));
-    console.log(col(C.gray, '  Background tasks run detached, results go to agent_work/\n'));
-    // List any running background jobs
-    const BGSESSIONS = path.join(PURP_DIR, 'agent_work', 'bg-sessions');
-    if (fs.existsSync(BGSESSIONS)) {
-      const jobs = fs.readdirSync(BGSESSIONS).filter(f => f.endsWith('.json'));
-      if (jobs.length > 0) {
-        console.log(col(C.gray, `  ${jobs.length} background job(s) tracked:`));
-        for (const j of jobs.slice(0, 10)) {
-          const d = JSON.parse(fs.readFileSync(path.join(BGSESSIONS, j), 'utf8'));
-          const status = d.done ? col(C.green, 'done') : d.running ? col(C.cyan, 'running') : col(C.gray, 'pending');
-          console.log(`    ${col(C.yellow, j.replace('.json',''))}  ${status}  ${col(C.gray, (d.task||'').slice(0,50))}`);
-        }
-      } else {
-        console.log(col(C.gray, '  No background jobs tracked yet.\n'));
-      }
+    const jobs = fs.readdirSync(BG_DIR).filter(f => f.endsWith('.json'));
+    if (jobs.length === 0) { console.log(col(C.gray, '  No background jobs tracked.\n')); return; }
+    for (const j of jobs) {
+      const d = JSON.parse(fs.readFileSync(path.join(BG_DIR, j), 'utf8'));
+      const jobId = j.replace('.json', '');
+      const logFile = path.join(BG_DIR, jobId + '.log');
+      const logExists = fs.existsSync(logFile);
+      let status, statusCol;
+      // killed is checked first: a killed job also carries done=true.
+      if (d.killed)       { status = 'killed';   statusCol = C.red; }
+      else if (d.done)    { status = 'done';     statusCol = C.green; }
+      else if (d.running) { status = 'running';  statusCol = C.cyan; }
+      else                { status = 'pending';  statusCol = C.gray; }
+      console.log(`  ${col(C.yellow, jobId)}  ${col(statusCol, status)}  ${col(C.gray, (d.task||'').slice(0, 55))}`);
+      console.log(`    dispatched: ${col(C.gray, d.dispatchedAt||'?')}  log: ${logExists ? col(C.cyan, logFile) : col(C.red, 'missing')}`);
     }
-    console.log(col(C.gray, '  purpclaw bg "<build me a landing page>"  — fires and returns immediately'));
     console.log('');
     return;
   }
 
-  // Dispatch background task: write session file + spawn detached
-  const BG_DIR = path.join(PURP_DIR, 'agent_work', 'bg-sessions');
-  if (!fs.existsSync(BG_DIR)) fs.mkdirSync(BG_DIR, { recursive: true });
+  // purpclaw logs <id> [-f] — tail job log
+  if (sub === 'logs') {
+    const follow = args.includes('-f') || args.includes('--follow');
+    const rawId = args.slice(1).filter(a => !a.startsWith('-')).join(' ').trim();
+    if (!rawId) { console.log('Usage: purpclaw logs <jobId> [-f]'); return; }
+    const LOG_FILE = path.join(BG_DIR, rawId + '.log');
+    if (!fs.existsSync(LOG_FILE)) { console.log(col(C.red, `  Log not found: ${rawId}`)); return; }
+    const content = fs.readFileSync(LOG_FILE, 'utf8');
+    if (content) process.stdout.write(content + '\n');
+    if (follow) {
+      let lastSize = content.length;
+      console.log(col(C.gray, '\n  [Following — Ctrl+C to stop]'));
+      const interval = setInterval(() => {
+        try {
+          const newContent = fs.readFileSync(LOG_FILE, 'utf8');
+          if (newContent.length > lastSize) { process.stdout.write(newContent.slice(lastSize)); lastSize = newContent.length; }
+          const metaFile = path.join(BG_DIR, rawId + '.json');
+          if (fs.existsSync(metaFile)) {
+            const m = JSON.parse(fs.readFileSync(metaFile, 'utf8'));
+            if (m.done || m.killed) { clearInterval(interval); console.log(col(C.gray, '\n  [Job finished]')); }
+          }
+        } catch {}
+      }, 1000);
+    }
+    return;
+  }
+
+  // purpclaw kill <id> — stop a running job
+  if (sub === 'kill') {
+    const rawId = args.slice(1).filter(a => !a.startsWith('-')).join(' ').trim();
+    if (!rawId) { console.log('Usage: purpclaw kill <jobId>'); return; }
+    const sessionFile = path.join(BG_DIR, rawId + '.json');
+    if (!fs.existsSync(sessionFile)) { console.log(col(C.red, `  Job not found: ${rawId}`)); return; }
+    const meta = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
+    meta.killed = true; meta.done = true; meta.running = false;
+    meta.status = 'killed'; meta.killedAt = new Date().toISOString();
+    fs.writeFileSync(sessionFile, JSON.stringify(meta, null, 2));
+    if (meta.pid) { try { process.kill(meta.pid, 'SIGTERM'); } catch {} }
+    console.log(col(C.yellow, `  Job ${rawId} marked as killed.`));
+    console.log('');
+    return;
+  }
+
+  // purpclaw attach <id> — replay the log, then follow while the job is alive
+  if (sub === 'attach') {
+    const rawId = args.slice(1).filter(a => !a.startsWith('-')).join(' ').trim();
+    if (!rawId) { console.log('Usage: purpclaw attach <jobId>'); return; }
+    const metaFile = path.join(BG_DIR, rawId + '.json');
+    let live = false;
+    try { const m = JSON.parse(fs.readFileSync(metaFile, 'utf8')); live = !m.done && !m.killed; } catch {}
+    // Attaching to a finished job is a plain replay; a live job gets follow mode.
+    return cmdBg(live ? ['logs', rawId, '-f'] : ['logs', rawId]);
+  }
+
+  // Default: dispatch a new background task. `bg dispatch <task>` is accepted as
+  // an explicit spelling of the same thing.
+  const task = (sub === 'dispatch' ? args.slice(1) : args).join(' ').trim();
+  if (!task) {
+    banner();
+    sectionHead('  BACKGROUND TASKS');
+    console.log(col(C.gray, '  purpclaw bg "<task>"    — fire and forget\n'));
+    console.log(col(C.gray, '  purpclaw ps              — list jobs\n'));
+    console.log(col(C.gray, '  purpclaw logs <id>       — show log\n'));
+    console.log(col(C.gray, '  purpclaw logs <id> -f   — follow log\n'));
+    console.log(col(C.gray, '  purpclaw kill <id>       — stop a job\n'));
+    console.log(col(C.gray, '  purpclaw attach <id>     — stream log to stdout\n'));
+    console.log('');
+    return;
+  }
 
   const jobId = 'bg-' + Date.now();
   const sessionFile = path.join(BG_DIR, jobId + '.json');
+  const LOG_FILE = path.join(BG_DIR, jobId + '.log');
+  const logFd = fs.openSync(LOG_FILE, 'a');
+
+  const child = trackedSpawn(process.execPath, [path.join(PURP_DIR, 'bin', 'purpclaw.js'), 'run', task], {
+    tag: `bg-${jobId}`,
+    timeoutMs: 30 * 60_000,
+    stdio: ['ignore', logFd, logFd],
+    cwd: PURP_DIR,
+  });
+
   const meta = {
-    id: jobId, task, status: 'dispatched',
-    dispatchedAt: new Date().toISOString(), done: false, running: false
+    id: jobId, task, status: 'running',
+    dispatchedAt: new Date().toISOString(),
+    done: false, running: true, killed: false,
+    pid: child.pid,
   };
   fs.writeFileSync(sessionFile, JSON.stringify(meta, null, 2));
 
-  // Spawn tracked: node bin/purpclaw.js run "<task>" with output redirected to log
-  const LOG_FILE = path.join(BG_DIR, jobId + '.log');
-  const logFd = fs.openSync(LOG_FILE, 'a');
-  trackedSpawn(process.execPath, [path.join(PURP_DIR, 'bin', 'purpclaw.js'), 'run', task], {
-    tag: `bg-${jobId}`,
-    timeoutMs: 30 * 60_000,  // 30 min hard budget for background tasks
-    stdio: ['ignore', logFd, logFd],
-    cwd: PURP_DIR,
+  child.on('exit', (code) => {
+    try {
+      const m = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
+      m.done = true; m.running = false; m.exitCode = code;
+      m.finishedAt = new Date().toISOString();
+      fs.writeFileSync(sessionFile, JSON.stringify(m, null, 2));
+    } catch {}
   });
 
   banner();
   sectionHead('  BACKGROUND DISPATCHED');
   console.log(`  ${col(C.green, '✔')}  Job ID : ${col(C.cyan, jobId)}`);
+  console.log(`  ${col(C.green, '✔')}  PID   : ${col(C.cyan, String(child.pid))}`);
   console.log(`  ${col(C.green, '✔')}  Log   : ${col(C.gray, LOG_FILE)}`);
   console.log(`  ${col(C.green, '✔')}  Task  : ${col(C.white, task)}`);
   console.log(col(C.gray, '\n  Results appear in agent_work/bg-sessions/'));
-  console.log(col(C.gray, `  Watch:  tail -f "${LOG_FILE}"`));
-  console.log(col(C.gray, `  Status: purpclaw bg`));
+  console.log(col(C.gray, `  Watch:  purpclaw logs ${jobId} -f`));
+  console.log(col(C.gray, `  Status: purpclaw ps`));
   console.log('');
 }
 // ── registry ───────────────────────────────────────────────────────────────────
@@ -3512,6 +3646,13 @@ async function cmdInit(args) {
 
 // ── logs ──────────────────────────────────────────────────────────────────────
 async function cmdLogs(args) {
+  // `logs` is shared between PM2 services and background jobs. A background job
+  // owns the name only if agent_work/bg-sessions/<id>.json exists, so PM2 service
+  // logs keep working unchanged for every other name.
+  const bgId = (args[0] || '').trim();
+  if (bgId && fs.existsSync(path.join(PURP_DIR, 'agent_work', 'bg-sessions', bgId + '.json'))) {
+    return cmdBg(['logs', ...args]);
+  }
   const service = args[0] ? `purpclaw-${args[0]}` : '--merge';
   const child = trackedSpawn('pm2', ['logs', service, '--lines', '50'], {
     tag: 'pm2-logs',
@@ -4995,10 +5136,49 @@ async function main() {
   }
 
   const argv = process.argv.slice(2);
-  // Strip --bars / --no-bars flags so they don't pollute command args
+
+  // Strip --bars / --no-bars / --provider-env-file flags so they don't pollute command args
+  // --provider-env-file <path> — load key=value pairs from a .env file before any command runs
+  // Supports OPENCLAUDE_CONFIG_DIR env override for config directory
+  (function loadProviderEnvFile() {
+    const idx = argv.indexOf('--provider-env-file');
+    if (idx === -1) return;
+    const filePath = argv[idx + 1];
+    if (!filePath || filePath.startsWith('--')) return;
+    try {
+      const lines = require('fs').readFileSync(filePath, 'utf8').split(/\r?\n/);
+      let loaded = 0;
+      for (const raw of lines) {
+        const line = raw.trim();
+        if (!line || line.startsWith('#')) continue;
+        const eq = line.indexOf('=');
+        if (eq <= 0) continue;
+        const k = line.substring(0, eq).trim();
+        const v = line.substring(eq + 1).trim().replace(/^["']|["']$/g, '');
+        if (!(k in process.env)) { process.env[k] = v; loaded++; }
+      }
+      if (loaded > 0) console.log(`  [purpclaw] loaded ${loaded} env var(s) from ${filePath}`);
+    } catch { /* best-effort */ }
+  })();
+
+  const envFileIdx = argv.indexOf('--provider-env-file');
   const wantBars  = argv.includes('--bars')    || process.env.PURPCLAW_BARS === '1';
   const skipBars  = argv.includes('--no-bars') || process.env.PURPCLAW_BARS === '0';
-  const cleanArgv = argv.filter(a => a !== '--bars' && a !== '--no-bars' && a !== '--taint');
+
+  // --repo-map / --no-repo-map override REPO_MAP for this run (and for anything
+  // this process spawns). lib/agent-loop.js reads REPO_MAP when it builds the
+  // system prompt; --no-repo-map wins over --repo-map.
+  if (argv.includes('--repo-map'))    process.env.REPO_MAP = '1';
+  if (argv.includes('--no-repo-map')) process.env.REPO_MAP = '0';
+
+  const STRIP_FLAGS = new Set([
+    '--bars', '--no-bars', '--taint',
+    '--repo-map', '--no-repo-map',
+    '--provider-env-file',
+  ]);
+  const cleanArgv = argv.filter((a, i) =>
+    !STRIP_FLAGS.has(a) && !(envFileIdx >= 0 && i === envFileIdx + 1)
+  );
 
   // Taint mode Easter egg announcement
   if (TAINT_MODE) {
@@ -6840,8 +7020,14 @@ async function cmdPlugins(args) {
     case 'policy':    return cmdPolicies(args);
     case 'introspect': return cmdIntrospect(args);
     case 'rollback':  return cmdRollback(args);
+    // `args` already excludes the command word, so pass it straight through.
     case 'bg':       return cmdBg(args);
-case 'registry': return cmdRegistry(args);
+    case 'ps':       return cmdBg(['ps']);
+    case 'kill':     return cmdBg(['kill', ...args]);
+    case 'attach':   return cmdBg(['attach', ...args]);
+    case 'registry': return cmdRegistry(args);
+    case 'provider': return loadCmd('provider').run(args, sharedCtx());
+    case 'repomap':  return loadCmd('repomap').run(args, sharedCtx());
     case 'bundles':  return cmdBundles(args);
     case 'guard':    return cmdGuard(args);
     case 'secrets':  return Secrets.cmdSecrets(args);
@@ -7350,6 +7536,7 @@ case 'registry': return cmdRegistry(args);
     case 'logs':      return cmdLogs(args);
     case 'bars':       return cmdBars(args);
     case 'bigboss':   { const r = await loadCmd('bigboss').run(args, sharedCtx()); if (typeof r === 'string') console.log(r); return r; }
+    case 'buddy':     { const r = await loadCmd('buddy').run(args, sharedCtx()); if (typeof r === 'string') console.log(r); return r; }
     case 'remotion':  { const r = await loadCmd('remotion').run(args, sharedCtx()); if (typeof r === 'string') console.log(r); return r; }
     case 'show':
     case 'stack':
@@ -7559,6 +7746,7 @@ case 'registry': return cmdRegistry(args);
     case 'idle':      return cmdIdleEngine(args);
     case 'vector':    return cmdVectorBench(args);
     case 'providers': return cmdProviders(args);
+    case 'provider':  return loadCmd('provider').run(args, sharedCtx());
     case 'route':    return cmdRoute(args);
     case 'brain':    return cmdBrain(args);
     case 'pet':      return cmdPet(args);
