@@ -1109,6 +1109,36 @@ async function executeTool(name, args) {
   ebCalledReq.write(ebCalledPayload);
   ebCalledReq.end();
 
+  // P0-B: High-risk tools are forced through ToolRuntime permission + governance gate.
+  // These bypass ToolRuntime when they live in runTool's switch (raw execAsync).
+  const HIGH_RISK = new Set([
+    'execute_command', 'git_command', 'file_write', 'file_delete',
+    'file_copy', 'file_move', 'install_package', 'open_application',
+  ]);
+
+  // Tools that are safe to run via runTool directly (UI-only, no system mutation).
+  // All other tools go through ToolRuntime first.
+  const SANCTIONED_BYPASS = new Set([
+    'screen_capture', 'screen_ocr', 'ocr_identify', 'screen_find_object',
+    'screen_identify', 'screen_find_template', 'screen_info',
+    'mouse_click', 'mouse_scroll', 'keyboard_type', 'find_and_click',
+    'window_list', 'window_focus', 'window_close', 'ui_list_elements',
+    'ui_click_element', 'ui_get_screen_layout', 'ui_get_element_at',
+    'browser_open', 'browser_click', 'browser_type', 'browser_scroll',
+    'browser_get_content', 'browser_screenshot', 'browser_navigate',
+    'browser_tabs', 'browser_close_tab',
+    'clipboard', 'notification', 'task_schedule', 'task_list',
+    'process_list', 'process_kill', 'volume_control',
+    'active_window', 'system_status', 'system_paths', 'disk_info',
+    'network_info', 'get_weather', 'search_knowledge', 'search_memory',
+    'webcam_look', 'webcam_detect', 'webcam_read',
+    'memory', 'remember', 'recall', 'forget',
+    'http_request', 'download_file', 'zip_create', 'zip_extract',
+    'dir_create', 'load_toolset', 'purpclaw_start', 'purpclaw_stop',
+    'purpclaw_status', 'purpclaw_logs', 'initialize', 'initialized',
+    'notifications/initialized', 'tools/list', 'tools/call', 'ping',
+  ]);
+
   let result = null;
   if (loadedSkills[name]) {
     try {
@@ -1116,22 +1146,38 @@ async function executeTool(name, args) {
       console.log(`[TOOL] OK ${name} (${Date.now() - t0}ms)`);
       result = ok(res);
     } catch (e) { result = ok(`Dynamic Skill Error: ${e.message}`); }
+  } else if (process.env.PURPCLAW_API_TOOL_GATE !== '0') {
+    // P0-B: ToolRuntime is now the primary gate for ALL tools.
+    // - HIGH_RISK tools: always go through ToolRuntime (enforced above runTool)
+    // - SANCTIONED_BYPASS tools: ToolRuntime first, then runTool fallback
+    // - Everything else: ToolRuntime first, runTool fallback for "Unknown tool"
+    try {
+      const tr = getToolRuntime();
+      const trResult = await tr.invoke(name, args, {
+        operatorInitiated: true,
+        permissionProfile: 'standard',
+      });
+      if (trResult.ok) {
+        result = ok(trResult.content || trResult.stdout || '');
+        console.log(`[TOOL] OK ${name} via ToolRuntime (${Date.now() - t0}ms)`);
+      } else if (trResult.code === 'TOOL_UNAVAILABLE') {
+        // ToolRuntime doesn't know this tool — check if it's a sanctioned bypass
+        if (SANCTIONED_BYPASS.has(name)) {
+          result = await runTool(name, args);
+          console.log(`[TOOL] OK ${name} via sanctioned bypass (${Date.now() - t0}ms)`);
+        } else {
+          result = ok(`Tool unavailable: ${name} — not in registry and not a sanctioned bypass`);
+        }
+      } else {
+        // Permission denied or other error from ToolRuntime
+        result = ok(`ToolRuntime denied: ${trResult.error}`);
+      }
+    } catch (e) { result = ok(`Error: ${e.message}`); }
   } else {
-    // P0-B: Try runTool first — it handles ~80 hardcoded desktop/screen/browser/OCR cases.
-    // Unknown tools route through ToolRuntime with 'standard' permission profile by default.
-    // Disable (revert to legacy): PURPCLAW_API_TOOL_GATE=0
+    // Legacy mode (PURPCLAW_API_TOOL_GATE=0): runTool only
     try {
       result = await runTool(name, args);
-      if (!result.ok && result.content && result.content.startsWith('Unknown tool')) {
-        if (process.env.PURPCLAW_API_TOOL_GATE !== '0') {
-          const tr = getToolRuntime();
-          const trResult = await tr.invoke(name, args, { operatorInitiated: true });
-          result = ok(trResult.ok
-            ? (trResult.content || trResult.stdout || '')
-            : `ToolRuntime denied: ${trResult.error}`);
-        }
-      }
-      console.log(`[TOOL] OK ${name} (${Date.now() - t0}ms)`);
+      console.log(`[TOOL] OK ${name} via legacy runTool (${Date.now() - t0}ms)`);
     } catch (e) { result = ok(`Error: ${e.message}`); }
   }
 
