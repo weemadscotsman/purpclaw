@@ -26,6 +26,9 @@ const HOOK_TOPICS = [
   'ApprovalRequested','ApprovalResolved',
   'SubagentStop',   // fires when a spawned subagent halts (DelegationManager emits this)
   'UserPromptSubmit', // mirrors PARITY_HOOKS event name for compatibility
+  // PARITY_HOOKS emits these non-OC events from agent-loop — add so
+  // LIFECYCLE.emit() in parity/hooks/engine.js can forward them to hooks
+  'PreCompact','PostCompact','Error',
 ];
 
 class LifecycleBus extends EventEmitter {
