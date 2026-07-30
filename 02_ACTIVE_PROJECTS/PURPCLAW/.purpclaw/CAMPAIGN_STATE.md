@@ -344,7 +344,7 @@ Chief (this session): MiniMax-M3, MiniMax provider.
 
 **P1-8 workflow engine — approval node implemented:**
 - `approval` node type added to lib/workflow-manager.js
-- Wires to approval-queue.requestApproval() at execution time  
+- Wires to approval-queue.requestApproval() at execution time
 - Interrupts workflow, stores __approval_id in context
 - On resume: stores {approved, approvalId} at node.output key
 - Branches to on_approved or on_denied based on resume value
@@ -352,12 +352,15 @@ Chief (this session): MiniMax-M3, MiniMax provider.
 
 **Evidence:** scripts/test-workflow-approval.js — 3/3 tests passing:
 - Test 1: approval node fires and interrupts ✅
-- Test 2: resume with approved=true → approved branch ✅  
+- Test 2: resume with approved=true → approved branch ✅
 - Test 3: condition branching still works ✅
 
-**Still needed for P1-8:**
-- Workflow-level approval checkpoint integration (workflow pauses at approval node, resumes via purpclaw approve <id>)
-- Interrupt type classification (interrupt vs approval for display purposes)
+**P1-8 workflow checkpoint integration — bridge complete:**
+- `a91b5a0` — lib/approval-queue.js: add onWorkflowApprovalResolved(cb) + clearWorkflowApprovalResolved(id); resolveApproval() calls registered callback after queue write
+- bin/purpclaw.js: approve/deny cases register workflow-resume callback before resolveApproval; wf-<runId> prefix triggers agent-gateway.resumeWorkflow() with approved/denied resume value
+- scripts/test-approval-resume-bridge.js: smoke test passes — callback fires on real queue entry resolve
+
+**Still needed for P1-8:** interrupt type classification (interrupt vs approval for display purposes) — non-blocking
 
 **P1-9 evidence system:** proof-ledger UI, parity docs, smoke tests all exist
 
