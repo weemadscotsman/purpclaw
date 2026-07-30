@@ -29,6 +29,14 @@ function banner(ctx) {
 }
 
 async function run(args, ctx) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log('\n  purpclaw schedule list                  show all scheduled tasks');
+    console.log('  purpclaw schedule add "<prompt>" --every=<n>   add a recurring task');
+    console.log('  purpclaw schedule remove <id>          remove a task');
+    console.log('  purpclaw schedule run <id>            run a task immediately');
+    console.log('  purpclaw schedule --help              this help\n');
+    return;
+  }
   const C = ctx.C || {};
   const col = ctx.col || ((c, s) => s);
   const PURP_DIR = ctx.PURP_DIR || process.cwd();
