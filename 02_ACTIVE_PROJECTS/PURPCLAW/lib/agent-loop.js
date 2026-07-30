@@ -324,7 +324,7 @@ async function* agentTurn({ messages, model, provider, opts = {} }) {
       maxTokens: opts.maxTokens ?? 4096,
       taskId: opts.taskId || opts.jobId || null,
       ...(structured ? {
-        tools: TOOLS.list().map(t => ({
+        tools: (opts.toolRuntime ? opts.toolRuntime.catalog() : TOOLS.list()).map(t => ({
           type: 'function',
           function: {
             name: t.name,

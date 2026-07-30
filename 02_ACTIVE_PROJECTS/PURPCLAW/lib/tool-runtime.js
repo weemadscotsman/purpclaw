@@ -22,6 +22,15 @@ function mutationPaths(name, args = {}) {
   return target ? [target] : [];
 }
 
+function normalizeToolSet(registry, value) {
+  if (!value) return null;
+  const values = Array.isArray(value) ? value : [...value];
+  return new Set(values.map(tool => {
+    const name = typeof tool === 'string' ? tool : tool?.name;
+    return registry._resolve ? registry._resolve(name) : name;
+  }).filter(Boolean));
+}
+
 class ToolRuntime extends EventEmitter {
   constructor(options = {}) {
     super();
@@ -31,15 +40,28 @@ class ToolRuntime extends EventEmitter {
     this.approvalCache = options.approvalCache || new Map();
     this.inputGuardrails = options.inputGuardrails || [];
     this.outputGuardrails = options.outputGuardrails || [];
+    this.allowedTools = normalizeToolSet(this.registry, options.allowedTools);
+    this.disallowedTools = normalizeToolSet(this.registry, options.disallowedTools);
   }
 
   catalog() {
-    return this.registry.list().map(tool => ({ ...tool, available: true }));
+    return this.registry.list()
+      .filter(tool => this.isToolInScope(tool.name))
+      .map(tool => ({ ...tool, available: true }));
+  }
+
+  isToolInScope(name) {
+    const resolved = this.registry._resolve ? this.registry._resolve(name) : name;
+    if (this.disallowedTools?.has(resolved)) return false;
+    return !this.allowedTools || this.allowedTools.has(resolved);
   }
 
   async invoke(name, args = {}, context = {}) {
     const plugins = require('./plugin-manager'); plugins.load();
     if (context.signal?.aborted) return { ok: false, error: 'tool execution interrupted', code: 'INTERRUPTED' };
+    if (!this.isToolInScope(name)) {
+      return { ok: false, error: `${name} is outside this runtime's tool scope`, code: 'TOOL_SCOPE_DENIED' };
+    }
     if (!this.registry.has(name)) return { ok: false, error: `unknown or unavailable tool: ${name}`, code: 'TOOL_UNAVAILABLE' };
     const callId = context.callId || `tool-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const definition=this.registry.list().find(tool=>tool.name===name)||{};

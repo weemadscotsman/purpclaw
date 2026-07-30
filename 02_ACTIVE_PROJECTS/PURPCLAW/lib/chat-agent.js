@@ -23,6 +23,7 @@
 
 const llm = require('./llm-provider');
 const { runAgent } = require('./agent-loop');
+const { ToolRuntime } = require('./tool-runtime');
 
 // All available tools as tool definitions (from agent-loop's tool registry)
 const AGENT_TOOLS = (() => {
@@ -47,6 +48,12 @@ async function chatWithTools(messages, opts = {}) {
   const cwd = opts.cwd || process.cwd();
   const maxTurns = Math.max(1, opts.maxTurns || 6);
   const tools = opts.tools || AGENT_TOOLS;
+  const allowedTools = tools.map(tool => tool.name);
+  const readOnly = allowedTools.every(name => READONLY_NAMES.has(name));
+  const toolRuntime = new ToolRuntime({
+    permissionProfile: opts.permissionProfile || (readOnly ? 'workspace-read-only' : 'standard'),
+    allowedTools,
+  });
 
   const allMessages = [];
   for (const m of messages) {
@@ -69,7 +76,7 @@ async function chatWithTools(messages, opts = {}) {
   // other ToolRuntime gates. opts.tools is the correct allow-list mechanism.
   for await (const ev of runAgent({
     history: allMessages,
-    opts: { maxTurns, tools, cwd },
+    opts: { maxTurns, cwd, toolRuntime, permissionProfile: toolRuntime.permissionProfile },
   })) {
     if (ev.type === 'token') {
       lastReply += ev.content;

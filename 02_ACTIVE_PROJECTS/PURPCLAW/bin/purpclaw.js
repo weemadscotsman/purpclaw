@@ -5350,8 +5350,11 @@ async function cmdSmoke(args = []) {
   try {
     execSync(`node "${script}" ${[...only, ...json].join(' ')}`, { cwd: PURP_DIR, stdio: 'inherit', timeout: 180000 });
     console.log(col(C.green, `\n  smoke: green — every layer proven callable\n`));
+    return 0;
   } catch (e) {
     console.log(col(C.red, `\n  smoke: FAILED — see report above (public/showcase/smoke-report.json)\n`));
+    process.exitCode = 1;
+    return 1;
   }
 }
 
@@ -6940,7 +6943,8 @@ async function cmdPlugins(args) {
     case 'checkpoint': return cmdCheckpoint(args);
     case 'curator':   return cmdCurator(args);
     case 'approvals': return cmdApprovals(args);
-    case 'cost':      return cmdCost(args);
+    case 'cost':
+    case 'cost-report': return cmdCost(args);
     case 'usage':     return cmdUsage(args);
     case 'tirith':    return cmdTirith(args);
     case 'plugins':  return cmdPlugins(args);
@@ -8155,9 +8159,9 @@ async function cmdModel(args) {
     console.log('  🏗️  AVAILABLE PROVIDERS');
     console.log('');
     for (const p of providers) {
-      const active = info.main.provider === p ? ' ◀ active' : '';
-      const swarm = info.swarm.provider === p ? ' ◀ swarm' : '';
-      console.log(`    ${p}${active}${swarm}`);
+      const active = info.main.provider === p.name ? ' ◀ active' : '';
+      const swarm = info.swarm.provider === p.name ? ' ◀ swarm' : '';
+      console.log(`    ${p.name}${active}${swarm}`);
     }
     console.log('');
     console.log(`  Active main:  ${col(C.cyan, info.main.provider)} / ${col(C.green, info.main.model)}`);

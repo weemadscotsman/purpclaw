@@ -36,9 +36,7 @@ const LLM = require('./lib/llm-provider');
 // v2.1 — Cache the full whoami snapshot so the Next.js proxy doesn't timeout.
 const whoamiCache = { data: null, cachedAt: 0, TTL: 15000 };
 
-// P0-B: Module-level ToolRuntime for executeTool gate.
-// Default: ENABLED (gate goes through ToolRuntime with 'standard' permission).
-// Disable with PURPCLAW_API_TOOL_GATE=0 — returns to legacy runTool-only dispatch.
+// P0-B: Module-level ToolRuntime for every API tool dispatch.
 let _toolRuntime = null;
 function getToolRuntime() {
   if (!_toolRuntime) {
@@ -1007,7 +1005,7 @@ async function getBrowserPage() {
   return pwPage;
 }
 
-const TOOLS = [
+const TOOL_DEFINITIONS = [
   { name: 'screen_capture', description: 'Screenshot the screen. Returns file path.', inputSchema: { type: 'object', properties: { monitor: { type: 'number' } } } },
   { name: 'screen_ocr', description: 'Read text from screen using OCR. Supports line grouping and structured output.', inputSchema: { type: 'object', properties: { image_path: { type: 'string' } } } },
   { name: 'ocr_identify', description: 'Advanced OCR with line detection. Read text and identify line-by-line structure.', inputSchema: { type: 'object', properties: { image_path: { type: 'string' } } } },
@@ -1084,7 +1082,21 @@ const loadedSkills = {};
 const CORE_PRESERVE = ['interactive_shell', 'skill_manager', 'task_manager', 'speak', 'memory', 'file_read', 'file_write', 'socket_rig', 'purpclaw_start', 'system_status', 'load_toolset', 'window_list'];
 let ACTIVE_TOOLSET = 'all';
 
+function registerApiTools() {
+  const registry = require('./lib/tools');
+  for (const definition of TOOL_DEFINITIONS) {
+    if (registry.has(definition.name)) continue;
+    registry.register({
+      name: definition.name,
+      description: definition.description,
+      inputSchema: definition.inputSchema,
+      execute: args => runTool(definition.name, args),
+    });
+  }
+}
+
 function loadDynamicSkills() {
+  const registry = require('./lib/tools');
   if (!fs.existsSync(SKILLS_DIR)) fs.mkdirSync(SKILLS_DIR, { recursive: true });
   const files = fs.readdirSync(SKILLS_DIR).filter(f => f.endsWith('.js') && !f.endsWith('.pending.js'));
   for (const file of files) {
@@ -1094,10 +1106,21 @@ function loadDynamicSkills() {
       const skillDef = require(fullPath);
       if (skillDef.name && skillDef.description && typeof skillDef.handler === 'function') {
         loadedSkills[skillDef.name] = skillDef.handler;
+        registry.register({
+          name: skillDef.name,
+          description: skillDef.description,
+          inputSchema: skillDef.inputSchema || { type: 'object', properties: {} },
+          execute: args => skillDef.handler(args, {
+            ps, psScript, cmd, ok, execAsync,
+            config: { PURP_DIR, SKILLS_DIR },
+          }),
+        });
       }
     } catch (e) { console.error(`[SKILLS] Failed to load ${file}: ${e.message}`); }
   }
 }
+
+registerApiTools();
 
 async function executeTool(name, args) {
   const t0 = Date.now();
@@ -1109,77 +1132,17 @@ async function executeTool(name, args) {
   ebCalledReq.write(ebCalledPayload);
   ebCalledReq.end();
 
-  // P0-B: High-risk tools are forced through ToolRuntime permission + governance gate.
-  // These bypass ToolRuntime when they live in runTool's switch (raw execAsync).
-  const HIGH_RISK = new Set([
-    'execute_command', 'git_command', 'file_write', 'file_delete',
-    'file_copy', 'file_move', 'install_package', 'open_application',
-  ]);
-
-  // Tools that are safe to run via runTool directly (UI-only, no system mutation).
-  // All other tools go through ToolRuntime first.
-  const SANCTIONED_BYPASS = new Set([
-    'screen_capture', 'screen_ocr', 'ocr_identify', 'screen_find_object',
-    'screen_identify', 'screen_find_template', 'screen_info',
-    'mouse_click', 'mouse_scroll', 'keyboard_type', 'find_and_click',
-    'window_list', 'window_focus', 'window_close', 'ui_list_elements',
-    'ui_click_element', 'ui_get_screen_layout', 'ui_get_element_at',
-    'browser_open', 'browser_click', 'browser_type', 'browser_scroll',
-    'browser_get_content', 'browser_screenshot', 'browser_navigate',
-    'browser_tabs', 'browser_close_tab',
-    'clipboard', 'notification', 'task_schedule', 'task_list',
-    'process_list', 'process_kill', 'volume_control',
-    'active_window', 'system_status', 'system_paths', 'disk_info',
-    'network_info', 'get_weather', 'search_knowledge', 'search_memory',
-    'webcam_look', 'webcam_detect', 'webcam_read',
-    'memory', 'remember', 'recall', 'forget',
-    'http_request', 'download_file', 'zip_create', 'zip_extract',
-    'dir_create', 'load_toolset', 'purpclaw_start', 'purpclaw_stop',
-    'purpclaw_status', 'purpclaw_logs', 'initialize', 'initialized',
-    'notifications/initialized', 'tools/list', 'tools/call', 'ping',
-  ]);
-
   let result = null;
-  if (loadedSkills[name]) {
-    try {
-      const res = await loadedSkills[name](args, { ps, psScript, cmd, ok, execAsync, config: { PURP_DIR, SKILLS_DIR } });
-      console.log(`[TOOL] OK ${name} (${Date.now() - t0}ms)`);
-      result = ok(res);
-    } catch (e) { result = ok(`Dynamic Skill Error: ${e.message}`); }
-  } else if (process.env.PURPCLAW_API_TOOL_GATE !== '0') {
-    // P0-B: ToolRuntime is now the primary gate for ALL tools.
-    // - HIGH_RISK tools: always go through ToolRuntime (enforced above runTool)
-    // - SANCTIONED_BYPASS tools: ToolRuntime first, then runTool fallback
-    // - Everything else: ToolRuntime first, runTool fallback for "Unknown tool"
-    try {
-      const tr = getToolRuntime();
-      const trResult = await tr.invoke(name, args, {
-        operatorInitiated: true,
-        permissionProfile: 'standard',
-      });
-      if (trResult.ok) {
-        result = ok(trResult.content || trResult.stdout || '');
-        console.log(`[TOOL] OK ${name} via ToolRuntime (${Date.now() - t0}ms)`);
-      } else if (trResult.code === 'TOOL_UNAVAILABLE') {
-        // ToolRuntime doesn't know this tool — check if it's a sanctioned bypass
-        if (SANCTIONED_BYPASS.has(name)) {
-          result = await runTool(name, args);
-          console.log(`[TOOL] OK ${name} via sanctioned bypass (${Date.now() - t0}ms)`);
-        } else {
-          result = ok(`Tool unavailable: ${name} — not in registry and not a sanctioned bypass`);
-        }
-      } else {
-        // Permission denied or other error from ToolRuntime
-        result = ok(`ToolRuntime denied: ${trResult.error}`);
-      }
-    } catch (e) { result = ok(`Error: ${e.message}`); }
-  } else {
-    // Legacy mode (PURPCLAW_API_TOOL_GATE=0): runTool only
-    try {
-      result = await runTool(name, args);
-      console.log(`[TOOL] OK ${name} via legacy runTool (${Date.now() - t0}ms)`);
-    } catch (e) { result = ok(`Error: ${e.message}`); }
-  }
+  try {
+    const trResult = await getToolRuntime().invoke(name, args, {
+      operatorInitiated: true,
+      permissionProfile: 'standard',
+    });
+    result = trResult.ok
+      ? ok(trResult.content || trResult.stdout || trResult)
+      : ok(`ToolRuntime denied: ${trResult.error}`);
+    console.log(`[TOOL] ${trResult.ok ? 'OK' : 'DENIED'} ${name} via ToolRuntime (${Date.now() - t0}ms)`);
+  } catch (e) { result = ok(`Error: ${e.message}`); }
 
   const ebResultPayload = JSON.stringify({ topic: 'tool.result', toolName: name, duration: Date.now() - t0 });
   const ebResultReq = http.request({ hostname: 'localhost', port: 7782, path: '/publish', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(ebResultPayload) } }, () => {});
