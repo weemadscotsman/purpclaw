@@ -7111,6 +7111,9 @@ async function cmdPlugins(args) {
       if (sub === 'archive')   return cmdArchive(args.slice(1));
       if (sub === 'delete')    return cmdDelete(args.slice(1));
       if (sub === 'unarchive') return cmdArchive(args.slice(1), true);
+      // Internal exec subcommands (not shell commands)
+      if (sub === 'policy')   return cmdExec(['exec', 'policy']);
+      if (sub === 'check')     return cmdExec(['exec', 'check', ...args.slice(1)]);
 
       // --help and --json are reserved flags, not exec subcommands
       if (sub === '--help' || sub === '-h' || sub === '--json') {
