@@ -331,16 +331,29 @@ function httpPost(port, pathname, body, timeoutMs = 30000) {
 
 async function ping(port, path_ = '/health') {
   return new Promise(resolve => {
-    const req = http.request(
-      { hostname: '127.0.0.1', port, path: path_, method: 'GET', headers: { Accept: 'application/json' } },
-      res => {
-        res.resume();
-        resolve(res.statusCode >= 200 && res.statusCode < 400);
-      }
-    );
-    req.setTimeout(2000, () => { req.destroy(); resolve(false); });
-    req.on('error', () => resolve(false));
-    req.end();
+    let redirects = 0;
+    const doRequest = (path) => {
+      const req = http.request(
+        { hostname: '127.0.0.1', port, path, method: 'GET' },
+        res => {
+          res.resume();
+          if (res.statusCode >= 300 && res.statusCode < 400 && redirects < 4) {
+            const location = res.headers.location;
+            if (location) {
+              redirects++;
+              const next = location.startsWith('/') ? location : path.split('/').slice(0, -1).join('/') + '/' + location;
+              doRequest(next);
+              return;
+            }
+          }
+          resolve(res.statusCode >= 200 && res.statusCode < 400);
+        }
+      );
+      req.setTimeout(2000, () => { req.destroy(); resolve(false); });
+      req.on('error', () => resolve(false));
+      req.end();
+    };
+    doRequest(path_);
   });
 }
 
