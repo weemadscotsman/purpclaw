@@ -186,7 +186,12 @@ async function ingest(content, opts = {}) {
 
   announce.memory.thinking('ingest.started', { source, length: content.length });
   try {
-    const resp = await post('/memory/ingest', { content, source, importance, valence, type, metadata }, 6000);
+    // Was a hardcoded 6000ms, which survived the TIMEOUT_MS increase and kept
+    // aborting writes the spine had already committed: the client reported
+    // ingest failed and returned null while a later recall found the content
+    // perfectly well. An ingest is more expensive than a recall, so it gets the
+    // shared ceiling rather than a tighter one of its own.
+    const resp = await post('/memory/ingest', { content, source, importance, valence, type, metadata }, TIMEOUT_MS);
     const id = resp.body?.memory_id || null;
     if (id) announce.memory.ingested(id, { source, importance, type });
     // Mid-job learning must be INSTANT: a freshly-ingested memory has to be
