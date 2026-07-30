@@ -7680,7 +7680,7 @@ async function cmdPlugins(args) {
     case 'config':    return cmdConfig(args);
     case 'logs':      return cmdLogs(args);
     case 'bars':       return cmdBars(args);
-    case 'bigboss':   { const r = await loadCmd('bigboss').run(args, sharedCtx()); if (typeof r === 'string') console.log(r); return r; }
+    case 'bigboss':   { const r = await loadCmd('bigboss').run(args[0], args.slice(1).join(' ')); if (typeof r === 'string') console.log(r); return r; }
     case 'buddy':     { const r = await loadCmd('buddy').run(args, sharedCtx()); if (typeof r === 'string') console.log(r); return r; }
     case 'remotion':  { const r = await loadCmd('remotion').run(args, sharedCtx()); if (typeof r === 'string') console.log(r); return r; }
     case 'show':
