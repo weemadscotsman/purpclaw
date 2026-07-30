@@ -7027,10 +7027,10 @@ async function cmdPlugins(args) {
     case 'curator':   return cmdCurator(args);
     case 'approvals': return cmdApprovals(args);
     case 'cost':
-
-      // cost with no sub → summary; cost report/analyze/summary handled by sub
+      // bare `cost` → summary; `cost analyze/report` → their respective handlers
+      // args here: ['analyze', ...] or [] (bare)
+      if (!args[0] || args[0] === 'summary' || args[0] === 'report') return cmdCost(['summary']);
       if (args[0] === 'analyze') return cmdCost(['analyze', ...args.slice(1)]);
-      if (args[0] === 'report' || args[0] === 'summary') return cmdCost(['summary']);
       if (args[0] === 'cost-report') return cmdCost(['summary']);
       return cmdCost(args);
     case 'cost-report': return cmdCost(['summary']);
