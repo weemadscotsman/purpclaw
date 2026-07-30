@@ -651,18 +651,14 @@ class LongTermMemory:
             try:
                 vec = np.asarray(QuantizedMemory.dequantize(atom.embedding), dtype=np.float32)
             except Exception:
-                continue
+                vec = np.zeros((384,), dtype=np.float32)   # zero-fill failed dequantize
             if vec.size == 0:
-                continue
+                vec = np.zeros((384,), dtype=np.float32)
             ids.append(atom_id)
             rows.append(vec)
-        if rows:
-            matrix = np.vstack(rows)
-            norms = np.linalg.norm(matrix, axis=1)
-            norms[norms == 0] = 1.0            # avoid divide-by-zero; sim stays 0
-        else:
-            matrix = np.zeros((0, 1), dtype=np.float32)
-            norms = np.zeros((0,), dtype=np.float32)
+        matrix = np.vstack(rows)
+        norms = np.linalg.norm(matrix, axis=1)
+        norms[norms == 0] = 1.0            # avoid divide-by-zero; sim stays 0
         self._vec_matrix, self._vec_ids, self._vec_norms, self._vec_stamp = matrix, ids, norms, stamp
 
     def search_similar(self, query_embedding: bytes, limit: int = 5,
