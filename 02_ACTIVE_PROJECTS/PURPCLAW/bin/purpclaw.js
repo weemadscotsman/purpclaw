@@ -1578,6 +1578,17 @@ async function cmdApprovals(args) {
     }
     case 'approve': {
       if (!id) { console.log('Usage: purpclaw approvals approve <id>'); return 1; }
+      // If this looks like a workflow approval (has 'wf-' prefix), resume the workflow
+      if (id.startsWith('wf-')) {
+        try {
+          const AQ = require(path.join(PURP_DIR, 'lib', 'approval-queue'));
+          AQ.onWorkflowApprovalResolved(id, async (approvalId, resolution) => {
+            const GATEWAY = require(path.join(PURP_DIR, 'lib', 'agent-gateway'));
+            const gateway = new GATEWAY.AgentGateway();
+            await gateway.resumeWorkflow(approvalId.replace('wf-', ''), {}, { resumeValue: { approved: resolution === 'approved' } });
+          });
+        } catch {}
+      }
       const ok = AQ.resolveApproval(id, 'approve');
       jsonOut({ action: 'approve', id, success: ok });
       if (!wantJson) console.log(ok ? col(C.green, `  ✓ Approved: ${id}`) : col(C.red, `  ✗ Not found: ${id}`));
@@ -1586,6 +1597,17 @@ async function cmdApprovals(args) {
     }
     case 'deny': {
       if (!id) { console.log('Usage: purpclaw approvals deny <id>'); return 1; }
+      // If this looks like a workflow approval, resume with denied
+      if (id.startsWith('wf-')) {
+        try {
+          const AQ = require(path.join(PURP_DIR, 'lib', 'approval-queue'));
+          AQ.onWorkflowApprovalResolved(id, async (approvalId, resolution) => {
+            const GATEWAY = require(path.join(PURP_DIR, 'lib', 'agent-gateway'));
+            const gateway = new GATEWAY.AgentGateway();
+            await gateway.resumeWorkflow(approvalId.replace('wf-', ''), {}, { resumeValue: { approved: false } });
+          });
+        } catch {}
+      }
       const ok = AQ.resolveApproval(id, 'deny');
       jsonOut({ action: 'deny', id, success: ok });
       if (!wantJson) console.log(ok ? col(C.red, `  ✗ Denied: ${id}`) : col(C.red, `  ✗ Not found: ${id}`));
@@ -5240,6 +5262,7 @@ async function main() {
     '--repo-map', '--no-repo-map',
     '--provider-env-file',
     '--',        // cmd.exe exec pass-through marker — not a real flag
+    '--help', '-h',  // consumed by individual commands, not globally
   ]);
   const cleanArgv = argv.filter((a, i) =>
     !STRIP_FLAGS.has(a) && !(envFileIdx >= 0 && i === envFileIdx + 1)
@@ -5258,6 +5281,12 @@ async function main() {
     args = [];
   }
 
+  // Commands that handle --help themselves: detect "workflow --help" (--help in args, not a bare global --help)
+  const HELP_DELEGATE = new Set(['workflow', 'ask', 'session', 'exec', 'llm', 'doctor', 'model', 'models', 'config', 'chat', 'run']);
+  if ((command === 'help' || command === '--help' || command === '-h' || args.includes('--help') || args.includes('-h')) && HELP_DELEGATE.has(command)) {
+    console.error('[DEBUG HELP_DELEGATE] command=', command, 'args=', args, '-> calling', command, '--help'); // DEBUG
+    return loadCmd(command).run([command, '--help'], sharedCtx());
+  }
   // Explicit help/version paths
   if (command === 'help' || command === '--help' || command === '-h') {
     cmdHelp(); return;
@@ -7566,7 +7595,7 @@ async function cmdPlugins(args) {
     }
     case 'next':
     case 'helpme':     return loadCmd('next').run(args, sharedCtx());
-    case 'workflow':   return loadCmd('workflow').run(args, sharedCtx());
+    case 'workflow':   return loadCmd('workflow').run(args.slice(1), sharedCtx());
     case 'drift':      return loadCmd('drift').run(args, sharedCtx());
     case 'awaken':     return loadCmd('awaken').run(args);
     case 'evolve':     return loadCmd('evolve').run(args, sharedCtx());
