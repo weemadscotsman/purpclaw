@@ -36,6 +36,18 @@ const LLM = require('./lib/llm-provider');
 // v2.1 — Cache the full whoami snapshot so the Next.js proxy doesn't timeout.
 const whoamiCache = { data: null, cachedAt: 0, TTL: 15000 };
 
+// Permission profile for the operator-initiated chat surfaces (SSE + JSON).
+// These paths call runAgentRouted directly rather than through AgentGateway,
+// so nothing sets a profile for them and agent-loop falls back to a bare
+// `new ToolRuntime()` at 'standard'. Under 'standard' ls/shell/write are "ask",
+// and because this surface has no approval channel, "ask" resolves to deny —
+// the chat agent could read a file but silently failed every other tool.
+// AgentGateway grants operator-initiated chat 'trusted'; the canonical rule is
+// that the same policy decision applies whatever the surface, so match it.
+// Override to tighten (e.g. 'standard') if this API is ever exposed beyond
+// localhost, at the cost of denying tools until an approval channel exists.
+const WEB_CHAT_PERMISSION_PROFILE = process.env.PURPCLAW_WEB_PERMISSION_PROFILE || 'trusted';
+
 // P0-B: Module-level ToolRuntime for every API tool dispatch.
 let _toolRuntime = null;
 function getToolRuntime() {
@@ -510,7 +522,13 @@ async function handleChatStream(req, res) {
       provider: providerOverride,
       lane,
       autoRoute,
-      opts: { maxTokens: 2048, temperature: 0.7 },
+      opts: {
+        maxTokens: 2048, temperature: 0.7, sessionId,
+        // See the note on the JSON chat path: a bare ToolRuntime denies every
+        // "ask" tool here because this surface has no approval channel.
+        permissionProfile: WEB_CHAT_PERMISSION_PROFILE,
+        // Not operatorInitiated — see the note on the JSON chat path.
+      },
     })) {
       if (ev.type === 'job') {
         // Pipeline registry id — lets the UI wire a Stop button (POST /api/pipeline/stop).
@@ -4375,7 +4393,20 @@ const server = http.createServer(async (req, res) => {
               prompt: message,
               history: historyMessages,
               model, provider, lane,
-              opts: { maxTokens: 2048, temperature: 0.7, sessionId },
+              opts: {
+                maxTokens: 2048, temperature: 0.7, sessionId,
+                // Without these, agent-loop builds a bare `new ToolRuntime()`
+                // whose 'standard' profile marks ls/shell/write as "ask" — and
+                // with no approval callback on this path, "ask" resolves to
+                // deny. The chat agent could read but silently failed every
+                // other tool. AgentGateway grants operator-initiated chat
+                // 'trusted'; parity requires the same decision on this surface.
+                permissionProfile: WEB_CHAT_PERMISSION_PROFILE,
+                // Deliberately NOT operatorInitiated. An HTTP request is not
+                // provable human presence, and setting it makes governance wave
+                // destructive commands through. Left false, benign shell/ls run
+                // and destructive commands still hit APPROVAL_DENIED.
+              },
             })) {
               if (ev.type === 'route') {
                 modelName = ev.model || modelName;
