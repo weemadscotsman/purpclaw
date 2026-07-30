@@ -45,6 +45,15 @@ try {
   _ownRuntime = null;
 }
 
+// LIFECYCLE bus — single source of truth for all lifecycle events.
+// PARITY_HOOKS emits → LIFECYCLE.fire() so both bus types receive every event.
+let LIFECYCLE = null;
+try {
+  LIFECYCLE = require(path.join(ROOT, 'lib', 'hooks', 'lifecycle-bus.js'));
+} catch (_) {
+  LIFECYCLE = null;
+}
+
 /**
  * List hook files in a directory. Symlink-safe (no follow).
  *   filter: optional function(filename) -> boolean
@@ -336,10 +345,11 @@ function emit(event, ctx = {}) {
     }
   }
 
-  // Delegate in-process events through lib/hooks-runtime if it exposes one
-  if (_ownRuntime && typeof _ownRuntime.emit === 'function') {
+  // Delegate to the canonical LIFECYCLE bus so all hook events land in one place.
+  // PARITY_HOOKS emits → LIFECYCLE.fire() → both bus types receive.
+  if (LIFECYCLE && typeof LIFECYCLE.emit === 'function') {
     try {
-      _ownRuntime.emit(event, ctx);
+      LIFECYCLE.emit(event, ctx);
     } catch (_) { /* swallow — never block */ }
   }
 
