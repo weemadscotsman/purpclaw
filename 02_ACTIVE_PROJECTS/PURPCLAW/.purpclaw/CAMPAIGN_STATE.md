@@ -211,6 +211,38 @@ machine. The steering wheel is connected — to a lane the driver isn't using.
 Deciding the precedence rule is an owner call, not a bug to silently flip:
 either the UI must outrank `.env`, or `.env` must stop setting `LLM_*`.
 
+## 2026-07-29 21:5x — RE-VERIFICATION of AUDIT_WAVE1_UNIFIED_RUNTIME.md findings
+
+The audit's verdict on P0 item 1 (FAIL across surfaces) still stands overall, but
+**four of its findings are now stale** — other agents fixed them after it was
+written. Re-checked against the live tree so nobody spends a lane re-deriving
+this.
+
+### STALE — already fixed, do NOT re-work
+
+| Audit finding | Current reality |
+|---|---|
+| Session store FAIL: web route uses `session-store` | `app/api/sessions/route.ts:8` now requires `lib/session-repository.js`. **Cross-surface resume PROVEN**: session written by CLI from the project root is visible with both messages intact to a process running from a different cwd via the web route's require path; both resolve `…/PURPCLAW/.purpclaw/state.db`. Only works because of the ROOT anchor in `e198694`. |
+| `unified_api.js:1143` dynamic skills execute before the gate | Gone. `executeTool` goes straight to `getToolRuntime().invoke()` with no pre-execution. |
+| `unified_api.js:1177` legacy opt-out path | Gone. No opt-out remains in `executeTool`. |
+| `unified_api.js:1121/1165` direct-dispatch fallback list | Gone. `loadDynamicSkills()` registers into the `lib/tools` registry, so dynamic skills are reachable *through* ToolRuntime rather than around it. |
+
+P0-B is therefore stronger than when first audited: `executeTool` is now
+unconditionally gated, not gated-only-for-a-HIGH_RISK-set.
+
+### STILL OPEN — verified present right now
+
+| # | Gap | Evidence |
+|---|-----|----------|
+| 1 | Agent-loop bypasses: three surfaces skip `AgentGateway` | `unified_api.js:501` and `unified_api.js:4367` call `runAgentRouted` directly; `agent_tower.js:18` requires `lib/agent-loop` directly; `lib/commands/ask.js:1069` is the `PURPCLAW_LEGACY_AGENT=1` branch |
+| 2 | Two independent hook buses | `lib/agent-loop.js:35` (`hooks/lifecycle-bus`) and `lib/agent-loop.js:36` (`parity/hooks/engine`) — bypass paths gain neither |
+| 3 | Memory convergence unproven | loop wires scoped-memory, cognitive-client and memory-client independently; no cross-surface contract |
+| 4 | Chat history is not in the canonical store | `app/api/chat/route.ts` proxies to an upstream and carries `sessionId`; it does not persist through `session-repository` itself |
+
+**Collision warning for whoever takes gap 1:** `lib/agent-loop.js` has already been
+contaminated once by concurrent staging (see the contamination section above).
+Claim it in this file before editing.
+
 ## Not started — do not begin without chief allocation
 
 - **P0-B** Execution-policy bypasses: force every tool call through one
