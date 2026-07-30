@@ -337,3 +337,27 @@ Chief (this session): MiniMax-M3, MiniMax provider.
 - P1-10: Mission UI full verification (/mission, /dash, /skyscraper)
 - P2-4: multi-agent session isolation (fork)
 - P2-8: agent/hook/archive CLI commands
+
+## 2026-07-30 Wave 2 progress (this session)
+
+**Commit:** `8625817` — feat(workflow): add approval node type with on_approved/on_denied branching
+
+**P1-8 workflow engine — approval node implemented:**
+- `approval` node type added to lib/workflow-manager.js
+- Wires to approval-queue.requestApproval() at execution time  
+- Interrupts workflow, stores __approval_id in context
+- On resume: stores {approved, approvalId} at node.output key
+- Branches to on_approved or on_denied based on resume value
+- Approval result stored in context for downstream nodes
+
+**Evidence:** scripts/test-workflow-approval.js — 3/3 tests passing:
+- Test 1: approval node fires and interrupts ✅
+- Test 2: resume with approved=true → approved branch ✅  
+- Test 3: condition branching still works ✅
+
+**Still needed for P1-8:**
+- Workflow-level approval checkpoint integration (workflow pauses at approval node, resumes via purpclaw approve <id>)
+- Interrupt type classification (interrupt vs approval for display purposes)
+
+**P1-9 evidence system:** proof-ledger UI, parity docs, smoke tests all exist
+
