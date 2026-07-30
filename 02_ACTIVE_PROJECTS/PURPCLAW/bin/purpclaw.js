@@ -2992,7 +2992,7 @@ async function cmdMemory(args) {
   console.log(`\n  ${col(C.cyan + C.bold, '🧠 MEMORY RECALL')}\n  ${col(C.gray, `"${query}"`)}\n`);
 
   try {
-    const result = await httpPost(PORTS.memory, '/query', { query, limit: 5 }, 8000);
+    const result = await httpPost(PORTS.memory, '/recall', { query, limit: 5 }, 8000);
     if (result.status >= 400) {
       console.error(col(C.red, `  [X] Memory matrix error: ${JSON.stringify(result.body)}\n`));
       return;
@@ -4151,10 +4151,12 @@ async function cmdDoctor(args) {
   }
 
   try {
-    const py = execSync('py --version 2>&1 || python --version 2>&1', { cwd: PURP_DIR, encoding: 'utf8', timeout: 5000, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
-    add('Python 3.11', true, py, 'runtime');
-  } catch {
+    const py311 = execSync('py -3.11 --version 2>&1', { cwd: PURP_DIR, encoding: 'utf8', timeout: 5000, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+    add('Python 3.11', true, py311, 'runtime');
+    console.error('[DEBUG] Python check passed:', py311);
+  } catch (e) {
     add('Python 3.11', false, 'py -3.11 unavailable', 'runtime');
+    console.error('[DEBUG] Python check failed:', e.message);
   }
 
   try {

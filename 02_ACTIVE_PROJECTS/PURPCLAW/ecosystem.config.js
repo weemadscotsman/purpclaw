@@ -543,6 +543,9 @@ module.exports = {
         PYTHON_BIN: PYTHON_BIN,
         COGNITIVE_PUBLIC_PORT: env.COGNITIVE_PUBLIC_PORT || '7880',
         COGNITIVE_BACKEND_PORT: env.COGNITIVE_BACKEND_PORT || '7888',
+        // mem_guard watchdog inside cognitive_gateway.js kills python child at this RSS cap.
+        // 8051-atom archive needs ~1600MB; set 3000MB to let it warm up cleanly.
+        COGNITIVE_CHILD_MEM_LIMIT_MB: env.COGNITIVE_CHILD_MEM_LIMIT_MB || '4000',
         // Default 'lite' = pure-numpy lexical embedder (real recall, no heavy deps).
         // Set PURPCLAW_EMBEDDER_BACKEND=st to opt into sentence-transformers.
         PURPCLAW_EMBEDDER_BACKEND: env.PURPCLAW_EMBEDDER_BACKEND || 'lite'
