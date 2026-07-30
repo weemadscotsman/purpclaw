@@ -873,32 +873,32 @@ registry.register({
   name: 'smith_inject',
   description: 'SMITH: Inject chaos. Techniques: delay, refusal, reorder, truncate, hallucinate, swap_args, null_output, slow_leak. Finds swarm weak points.',
   inputSchema: { type:'object', properties: { technique:{type:'string'}, target:{type:'string'} }, required:['technique'] },
-  execute: async (args) => { const sn = require('../smith-neo'); const target = args.target ? JSON.parse(args.target) : {}; const r = sn.smith.inject(args.technique, target); return r; },
+  execute: async (args) => { const sn = ( (() => { try { return require('../smith-neo'); } catch { return { smith: { inject:()=>({ok:false,error:'smith-neo not loaded'}), randomAttack:()=>null }, neo: { stabilize:()=>({ok:false,stabilized:false}), ledger:()=>({attacks:[],survived:0,failed:0}) }, TECHNIQUES: {} }; } })() ); const target = args.target ? JSON.parse(args.target) : {}; const r = sn.smith.inject(args.technique, target); return r; },
 });
 registry.register({
   name: 'neo_stabilize',
   description: 'NEO: Detect anomalies and stabilize the swarm. Analyzes output for injected chaos and reverts damage.',
   inputSchema: { type:'object', properties: { output:{type:'string'} } },
-  execute: async (args) => { const sn = require('../smith-neo'); const output = args.output ? { content: args.output } : {}; const r = sn.neo.stabilize(output); return r; },
+  execute: async (args) => { const sn = ( (() => { try { return require('../smith-neo'); } catch { return { smith: { inject:()=>({ok:false,error:'smith-neo not loaded'}), randomAttack:()=>null }, neo: { stabilize:()=>({ok:false,stabilized:false}), ledger:()=>({attacks:[],survived:0,failed:0}) }, TECHNIQUES: {} }; } })() ); const output = args.output ? { content: args.output } : {}; const r = sn.neo.stabilize(output); return r; },
 });
 registry.register({
   name: 'smith_random',
   description: 'SMITH: Inject a random attack technique. Useful for stress-testing.',
   inputSchema: { type:'object', properties: {} },
-  execute: async () => { const sn = require('../smith-neo'); return sn.smith.randomAttack(); },
+  execute: async () => { const sn = ( (() => { try { return require('../smith-neo'); } catch { return { smith: { inject:()=>({ok:false,error:'smith-neo not loaded'}), randomAttack:()=>null }, neo: { stabilize:()=>({ok:false,stabilized:false}), ledger:()=>({attacks:[],survived:0,failed:0}) }, TECHNIQUES: {} }; } })() ); return sn.smith.randomAttack(); },
 });
 registry.register({
   name: 'neo_ledger',
   description: 'NEO: View the Smith-Neo attack/defense ledger. Shows total attacks, survived, failed, and defense history.',
   inputSchema: { type:'object', properties: {} },
-  execute: async () => { const sn = require('../smith-neo'); return { ok:true, content: JSON.stringify(sn.neo.ledger(), null, 2) }; },
+  execute: async () => { const sn = ( (() => { try { return require('../smith-neo'); } catch { return { smith: { inject:()=>({ok:false,error:'smith-neo not loaded'}), randomAttack:()=>null }, neo: { stabilize:()=>({ok:false,stabilized:false}), ledger:()=>({attacks:[],survived:0,failed:0}) }, TECHNIQUES: {} }; } })() ); return { ok:true, content: JSON.stringify(sn.neo.ledger(), null, 2) }; },
 });
 registry.register({
   name: 'chaos_round',
   description: 'Full chaos round: Smith injects, Neo detects, Neo stabilizes. Returns the full round report.',
   inputSchema: { type:'object', properties: { technique:{type:'string'}, target:{type:'string'} } },
   execute: async (args) => {
-    const sn = require('../smith-neo');
+    const sn = ( (() => { try { return require('../smith-neo'); } catch { return { smith: { inject:()=>({ok:false,error:'smith-neo not loaded'}), randomAttack:()=>null }, neo: { stabilize:()=>({ok:false,stabilized:false}), ledger:()=>({attacks:[],survived:0,failed:0}) }, TECHNIQUES: {} }; } })() );
     const technique = args.technique || Object.keys(sn.TECHNIQUES)[Math.floor(Math.random() * Object.keys(sn.TECHNIQUES).length)];
     const target = args.target ? JSON.parse(args.target) : { content: 'function deploy() { const api = new PurpClawAPI(); return api.start(); }' };
     const attack = sn.smith.inject(technique, target);
