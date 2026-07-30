@@ -2501,8 +2501,8 @@ async function handleRpc(req) {
     case 'notifications/initialized': return null;
     case 'tools/list':
       loadDynamicSkills();
-      console.log(`[BRIDGE] ${TOOLS.length} tools`);
-      return { jsonrpc: '2.0', id, result: { tools: TOOLS } };
+      console.log(`[BRIDGE] ${TOOL_DEFINITIONS.length} tools`);
+      return { jsonrpc: '2.0', id, result: { tools: TOOL_DEFINITIONS } };
     case 'tools/call': {
       const { name, arguments: a } = params || {};
       if (!name) return { jsonrpc: '2.0', id, error: { code: -32602, message: 'No tool' } };
@@ -4971,7 +4971,7 @@ server.listen(PORT, () => {
   console.log(`[UNIFIED API] Listening on http://localhost:${PORT}`);
   console.log(`[UNIFIED API] SSE stream: http://localhost:${PORT}/api/stream`);
   console.log(`[UNIFIED API] WebSocket: ${XIAOZHI_WS_URL ? 'configured' : 'NOT SET (set XIAOZHI_WS_URL)'}`);
-  console.log(`[UNIFIED API] Tools: ${TOOLS.length}`);
+  console.log(`[UNIFIED API] Tools: ${TOOL_DEFINITIONS.length}`);
   connectToBridge();
   if (XIAOZHI_WS_URL) connectWS();
   startLocalTcpServer();

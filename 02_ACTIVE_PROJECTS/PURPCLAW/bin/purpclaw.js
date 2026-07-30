@@ -2706,6 +2706,29 @@ async function cmdCost(args) {
     return;
   }
 
+  // purpclaw cost analyze <provider> <model> [inputTokens] [outputTokens]
+  if (sub === 'analyze' || sub === 'cost-analyze') {
+    const provider = args[1] || 'openai';
+    const model = args[2] || 'gpt-4o';
+    const inputTok = parseInt(args[3] || '1000', 10);
+    const outputTok = parseInt(args[4] || '500', 10);
+    const UP = (() => { try { return require('../lib/usage-pricing'); } catch { return null; } })();
+    const CL = (() => { try { return require('../lib/cost-ledger'); } catch { return null; } })();
+    if (!UP || !CL) { console.log('\n[X] cost infrastructure not available\n'); return; }
+    const result = UP.estimateCost(provider, model, { input_tokens: inputTok, output_tokens: outputTok });
+    const tasks = CL.summary().tasks;
+    const taskByProvider = tasks.filter(t => t.provider === provider);
+    const cheapest = Object.entries(UP.buildPricingTable())
+      .filter(([,e]) => e.input_cost_per_million != null)
+      .sort((a,b) => (a[1].input_cost_per_million + a[1].output_cost_per_million) - (b[1].input_cost_per_million + b[1].output_cost_per_million));
+    console.log(`\n  ${col(C.bold, 'COST ARBITRAGE')}  ${col(C.gray, `for ${inputTok.toLocaleString()} in / ${outputTok.toLocaleString()} out`)}\n`);
+    console.log(`  ${col(C.cyan, 'your pick:')}    ${col(C.white, provider)}/${col(C.green, model)} = ${col(C.yellow, '$' + result.cost_usd)}`);
+    console.log(`  ${col(C.cyan, 'cheapest:')}    ${col(C.white, cheapest[0]?.[0])} = ${col(C.green, '$' + ((cheapest[0]?.[1].input_cost_per_million * inputTok + cheapest[0]?.[1].output_cost_per_million * outputTok) / 1e6).toFixed(6))}`);
+    console.log(`  ${col(C.cyan, 'savings:')}     ${col(C.green, '$' + Math.max(0, result.cost_usd - ((cheapest[0]?.[1].input_cost_per_million * inputTok + cheapest[0]?.[1].output_cost_per_million * outputTok) / 1e6)).toFixed(6))}`);
+    console.log('');
+    return;
+  }
+
   // Default: cost calculator
   const provider = args[0] || 'openai';
   const model    = args[1] || 'gpt-4o';
@@ -6945,6 +6968,7 @@ async function cmdPlugins(args) {
     case 'approvals': return cmdApprovals(args);
     case 'cost':
     case 'cost-report': return cmdCost(['summary', ...args.slice(1)]);
+    case 'cost-analyze': return cmdCost(['analyze', ...args.slice(1)]);
     case 'usage':     return cmdUsage(args);
     case 'tirith':    return cmdTirith(args);
     case 'plugins':  return cmdPlugins(args);
