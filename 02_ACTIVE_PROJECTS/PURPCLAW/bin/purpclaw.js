@@ -2763,9 +2763,11 @@ async function cmdCost(args) {  const UP = (() => { try { return require('../lib
     return;
   }
 
-  // Default: cost calculator
-  const provider = args[0] || 'openai';
-  const model    = args[1] || 'gpt-4o';
+  // Default: cost calculator — read active model from env
+  const activeProvider = process.env.LLM_PROVIDER || process.env.PURPCLAW_PROVIDER || 'minimax';
+  const activeModel   = process.env.LLM_MODEL || process.env.MINIMAX_MODEL || 'MiniMax-M3';
+  const provider = args[0] || activeProvider;
+  const model    = args[1] || activeModel;
   const inputTok = parseInt(args[2] || '1000', 10);
   const outputTok= parseInt(args[3] || '500', 10);
   const result = UP.estimateCost(provider, model, { input_tokens: inputTok, output_tokens: outputTok });
@@ -5030,6 +5032,7 @@ function cmdHelp() {
     ['purpclaw bg "<task>"',           'Background dispatch — fire and forget'],
     ['purpclaw code status',           'Repo/GitHub tools: status, diff, issues, PRs, checks'],
     ['purpclaw llm',                   'Provider status: Claude, Gemini, OpenAI, Kimi, Ollama'],
+    ['purpclaw eval',                   'Run tests, LLM-fix loop, re-test until pass or max-iter'],
     ['purpclaw browser smoke [url]',   'Playwright open/read/screenshot tool surface'],
     ['purpclaw cognition smoke',       'Neuro-symbolic/modal/rules/diagnostics health + lift test'],
     ['purpclaw workflows',             'Show active and recent workflows'],
@@ -5104,6 +5107,8 @@ function cmdHelp() {
     ['purpclaw config',                'Interactive config editor (↑↓ arrow keys)'],
     ['purpclaw config show',           'Print current config values (secrets masked)'],
     ['purpclaw config set KEY val',    'Set a config key in .env directly'],
+    ['purpclaw apply-diff <file>',       'Parse + apply unified diff (--dry to preview)'],
+    ['purpclaw init-project <type> [name]', 'Scaffold project (node|react|python|rust|...)'],
     ['purpclaw policies',              'Show active governance policies'],
     ['purpclaw introspect',            'Runtime state summary'],
     ['purpclaw introspect risks',      'Live risk classification'],
@@ -5915,7 +5920,7 @@ async function cmdDoctors(args = []) {
   }
 
   // Re-dispatch --help for commands that handle it themselves (captured before STRIP_FLAGS stripped it)
-  const HELP_DELEGATE = new Set(['workflow', 'ask', 'llm', 'model', 'models', 'browser']);
+  const HELP_DELEGATE = new Set(['workflow', 'ask', 'llm', 'browser']);
   if (_helpDelegate && HELP_DELEGATE.has(_helpDelegate[0])) {
     const cmdPath = path.join(PURP_DIR, 'lib', 'commands', _helpDelegate[0] + '.js');
     // Force fresh load — cmdHelp() may have cached the old module this tick
@@ -6943,6 +6948,10 @@ async function cmdPlugins(args) {
     case 'delete':    return cmdDelete(args);
     case 'archive':   return cmdArchive(args, false);
     case 'unarchive': return cmdArchive(args, true);
+    case 'eval':
+    case 'eval:fix':  return loadCmd('eval-auto-fix').run(args, sharedCtx());
+    case 'apply-diff': return loadCmd('apply-diff').run(args, sharedCtx());
+    case 'init-project': return loadCmd('init-project').run(args, sharedCtx());
     case 'fork':      return cmdFork(args);
     case 'sandbox':   return cmdSandbox(args);
     case 'remote-control': return cmdRemoteControl(args);
@@ -8235,6 +8244,13 @@ async function cmdStatus(args) {
 // ── model — hot-swap provider/model, list, test, serve local GGUF
 async function cmdModel(args) {
   const sub = (args[0] || '').toLowerCase();
+  if (sub === '--help' || sub === '-h') {
+    console.log('\n  purpclaw model list              show all providers and active model');
+    console.log('  purpclaw model use <p>/<m>      hot-swap provider and model');
+    console.log('  purpclaw model test "<prompt>"   quick ping with active model');
+    console.log('  purpclaw model --help           this help\n');
+    return;
+  }
   const llm = require(path.join(PURP_DIR, 'lib', 'llm-provider'));
   const fs = require('fs');
 
@@ -8811,6 +8827,16 @@ async function runCouncilVotes(args) {
 
 // ── session management ─────────────────────────────────────────────────────
 async function cmdSession(args) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log('\n  purpclaw session list                   list recent sessions');
+    console.log('  purpclaw session new [title]           create a new session');
+    console.log('  purpclaw session open <id>             open a session by ID');
+    console.log('  purpclaw session delete <id>           delete a session');
+    console.log('  purpclaw session archive <id>          archive a session');
+    console.log('  purpclaw session unarchive <id>        restore an archived session');
+    console.log('  purpclaw session --help                this help\n');
+    return;
+  }
   const sub = (args[0] || 'list').toLowerCase();
   const work = require(path.join(PURP_DIR, 'lib', 'core', 'work-engine'));
   const fmt = (s) => s < 10 ? '0' + s : String(s);

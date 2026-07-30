@@ -153,6 +153,12 @@ async function run(args = [], ctx = {}) {
       console.log('Run `purpclaw workflow list` to see available workflows.');
       return 1;
     }
+    if (!spec.nodes || !spec.nodes.length) {
+      console.log(`Workflow "${spec.name || spec.id}" is registered but has no runnable nodes.`);
+      console.log("Runnable workflow specs (*.wf.json) are not yet authored.");
+      console.log('Run `purpclaw workflow list` to see registered workflows.');
+      return 1;
+    }
     // Parse key=value input args into context
     const input = {};
     for (const arg of args.slice(2)) {
@@ -160,28 +166,30 @@ async function run(args = [], ctx = {}) {
       if (eq > 0) input[arg.slice(0, eq)] = arg.slice(eq + 1);
     }
     const WF = require(path.join(PURP_DIR, 'lib', 'workflow-manager.js'));
+    const _col = ctx.col || ((_, v) => v);
+    const _C = ctx.C || {};
     const adapter = {
       prompt: async (input, node, run) => {
-        console.log(col(C.cyan, `  [prompt]`) + ` ${node.prompt?.substring(0, 80) || node.id}`);
+        console.log(_col(_C.cyan, `  [prompt]`) + ` ${node.prompt?.substring(0, 80) || node.id}`);
         return { ok: true, output: `[mock prompt: ${node.id}]` };
       },
       tool: async (tool, args, node, run) => {
-        console.log(col(C.yellow, `  [tool]`) + ` ${tool} ${JSON.stringify(args).substring(0, 60)}`);
+        console.log(_col(_C.yellow, `  [tool]`) + ` ${tool} ${JSON.stringify(args).substring(0, 60)}`);
         return { ok: true, output: `[mock tool: ${tool}]` };
       },
     };
-    console.log(`\n  Starting workflow: ${col(C.cyan, spec.name || spec.id)}`);
+    console.log(`\n  Starting workflow: ${_col(_C.cyan, spec.name || spec.id)}`);
     if (Object.keys(input).length) console.log(`  Input: ${JSON.stringify(input)}`);
     console.log('');
     try {
-      const result = await WF.runWorkflow(spec, adapter, { input, maxSteps: 200 });
-      const statusColour = { complete: C.green, failed: C.red, interrupted: C.yellow }[result.status] || C.cyan;
+      const result = await WF.run(spec, adapter, { input, maxSteps: 200 });
+      const statusColour = { complete: _C.green, failed: _C.red, interrupted: _C.yellow }[result.status] || _C.cyan;
       console.log(`\n  Status: ${statusColour}${result.status}${''}`);
-      if (result.error) console.log(`  Error: ${C.red}${result.error}${''}`);
+      if (result.error) console.log(`  Error: ${_C.red}${result.error}${''}`);
       console.log(`  Completed nodes: ${result.completed?.length || 0}`);
       return result.status === 'failed' ? 1 : 0;
     } catch (err) {
-      console.log(`  ${C.red}[X]${''} ${err.message}`);
+      console.log(`  ${_C.red}[X]${''} ${err.message}`);
       return 1;
     }
   }
