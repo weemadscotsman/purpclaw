@@ -7034,10 +7034,7 @@ async function cmdPlugins(args) {
       if (args[0] === 'cost-report') return cmdCost(['summary']);
       return cmdCost(args);
     case 'cost-report': return cmdCost(['summary']);
-    case 'cost-analyze':
-    case 'cost analyze': {
-      return cmdCost(['analyze', ...args]);
-    }
+    case 'cost-analyze': return cmdCost(['analyze', ...args]);
     case 'usage':     return cmdUsage(args);
     case 'tirith':    return cmdTirith(args);
     case 'plugins':  return cmdPlugins(args);
