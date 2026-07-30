@@ -239,6 +239,16 @@ function setPermission(op, value) {
 
 // ── Main entry ─────────────────────────────────────────────────────────────────
 async function run(args, ctx) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log('\n  purpclaw permissions --list            show current permission rules');
+    console.log('  purpclaw permissions --allow <op>     allow an operation');
+    console.log('  purpclaw permissions --disallow <op>  deny an operation');
+    console.log('  purpclaw permissions --reset          reset to defaults');
+    console.log('  purpclaw permissions --json          JSON output');
+    console.log('  purpclaw permissions                 interactive TUI editor');
+    console.log('  Operations: file_write, shell_exec, network, agent_spawn\n');
+    return;
+  }
   const flags = args.filter(a => a.startsWith('--'));
   const ops   = args.filter(a => !a.startsWith('--'));
 

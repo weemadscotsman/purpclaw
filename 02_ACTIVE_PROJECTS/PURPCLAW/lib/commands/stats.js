@@ -11,7 +11,20 @@
  *   purpclaw stats --json          # machine-readable output
  */
 
-const { append, list, DB } = require('../event-ledger');
+const path = require('path');
+const { DatabaseSync } = require('node:sqlite');
+const DB_PATH = process.env.PURPCLAW_SESSION_DB || path.join(path.resolve(__dirname, '..', '..'), '.purpclaw', 'state.db');
+let _DB = null;
+function getDB() {
+  if (!_DB) {
+    const { mkdirSync } = require('node:fs');
+    mkdirSync(path.dirname(DB_PATH), { recursive: true });
+    _DB = new DatabaseSync(DB_PATH);
+    _DB.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;`);
+  }
+  return _DB;
+}
+const DB = { prepare: (sql) => getDB().prepare(sql) };
 
 const TOOL_TYPES = ['tool.start', 'tool.complete', 'tool_error', 'tool_warn'];
 const SESSION_TYPES = ['session.started', 'session.ended', 'message.complete'];
