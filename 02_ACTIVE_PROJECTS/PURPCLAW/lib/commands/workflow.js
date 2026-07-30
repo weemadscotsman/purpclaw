@@ -15,28 +15,159 @@ function printWorkflow(w, ctx = {}) {
   console.log(`  Next: ${(w.next || []).join(', ')}`);
 }
 
+function printRun(run, ctx = {}) {
+  const C = ctx.C || {};
+  const col = ctx.col || ((_, value) => value);
+  const statusColour = {
+    running    : C.cyan,
+    completed  : C.green,
+    failed     : C.red,
+    interrupted: C.yellow,
+    created    : C.gray,
+  }[run.status] || C.gray;
+  const age = run.created_at
+    ? `${Math.round((Date.now() - new Date(run.created_at).getTime()) / 1000)}s ago`
+    : '';
+  console.log(`  ${col(statusColour, (run.status || '—').padEnd(12))}  ${col(C.bold, (run.run_id || '—').padEnd(28))}  ${col(C.gray, age)}`);
+  if (run.error) console.log(`     ${col(C.red, run.error.substring(0, 80))}`);
+}
+
 async function run(args = [], ctx = {}) {
   const PURP_DIR = ctx.PURP_DIR || path.resolve(__dirname, '..', '..');
-  const reg = require(path.join(PURP_DIR, 'lib', 'workflow-registry.js'));
-  const json = args.includes('--json');
-  const id = args.find(a => !a.startsWith('--') && a !== 'list');
-  const workflows = id ? [reg.findWorkflow(id)].filter(Boolean) : reg.listWorkflows();
-  const report = {
-    schema: 'purpclaw.workflow-registry.report.v1',
-    count: workflows.length,
-    workflows,
-  };
-  if (json) {
-    console.log(JSON.stringify(report, null, 2));
+  const sub = (args[0] || '').toLowerCase();
+
+  // ── purpclaw workflow ──────────────────────────────────────────────────────
+  // (no sub = show available workflow definitions)
+  if (!sub || sub === 'list') {
+    const reg = require(path.join(PURP_DIR, 'lib', 'workflow-registry.js'));
+    const json = args.includes('--json');
+    const id = args.find(a => !a.startsWith('--') && a !== 'list');
+    const workflows = id ? [reg.findWorkflow(id)].filter(Boolean) : reg.listWorkflows();
+    const report = {
+      schema: 'purpclaw.workflow-registry.report.v1',
+      count: workflows.length,
+      workflows,
+    };
+    if (json) {
+      console.log(JSON.stringify(report, null, 2));
+      return report;
+    }
+    if (!workflows.length) {
+      console.log(`Workflow not found: ${id}`);
+      return report;
+    }
+    for (const w of workflows) printWorkflow(w, ctx);
+    console.log('');
     return report;
   }
-  if (!workflows.length) {
-    console.log(`Workflow not found: ${id}`);
-    return report;
+
+  // ── purpclaw workflow runs ─────────────────────────────────────────────────
+  if (sub === 'runs') {
+    const WF = require(path.join(PURP_DIR, 'lib', 'workflow-manager.js'));
+    const limit = Math.min(parseInt(args.find(a => a.startsWith('--limit='))?.split('=')[1] || '20'), 200);
+    const runs = WF.list(limit);
+    console.log('');
+    console.log(`  ${(ctx.C?.bold || '') + (ctx.C?.cyan || '')}Recent workflow runs${''}`);
+    console.log(`  Status         Run ID                          Age`);
+    console.log('  ' + '-'.repeat(60));
+    if (!runs.length) {
+      console.log(`  ${ctx.C?.gray || ''}No workflow runs found.${''}`);
+    } else {
+      for (const r of runs) printRun(r, ctx);
+    }
+    console.log('');
+    return { schema: 'purpclaw.workflow.runs.v1', runs };
   }
-  for (const w of workflows) printWorkflow(w, ctx);
-  console.log('');
-  return report;
+
+  // ── purpclaw workflow resume <runId> [--approve|--deny] ─────────────────────
+  if (sub === 'resume') {
+    const runId = args[1];
+    if (!runId) {
+      console.log('Usage: purpclaw workflow resume <runId> [--approve|--deny]');
+      console.log('       purpclaw workflow runs          # list recent runs');
+      return 1;
+    }
+
+    const approve = args.includes('--approve');
+    const deny   = args.includes('--deny');
+    const decision = approve ? 'approve' : deny ? 'deny' : null;
+
+    const WF = require(path.join(PURP_DIR, 'lib', 'workflow-manager.js'));
+    const AQ = (() => { try { return require(path.join(PURP_DIR, 'lib', 'approval-queue.js')); } catch { return null; } })();
+
+    const run = WF.get(runId);
+    if (!run) {
+      console.log(`Workflow run not found: ${runId}`);
+      return 1;
+    }
+
+    // Resolve approval if one is pending and a decision was given
+    if (decision && AQ && run.context?.__approval_id) {
+      const ok = AQ.resolveApproval(run.context.__approval_id, decision);
+      if (!ok) {
+        console.log(`  ⚠ Could not resolve approval ${run.context.__approval_id} — may already be resolved.`);
+      } else {
+        console.log(`  ✓ ${decision === 'approve' ? 'Approved' : 'Denied'}: ${run.context.__approval_id}`);
+      }
+      // Set resume value on the run context so the approval node branches correctly
+      run.context.__resume_value_approved = approve;
+      run.context.__resume_value = run.context.__approval_id;
+    } else if (!decision && run.status === 'interrupted') {
+      console.log(`  Workflow is interrupted. Use --approve or --deny to resume.`);
+      console.log(`  Pending approval: ${run.context?.__approval_id || 'unknown'}`);
+      return 1;
+    }
+
+    // Minimal adapter for resume (no-op — resume doesn't re-execute nodes)
+    const adapter = {
+      async prompt(input, node, run) { return { prompt: input }; },
+      async tool(tool, args, node, run) { return { tool, args }; },
+    };
+
+    console.log(`  Resuming ${runId}…`);
+    const result = await WF.resume(runId, adapter, {
+      resumeValue: run.context.__approval_id,
+    });
+
+    const statusColour = {
+      completed  : ctx.C?.green,
+      failed     : ctx.C?.red,
+      interrupted: ctx.C?.yellow,
+    }[result.status] || ctx.C?.cyan;
+    console.log(`\n  Status: ${statusColour || ''}${result.status}${''}`);
+    if (result.error) console.log(`  Error: ${ctx.C?.red || ''}${result.error}${''}`);
+    console.log(`  Completed nodes: ${result.completed?.length || 0}`);
+    return result.status === 'failed' ? 1 : 0;
+  }
+
+  // ── purpclaw workflow history <runId> ───────────────────────────────────────
+  if (sub === 'history') {
+    const runId = args[1];
+    if (!runId) {
+      console.log('Usage: purpclaw workflow history <runId>');
+      return 1;
+    }
+    const WF = require(path.join(PURP_DIR, 'lib', 'workflow-manager.js'));
+    const checkpoints = WF.history(runId);
+    console.log('');
+    console.log(`  Checkpoints for ${runId}`);
+    console.log('  ' + '-'.repeat(60));
+    if (!checkpoints.length) {
+      console.log(`  No checkpoints found.`);
+    } else {
+      for (const cp of checkpoints) {
+        const colour = { started: ctx.C?.cyan, completed: ctx.C?.green, failed: ctx.C?.red, interrupted: ctx.C?.yellow }[cp.status] || ctx.C?.gray;
+        console.log(`  ${colour || ''}[${cp.status.padEnd(12)}]  node=${cp.node_id}  id=${cp.id}  ${cp.created_at}${''}`);
+      }
+    }
+    console.log('');
+    return { schema: 'purpclaw.workflow.history.v1', runId, checkpoints };
+  }
+
+  // Unknown subcommand
+  console.log(`Unknown workflow subcommand: ${sub}`);
+  console.log('Usage: purpclaw workflow [list|runs|resume|history]');
+  return 1;
 }
 
 module.exports = { run };
