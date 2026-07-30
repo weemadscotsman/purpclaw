@@ -8900,6 +8900,50 @@ async function cmdSession(args) {
     return;
   }
 
+  if (sub === 'search') {
+    const query = args.slice(1).join(' ');
+    if (!query) { console.log(`\n${col(C.red, 'Usage:')} purpclaw session search <query>\n`); return; }
+    const results = work.searchSessions(query, 20);
+    if (!results.length) { console.log(`\n  ${col(C.gray, 'No sessions match:')} ${query}\n`); return; }
+    console.log(`\n${col(C.bold, 'Session Search:')} "${query}"\n`);
+    for (const s of results) {
+      console.log(`  ${col(C.cyan, s.id)}  ${s.title || 'Untitled'}  ${s.provider||''} ${s.model||''}`);
+      if (s.updatedAt) console.log(`    updated: ${s.updatedAt}`);
+    }
+    console.log(`\n  ${results.length} result(s)\n`);
+    return;
+  }
+
+  if (sub === 'rename') {
+    const id = args[1];
+    const newTitle = args.slice(2).join(' ');
+    if (!id || !newTitle) { console.log(`\n${col(C.red, 'Usage:')} purpclaw session rename <id> <new-title>\n`); return; }
+    const result = work.renameSession(id, newTitle);
+    if (!result) { console.log(`\n${col(C.red, '[X]')} Session not found: ${id}\n`); return; }
+    console.log(`\n${col(C.green, '[OK]')} Renamed to: ${newTitle}\n`);
+    return;
+  }
+
+  if (sub === 'fork' || sub === 'branch') {
+    const id = args[1] || work.getCurrentSessionId();
+    if (!id) { console.log(`\n${col(C.red, 'No session. Specify:')} purpclaw session fork <id>\n`); return; }
+    const s = work.loadSession(id);
+    if (!s) { console.log(`\n${col(C.red, '[X]')} Session not found: ${id}\n`); return; }
+    const newS = work.branchSession(id, { title: (s.title || 'branch') + ' (fork)' });
+    console.log(`\n${col(C.green, '[OK]')} Forked session\n`);
+    console.log(`  from:  ${id}  ${s.title}\n`);
+    console.log(`  to:    ${col(C.cyan, newS.id)}  ${newS.title}\n`);
+    return;
+  }
+
+  if (sub === 'close') {
+    const id = args[1] || work.getCurrentSessionId();
+    if (!id) { console.log(`\n${col(C.red, 'No session. Specify:')} purpclaw session close <id>\n`); return; }
+    work.closeSession(id, 'user-close');
+    console.log(`\n${col(C.green, '[OK]')} Session closed: ${id}\n`);
+    return;
+  }
+
   // Help / unknown subcommand
   console.log(`\n${col(C.bold, 'purpclaw session')}\n`);
   console.log(`  ${col(C.cyan, 'purpclaw session list')}              list all sessions`);
@@ -8907,6 +8951,10 @@ async function cmdSession(args) {
   console.log(`  ${col(C.cyan, 'purpclaw session new <title>')}      create named session`);
   console.log(`  ${col(C.cyan, 'purpclaw session open <id>')}        switch to session`);
   console.log(`  ${col(C.cyan, 'purpclaw session current')}           show current session`);
+  console.log(`  ${col(C.cyan, 'purpclaw session search <q>')}        search sessions`);
+  console.log(`  ${col(C.cyan, 'purpclaw session rename <id> <t>')}   rename session`);
+  console.log(`  ${col(C.cyan, 'purpclaw session fork <id>')}         fork/branch session`);
+  console.log(`  ${col(C.cyan, 'purpclaw session close <id>')}       close session`);
   console.log(`  ${col(C.cyan, 'purpclaw session delete <id>')}      delete session`);
   console.log(`  ${col(C.cyan, 'purpclaw session export [id]')}       export session JSON\n`);
 }
