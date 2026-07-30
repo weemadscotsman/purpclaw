@@ -293,16 +293,10 @@ module.exports = {
     {
       name: 'purpclaw-nextjs',
       script: './node_modules/next/dist/bin/next',
-      // PROD mode (2026-06-09): dev mode ate 1GB RAM + froze Eddie's box. The
-      // megapanel + react-force-graph-3d is too heavy for uncompiled dev. Build
-      // first with `next build` (or `npm run build`), then this runs `start`
-      // on port 3030. To go back to dev: revert args to 'dev -p 3030 -H 127.0.0.1'
-      // and skip the build step.
-      // BIND 127.0.0.1 ONLY (2026-06-22): default Next.js binds 0.0.0.0,
-      // exposing /mission on 192.168.55.225 to anyone on the LAN. Violates
-      // the local-only privacy policy. -H 127.0.0.1 keeps it on loopback.
-      args: 'start -p 3030 -H 127.0.0.1',
-      env: { NODE_ENV: 'production' },
+      // DEV mode (2026-07-30): production build broken — switched to dev mode
+      // until BUILD_ID issue is resolved.
+      args: 'dev -p 3030 -H 127.0.0.1',
+      env: { NODE_ENV: 'development' },
       cwd: './',
       exec_mode: 'fork',
       wait_ready: false,

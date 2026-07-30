@@ -2678,8 +2678,7 @@ async function cmdArchetypes(args) {
 }
 
 // ── cost ──────────────────────────────────────────────────────────────────────
-async function cmdCost(args) {
-  const UP = (() => { try { return require('../lib/usage-pricing'); } catch { return null; } })();
+async function cmdCost(args) {  const UP = (() => { try { return require('../lib/usage-pricing'); } catch { return null; } })();
   if (!UP) { console.log('\n[X] usage-pricing not available\n'); return; }
 
   const sub = (args[0] || 'calc').toLowerCase();
@@ -6967,12 +6966,17 @@ async function cmdPlugins(args) {
     case 'curator':   return cmdCurator(args);
     case 'approvals': return cmdApprovals(args);
     case 'cost':
+
       // cost with no sub → summary; cost report/analyze/summary handled by sub
-      if (!args[1] || args[1] === 'report' || args[1] === 'summary') return cmdCost(['summary']);
-      if (args[1] === 'analyze' || args[1] === 'cost-analyze') return cmdCost(['analyze', ...args.slice(2)]);
-      return cmdCost(args.slice(1));
+      if (args[0] === 'analyze') return cmdCost(['analyze', ...args.slice(1)]);
+      if (args[0] === 'report' || args[0] === 'summary') return cmdCost(['summary']);
+      if (args[0] === 'cost-report') return cmdCost(['summary']);
+      return cmdCost(args);
     case 'cost-report': return cmdCost(['summary']);
-    case 'cost-analyze': return cmdCost(['analyze', ...args.slice(1)]);
+    case 'cost-analyze':
+    case 'cost analyze': {
+      return cmdCost(['analyze', ...args]);
+    }
     case 'usage':     return cmdUsage(args);
     case 'tirith':    return cmdTirith(args);
     case 'plugins':  return cmdPlugins(args);
