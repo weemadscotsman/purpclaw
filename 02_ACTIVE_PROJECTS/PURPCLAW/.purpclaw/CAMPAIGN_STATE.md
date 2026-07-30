@@ -284,3 +284,38 @@ These are NOT within PURPCLAW's codebase. Do NOT treat as P0 workitems for Wave 
 - Live test: purpclaw ask --help boots (516 tools, 381 skills). purpclaw ask --new creates session.
 - Gate: ✅ PASSING at HEAD
 - NOT committed: MissionControl.tsx (DataAnalysisPanel add — visual review needed), AUDIT_WAVE1_UNIFIED_RUNTIME.md (stale FAIL verdicts from pre-fix state; live gate passes; doc needs regeneration), EVIDENCE_P0B_PERMISSIONS.md (minor authority line addition)
+## 2026-07-30 mid-session (main session — Wave 2 start)
+
+| # | Role | Model | Task | Status |
+|---|------|-------|------|--------|
+| — | Chief (main session) | MiniMax-M2.7 | Wave 2 parity work; fix Next.js stubs + API gateway | ✅ DONE |
+
+**Services status at session open:**
+- 8/9 core services offline (API :7780 missing — recovered via `node unified_api.js`)
+- Next.js dev server (:3030) stuck on EPERM build + missing module stubs
+
+**Actions taken:**
+1. ✅ Created `lib/parity/hooks/engine.js` — proxy to `parity/hooks/engine` at repo root
+2. ✅ Created `lib/event-bus.js` — proxy to `unified_eventbus`
+3. ✅ Brought API Gateway :7780 online (background `node unified_api.js`)
+4. ✅ Next.js dev server (:3030) confirmed 200 at /mission
+5. ✅ All 9 core services now online
+6. ✅ Committed `04ad13d` on branch `canonical-parity-clean-v2`
+
+**Wave 2 readiness audit (static):**
+- P1-6 ✅ Skills/commands/hooks/plugins: skill-registry + plugin-manager solid (146+387 lines)
+- P1-7 ✅ Multi-agent: worktree command working, isolated plugin support
+- P1-8 🔶 Workflow engine: checkpoint/resume/fork all implemented, but approval checkpoint integration incomplete
+- P1-9 ✅ Evidence system: proof-ledger UI exists, evidence docs per-P0, parity-authority-check passes
+- P1-10 🔶 Desktop command centre: mission UI live, but skyscraper not verified
+
+**Known gaps:**
+- Production Next.js build (EPERM on Application Data — Windows path issue, dev server works)
+- Cognitive spine health check targets wrong port (:7880 vs actual coordinator on :7898)
+- `lib/hivemind/skill-loader.js` — not yet audited for P1-6 skill loading integration
+
+**Next:**
+- P1-8 approval checkpoint integration — workflow interrupt nodes should pause for approval
+- P1-10 Mission UI full verification — /mission, /dash, /skyscraper
+- Wave 2 campaign delegation via subagents
+
