@@ -319,3 +319,21 @@ These are NOT within PURPCLAW's codebase. Do NOT treat as P0 workitems for Wave 
 - P1-10 Mission UI full verification — /mission, /dash, /skyscraper
 - Wave 2 campaign delegation via subagents
 
+
+## Session 2026-07-30 — Wave 2 parity fixes
+
+Chief (this session): MiniMax-M3, MiniMax provider.
+
+| Commit | What | Evidence |
+|--------|------|----------|
+| `c779158` | purpclaw cost analyze subcommand + TOOLS→TOOL_DEFINITIONS fix in unified_api | CLI `cost summary` + `ask --help` both boot clean |
+| `288009b` | agent_tower: runAgent→runAgentRouted (routing/fallback/lifecycle parity with CLI/web) | syntax clean, audit Finding A addressed |
+| `61bc51b` | LIFECYCLE+PARITY_HOOKS unify into single bus; LIFECYCLE gains emit() | syntax clean, audit Finding F addressed |
+| `3afa560` | session archive/unarchive commands + session-repository backing | CLI shows both in `session --help` |
+| `c779158` | TOOLS variable doesn't exist in unified_api; fix to TOOL_DEFINITIONS | Would have crashed tools/list RPC |
+
+**Wave 2 remaining:**
+- P1-8: approval checkpoint integration
+- P1-10: Mission UI full verification (/mission, /dash, /skyscraper)
+- P2-4: multi-agent session isolation (fork)
+- P2-8: agent/hook/archive CLI commands
