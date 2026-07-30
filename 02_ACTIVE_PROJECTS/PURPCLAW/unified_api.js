@@ -29,6 +29,7 @@ const WebSocket = require('ws');
 const os = require('os');
 
 const AGENT_TOWER = require('./agent_tower.js');
+const SESSION_REPOSITORY = require('./lib/session-repository');
 
 // ── LLM provider for unified backend access ──
 const LLM = require('./lib/llm-provider');
@@ -3086,26 +3087,54 @@ const server = http.createServer(async (req, res) => {
     // ── Sessions API ──────────────────────────────────────────────────
     if (pathname === '/api/sessions' && method === 'GET') {
       try {
-        const S = require('./lib/session-store');
-        const list = S.listSessions(100);
+        const limit = Math.max(1, Math.min(Number(parsedUrl.searchParams.get('limit')) || 100, 500));
+        const list = SESSION_REPOSITORY.listSessions(limit);
         return sendJson(res, 200, { ok: true, sessions: list });
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
 
     if (pathname === '/api/sessions' && method === 'POST') {
       try {
-        const S = require('./lib/session-store');
-        const body = await parseBody(req);
-        const session = S.createSession((body && body.title) || 'Untitled', (body && body.provider) || '', (body && body.model) || '');
+        const body = await parseBody(req) || {};
+        const title = typeof body.title === 'string' ? body.title : 'Untitled';
+        const provider = typeof body.provider === 'string' ? body.provider : '';
+        const model = typeof body.model === 'string' ? body.model : '';
+        const requestedId = typeof body.id === 'string' && body.id.trim() ? body.id.trim() : '';
+        let session = requestedId ? SESSION_REPOSITORY.loadSession(requestedId) : null;
+        if (!session) {
+          session = SESSION_REPOSITORY.createSession(title, provider, model, {
+            ...(requestedId ? { id: requestedId } : {}),
+            source: 'api',
+          });
+        }
+        if (Array.isArray(body.messages)) {
+          session = SESSION_REPOSITORY.saveSession(session.id, body.messages, {
+            title,
+            provider,
+            model,
+            source: session.source || 'api',
+          });
+        }
         return sendJson(res, 200, { ok: true, session });
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
 
     if (pathname.startsWith('/api/sessions/') && method === 'GET') {
       try {
-        const id = pathname.split('/api/sessions/')[1];
-        const S = require('./lib/session-store');
-        const session = S.loadSession(id);
+        const id = decodeURIComponent(pathname.slice('/api/sessions/'.length));
+        const session = SESSION_REPOSITORY.loadSession(id);
+        if (!session) return sendJson(res, 404, { error: 'session not found' });
+        return sendJson(res, 200, { ok: true, session });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
+    if (pathname.startsWith('/api/sessions/') && method === 'PATCH') {
+      try {
+        const id = decodeURIComponent(pathname.slice('/api/sessions/'.length));
+        const body = await parseBody(req) || {};
+        const title = typeof body.title === 'string' ? body.title.trim() : '';
+        if (!title) return sendJson(res, 400, { error: 'missing title' });
+        const session = SESSION_REPOSITORY.renameSession(id, title);
         if (!session) return sendJson(res, 404, { error: 'session not found' });
         return sendJson(res, 200, { ok: true, session });
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
@@ -3113,9 +3142,8 @@ const server = http.createServer(async (req, res) => {
 
     if (pathname.startsWith('/api/sessions/') && method === 'DELETE') {
       try {
-        const id = pathname.split('/api/sessions/')[1];
-        const S = require('./lib/session-store');
-        const result = S.deleteSession(id);
+        const id = decodeURIComponent(pathname.slice('/api/sessions/'.length));
+        const result = SESSION_REPOSITORY.deleteSession(id);
         return sendJson(res, 200, { ok: true, ...result });
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }

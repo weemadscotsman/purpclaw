@@ -32,14 +32,30 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   let body: any = {};
   try { body = await req.json(); } catch {}
-  const messages = Array.isArray(body.messages) ? body.messages : [];
   const provider = typeof body.provider === 'string' ? body.provider : '';
   const model = typeof body.model === 'string' ? body.model : '';
   const title = typeof body.title === 'string' ? body.title : 'New Chat';
-  const id = typeof body.id === 'string' && body.id.trim()
-    ? body.id.trim()
-    : store().createSession(title, provider, model, { source: 'web' }).id;
-  const session = store().saveSession(id, messages, { title, provider, model, source: 'web' });
-  trace('save_session', session ? 'ok' : 'error', `${messages.length} message(s)`, id);
+  const requestedId = typeof body.id === 'string' && body.id.trim() ? body.id.trim() : '';
+  let session = requestedId ? store().loadSession(requestedId) : null;
+  if (!session) {
+    session = store().createSession(title, provider, model, {
+      ...(requestedId ? { id: requestedId } : {}),
+      source: 'web',
+    });
+  }
+  if (Array.isArray(body.messages)) {
+    session = store().saveSession(session.id, body.messages, {
+      title,
+      provider,
+      model,
+      source: session.source || 'web',
+    });
+  }
+  trace(
+    Array.isArray(body.messages) ? 'save_session' : 'create_session',
+    session ? 'ok' : 'error',
+    `${session?.messageCount || 0} message(s)`,
+    session.id
+  );
   return NextResponse.json({ ok: !!session, session });
 }
