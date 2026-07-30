@@ -28,7 +28,7 @@ const DB = { prepare: (sql) => getDB().prepare(sql) };
 
 const TOOL_TYPES = ['tool.start', 'tool.complete', 'tool_error', 'tool_warn'];
 const SESSION_TYPES = ['session.started', 'session.ended', 'message.complete'];
-const PERM_TYPES  = ['approval.request', 'approval.granted', 'approval.denied', 'approval.timeout'];
+const PERM_TYPES  = ['approval.request', 'approval.granted', 'approval.denied', 'approval.timeout', 'approval.auto'];
 const COMPACT_TYPES = ['context.compressed'];
 
 function query(sql, params = []) {
@@ -78,13 +78,13 @@ function permissionStats() {
   const rows = query(`
     SELECT type, COUNT(*) as count
     FROM agent_events
-    WHERE type IN (?, ?, ?, ?)
+    WHERE type IN (?, ?, ?, ?, ?)
     GROUP BY type
   `, PERM_TYPES);
 
   const map = Object.fromEntries(rows.map(r => [r.type, r.count]));
   const requested = map['approval.request'] || 0;
-  const granted   = map['approval.granted'] || 0;
+  const granted   = (map['approval.granted'] || 0) + (map['approval.auto'] || 0);
   const denied    = map['approval.denied']  || 0;
   const timedOut  = map['approval.timeout'] || 0;
   const grantedRate = requested ? Math.round((granted / requested) * 100) : 0;
