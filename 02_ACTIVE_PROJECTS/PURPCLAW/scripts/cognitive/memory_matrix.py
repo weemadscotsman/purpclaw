@@ -628,9 +628,7 @@ class LongTermMemory:
                  atoms_list[0][0] if atoms_list else None,
                  atoms_list[-1][0] if atoms_list else None)
         if self._vec_matrix is not None and self._vec_stamp == stamp:
-            print(f"[MEMv2] vec_cache HIT (stamp ok, n={len(self._vec_ids)})")
             return
-        print(f"[MEMv2] vec_cache MISS — rebuilding for n={len(atoms_list)}")
 
         # Fast path: same prefix, only appends since last build.
         cached_n = len(self._vec_ids) if self._vec_ids else 0
@@ -693,7 +691,20 @@ class LongTermMemory:
         if q_norm == 0 or query.shape[0] != matrix.shape[1]:
             return []
 
-        sims = (matrix @ query) / (norms * q_norm)
+        if matrix.shape[0] != len(ids) or matrix.shape[0] != norms.shape[0]:
+            # Cache was invalidated (e.g. atoms added during auto-recall). Rebuild.
+            self._ensure_vec_cache(list(self.atoms.items()))
+            matrix, ids, norms = self._vec_matrix, self._vec_ids, self._vec_norms
+
+        try:
+            sims = (matrix @ query) / (norms * q_norm)
+        except ValueError as e:
+            # Last resort: dimensions still don't match after rebuild.
+            # Log and return empty rather than crash the server.
+            sys.stderr.write(f"[memory_matrix] search_similar matmul dimension error: {e} "
+                             f"matrix={matrix.shape} norms={norms.shape} query={query.shape}\n")
+            sys.stderr.flush()
+            return []
 
         by_id = dict(atoms_list)
         results = []
@@ -1095,8 +1106,11 @@ class MemoryMatrix:
             source=source
         )
 
-        # Trigger auto-recall evaluation
-        self._trigger_auto_recall(content)
+        # Trigger auto-recall evaluation (non-blocking — errors don't bubble)
+        try:
+            self._trigger_auto_recall(content)
+        except Exception:
+            pass
 
         return atom_id
 
@@ -1125,7 +1139,6 @@ class MemoryMatrix:
         """Check if current content triggers any auto-recalls."""
         embedding = self.embedder.encode(content)
         quantized = QuantizedMemory.quantize(embedding)
-        print(f"[MEMv2] recall: quantized done, atoms={len(self.long_term.atoms)}")
 
         recalls = self.long_term.auto_recall(quantized, threshold=0.72)
 
