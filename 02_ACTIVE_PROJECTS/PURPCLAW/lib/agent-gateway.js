@@ -33,7 +33,7 @@ const PIPELINES = require('./component-pipeline');
 const PROGRAMS = require('./program-optimizer');
 const COMPONENT_AGENTS = require('./agent-component');
 const SCOPED_STATE = require('./session-state-service');
-const INSTRUCTIONS = (() => { try { return require('./instruction-resolver'); } catch { return { resolve: (t, c) => t }; } })();
+const INSTRUCTIONS = require('./instruction-resolver');
 const INVOCATIONS = require('./invocation-manager');
 const GRAPHS = require('./graph-runtime');
 const TASKS = require('./task-manager');

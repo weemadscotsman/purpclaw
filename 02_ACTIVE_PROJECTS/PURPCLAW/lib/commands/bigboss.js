@@ -265,13 +265,13 @@ const COMMANDS = {
     return 'usage: jobs list | retry <id>';
   }, desc: 'Kernel job management: jobs list | retry <id>' },
   reset:      { run: async () => {
-    const sn = ( (() => { try { return require('../smith-neo'); } catch { return { smith: { inject:()=>({injected:false}), randomAttack:()=>null }, neo: { stabilize:()=>({stabilized:false}), ledger:()=>[] } }; } })() );
+    const sn = require('../smith-neo');
     const r = sn.neo.reset();
     return r.message;
   }, desc: 'Reset the Smith-Neo chaos ledger' },
   chaos:     { run: async (args) => {
     const cc = require('../chaos-campaign');
-    const sn = ( (() => { try { return require('../smith-neo'); } catch { return { smith: { inject:()=>({injected:false}), randomAttack:()=>null }, neo: { stabilize:()=>({stabilized:false}), ledger:()=>[] } }; } })() );
+    const sn = require('../smith-neo');
     const mc = require('../memory-consistency');
     const [sub, ...rest] = args.trim().split(/\s+/);
     if (sub === 'inject') return JSON.stringify(sn.smith.inject(rest[0] || 'refusal', {}), null, 2);

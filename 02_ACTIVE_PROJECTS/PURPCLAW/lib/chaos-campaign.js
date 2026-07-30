@@ -9,9 +9,7 @@
  * The goal: prove PurpClaw survives itself.
  */
 
-const _smithNeo = (() => { try { return require('./smith-neo'); } catch { return { smith: { inject: () => ({ injected: false, technique: null }), randomAttack: () => null }, neo: { stabilize: () => ({ stabilized: false }), ledger: () => [] } }; } })();
-const smith = _smithNeo.smith;
-const neo = _smithNeo.neo;
+const { smith, neo } = require('./smith-neo');
 const fs = require('fs');
 const path = require('path');
 

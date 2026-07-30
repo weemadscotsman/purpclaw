@@ -102,8 +102,7 @@ async function preflightChecks() {
 
   // ── 8. Self-evolution loop ──────────────────────────────────────────────────
   try {
-    const _sel = (() => { try { return require(path.join(PURP_DIR, 'lib', 'self-evolution-loop')); } catch { return { status: () => ({ running: false }), reset: () => {} }; } })();
-const sel = _sel;
+        const sel = require(path.join(PURP_DIR, 'lib', 'self-evolution-loop'));
     const selStatus = sel.getStatus ? sel.getStatus() : {};
     add('self-evolution-loop', true, selStatus.running ? 'running' : 'idle');
   } catch {
