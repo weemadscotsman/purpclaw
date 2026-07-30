@@ -27,6 +27,9 @@ const path = require('path');
 const crypto = require('crypto');
 const async_hooks = require('async_hooks');
 const { URL } = require('url');
+const { append: ledgerAppend } = (() => {
+  try { return require('./event-ledger.js'); } catch { return { append: () => {} }; }
+})();
 
 // ── State dir & paths ─────────────────────────────────────────────────────────
 
@@ -411,6 +414,13 @@ async function requestApproval(sessionKey, tool, command, description) {
 
   const detection = detectDangerousCommand(command);
   if (!detection.isDangerous) {
+    // Log auto-approvals so stats shows them
+    try {
+      ledgerAppend('approval.auto', {
+        sessionId: sessionKey || null, tool: tool || 'terminal',
+        command, reason: detection.description || 'not dangerous',
+      });
+    } catch {}
     return 'auto_approved';
   }
 
@@ -492,6 +502,16 @@ async function resolveApproval(approvalId, resolution, resolvedBy) {
   queue.approvals[idx].resolution = resolution;
   queue.approvals[idx].resolvedBy = resolvedBy || null;
   _writeQueue(queue);
+
+  // Log to event ledger
+  try {
+    const ledgerType = normalizedResolution === 'approved' ? 'approval.granted' : 'approval.denied';
+    ledgerAppend(ledgerType, {
+      approvalId, sessionId: queue.approvals[idx].sessionKey || null,
+      tool: queue.approvals[idx].tool, command: queue.approvals[idx].command,
+      resolution, decidedBy: resolvedBy || null,
+    });
+  } catch {}
 
   // Wake up any waiter
   const pending = _pendingEvents.get(approvalId);

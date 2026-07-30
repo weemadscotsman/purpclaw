@@ -41,12 +41,12 @@ web with identical tools, permissions, and history
 | Agent loop | **FAIL** | The CLI default uses `AgentGateway` (`lib/commands/ask.js:950`, `lib/commands/ask.js:1032`), but a legacy CLI branch calls `runAgentRouted` directly (`lib/commands/ask.js:1049`, `lib/commands/ask.js:1069`). Unified API calls `runAgentRouted` directly (`unified_api.js:503`, `unified_api.js:4411`), and Agent Tower calls `runAgent` directly (`agent_tower.js:281`). |
 | Tool registry and permission engine | **FAIL** | Canonical gateway execution constructs a `ToolRuntime` (`lib/agent-gateway.js:192`, `lib/agent-gateway.js:193`). Unified API still has dynamic-skill execution before the gate (`unified_api.js:1143`), an opt-out legacy path (`unified_api.js:1177`), and a large direct-dispatch fallback list (`unified_api.js:1121`, `unified_api.js:1165`). Read-only chat filtering is not enforced (Finding B). |
 | Provider layer | **PARTIAL** | Routed agents share `routing-decisions` and `llm-provider`; explicit providers now win (`lib/agent-router.js:52`, `lib/llm-provider.js:1191`, `lib/llm-provider.js:1337`). A second provider-router remains for status/settings surfaces (`lib/runtime/provider-router.js:71`, `app/api/providers/route.ts:29`) and is not the execution router. |
-| Session store | **FAIL** | Gateway and CLI ask use `session-repository` (`lib/agent-gateway.js:4`, `lib/commands/ask.js:27`). The web sessions route uses `session-store` (`app/api/sessions/route.ts:8`), while chat history also uses the spine sidecar (`app/api/chat/route.ts:222`, `lib/spine/session-store.js:36`). |
+| Session store | **PASS** | Gateway and CLI ask use `session-repository` (`lib/agent-gateway.js:4`, `lib/commands/ask.js:27`). Next.js sessions import it directly (`app/api/sessions/route.ts:8`), Unified API lifecycle routes use the same repository (`unified_api.js:32`, `unified_api.js:3091`), and the spine compatibility adapter delegates to it (`lib/spine/session-store.js:8`, `lib/spine/session-store.js:16`). |
 | Skills | **PARTIAL** | The main agent path exposes its registry through `ToolRuntime.catalog` (`lib/tool-runtime.js:36`), but Unified API can execute separately loaded dynamic skills before `ToolRuntime` (`unified_api.js:1143`). |
 | Hooks | **FAIL** | The agent loop emits to two independent buses (`lib/agent-loop.js:35`, `lib/agent-loop.js:36`) and bypass paths do not gain gateway-level behavior. |
 | Memory | **FAIL / UNKNOWN convergence** | The loop independently wires scoped memory, cognitive client, and memory client (`lib/agent-loop.js:42`, `lib/agent-loop.js:74`, `lib/agent-loop.js:75`). No proof establishes one canonical memory contract across every surface. |
 | Configuration | **FAIL** | Runtime routing reads provider configuration (`lib/routing-decisions.js:55`, `lib/routing-decisions.js:348`), while provider resolution also reads environment/config directly (`lib/llm-provider.js:322`), PM2 declares per-process environment (`ecosystem.config.js:75`), governance reads a project policy file (`lib/governance.js:27`), and Settings OS persists multiple scopes (`lib/runtime/settings-registry.js:12`). |
-| CLI -> desktop/web resume unchanged | **FAIL** | CLI ask persists through `session-repository`; the web sessions API lists and saves through `session-store`. A repository-level restart/resume probe passes, but it is not cross-surface proof. No desktop client was exercised in this audit. |
+| CLI -> desktop/web resume unchanged | **PARTIAL** | A real Next.js API plus Electron run preserves ordered history and metadata across CLI create, web resume, desktop read/write, and fresh-process reload (`scripts/test-cross-surface-session-e2e.js:224`, `scripts/test-cross-surface-session-e2e.js:242`). Identical cross-surface tools and permissions are not yet proven. |
 
 The canonical runtime is executable, but it is not yet canonical across
 surfaces. A successful module load or a 20/20 sprint label does not satisfy the
@@ -62,7 +62,8 @@ cross-surface definition of done.
 | Unified API chat | direct `runAgentRouted` for SSE and JSON (`unified_api.js:503`, `unified_api.js:4411`) | Gateway bypass |
 | Agent Tower | direct `runAgent` (`agent_tower.js:281`) | Router and gateway bypass |
 | Next.js web chat | proxy to Unified API (`app/api/chat/route.ts:31`, `app/api/chat/route.ts:116`); network failure falls back to `chat-agent` (`app/api/chat/route.ts:211`, `app/api/chat/route.ts:214`) | Both paths bypass gateway |
-| Next.js sessions API | direct `session-store` (`app/api/sessions/route.ts:8`) | Different store from CLI ask |
+| Next.js sessions API | direct `session-repository` (`app/api/sessions/route.ts:8`) | Canonical session store |
+| Unified API sessions API | direct `session-repository` (`unified_api.js:32`, `unified_api.js:3091`) | Canonical session store |
 | MCP server | tools go through `ToolRuntime` (`lib/mcp-server.js:37`, `lib/mcp-server.js:245`); no conversational agent loop | Tool-only surface |
 | ACP server | `AgentGateway` client (`lib/acp-server.js:1`) | Canonical path by reading; not exercised here |
 
@@ -136,27 +137,33 @@ used by provider/status APIs rather than agent execution.
 
 ## D. Session findings
 
-The session layer remains the decisive blocker:
+Session storage is now converged and proof-backed:
 
 1. `AgentGateway` creates and saves sessions through `session-repository`
    (`lib/agent-gateway.js:133`, `lib/agent-gateway.js:163`).
 2. CLI ask resumes and saves through that same repository
    (`lib/commands/ask.js:892`, `lib/commands/ask.js:1067`).
-3. The web sessions API lists and saves through `session-store`
-   (`app/api/sessions/route.ts:20`, `app/api/sessions/route.ts:35`).
-4. Unified API chat and the Next.js fallback use `spine/session-store`
-   (`unified_api.js:410`, `app/api/chat/route.ts:222`).
-5. The spine store writes a separate sidecar before best-effort mirroring to
-   the main store (`lib/spine/session-store.js:65`,
-   `lib/spine/session-store.js:76`).
+3. The Next.js sessions API imports the repository directly
+   (`app/api/sessions/route.ts:8`) and supports loading by ID
+   (`app/api/sessions/route.ts:21`).
+4. Unified API list, create, load, rename, and delete routes use the same
+   repository (`unified_api.js:32`, `unified_api.js:3091`,
+   `unified_api.js:3125`).
+5. Unified API chat and the Next.js fallback retain their historical
+   `spine/session-store` interface, but that module is now a compatibility
+   adapter over `session-repository` (`lib/spine/session-store.js:8`,
+   `lib/spine/session-store.js:12`, `lib/spine/session-store.js:16`).
 
-Two separate Node processes successfully created, reopened, appended to, and
-reloaded one `session-repository` session. That proves local restart persistence
-only. It does not prove the canonical CLI -> web -> desktop acceptance path.
+The acceptance harness creates a CLI session, resumes it through the web
+adapter, reads and appends through a real Electron renderer backed by the
+Next.js API, then reloads it in a fresh Node process. The ordered four-message
+history and metadata survive (`scripts/test-cross-surface-session-e2e.js:224`,
+`scripts/test-cross-surface-session-e2e.js:242`). This proves storage identity
+across CLI, web, and desktop, but not identical tools or permission decisions.
 
 ## E. Executable probes
 
-These probes were run from the project root on 2026-07-29:
+These probes were run from the project root; the latest cross-surface probe is from 2026-07-30:
 
 | Probe | Result |
 |---|---|
@@ -169,28 +176,24 @@ These probes were run from the project root on 2026-07-29:
 
 PM2 state and tool counts are deliberately not treated as stable audit facts.
 They can change while other lanes are working.
+| `npm run test:cross-surface-session:e2e` | PASS, CLI -> Next.js API -> Electron renderer -> fresh-process reload |
 
 ## F. Required builder order
 
-1. **Session adapter first.** Make CLI ask, web sessions, Unified API chat,
-   gateway, and desktop use one session contract and one pinned storage target.
-2. **Cross-process acceptance test.** Create in CLI, terminate the process,
-   resume through web/API, compare ordered history and metadata, then exercise
-   the desktop client or mark desktop unavailable.
-3. **Close permission bypasses.** Route dynamic skills and every effectful
+Completed checkpoint: CLI, Next.js, Unified API compatibility adapters, and
+desktop now share `session-repository`, with a real Electron acceptance test.
+
+1. **Close remaining permission-policy gaps.** Route dynamic skills and every effectful
    Unified API tool through `ToolRuntime`; remove the production opt-out.
-4. **Enforce read-only tool scopes.** Construct a filtered `ToolRuntime` for
+2. **Enforce read-only tool scopes.** Construct a filtered `ToolRuntime` for
    `chat-agent` callers rather than passing ignored `opts.tools`.
-5. **Converge entry points.** Move Unified API, Agent Tower, and the web fallback
+3. **Converge entry points.** Move Unified API, Agent Tower, and the web fallback
    behind `AgentGateway`, then remove the legacy CLI branch.
-6. **Unify hooks, memory, and configuration.** Do this after session and tool
+4. **Unify hooks, memory, and configuration.** Do this after session and tool
    identity are stable so migration tests have a single behavioral target.
 
 ## Explicitly unknown
 
-- Desktop runtime path and whether a usable desktop client is currently
-  installed.
-- End-to-end CLI -> web -> desktop continuity under real services.
 - Whether all memory clients converge behind one durable backend.
 - Whether every sanctioned Unified API fallback has a canonical registry
   equivalent.
