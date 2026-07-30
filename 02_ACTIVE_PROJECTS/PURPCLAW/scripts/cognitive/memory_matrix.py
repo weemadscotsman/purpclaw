@@ -630,22 +630,9 @@ class LongTermMemory:
         if self._vec_matrix is not None and self._vec_stamp == stamp:
             return
 
-        # Fast path: same prefix, only appends since last build.
-        cached_n = len(self._vec_ids) if self._vec_ids else 0
-        if (self._vec_matrix is not None and cached_n and len(atoms_list) > cached_n
-                and atoms_list[0][0] == self._vec_ids[0]
-                and [a for a, _ in atoms_list[:cached_n]] == self._vec_ids):
-            new_ids, new_rows = self._dequant_rows(atoms_list[cached_n:])
-            if new_rows:
-                add = np.vstack(new_rows)
-                add_norms = np.linalg.norm(add, axis=1)
-                add_norms[add_norms == 0] = 1.0
-                self._vec_matrix = np.vstack([self._vec_matrix, add])
-                self._vec_norms = np.concatenate([self._vec_norms, add_norms])
-                self._vec_ids = self._vec_ids + new_ids
-            self._vec_stamp = stamp
-            return
-
+        # Full rebuild: simple, correct, no append-path edge cases.
+        # Performance cost (~5s for 21k atoms) is acceptable since this only
+        # runs when atoms changed or cache was invalidated.
         ids, rows = [], []
         for atom_id, atom in atoms_list:
             try:
