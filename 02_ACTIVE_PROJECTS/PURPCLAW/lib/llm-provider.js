@@ -1351,6 +1351,26 @@ async function* streamChat(messages, opts = {}, cfgOverride = null) {
     cfg.extraHeaders = p.extraHeaders || {};
     cfg.model = opts.model || p.defaultModel;
   }
+
+  // SpendGate: check budget before making the call
+  if (process.env.POCKET_MODE && !opts.bypassSpendGate) {
+    try {
+      const { SpendGate } = require('./spend-gate');
+      const gate = new SpendGate();
+      const estTokens = (opts.maxTokens || 1000) + (messages.reduce((s, m) => s + (m.content || '').length, 0) / 4);
+      const check = await gate.check({
+        agent: opts.agent || process.env.POCKET_AGENT || 'default',
+        provider: cfg.providerName,
+        estimatedTokens: Math.ceil(estTokens),
+      });
+      if (!check.allow) {
+        // Generator: yield the error chunk then stop
+        yield { error: `SpendGate: ${check.reason}`, blocked: true, provider: cfg.providerName, model: cfg.model };
+        return;
+      }
+    } catch {}
+  }
+
   // NIM model-fallback: minimax-m3 (and other NIM models) occasionally return
   // "DEGRADED function cannot be invoked" or 5xx when NVIDIA's hosted endpoint
   // is down. Prefer the configured model, but if it fails BEFORE any token is
