@@ -991,8 +991,6 @@ async function runOneShot(prompt, ctx, opts = {}) {
       }
     } catch (e) { console.error(`  ✗ user command error: ${e.message}`); return 1; }
   }
-  if (process.env.PURPCLAW_LEGACY_AGENT === '1') return runOneShotLegacy(prompt, ctx, opts);
-
   const gateway = new AgentGateway({ provider: ctx.provider, model: ctx.model, cwd: process.cwd() });
   gateway.activeSessionId = ctx._sessionId;
   let chars = 0;
