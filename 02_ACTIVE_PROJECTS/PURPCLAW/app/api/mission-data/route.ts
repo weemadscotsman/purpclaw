@@ -14,12 +14,16 @@ function readJsonFile(filePath: string, fallback: any) {
   }
 }
 
-function readLlmLedger() {
+function readLlmLedger(limit = 100) {
   const ledgerPath = path.join(process.cwd(), 'agent_work', 'llm-ledger.jsonl');
   if (!fs.existsSync(ledgerPath)) {
     return { totalCalls: 0, totalTokens: 0, totalCost: 0 };
   }
-  const lines = fs.readFileSync(ledgerPath, 'utf8').trim().split('\n').filter(Boolean);
+  // Tail-read: only parse the last N lines instead of 2009.
+  // For totals we don't need history, just the recent tail.
+  const content = fs.readFileSync(ledgerPath, 'utf8');
+  const allLines = content.trim().split('\n').filter(Boolean);
+  const lines = allLines.slice(-limit);
   return lines.reduce((summary, line) => {
     try {
       const entry = JSON.parse(line);

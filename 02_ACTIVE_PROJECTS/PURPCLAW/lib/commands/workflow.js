@@ -1,4 +1,3 @@
-// DEBUG ARGS: ["runs"]
 'use strict';
 
 const path = require('path');

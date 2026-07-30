@@ -24,9 +24,9 @@ const ROOT = __dirname;
 
 // Defense-in-depth cap on the spawned spine child. PM2 max_memory_restart
 // watches THIS Node process — not the python child — so the gateway has to
-// enforce the ceiling itself. Default 1500 MB matches the spine's own
-// mem_guard ceiling so a breach trips BOTH watchers within a few seconds.
-const CHILD_MEM_LIMIT_MB = Number(process.env.COGNITIVE_CHILD_MEM_LIMIT_MB || 1500);
+// enforce the ceiling itself. Default 12000 MB — this host has 32 GB and the
+// python spine routinely uses 4-6 GB with large archives.
+const CHILD_MEM_LIMIT_MB = Number(process.env.COGNITIVE_CHILD_MEM_LIMIT_MB || 12000);
 const CHILD_MEM_POLL_MS = Number(process.env.COGNITIVE_CHILD_MEM_POLL_MS || 10000);
 // Two consecutive over-cap readings before kill — same pattern as mem_guard.
 const CHILD_MEM_BREACH_LIMIT = Number(process.env.COGNITIVE_CHILD_MEM_BREACH_LIMIT || 2);

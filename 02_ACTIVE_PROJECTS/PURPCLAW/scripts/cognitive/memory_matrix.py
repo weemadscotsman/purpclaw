@@ -1162,10 +1162,10 @@ class MemoryMatrix:
         query_lower = query_text.lower()
         exact_results = []
 
-        # v2.1 — Skip the slow 20k-atom substring scan when the query is short
-        # and the vector search is likely to return enough. The substring loop
-        # was 20-30 seconds over 20k atoms; vector search is sub-second.
-        skip_exact = (len(query_text) < 12 and not emotional_filter)
+        # v2.1 — Skip the slow N-atom substring scan for short queries.
+        # The substring loop was 20-30 seconds over 15k+ atoms; vector search
+        # is sub-second. Raise the threshold to push almost everything to vector.
+        skip_exact = (len(query_text) < 30 and not emotional_filter)
 
         if query_lower and not skip_exact:
             with self.long_term.lock:

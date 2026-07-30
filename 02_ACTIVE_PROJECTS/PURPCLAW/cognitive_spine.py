@@ -25,7 +25,7 @@ if _SCRIPTS not in sys.path:
 # apply to them. This watchdog IS the only thing keeping the host alive.
 # 1500 MB was too tight — loading FAISS + embeddings + 3300+ atoms routinely
 # breached the ceiling before the HTTP server could start accepting connections.
-_SPINE_MEM_LIMIT_MB = int(os.environ.get("COGNITIVE_MEM_LIMIT_MB", "4000"))
+_SPINE_MEM_LIMIT_MB = int(os.environ.get("COGNITIVE_MEM_LIMIT_MB", "8000"))
 _SPINE_MEM_INTERVAL_S = int(os.environ.get("COGNITIVE_MEM_INTERVAL_S", "15"))
 try:
     import mem_guard  # noqa: E402  (sys.path patched above)
