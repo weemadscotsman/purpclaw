@@ -6944,7 +6944,7 @@ async function cmdPlugins(args) {
     case 'curator':   return cmdCurator(args);
     case 'approvals': return cmdApprovals(args);
     case 'cost':
-    case 'cost-report': return cmdCost(args);
+    case 'cost-report': return cmdCost(['summary', ...args.slice(1)]);
     case 'usage':     return cmdUsage(args);
     case 'tirith':    return cmdTirith(args);
     case 'plugins':  return cmdPlugins(args);
