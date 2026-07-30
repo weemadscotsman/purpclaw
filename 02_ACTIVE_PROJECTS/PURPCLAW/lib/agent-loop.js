@@ -667,13 +667,31 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
     for (const call of toolCalls) {
       yield { type: 'tool-call', tool: call.tool, args: call.args };
 
-      // Codex parity: PreToolUse hook — emit() is sync, wrap for .catch() safety
-      if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('PreToolUse', { tool: call.tool, args: call.args, callId: call.id, sessionId: opts.sessionId })).catch(() => {});
+      // Codex parity: PreToolUse runs BEFORE the tool and may veto it.
+      // This was previously fired through Promise.resolve().then(...), which
+      // scheduled it as a microtask — the tool had already started by the time
+      // the hook ran, and emit() returned before any spawned hook exited, so an
+      // exit code could never reach us. A "pre" hook that cannot block is just
+      // a slower "post" hook. emitAwait() waits for real exit codes; a non-zero
+      // exit is the standard refusal signal. A timed-out hook is not a veto.
+      let preToolVeto = null;
+      if (PARITY_HOOKS) {
+        try {
+          const hookResults = typeof PARITY_HOOKS.emitAwait === 'function'
+            ? await PARITY_HOOKS.emitAwait('PreToolUse', { tool: call.tool, args: call.args, callId: call.id, sessionId: opts.sessionId })
+            : PARITY_HOOKS.emit('PreToolUse', { tool: call.tool, args: call.args, callId: call.id, sessionId: opts.sessionId });
+          preToolVeto = typeof PARITY_HOOKS.blockedBy === 'function' ? PARITY_HOOKS.blockedBy(hookResults) : null;
+        } catch (_) { /* a broken hook must never take down the loop */ }
+      }
 
       // ── Personal model growth: capture tool call ──────────────────
       if (FEEDBACK) FEEDBACK.captureToolCall(call.tool, call.args, { provider, model, turn });
 
-      const result = await toolRuntime.invoke(call.tool, call.args, {
+      const result = preToolVeto ? {
+        ok: false,
+        code: 'HOOK_BLOCKED',
+        error: `blocked by PreToolUse hook${preToolVeto.hook && preToolVeto.hook.file ? ` (${require('path').basename(preToolVeto.hook.file)})` : ''}${typeof preToolVeto.code === 'number' ? `, exit ${preToolVeto.code}` : ''}${preToolVeto.stderr ? `: ${preToolVeto.stderr}` : ''}`,
+      } : await toolRuntime.invoke(call.tool, call.args, {
         signal: opts.signal,
         sessionId: opts.sessionId,
         operatorInitiated: opts.operatorInitiated,

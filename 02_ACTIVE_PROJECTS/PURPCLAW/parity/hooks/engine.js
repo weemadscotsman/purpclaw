@@ -38,6 +38,11 @@ const OC_EVENTS = Object.freeze([
   'SessionEnd',
 ]);
 
+// Ceiling on how long a blocking hook may hold up a tool call. A hook that
+// cannot answer in time is treated as "no opinion", never as a veto.
+// ponytail: single global timeout; make it per-hook only if a real hook needs it.
+const HOOK_TIMEOUT_MS = Number(process.env.PURPCLAW_HOOK_TIMEOUT_MS) || 5000;
+
 let _ownRuntime = null;
 try {
   _ownRuntime = require(path.join(ROOT, 'lib', 'hooks-runtime.js'));
@@ -271,6 +276,12 @@ function emit(event, ctx = {}) {
   // userTriggered hooks are manual-only — skip auto-firing
   const list = hooksFor(event, ctx.tool).filter((h) => h.event !== '__USER_TRIGGERED__');
   const results = [];
+  // Command hooks spawn asynchronously, so `results` is still empty when this
+  // function returns — a hook's exit code could never reach the caller and
+  // PreToolUse could not block anything. Collect a promise per spawned hook so
+  // emitAwait() below can wait for the real exit codes. Sync callers are
+  // unaffected: __pending is non-enumerable and ignored.
+  const pending = [];
 
   for (const h of list) {
     // askAgent hooks — fire into cognitive spine instead of spawning a process
@@ -329,17 +340,26 @@ function emit(event, ctx = {}) {
 
       let stderr = '';
       child.stderr.on('data', (b) => { stderr += b.toString(); });
-      child.on('error', (e) => {
-        results.push({ hook: h, ok: false, error: e.message });
-      });
-      child.on('close', (code) => {
-        results.push({
-          hook: h,
-          ok: code === 0,
-          code,
-          stderr: stderr.trim().slice(0, 500) || undefined,
+      pending.push(new Promise((resolve) => {
+        let settled = false;
+        const finish = (entry) => { if (settled) return; settled = true; results.push(entry); resolve(entry); };
+        // A wedged hook must not wedge the agent loop. Kill and treat a timeout
+        // as ok:true — a hook that cannot answer does not get to veto the tool.
+        const timer = setTimeout(() => {
+          try { child.kill(); } catch (_) { /* already gone */ }
+          finish({ hook: h, ok: true, timedOut: true, error: `hook timed out after ${HOOK_TIMEOUT_MS}ms` });
+        }, HOOK_TIMEOUT_MS);
+        child.on('error', (e) => { clearTimeout(timer); finish({ hook: h, ok: false, error: e.message }); });
+        child.on('close', (code) => {
+          clearTimeout(timer);
+          finish({
+            hook: h,
+            ok: code === 0,
+            code,
+            stderr: stderr.trim().slice(0, 500) || undefined,
+          });
         });
-      });
+      }));
     } catch (err) {
       results.push({ hook: h, ok: false, error: err.message });
     }
@@ -353,7 +373,38 @@ function emit(event, ctx = {}) {
     } catch (_) { /* swallow — never block */ }
   }
 
+  Object.defineProperty(results, '__pending', { value: pending, enumerable: false });
   return results;
+}
+
+/**
+ * Awaitable emit. Same behaviour as emit(), but resolves only once every
+ * spawned command hook has actually exited, so the returned array carries real
+ * exit codes. This is what makes a blocking hook (PreToolUse) possible —
+ * emit() alone returns before any child has run.
+ *
+ * Returns: Promise<Array<{ hook, ok, code?, stderr?, error?, timedOut? }>>
+ */
+async function emitAwait(event, ctx = {}) {
+  const results = emit(event, ctx);
+  const pending = results.__pending || [];
+  if (pending.length) await Promise.all(pending);
+  return results;
+}
+
+/**
+ * Did any hook for this event veto the action?
+ *
+ * Only exit code 2 blocks — the Claude Code / Codex convention. Any other
+ * non-zero exit is an ordinary hook failure: logged, never a veto. This matters
+ * because hooks like quality-gate.kiro.hook shell out to build scripts; if any
+ * non-zero exit blocked, one failing lint script would silently disable every
+ * tool call in the agent. Timed-out hooks never veto either.
+ */
+const HOOK_BLOCK_EXIT_CODE = 2;
+
+function blockedBy(results) {
+  return (results || []).find((r) => r && !r.timedOut && r.code === HOOK_BLOCK_EXIT_CODE) || null;
 }
 
 /**
@@ -378,6 +429,8 @@ function listAll() {
 module.exports = {
   events: OC_EVENTS,
   emit,
+  emitAwait,
+  blockedBy,
   hooksFor,
   loadAll,
   listEvents,
