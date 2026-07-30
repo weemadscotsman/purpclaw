@@ -5262,7 +5262,6 @@ async function main() {
     '--repo-map', '--no-repo-map',
     '--provider-env-file',
     '--',        // cmd.exe exec pass-through marker — not a real flag
-    '--help', '-h',  // consumed by individual commands, not globally
   ]);
   const cleanArgv = argv.filter((a, i) =>
     !STRIP_FLAGS.has(a) && !(envFileIdx >= 0 && i === envFileIdx + 1)
@@ -5281,13 +5280,12 @@ async function main() {
     args = [];
   }
 
-  // Commands that handle --help themselves: detect "workflow --help" (--help in args, not a bare global --help)
-  const HELP_DELEGATE = new Set(['workflow', 'ask', 'session', 'exec', 'llm', 'doctor', 'model', 'models', 'config', 'chat', 'run']);
-  if ((command === 'help' || command === '--help' || command === '-h' || args.includes('--help') || args.includes('-h')) && HELP_DELEGATE.has(command)) {
-    console.error('[DEBUG HELP_DELEGATE] command=', command, 'args=', args, '-> calling', command, '--help'); // DEBUG
-    return loadCmd(command).run([command, '--help'], sharedCtx());
-  }
-  // Explicit help/version paths
+  // Check original argv for --help/-h flags (before STRIP_FLAGS filtering strips them)
+  // Commands that handle --help themselves: detected here and re-dispatched after loadCmd is ready
+  const _helpDelegate = argv.includes('--help') || argv.includes('-h')
+    ? [command, argv[argv.indexOf('--help') !== -1 ? argv.indexOf('--help') : argv.indexOf('-h')]]
+    : null;
+  // Explicit bare help (no subcommand)
   if (command === 'help' || command === '--help' || command === '-h') {
     cmdHelp(); return;
   }
@@ -5914,6 +5912,16 @@ async function cmdDoctors(args = []) {
       }
       throw e;
     }
+  }
+
+  // Re-dispatch --help for commands that handle it themselves (captured before STRIP_FLAGS stripped it)
+  const HELP_DELEGATE = new Set(['workflow', 'ask', 'session', 'exec', 'llm', 'doctor', 'model', 'models', 'config', 'chat', 'run']);
+  if (_helpDelegate && HELP_DELEGATE.has(_helpDelegate[0])) {
+    const cmdPath = path.join(PURP_DIR, 'lib', 'commands', _helpDelegate[0] + '.js');
+    // Force fresh load — cmdHelp() may have cached the old module this tick
+    delete require.cache[require.resolve(cmdPath)];
+    const mod = require(cmdPath);
+    return await mod.run(_helpDelegate.slice(1), sharedCtx());
   }
 
   // Shared context object passed to all lib/commands modules
@@ -7595,7 +7603,7 @@ async function cmdPlugins(args) {
     }
     case 'next':
     case 'helpme':     return loadCmd('next').run(args, sharedCtx());
-    case 'workflow':   return loadCmd('workflow').run(args.slice(1), sharedCtx());
+    case 'workflow':   return loadCmd('workflow').run(args, sharedCtx());
     case 'drift':      return loadCmd('drift').run(args, sharedCtx());
     case 'awaken':     return loadCmd('awaken').run(args);
     case 'evolve':     return loadCmd('evolve').run(args, sharedCtx());
