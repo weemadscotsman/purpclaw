@@ -6967,7 +6967,11 @@ async function cmdPlugins(args) {
     case 'curator':   return cmdCurator(args);
     case 'approvals': return cmdApprovals(args);
     case 'cost':
-    case 'cost-report': return cmdCost(['summary', ...args.slice(1)]);
+      // cost with no sub → summary; cost report/analyze/summary handled by sub
+      if (!args[1] || args[1] === 'report' || args[1] === 'summary') return cmdCost(['summary']);
+      if (args[1] === 'analyze' || args[1] === 'cost-analyze') return cmdCost(['analyze', ...args.slice(2)]);
+      return cmdCost(args.slice(1));
+    case 'cost-report': return cmdCost(['summary']);
     case 'cost-analyze': return cmdCost(['analyze', ...args.slice(1)]);
     case 'usage':     return cmdUsage(args);
     case 'tirith':    return cmdTirith(args);
@@ -8968,6 +8972,24 @@ async function cmdSession(args) {
     return;
   }
 
+  if (sub === 'archive') {
+    const id = args[1] || work.getCurrentSessionId();
+    if (!id) { console.log(`\n${col(C.red, 'No session. Specify:')} purpclaw session archive <id>\n`); return; }
+    const r = work.archiveSession(id, 'user-archive');
+    if (r.ok) { console.log(`\n${col(C.green, '[OK]')} Archived: ${id}\n`); }
+    else { console.log(`\n${col(C.red, '[X]')} ${r.error}\n`); }
+    return;
+  }
+
+  if (sub === 'unarchive') {
+    const id = args[1];
+    if (!id) { console.log(`\n${col(C.red, 'Usage:')} purpclaw session unarchive <id>\n`); return; }
+    const r = work.unarchiveSession(id);
+    if (r.ok) { console.log(`\n${col(C.green, '[OK]')} Restored: ${id}\n`); }
+    else { console.log(`\n${col(C.red, '[X]')} ${r.error}\n`); }
+    return;
+  }
+
   // Help / unknown subcommand
   console.log(`\n${col(C.bold, 'purpclaw session')}\n`);
   console.log(`  ${col(C.cyan, 'purpclaw session list')}              list all sessions`);
@@ -8979,6 +9001,8 @@ async function cmdSession(args) {
   console.log(`  ${col(C.cyan, 'purpclaw session rename <id> <t>')}   rename session`);
   console.log(`  ${col(C.cyan, 'purpclaw session fork <id>')}         fork/branch session`);
   console.log(`  ${col(C.cyan, 'purpclaw session close <id>')}       close session`);
+  console.log(`  ${col(C.cyan, 'purpclaw session archive <id>')}      archive session`);
+  console.log(`  ${col(C.cyan, 'purpclaw session unarchive <id>')}   restore archived session`);
   console.log(`  ${col(C.cyan, 'purpclaw session delete <id>')}      delete session`);
   console.log(`  ${col(C.cyan, 'purpclaw session export [id]')}       export session JSON\n`);
 }

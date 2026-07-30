@@ -28,7 +28,10 @@ db.exec(`
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     ended_at TEXT,
-    end_reason TEXT
+    end_reason TEXT,
+    archived INTEGER NOT NULL DEFAULT 0,
+    archived_at TEXT,
+    archived_reason TEXT
   );
   CREATE TABLE IF NOT EXISTS messages (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -119,19 +122,22 @@ function loadSession(id) {
     source: row.source, profile: row.profile, parentId: row.parent_id,
     createdAt: row.created_at, updatedAt: row.updated_at, endedAt: row.ended_at,
     endReason: row.end_reason, messageCount: messages.length, messages,
+    archived: Boolean(row.archived), archivedAt: row.archived_at, archivedReason: row.archived_reason,
   };
 }
 
 function listSessions(limit = 50, opts = {}) {
-  const clauses = [], values = [];
+  const clauses = ['archived=0'], values = [];
   if (opts.profile) { clauses.push('profile=?'); values.push(opts.profile); }
   if (opts.source) { clauses.push('source=?'); values.push(opts.source); }
-  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
+  if (opts.includeArchived) { clauses[0] = '1=1'; }
+  const where = `WHERE ${clauses.join(' AND ')}`;
   values.push(Math.max(1, Math.min(Number(limit) || 50, 500)));
   return db.prepare(`SELECT s.*, (SELECT COUNT(*) FROM messages m WHERE m.session_id=s.id) message_count FROM sessions s ${where} ORDER BY updated_at DESC LIMIT ?`).all(...values).map(row => ({
     id: row.id, title: row.title, provider: row.provider, model: row.model,
     source: row.source, profile: row.profile, parentId: row.parent_id,
     createdAt: row.created_at, updatedAt: row.updated_at, messageCount: row.message_count,
+    archived: Boolean(row.archived), archivedAt: row.archived_at,
   }));
 }
 
@@ -140,9 +146,10 @@ function searchSessions(query, opts = {}) {
   const ftsQuery = String(query || '').trim().split(/\s+/).filter(Boolean)
     .map(token => `"${token.replace(/"/g, '""')}"`).join(' AND ');
   if (!ftsQuery) return [];
+  const archivedFilter = opts.includeArchived ? '' : 'AND s.archived=0';
   return db.prepare(`SELECT f.session_id, f.role, snippet(messages_fts,0,'>>>','<<<','…',20) snippet,
     s.title, s.updated_at updatedAt FROM messages_fts f JOIN sessions s ON s.id=f.session_id
-    WHERE messages_fts MATCH ? ORDER BY rank LIMIT ?`).all(ftsQuery, limit);
+    WHERE messages_fts MATCH ? ${archivedFilter} ORDER BY rank LIMIT ?`).all(ftsQuery, limit);
 }
 
 function branchSession(id, opts = {}) {
@@ -190,6 +197,26 @@ function renameSession(id, newTitle) {
   return loadSession(id);
 }
 
+function archiveSession(id, reason = '') {
+  if (!id) return { ok: false, error: 'no session id' };
+  const session = loadSession(id);
+  if (!session) return { ok: false, error: `Session '${id}' not found` };
+  if (session.archived) return { ok: false, error: `Session '${id}' is already archived` };
+  const now = new Date().toISOString();
+  db.prepare('UPDATE sessions SET archived=1,archived_at=?,archived_reason=?,updated_at=? WHERE id=?').run(now, reason, now, id);
+  return { ok: true, sessionId: id, archived_at: now };
+}
+
+function unarchiveSession(id) {
+  if (!id) return { ok: false, error: 'no session id' };
+  const session = loadSession(id);
+  if (!session) return { ok: false, error: `Session '${id}' not found` };
+  if (!session.archived) return { ok: false, error: `Session '${id}' is not archived` };
+  const now = new Date().toISOString();
+  db.prepare('UPDATE sessions SET archived=0,archived_at=NULL,archived_reason=NULL,updated_at=? WHERE id=?').run(now, id);
+  return { ok: true, sessionId: id };
+}
+
 function migrateLegacy() {
   if (!fs.existsSync(LEGACY_DIR)) return { imported: 0 };
   let imported = 0;
@@ -207,4 +234,13 @@ function migrateLegacy() {
 
 const migration = migrateLegacy();
 
-module.exports = { createSession, saveSession, loadSession, listSessions, searchSessions, branchSession, closeSession, deleteSession, renameSession, generateId, migrateLegacy, migration, DB_PATH };
+// Add archived columns to existing sessions table (no-op on new installs)
+try {
+  db.prepare('SELECT archived FROM sessions LIMIT 1').get();
+} catch (_) {
+  db.exec(`ALTER TABLE sessions ADD COLUMN archived INTEGER NOT NULL DEFAULT 0`);
+  db.exec(`ALTER TABLE sessions ADD COLUMN archived_at TEXT`);
+  db.exec(`ALTER TABLE sessions ADD COLUMN archived_reason TEXT`);
+}
+
+module.exports = { createSession, saveSession, loadSession, listSessions, searchSessions, branchSession, closeSession, deleteSession, renameSession, archiveSession, unarchiveSession, generateId, migrateLegacy, migration, DB_PATH };

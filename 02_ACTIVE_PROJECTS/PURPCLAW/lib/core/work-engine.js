@@ -166,6 +166,25 @@ function closeSession(id, reason) {
 }
 
 /**
+ * Archive a session.
+ * @param {string} id
+ * @param {string} [reason]
+ * @returns {Object} {ok, error, sessionId, archived_at}
+ */
+function archiveSession(id, reason) {
+  return store().archiveSession(id, reason);
+}
+
+/**
+ * Unarchive a session.
+ * @param {string} id
+ * @returns {Object} {ok, error, sessionId}
+ */
+function unarchiveSession(id) {
+  return store().unarchiveSession(id);
+}
+
+/**
  * Search sessions.
  * @param {string} query
  * @param {number} [limit]
@@ -337,6 +356,8 @@ module.exports = {
   renameSession,
   branchSession,
   closeSession,
+  archiveSession,
+  unarchiveSession,
   searchSessions,
   getHistory,
   appendTurn,
