@@ -110,6 +110,8 @@ class AgentGateway extends EventEmitter {
       methods: METHODS,
       events: [
         'message.delta', 'message.complete', 'tool.start', 'tool.complete',
+        'route.selected', 'job.started', 'job.stopped',
+        'route.selected', 'job.started', 'job.stopped',
         'artifact.created',
         'goal.judged', 'goal.continue', 'goal.waiting', 'goal.complete',
         'recipe.started', 'recipe.step.started', 'recipe.step.completed', 'recipe.completed',
@@ -214,14 +216,24 @@ class AgentGateway extends EventEmitter {
     try {
       const consume = async (agentPrompt, history) => {
         let output = '', usedTurns = 0, consumeError=null;
-        usageTracker.request(agentPrompt,history);
-        const modelSpan=TRACES.startSpan(traceId,'model.generate',{parentId:rootSpan,kind:'client',input:{prompt:agentPrompt,history_length:history.length},sensitive:params.trace_sensitive===false,metadata:{provider:state.provider||this.provider,model:state.model||this.model}}),toolSpans=new Map();
+        const supplementalHistory = Array.isArray(params.history)
+          ? params.history.filter(message => message && message.role && message.content)
+          : [];
+        const runnerHistory = [...history, ...supplementalHistory];
+        const selectedProvider = params.provider || state.provider || this.provider;
+        const selectedModel = params.model || state.model || this.model;
+        usageTracker.request(agentPrompt,runnerHistory);
+        const modelSpan=TRACES.startSpan(traceId,'model.generate',{parentId:rootSpan,kind:'client',input:{prompt:agentPrompt,history_length:runnerHistory.length},sensitive:params.trace_sensitive===false,metadata:{provider:selectedProvider,model:selectedModel}}),toolSpans=new Map();
         try{for await (const event of this.runner({
-          prompt: agentPrompt, history, provider: state.provider || this.provider, model: state.model || this.model, autoRoute: false,
-          opts: { maxTurns: params.max_turns || 10, cwd: params.cwd || this.cwd, platform: params.platform || 'cli', sessionId: state.id, noSpine: params.no_spine !== false, signal: abort.signal, toolRuntime, goal: activeGoal, nativeTools: params.native_tools !== false, permissionProfile, dependencies, operatorInitiated: params.operator_initiated === true || (params.platform || 'cli') === 'cli' },
+          prompt: agentPrompt, history: runnerHistory, provider: selectedProvider, model: selectedModel,
+          lane: params.lane, autoRoute: params.auto_route === true,
+          opts: { maxTurns: params.max_turns || 10, maxTokens: params.max_tokens, temperature: params.temperature, cwd: params.cwd || this.cwd, platform: params.platform || 'cli', sessionId: state.id, noSpine: params.no_spine !== false, signal: abort.signal, toolRuntime, goal: activeGoal, nativeTools: params.native_tools !== false, permissionProfile, dependencies, operatorInitiated: params.operator_initiated === true || (params.platform || 'cli') === 'cli' },
         })) {
           if (abort.signal.aborted) throw this.rpcError(-32800, 'request interrupted');
-          if (event.type === 'token') { usageTracker.output(event.content||''); output += event.content || ''; this.emit('message.delta', { session_id: state.id, delta: event.content || '' }); }
+          if (event.type === 'route') this.emit('route.selected', { session_id: state.id, ...event });
+          else if (event.type === 'job') this.emit('job.started', { session_id: state.id, ...event });
+          else if (event.type === 'stopped') this.emit('job.stopped', { session_id: state.id, ...event });
+          else if (event.type === 'token') { usageTracker.output(event.content||''); output += event.content || ''; this.emit('message.delta', { session_id: state.id, delta: event.content || '', model: event.model }); }
           else if (event.type === 'tool-call') { usageTracker.tool(); const span=TRACES.startSpan(traceId,`tool.${event.tool}`,{parentId:modelSpan,kind:'internal',input:event.args,sensitive:params.trace_sensitive===false});const queue=toolSpans.get(event.tool)||[];queue.push(span);toolSpans.set(event.tool,queue);this.emit('tool.start', { session_id: state.id, tool: event.tool, arguments: event.args }); }
           else if (event.type === 'tool-result') { const queue=toolSpans.get(event.tool)||[],span=queue.shift();if(span)TRACES.endSpan(span,{output:event.content,error:event.error,sensitive:params.trace_sensitive===false});this.emit('tool.complete', { session_id: state.id, tool: event.tool, ok: event.ok !== false, result: event.content, error: event.error }); for (const artifact of ARTIFACTS.discover(event.content, { sessionId: state.id, cwd: params.cwd || this.cwd, sourceTool: event.tool })) this.emit('artifact.created', artifact); }
           else if (event.type === 'turn') usedTurns = event.turn;
