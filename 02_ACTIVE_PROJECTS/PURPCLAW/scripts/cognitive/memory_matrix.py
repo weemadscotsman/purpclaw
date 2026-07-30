@@ -628,7 +628,9 @@ class LongTermMemory:
                  atoms_list[0][0] if atoms_list else None,
                  atoms_list[-1][0] if atoms_list else None)
         if self._vec_matrix is not None and self._vec_stamp == stamp:
+            print(f"[MEMv2] vec_cache HIT (stamp ok, n={len(self._vec_ids)})")
             return
+        print(f"[MEMv2] vec_cache MISS — rebuilding for n={len(atoms_list)}")
 
         # Fast path: same prefix, only appends since last build.
         cached_n = len(self._vec_ids) if self._vec_ids else 0
@@ -1123,6 +1125,7 @@ class MemoryMatrix:
         """Check if current content triggers any auto-recalls."""
         embedding = self.embedder.encode(content)
         quantized = QuantizedMemory.quantize(embedding)
+        print(f"[MEMv2] recall: quantized done, atoms={len(self.long_term.atoms)}")
 
         recalls = self.long_term.auto_recall(quantized, threshold=0.72)
 

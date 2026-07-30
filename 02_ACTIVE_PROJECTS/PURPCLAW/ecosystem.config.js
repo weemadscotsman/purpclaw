@@ -44,6 +44,19 @@ const PURPCLAW_GATEWAY_TOKEN = env.PURPCLAW_GATEWAY_TOKEN || '';
 const PURPCLAW_GATEWAY_URL = env.PURPCLAW_GATEWAY_URL || 'ws://127.0.0.1:18789';
 const PYTHON_BIN = 'C:/Users/Admin/AppData/Local/Programs/Python/Python311/python.exe';
 
+const CORE = new Set([
+  'purpclaw-api', 'purpclaw-eventbus', 'purpclaw-state', 'purpclaw-orchestrator',
+  'purpclaw-tower', 'purpclaw-gatekeeper', 'purpclaw-metrics', 'purpclaw-pool',
+  'purpclaw-context', 'purpclaw-workers', 'purpclaw-nextjs', 'purpclaw-cognitive'
+]);
+const SERVICES = (process.env.PURPCLAW_SERVICES || 'core').split(',').map(s => s.trim());
+const ENABLED = SERVICES.includes('all')
+  ? null  // null = all enabled
+  : SERVICES.includes('core')
+    ? CORE  // core set
+    : new Set(SERVICES); // explicit list
+const isDark = name => ENABLED !== null && !ENABLED.has(name);
+
 module.exports = {
   apps: [
     // ── Node.js services ──────────────────────────────────────────────────────
@@ -645,5 +658,5 @@ module.exports = {
       autorestart: true,
       windowsHide: true
     },
-  ]
+  ].filter(a => !isDark(a.name))
 };
