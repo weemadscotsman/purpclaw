@@ -5915,7 +5915,7 @@ async function cmdDoctors(args = []) {
   }
 
   // Re-dispatch --help for commands that handle it themselves (captured before STRIP_FLAGS stripped it)
-  const HELP_DELEGATE = new Set(['workflow', 'ask', 'session', 'exec', 'llm', 'doctor', 'model', 'models', 'config', 'chat', 'run']);
+  const HELP_DELEGATE = new Set(['workflow', 'ask', 'llm', 'model', 'models', 'browser']);
   if (_helpDelegate && HELP_DELEGATE.has(_helpDelegate[0])) {
     const cmdPath = path.join(PURP_DIR, 'lib', 'commands', _helpDelegate[0] + '.js');
     // Force fresh load — cmdHelp() may have cached the old module this tick

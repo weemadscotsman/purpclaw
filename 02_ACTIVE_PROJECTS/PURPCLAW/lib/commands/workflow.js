@@ -33,11 +33,9 @@ function printRun(run, ctx = {}) {
   if (run.error) console.log(`     ${col(C.red, run.error.substring(0, 80))}`);
 }
 
-async function run(args = [], ctx = {}) { 
+async function run(args = [], ctx = {}) {
   const PURP_DIR = ctx.PURP_DIR || path.resolve(__dirname, '..', '..');
-  const wfArgs = args.filter(a => !a.startsWith('--')); const sub = (wfArgs[0] || '').toLowerCase();
-  // DEBUG
-  if (process.env.DEBUG_WORKFLOW_ARGS) console.error('[DEBUG] workflow args:', JSON.stringify(args), 'sub:', sub);
+  const sub = (args[0] || '').toLowerCase();
 
   // ── purpclaw workflow ──────────────────────────────────────────────────────
   // (no sub = show available workflow definitions)
