@@ -183,8 +183,8 @@ async function run(args = [], ctx = {}) {
     try {
       const result = await WF.run(spec, adapter, { input, maxSteps: 200 });
       const statusColour = { complete: _C.green, failed: _C.red, interrupted: _C.yellow }[result.status] || _C.cyan;
-      console.log(`\n  Status: ${statusColour}${result.status}${''}`);
-      if (result.error) console.log(`  Error: ${_C.red}${result.error}${''}`);
+      console.log(`\n  Status: ${col(statusColour, result.status)}`);
+      if (result.error) console.log(`  Error: ${col(_C.red, result.error)}`);
       console.log(`  Completed nodes: ${result.completed?.length || 0}`);
       return result.status === 'failed' ? 1 : 0;
     } catch (err) {
