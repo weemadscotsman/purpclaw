@@ -693,8 +693,15 @@ class LongTermMemory:
 
         if matrix.shape[0] != len(ids) or matrix.shape[0] != norms.shape[0]:
             # Cache was invalidated (e.g. atoms added during auto-recall). Rebuild.
+            print(f"[memory_matrix] DIMENSION MISMATCH: matrix={matrix.shape[0]} norms={norms.shape[0]} ids={len(ids)} — rebuilding cache")
             self._ensure_vec_cache(list(self.atoms.items()))
             matrix, ids, norms = self._vec_matrix, self._vec_ids, self._vec_norms
+            print(f"[memory_matrix] After rebuild: matrix={matrix.shape[0]} norms={norms.shape[0]} ids={len(ids)}")
+            # Verify rebuilt cache dimensions match
+            if matrix.shape[0] != len(ids) or matrix.shape[0] != norms.shape[0]:
+                sys.stderr.write(f"[memory_matrix] FATAL: cache rebuild still mismatch "
+                                 f"matrix={matrix.shape} ids={len(ids)} norms={norms.shape}\n")
+                return []
 
         try:
             sims = (matrix @ query) / (norms * q_norm)
