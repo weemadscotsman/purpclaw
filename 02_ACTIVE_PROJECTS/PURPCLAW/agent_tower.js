@@ -12,10 +12,12 @@ const fs = require('fs');
 const http = require('http');
 const LLM = require('./lib/llm-provider');
 const { complete: llmComplete } = LLM;
-// Real tool-calling brain: the same agent-loop that powers ask/chat
+// Real tool-calling brain: the same routing-aware agent loop that powers ask/chat.
+// Uses agent-router (runAgentRouted) so tower agents get model routing, NIM fallback,
+// job tracking, and full lifecycle hooks — same as CLI and web surfaces.
 let agentLoopTools = null;
 try {
-  agentLoopTools = require('./lib/agent-loop');
+  agentLoopTools = require('./lib/agent-router');
 } catch {}
 
 // Environment Constants
@@ -273,16 +275,16 @@ async function spawnAgent(agentName, task, options = {}) {
   let totalTokens = 0;
 
   if (agentLoopTools) {
-    const { runAgent, AGENT_TOOLS } = agentLoopTools;
+    const { runAgentRouted } = agentLoopTools;
     const fullPrompt = `${agentPrompt}\n\nTASK: ${task}\n\nEXECUTION RULES (critical): You have REAL tools — file read/write/edit, shell, code search, and more (the full list is in your system prompt). Complete the task by EMITTING TOOL CALLS in the exact format {"tool":"<name>","args":{...}} and acting directly. Do NOT ask whether tools exist, request setup/confirmation, or merely describe what you would do — perform the work now with your tools, then report what you did.`;
     const agentState = { toolCalls: [], text: '' };
 
     try {
-      for await (const ev of runAgent({
+      for await (const ev of runAgentRouted({
         prompt: fullPrompt,
         provider: overrideProvider || undefined,
         model: overrideModel || undefined,
-        opts: { maxTokens: 4096, temperature: 0.7, tools: AGENT_TOOLS, ...llmOverride },
+        opts: { maxTokens: 4096, temperature: 0.7, ...llmOverride },
       })) {
         if (ev.type === 'token') {
           agentState.text += ev.content || '';
