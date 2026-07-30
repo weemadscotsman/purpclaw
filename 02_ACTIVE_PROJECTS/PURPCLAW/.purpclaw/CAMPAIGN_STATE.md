@@ -364,3 +364,20 @@ Chief (this session): MiniMax-M3, MiniMax provider.
 
 **P1-9 evidence system:** proof-ledger UI, parity docs, smoke tests all exist
 
+## 2026-07-30 — Deep audit: disconnected systems
+
+Chief: MiniMax-M3. Done: 4 real disconnections found, 3 fixed.
+
+| # | Disconnection | Fix | Commit |
+|---|---------------|-----|--------|
+| 1 | `workflow-manager.js:resume()` — `approved:false` took YES branch. `__resume_value_approved` never set for `{approved:X}` objects | Extract boolean from `{approved:X}` and bare booleans in `resume()` | `0a1aec9` |
+| 2 | `lib/commands/workflow.js` — resume subcommand passed `resumeValue=run.context.__approval_id` (wrong — approval ID string, not boolean) | Pass `resumeValue:{approved:!!approve}` directly to `WF.resume()` | `0744216` |
+| 3 | `workflow-manager.js:executeNode` approval case — called `requestApproval()` on every resume, got new `auto_approved` ID, overwrote original approval | Guard `requestApproval()` behind `!hasOwnProperty('__resume_value')` sentinel; also fixed command-string construction so `detectDangerousCommand` sees args | `2026722` |
+| 4 | `lib/hooks/lifecycle-bus.js` — `PreCompact`/`PostCompact`/`Error` missing from `HOOK_TOPICS` list; `LifecycleBus.fire()` returned early for unknown topics → PARITY_HOOKS events silently died | Add those 3 topics to `HOOK_TOPICS` so `LIFECYCLE.emit()` in `parity/hooks/engine.js` actually forwards them | `29637f2` |
+
+**Bug chain for #3:**
+`detectDangerousCommand(tool)` only got tool name `'rm'` — never saw args. Fixed by constructing `cmdStr = [tool, ...interpolated(args)].join(' ')` so patterns like `/\brm\s+-[^\s]*r/i` now match. Also fixed `requestApproval(sessionKey, tool, command, desc)` param order (was passing `desc` as `command`).
+
+**Still open:**
+- Dual bus: LIFECYCLE + PARITY_HOOKS still separate instances — only forwarding works. Full unification needs single bus instance (non-blocking, low urgency).
+
