@@ -164,6 +164,17 @@ async function run(args = [], ctx = {}) {
     return { schema: 'purpclaw.workflow.history.v1', runId, checkpoints };
   }
 
+  // ── purpclaw workflow --help ─────────────────────────────────────────────────
+  if (sub === '--help' || sub === '-h') {
+    console.log('purpclaw workflow [list|runs|resume|history] [options]');
+    console.log('  list [--json] [workflow-id]   list workflow definitions');
+    console.log('  runs [--limit=N]             list recent workflow runs');
+    console.log('  resume <runId> [--approve|--deny]  resume an interrupted run');
+    console.log('  history <runId>               show checkpoint history for a run');
+    console.log('');
+    return 0;
+  }
+
   // Unknown subcommand
   console.log(`Unknown workflow subcommand: ${sub}`);
   console.log('Usage: purpclaw workflow [list|runs|resume|history]');

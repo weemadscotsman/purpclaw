@@ -5190,6 +5190,7 @@ async function main() {
   // Strip --bars / --no-bars / --provider-env-file flags so they don't pollute command args
   // --provider-env-file <path> — load key=value pairs from a .env file before any command runs
   // Supports OPENCLAUDE_CONFIG_DIR env override for config directory
+  // Strip bare -- (cmdExec's "pass-through" marker — cmd.exe built-in exec doesn't consume it)
   (function loadProviderEnvFile() {
     const idx = argv.indexOf('--provider-env-file');
     if (idx === -1) return;
@@ -5225,6 +5226,7 @@ async function main() {
     '--bars', '--no-bars', '--taint',
     '--repo-map', '--no-repo-map',
     '--provider-env-file',
+    '--',        // cmd.exe exec pass-through marker — not a real flag
   ]);
   const cleanArgv = argv.filter((a, i) =>
     !STRIP_FLAGS.has(a) && !(envFileIdx >= 0 && i === envFileIdx + 1)
@@ -9197,7 +9199,7 @@ async function cmdExec(args) {
   const projectDir = dirIdx >= 0 ? path.resolve(args[dirIdx + 1]) : process.cwd();
   const noPolicy = args.includes('--no-policy');
   // Remove --flags and the command name itself to get subcommand + command args
-  const rawArgs = args.filter(a => !a.startsWith('--'));
+  const rawArgs = args.filter(a => !a.startsWith('--') && a !== '--');
   const cleanArgs = rawArgs.slice(1);  // drop 'exec'
   const sub = (cleanArgs[0] || '').toLowerCase();
   const jsonOut = args.includes('--json');
