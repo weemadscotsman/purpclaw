@@ -688,28 +688,40 @@ class LongTermMemory:
             return []
 
         if matrix.shape[0] != len(ids) or matrix.shape[0] != norms.shape[0]:
-            # Cache was invalidated (e.g. atoms added during auto-recall). Rebuild.
-            print(f"[memory_matrix] DIMENSION MISMATCH: matrix={matrix.shape[0]} norms={norms.shape[0]} ids={len(ids)} — rebuilding cache")
-            self._ensure_vec_cache(list(self.atoms.items()))
-            matrix, ids, norms = self._vec_matrix, self._vec_ids, self._vec_norms
-            print(f"[memory_matrix] After rebuild: matrix={matrix.shape[0]} norms={norms.shape[0]} ids={len(ids)}")
-            # Verify rebuilt cache dimensions match
-            if matrix.shape[0] != len(ids) or matrix.shape[0] != norms.shape[0]:
-                sys.stderr.write(f"[memory_matrix] FATAL: cache rebuild still mismatch "
-                                 f"matrix={matrix.shape} ids={len(ids)} norms={norms.shape}\n")
-                return []
+            # Cache was invalidated mid-search (e.g. ingest fired during this same search).
+            # Fall back to per-atom cosine — slower but always correct, never crashes.
+            sys.stderr.write(f"[memory_matrix] cache mismatch search_similar dims "
+                             f"matrix={matrix.shape[0]} norms={norms.shape[0]} ids={len(ids)} — "
+                             f"falling back to per-atom\n")
+            sys.stderr.flush()
+            results = []
+            for atom_id, atom in atoms_list:
+                try:
+                    a_vec = np.asarray(QuantizedMemory.dequantize(atom.embedding), dtype=np.float32)
+                    a_norm = float(np.linalg.norm(a_vec))
+                    if a_norm == 0:
+                        sim = 0.0
+                    else:
+                        sim = float(np.dot(query, a_vec) / (q_norm * a_norm))
+                    results.append({'id': atom_id, 'similarity': sim, 'atom': atom})
+                except Exception:
+                    continue
+            results.sort(key=lambda r: r['similarity'], reverse=True)
+            return [{
+                'id': r['id'],
+                'content': r['atom'].content,
+                'similarity': r['similarity'],
+                'timestamp': r['atom'].timestamp,
+                'valence': r['atom'].emotional_valence,
+                'importance': r['atom'].importance,
+                'source': r['atom'].source,
+                'match_type': 'vector'
+            } for r in results[:limit]]
 
         try:
             sims = (matrix @ query) / (norms * q_norm)
-        except ValueError as e:
-            # Last resort: dimensions still don't match after rebuild.
-            # Log and return empty rather than crash the server.
-            sys.stderr.write(f"[memory_matrix] search_similar matmul dimension error: {e} "
-                             f"matrix={matrix.shape} norms={norms.shape} query={query.shape}\n")
-            sys.stderr.flush()
+        except Exception:
             return []
-
-        by_id = dict(atoms_list)
         results = []
         for idx in np.argsort(-sims):          # descending, matches the old sort
             atom = by_id.get(ids[idx])
