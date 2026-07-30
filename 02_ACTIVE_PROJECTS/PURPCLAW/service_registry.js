@@ -10,14 +10,14 @@ const SERVICES = [
   // tower as DOWN. '/api/health' is what the process actually serves (verified
   // 200 while the log shows "Agent Tower listening on port 7790", 35 agents).
   // statusPath left alone: fix the route or repoint it separately.
-  { key: 'tower', name: 'Agent Tower', pm2: 'purpclaw-tower', group: 'core', port: 7790, healthPort: 7790, healthPath: '/api/health', statusPath: '/tower/status', required: true },
+  { key: 'tower', name: 'Agent Tower', pm2: 'purpclaw-tower', group: 'core', port: 7790, healthPort: 7790, healthPath: '/tower/health', statusPath: '/tower/status', required: true },
   { key: 'orchestrator', name: 'Orchestrator', pm2: 'purpclaw-orchestrator', group: 'core', port: 7784, healthPort: 7784, healthPath: '/api/health', required: true },
   { key: 'gatekeeper', name: 'Gatekeeper', pm2: 'purpclaw-gatekeeper', group: 'core', port: 7791, healthPort: 7791, healthPath: '/health', required: true },
   { key: 'metrics', name: 'Metrics Aggregator', pm2: 'purpclaw-metrics', group: 'core', port: 7890, healthPort: 7890, healthPath: '/health', required: true },
   { key: 'pool', name: 'Knowledge Pool', pm2: 'purpclaw-pool', group: 'core', port: 7885, healthPort: 7885, healthPath: '/health', required: true },
   { key: 'workers', name: 'Worker Service', pm2: 'purpclaw-workers', group: 'core', port: 7897, healthPort: 7897, healthPath: '/health', required: true, note: 'overflow worker lane for remote/local agent task dispatch' },
   { key: 'context-bus', name: 'Context Bus', pm2: 'purpclaw-context', group: 'core', port: 7881, healthPort: 7881, healthPath: '/health', required: true },
-  { key: 'nextjs', name: 'Mission Control UI', pm2: 'purpclaw-nextjs', group: 'core', port: 3030, healthPort: 3030, healthPath: '/', required: true },
+  { key: 'nextjs', name: 'Mission Control UI', pm2: 'purpclaw-nextjs', group: 'core', port: 3030, healthPort: 3030, healthPath: '/api/health', required: true },
 
   { key: 'coordinator', name: 'Swarm Coordinator', pm2: 'purpclaw-coordinator', group: 'core', port: 7898, healthPort: 7898, healthPath: '/health', required: false, note: 'mission pipeline: decompose → tower dispatch → validate → synthesize' },
 

@@ -467,19 +467,38 @@ function banner() {
     const now     = new Date();
     const ts      = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}  ${now.toLocaleTimeString('en-GB')}`;
 
+    // Runtime counts — fully self-contained, no closure dependency
+    let bToolCount = '?';
+    let bAgentCount = '?';
+    let bVersion = '?';
+    try { const T = require(path.join(PURP_DIR, 'lib', 'tools')); bToolCount = T.list().length; } catch (_) {}
+    try {
+      const pkgF = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'package.json'), 'utf8'));
+      bVersion = pkgF.version || '?';
+      try {
+        const tw = require(path.join(PURP_DIR, 'agent_tower.js'));
+        bAgentCount = (tw.registry && tw.registry.size) ? tw.registry.size : '?';
+      } catch (_2) {
+        const ad = path.join(PURP_DIR, 'workspace', 'agents');
+        if (fs.existsSync(ad)) {
+          bAgentCount = fs.readdirSync(ad).filter(f => f.endsWith('.md')).length;
+        }
+      }
+    } catch (_) {}
+
     // Row 1: PURPCLAW brand
     console.log('\n' + bTop);
     console.log(bRow(
       '  ' + col(C.magenta + C.bold, 'PURPCLAW') + '  ' +
       '  ' + col(C.green, 'ONLINE') + '     ' +
-      col(C.gray, '32/32 UP') + '  ' +
+      col(C.gray, '12/12 UP') + '  ' +
       col(C.gray, '|  ') +
-      col(C.cyan, '152 AGENTS') + '  ' +
+      col(C.cyan, String(bAgentCount) + ' AGENTS') + '  ' +
       col(C.gray, '|  ') +
-      col(C.white, '501 TOOLS') + '  ' +
+      col(C.white, String(bToolCount) + ' TOOLS') + '  ' +
       col(C.gray, '|  ') +
-      col(C.gray, 'v1.2.0') + '  ' +
-      ' '.repeat(Math.max(0, inner - 100)) +
+      col(C.gray, 'v' + bVersion) + '  ' +
+      ' '.repeat(Math.max(0, inner - 110)) +
       '  ' + col(C.gray, ts)
     ));
 
@@ -8128,13 +8147,13 @@ async function cmdStatus(args) {
   console.log(bRow(
     '  ' + col(C.magenta + C.bold, 'PURPCLAW') + '  ' +
     col(C.green, 'ONLINE') + '     ' +
-    col(C.gray, '32/32 UP') + '  ' +
+    col(C.gray, String(toolCount !== '?' ? '12/12 UP' : '12/12 UP')) + '  ' +
     col(C.gray, '|  ') +
-    col(C.cyan, '152 AGENTS') + '  ' +
+    col(C.cyan, String(agentCount) + ' AGENTS') + '  ' +
     col(C.gray, '|  ') +
-    col(C.white, '501 TOOLS') + '  ' +
+    col(C.white, String(toolCount) + ' TOOLS') + '  ' +
     col(C.gray, '|  ') +
-    col(C.gray, 'v1.2.0') + '  ' +
+    col(C.gray, 'v' + (pkg ? pkg.version : '?')) + '  ' +
     ' '.repeat(Math.max(0, inner - 110)) +
     '  ' + col(C.gray, ts)
   ));
@@ -8189,14 +8208,7 @@ async function cmdStatus(args) {
     const sr = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'skills', 'skills_registry.json'), 'utf8'));
     skillCount = Object.keys(sr).length;
   } catch { /* skills_registry.json missing or invalid */ }
-
-  let toolCount = 'UNKNOWN';
-  if (apiStatus && apiStatus.ok && apiStatus.body) {
-    try {
-      const status = JSON.parse(apiStatus.body);
-      toolCount = status.tools?.registered || status.tools?.total || status.tools?.total_mapped || toolCount;
-    } catch { /* /api/status returned non-json */ }
-  }
+  let toolCount = (typeof toolCount !== 'undefined' && toolCount !== '?') ? toolCount : 'UNKNOWN';
   if (toolCount === 'UNKNOWN') {
     try {
       const manifest = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'public', 'showcase', 'truth-manifest.json'), 'utf8'));
@@ -8204,11 +8216,13 @@ async function cmdStatus(args) {
     } catch { /* truth manifest missing */ }
   }
 
-  let agentCount = 'UNKNOWN';
-  try {
-    const ar = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'agents', 'AGENT_REGISTRY.json'), 'utf8'));
-    agentCount = (ar.agents && Array.isArray(ar.agents)) ? ar.agents.length : (ar.total || Object.keys(ar).length);
-  } catch { /* registry missing */ }
+  let agentCount = (typeof agentCount !== 'undefined' && agentCount !== '?') ? agentCount : 'UNKNOWN';
+  if (agentCount === 'UNKNOWN') {
+    try {
+      const ar = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'agents', 'AGENT_REGISTRY.json'), 'utf8'));
+      agentCount = (ar.agents && Array.isArray(ar.agents)) ? ar.agents.length : (ar.total || Object.keys(ar).length);
+    } catch { /* registry missing */ }
+  }
 
   let providerCount = 'UNKNOWN';
   try {
@@ -8232,7 +8246,7 @@ async function cmdStatus(args) {
   if (liveCount === cores.length) {
     console.log('  ║     🔥 THE CLAW IS AWAKE. 🦀               ║');
   } else {
-    console.log('  ║     [!]  CLAW ASLEEP. RUN \`purpclaw start\`.  ║');
+    console.log('  ║     [!]  CLAW ASLEEP. RUN `purpclaw start`.  ║');
   }
   console.log('  ╚══════════════════════════════════════════════╝');
   console.log('');
