@@ -609,9 +609,9 @@ class LongTermMemory:
             try:
                 vec = np.asarray(QuantizedMemory.dequantize(atom.embedding), dtype=np.float32)
             except Exception:
-                continue
+                vec = np.zeros((384,), dtype=np.float32)   # zero-fill failed dequantize
             if vec.size == 0:
-                continue
+                vec = np.zeros((384,), dtype=np.float32)
             ids.append(atom_id)
             rows.append(vec)
         return ids, rows
