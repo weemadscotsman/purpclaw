@@ -25,7 +25,13 @@ const announce = require('./events');
 
 const PORT        = parseInt(process.env.MEMORY_PORT || '7880', 10);
 const HOST        = process.env.MEMORY_HOST || '127.0.0.1';
-const TIMEOUT_MS  = parseInt(process.env.MEMORY_TIMEOUT_MS || '4000', 10);
+// 4000 was too tight for a loaded spine. The whole stack ingests
+// continuously (archive grew 7.7k -> 11.5k atoms in one session), and while
+// a warm recall is 3-23ms it spikes to ~1s+ under that load, so recalls that
+// would have succeeded were being cancelled and reported as failures. The
+// degraded-visibility reporting above means a genuinely dead service still
+// surfaces immediately rather than hiding behind the longer ceiling.
+const TIMEOUT_MS  = parseInt(process.env.MEMORY_TIMEOUT_MS || '15000', 10);
 const ENABLED     = process.env.MEMORY_DISABLED !== '1';
 
 // Simple in-process cache to avoid hammering memory matrix on every spawn
