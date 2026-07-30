@@ -1,0 +1,67 @@
+{
+  "id": "dev-task",
+  "name": "Development Task Runner",
+  "version": "1",
+  "entry": "gather",
+  "state_schema": {},
+  "nodes": [
+    {
+      "id": "gather",
+      "type": "prompt",
+      "prompt": "You are a development task analyzer. Analyze the following task and outline the steps needed.\n\nTask: {{task}}\n\nProvide a numbered list of implementation steps.",
+      "output": "analysis",
+      "next": "check"
+    },
+    {
+      "id": "check",
+      "type": "condition",
+      "condition": "{{analysis}} && {{analysis}}.length > 0",
+      "on_true": "plan",
+      "on_false": "error_no_analysis"
+    },
+    {
+      "id": "error_no_analysis",
+      "type": "prompt",
+      "prompt": "No analysis produced. Acknowledge this.",
+      "output": "error_msg",
+      "next": null
+    },
+    {
+      "id": "plan",
+      "type": "set",
+      "value": { "status": "planned", "steps": "{{analysis}}", "started_at": "{{NOW}}" },
+      "output": "plan",
+      "next": "execute"
+    },
+    {
+      "id": "execute",
+      "type": "tool",
+      "tool": "shell",
+      "arguments": ["echo", "Implementing: {{task}}"],
+      "output": "exec_result",
+      "next": "verify"
+    },
+    {
+      "id": "verify",
+      "type": "condition",
+      "condition": "{{exec_result}} !== null",
+      "on_true": "complete",
+      "on_false": "retry"
+    },
+    {
+      "id": "retry",
+      "type": "prompt",
+      "prompt": "Execution failed. Provide a fix for: {{task}}",
+      "output": "retry_note",
+      "next": "execute"
+    },
+    {
+      "id": "complete",
+      "type": "set",
+      "value": { "status": "done", "task": "{{task}}", "completed_at": "{{NOW}}" },
+      "output": "result",
+      "next": null
+    }
+  ],
+  "requiredInputs": ["task"]
+}

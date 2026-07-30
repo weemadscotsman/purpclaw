@@ -1,6 +1,26 @@
 'use strict';
 
 const path = require('path');
+const fs = require('fs');
+
+// Same resolveProjectRoot logic as bin/purpclaw.js — keeps workflow.js self-contained
+const _rootMarker = 'docs' + path.sep + 'COMPANION_EVENT_MAP.md';
+const _KNOWN = [
+  'E:' + path.sep + 'god folder' + path.sep + '02_ACTIVE_PROJECTS' + path.sep + 'PURPCLAW',
+];
+function _resolveRoot() {
+  for (const p of _KNOWN) {
+    if (fs.existsSync(path.join(p, _rootMarker))) return p;
+  }
+  const orig = path.resolve(__dirname, '..', '..');
+  let d = orig, prev = '';
+  while (d !== prev) {
+    if (fs.existsSync(path.join(d, _rootMarker))) return d;
+    prev = d; d = path.dirname(d);
+  }
+  return orig;
+}
+const PURP_DIR = _resolveRoot();
 
 function printWorkflow(w, ctx = {}) {
   const C = ctx.C || {};
@@ -63,7 +83,6 @@ async function run(args = [], ctx = {}) {
 
   // ── purpclaw workflow runs ─────────────────────────────────────────────────
   if (sub === 'runs') {
-    const WF = require(path.join(PURP_DIR, 'lib', 'workflow-manager.js'));
     const limit = Math.min(parseInt(args.find(a => a.startsWith('--limit='))?.split('=')[1] || '20'), 200);
     const runs = WF.list(limit);
     console.log('');
@@ -92,7 +111,6 @@ async function run(args = [], ctx = {}) {
     const deny   = args.includes('--deny');
     const decision = approve ? 'approve' : deny ? 'deny' : null;
 
-    const WF = require(path.join(PURP_DIR, 'lib', 'workflow-manager.js'));
     const AQ = (() => { try { return require(path.join(PURP_DIR, 'lib', 'approval-queue.js')); } catch { return null; } })();
 
     const run = WF.get(runId);
@@ -145,17 +163,23 @@ async function run(args = [], ctx = {}) {
       console.log('       purpclaw workflow list                # show available workflows');
       return 1;
     }
-    const reg = require(path.join(PURP_DIR, 'lib', 'workflow-registry.js'));
-    const spec = reg.findWorkflow(name);
+    // First try WF.load — loads .json/.yaml from workflows/ dir or absolute path
+    let spec;
+    const WF = require(path.join(PURP_DIR, 'lib', 'workflow-manager.js'));
+        try { spec = WF.load(name, PURP_DIR); } catch {}
+    // Fall back to registry metadata (no nodes — just for discovery)
+    if (!spec) {
+      const reg = require(path.join(PURP_DIR, 'lib', 'workflow-registry.js'));
+      spec = reg.findWorkflow(name);
+    }
     if (!spec) {
       console.log(`Workflow not found: ${name}`);
       console.log('Run `purpclaw workflow list` to see available workflows.');
       return 1;
     }
     if (!spec.nodes || !spec.nodes.length) {
-      console.log(`Workflow "${spec.name || spec.id}" is registered but has no runnable nodes.`);
-      console.log("Runnable workflow specs (*.wf.json) are not yet authored.");
-      console.log('Run `purpclaw workflow list` to see registered workflows.');
+      console.log(`Workflow "${spec.name || spec.id}" has no runnable nodes.`);
+      console.log('Author a .json or .yaml spec in the workflows/ directory.');
       return 1;
     }
     // Parse key=value input args into context
@@ -164,7 +188,6 @@ async function run(args = [], ctx = {}) {
       const eq = arg.indexOf('=');
       if (eq > 0) input[arg.slice(0, eq)] = arg.slice(eq + 1);
     }
-    const WF = require(path.join(PURP_DIR, 'lib', 'workflow-manager.js'));
     const _col = ctx.col || ((_, v) => v);
     const _C = ctx.C || {};
     const adapter = {
@@ -183,12 +206,12 @@ async function run(args = [], ctx = {}) {
     try {
       const result = await WF.run(spec, adapter, { input, maxSteps: 200 });
       const statusColour = { complete: _C.green, failed: _C.red, interrupted: _C.yellow }[result.status] || _C.cyan;
-      console.log(`\n  Status: ${col(statusColour, result.status)}`);
-      if (result.error) console.log(`  Error: ${col(_C.red, result.error)}`);
+      console.log(`\n  Status: ${_col(statusColour, result.status)}`);
+      if (result.error) console.log(`  Error: ${_col(_C.red, result.error)}`);
       console.log(`  Completed nodes: ${result.completed?.length || 0}`);
       return result.status === 'failed' ? 1 : 0;
     } catch (err) {
-      console.log(`  ${col(_C.red, '[X]')} ${err.message}`);
+      console.log(`  ${_col(_C.red, '[X]')} ${err.message}`);
       return 1;
     }
   }
@@ -200,7 +223,6 @@ async function run(args = [], ctx = {}) {
       console.log('Usage: purpclaw workflow history <runId>');
       return 1;
     }
-    const WF = require(path.join(PURP_DIR, 'lib', 'workflow-manager.js'));
     const checkpoints = WF.history(runId);
     console.log('');
     console.log(`  Checkpoints for ${runId}`);
