@@ -18,8 +18,9 @@ import { Onboarding } from './Onboarding';
 import { LiveSystemMap } from './LiveSystemMap';
 import { SamplerPanel } from './SamplerPanel';
 import { AbliteratorPanel } from './AbliteratorPanel';
+import { DataAnalysisPanel } from './DataAnalysisPanel';
 
-type TabId = 'overview' | 'evolution' | 'graph' | 'agents' | 'tower' | 'swarm' | 'harness' | 'pipeline' | 'timeline' | 'gatekeeper' | 'cognitive' | 'command' | 'logs' | 'mochi' | 'sampler' | 'dream' | 'abliterator';
+type TabId = 'overview' | 'evolution' | 'graph' | 'agents' | 'tower' | 'swarm' | 'harness' | 'pipeline' | 'timeline' | 'gatekeeper' | 'cognitive' | 'command' | 'logs' | 'mochi' | 'sampler' | 'dream' | 'abliterator' | 'data';
 
 interface Tab {
   id: TabId;
@@ -43,6 +44,7 @@ const TABS: Tab[] = [
   { id: 'dream', label: 'Dream Swarm', icon: 'DR', stage: 'observe', purpose: 'Live altered-states WebGL swarm telemetry visualizer.' },
   { id: 'gatekeeper', label: 'Risk Gate', icon: 'GK', stage: 'control', purpose: 'Check safety gates, approvals, and blocked risky operations.' },
   { id: 'abliterator', label: 'Abliterator', icon: 'AB', stage: 'control', purpose: 'OBLITERATUS refusal weight excision and red-team sandbox.' },
+  { id: 'data', label: 'Data Analysis', icon: 'DA', stage: 'observe', purpose: 'Upload a CSV and explore it: tables, bar charts, line charts, and pie charts with column stats.' },
   { id: 'cognitive', label: 'Cognitive Mesh', icon: 'CG', stage: 'control', purpose: 'Use memory, rules, diagnostics, and reasoning lenses.' },
   { id: 'evolution', label: 'Self-Evolution', icon: 'EV', stage: 'control', purpose: 'Track the human-steers, harness-builds, loop-improves learning cycle.' },
   { id: 'graph', label: 'System Map', icon: 'SM', stage: 'control', purpose: 'Map system relationships across services, agents, workflows, and events.' },
@@ -946,6 +948,7 @@ function PanelContent({ tab, data, iframeRef }: { tab: TabId; data: MissionData;
       case 'timeline': return <EventTimelinePanel data={data} />;
       case 'sampler': return <SamplerPanel />;
       case 'gatekeeper': return <GatekeeperPanel data={data} />;
+      case 'data': return <DataAnalysisPanel data={data} />;
       case 'cognitive': return <CognitivePanel />;
       case 'command': return <CommandPanel data={data} />;
       case 'logs': return <LogStreamPanel data={data} />;

@@ -16,6 +16,13 @@ function trace(action: string, status: string, detail: string, sessionId = '') {
 }
 
 export async function GET(req: NextRequest) {
+  const id = (req.nextUrl.searchParams.get('id') || '').trim();
+  if (id) {
+    const session = store().loadSession(id);
+    trace('load_session', session ? 'ok' : 'missing', session ? `${session.messageCount} message(s)` : 'not found', id);
+    if (!session) return NextResponse.json({ ok: false, error: 'session_not_found' }, { status: 404 });
+    return NextResponse.json({ ok: true, session });
+  }
   const limit = Number(req.nextUrl.searchParams.get('limit') || 80);
   const sessions = store().listSessions(Math.max(1, Math.min(limit, 200)));
   trace('list_sessions', 'ok', `${sessions.length} session(s)`);

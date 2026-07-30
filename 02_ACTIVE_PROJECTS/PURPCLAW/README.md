@@ -82,7 +82,7 @@ node bin/purpclaw.js donor evolve ambient_tension_from_environment
 ## Development Rules
 
 - Files are the brain. State lives in registries, memory files, logs, and handoffs.
-- Read `Router.md` before choosing a division.
+- Read `docs/Router.md` before choosing a division.
 - Read the relevant division pickup before work.
 - Write the relevant handoff after work.
 - Do not move folders from audit findings alone. Create ownership/crosswalk registries first, then move only what is proven inactive.

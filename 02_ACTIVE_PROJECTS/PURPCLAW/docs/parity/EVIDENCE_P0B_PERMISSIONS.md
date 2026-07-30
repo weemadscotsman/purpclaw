@@ -1,5 +1,7 @@
 # P0-B Evidence — Permission Enforcement + MCP Bypass Closure
 
+> Canonical authority: [`docs/parity/CANONICAL_PARITY_PRIORITY.md`](CANONICAL_PARITY_PRIORITY.md). This is component evidence only; its COMPLETE label is provisional until canonical acceptance checks pass.
+
 **Slot:** 4  
 **Role:** P0-B Builder  
 **Date:** 2026-07-29  
@@ -118,4 +120,3 @@ function getToolRuntime() {
 ## Remaining
 
 P0-B requires P0-A (DatabaseSync fix) to be integrated before this can be tested live. The code changes are complete and syntactically verified.
-

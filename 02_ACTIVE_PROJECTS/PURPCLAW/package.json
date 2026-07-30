@@ -63,6 +63,8 @@
     "docs:check": "node scripts/validate-docs.js",
     "docs:gate": "node scripts/docs-gate.js",
     "parity:check": "node scripts/parity-authority-check.js",
+    "truth": "node scripts/audit-agents.mjs",
+    "truth:check": "node scripts/audit-agents.mjs --check",
     "audit:runtime-evidence": "node scripts/verify-unified-runtime-audit.js --write",
     "test:cross-surface-session": "node scripts/test-cross-surface-session.js",
     "test:cross-surface-session:e2e": "node scripts/test-cross-surface-session-e2e.js",
@@ -81,7 +83,8 @@
     "verify:hivemind": "node scripts/verify-hivemind.js",
     "verify:hivemind:rank1": "node scripts/verify-hivemind.js --rank=1",
     "clean": "next clean",
-    "smoke": "python scripts/smoke_all.py",
+    "smoke": "node scripts/smoke-test.mjs",
+    "smoke:all": "python scripts/smoke_all.py",
     "smoke:save": "python scripts/smoke_all.py --save /tmp/purpclaw_smoke.json"
   },
   "dependencies": {
