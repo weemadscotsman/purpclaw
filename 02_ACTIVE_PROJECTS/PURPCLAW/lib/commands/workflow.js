@@ -110,9 +110,6 @@ async function run(args = [], ctx = {}) {
       } else {
         console.log(`  ✓ ${decision === 'approve' ? 'Approved' : 'Denied'}: ${run.context.__approval_id}`);
       }
-      // Set resume value on the run context so the approval node branches correctly
-      run.context.__resume_value_approved = approve;
-      run.context.__resume_value = run.context.__approval_id;
     } else if (!decision && run.status === 'interrupted') {
       console.log(`  Workflow is interrupted. Use --approve or --deny to resume.`);
       console.log(`  Pending approval: ${run.context?.__approval_id || 'unknown'}`);
@@ -127,7 +124,7 @@ async function run(args = [], ctx = {}) {
 
     console.log(`  Resuming ${runId}…`);
     const result = await WF.resume(runId, adapter, {
-      resumeValue: run.context.__approval_id,
+      resumeValue: { approved: !!approve },
     });
 
     const statusColour = {
@@ -139,6 +136,54 @@ async function run(args = [], ctx = {}) {
     if (result.error) console.log(`  Error: ${ctx.C?.red || ''}${result.error}${''}`);
     console.log(`  Completed nodes: ${result.completed?.length || 0}`);
     return result.status === 'failed' ? 1 : 0;
+  }
+
+  // ── purpclaw workflow run <name> [inputKey=value...] ─────────────────────────
+  if (sub === 'run') {
+    const name = args[1];
+    if (!name) {
+      console.log('Usage: purpclaw workflow run <name> [key=value...]');
+      console.log('       purpclaw workflow list                # show available workflows');
+      return 1;
+    }
+    const reg = require(path.join(PURP_DIR, 'lib', 'workflow-registry.js'));
+    const spec = reg.findWorkflow(name);
+    if (!spec) {
+      console.log(`Workflow not found: ${name}`);
+      console.log('Run `purpclaw workflow list` to see available workflows.');
+      return 1;
+    }
+    // Parse key=value input args into context
+    const input = {};
+    for (const arg of args.slice(2)) {
+      const eq = arg.indexOf('=');
+      if (eq > 0) input[arg.slice(0, eq)] = arg.slice(eq + 1);
+    }
+    const WF = require(path.join(PURP_DIR, 'lib', 'workflow-manager.js'));
+    const adapter = {
+      prompt: async (input, node, run) => {
+        console.log(col(C.cyan, `  [prompt]`) + ` ${node.prompt?.substring(0, 80) || node.id}`);
+        return { ok: true, output: `[mock prompt: ${node.id}]` };
+      },
+      tool: async (tool, args, node, run) => {
+        console.log(col(C.yellow, `  [tool]`) + ` ${tool} ${JSON.stringify(args).substring(0, 60)}`);
+        return { ok: true, output: `[mock tool: ${tool}]` };
+      },
+    };
+    console.log(`\n  Starting workflow: ${col(C.cyan, spec.name || spec.id)}`);
+    if (Object.keys(input).length) console.log(`  Input: ${JSON.stringify(input)}`);
+    console.log('');
+    try {
+      const result = await WF.runWorkflow(spec, adapter, { input, maxSteps: 200 });
+      const statusColour = { complete: C.green, failed: C.red, interrupted: C.yellow }[result.status] || C.cyan;
+      console.log(`\n  Status: ${statusColour}${result.status}${''}`);
+      if (result.error) console.log(`  Error: ${C.red}${result.error}${''}`);
+      console.log(`  Completed nodes: ${result.completed?.length || 0}`);
+      return result.status === 'failed' ? 1 : 0;
+    } catch (err) {
+      console.log(`  ${C.red}[X]${''} ${err.message}`);
+      return 1;
+    }
   }
 
   // ── purpclaw workflow history <runId> ───────────────────────────────────────
@@ -167,9 +212,10 @@ async function run(args = [], ctx = {}) {
 
   // ── purpclaw workflow --help ─────────────────────────────────────────────────
   if (sub === '--help' || sub === '-h') {
-    console.log('purpclaw workflow [list|runs|resume|history] [options]');
+    console.log('purpclaw workflow [list|runs|run|resume|history] [options]');
     console.log('  list [--json] [workflow-id]   list workflow definitions');
     console.log('  runs [--limit=N]             list recent workflow runs');
+    console.log('  run <name> [key=value...]    run a workflow by name');
     console.log('  resume <runId> [--approve|--deny]  resume an interrupted run');
     console.log('  history <runId>               show checkpoint history for a run');
     console.log('');
