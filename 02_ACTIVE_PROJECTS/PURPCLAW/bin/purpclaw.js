@@ -4151,12 +4151,10 @@ async function cmdDoctor(args) {
   }
 
   try {
-    const py311 = execSync('py -3.11 --version 2>&1', { cwd: PURP_DIR, encoding: 'utf8', timeout: 5000, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+    const py311 = require('child_process').execSync('py -3.11 --version 2>&1', { cwd: PURP_DIR, encoding: 'utf8', timeout: 5000, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
     add('Python 3.11', true, py311, 'runtime');
-    console.error('[DEBUG] Python check passed:', py311);
   } catch (e) {
     add('Python 3.11', false, 'py -3.11 unavailable', 'runtime');
-    console.error('[DEBUG] Python check failed:', e.message);
   }
 
   try {
