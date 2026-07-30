@@ -188,7 +188,7 @@ async function run(args = [], ctx = {}) {
       console.log(`  Completed nodes: ${result.completed?.length || 0}`);
       return result.status === 'failed' ? 1 : 0;
     } catch (err) {
-      console.log(`  ${_C.red}[X]${''} ${err.message}`);
+      console.log(`  ${col(_C.red, '[X]')} ${err.message}`);
       return 1;
     }
   }
