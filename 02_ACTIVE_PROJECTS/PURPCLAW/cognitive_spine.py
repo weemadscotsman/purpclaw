@@ -20,10 +20,12 @@ _SCRIPTS = os.path.join(_HERE, "scripts")
 if _SCRIPTS not in sys.path:
     sys.path.insert(0, _SCRIPTS)
 
-# Cap defaults: 1.5 GB hard ceiling. Spine services are child processes
+# Cap defaults: 4 GB hard ceiling. Spine services are child processes
 # spawned by cognitive_gateway.js — PM2's max_memory_restart doesn't
 # apply to them. This watchdog IS the only thing keeping the host alive.
-_SPINE_MEM_LIMIT_MB = int(os.environ.get("COGNITIVE_MEM_LIMIT_MB", "1500"))
+# 1500 MB was too tight — loading FAISS + embeddings + 3300+ atoms routinely
+# breached the ceiling before the HTTP server could start accepting connections.
+_SPINE_MEM_LIMIT_MB = int(os.environ.get("COGNITIVE_MEM_LIMIT_MB", "4000"))
 _SPINE_MEM_INTERVAL_S = int(os.environ.get("COGNITIVE_MEM_INTERVAL_S", "15"))
 try:
     import mem_guard  # noqa: E402  (sys.path patched above)
@@ -71,6 +73,17 @@ class CognitiveState:
         self.modal = ModalLogicEngine()
         self.diagnostics = DiagnosticOrchestrator()
         self.neuro = NeuroSymbolicBridge(manage_memory=False)
+        # Prime the similarity cache while we are still in the "warming" state.
+        # Built lazily it lands on the FIRST real request, and over a 10k-atom
+        # archive that cold build blew past the client's 4s recall / 6s ingest
+        # timeouts — so the first caller after every restart always failed.
+        # Paying it here means "ready" actually means ready.
+        try:
+            t_warm = time.time()
+            self.memory.recall("warmup", 1)
+            print("[CognitiveSpine] similarity cache primed in %.1fs" % (time.time() - t_warm), flush=True)
+        except Exception as exc:                      # never block boot on warm-up
+            print("[CognitiveSpine] cache prime skipped: %s" % exc, flush=True)
         self.started_at = time.time()
 
 
