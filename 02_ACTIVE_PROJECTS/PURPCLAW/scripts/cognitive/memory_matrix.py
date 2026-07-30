@@ -528,6 +528,10 @@ class LongTermMemory:
         for archive_path in (self.storage_path, self.backup_path):
             try:
                 if os.path.exists(archive_path) and self._load_archive_file(archive_path):
+                    # Pre-warm the vector cache so the first recall is instant.
+                    # _ensure_vec_cache takes ~5s over 18k atoms; do it once at startup
+                    # instead of blocking the first query.
+                    self._ensure_vec_cache(list(self.atoms.items()))
                     return
             except Exception as e:
                 print(f"[MEMORY] Failed to load archive {archive_path}: {e}")
