@@ -38,16 +38,16 @@ never meant to start.
 | eventbus | 7782 | CORE | yes | 17 | `unified_eventbus.js` |
 | state | 7783 | CORE | yes | 7 | `unified_state.js` |
 | api | 7780 | CORE | yes | 44 | `unified_api.js` (5036-line monolith: HTTP + WebSocket + LLM routing) |
-| tower | 7790 | CORE | yes | 20 | `agent_tower.js` |
+| tower | 7790 | CORE | yes | 20 | agent registry + spawning (dual: PM2 service + CLI-embedded) |
 | orchestrator | 7784 | CORE | yes | 21 | `orchestrator.js` (workflow queue + job contracts) |
-| gatekeeper | 7791 | CORE | yes | 10 | `gatekeeper.js` |
-| metrics | — | EMBEDDED | no | — | REMOVED 2026-07-31 — inline counters only; no daemon, no port |
-| pool | 7885 | CORE | yes | 8 | `pool_service.js` |
-| workers | 7897 | CORE | yes | 4 | `worker_service.js` |
-| context-bus | 7881 | CORE | yes | 2 | `lib/context-bus.js` |
-| nextjs | 3030 | CORE | yes | 14 | `next` dev server |
-| cognitive | 7880 | cognitive | no | 18 | `cognitive_gateway.js` (+ python spine on 7888) |
-| coordinator | — | REMOVED | no | — | Tombstoned 2026-07-31 — pipeline moved to orchestrator + agent_tower |
+| gatekeeper | 7791 | CORE | yes | 10 | rate limiting + API keys |
+| metrics | — | EMBEDDED | no | — | REMOVED 2026-07-31 — inline counters only; was passive scraper (monitored but NOT consumed by any decision system) |
+| pool | 7885 | CORE | yes | 8 | skill/agent index — PERSISTENT: `.purpclaw/hivemind/`, `agent_work/pool/` |
+| workers | 7897 | CORE | yes | 4 | overflow worker lane |
+| context-bus | 7881 | CORE | yes | 2 | context bus messages |
+| nextjs | 3030 | CORE | yes | 14 | `next` dev server (production build broken — BUILD_ID missing since 2026-07-30) |
+| cognitive | 7880 | cognitive | no | 18 | `cognitive_gateway.js` (Python spine subprocess: 1GB Node + up to 8GB Python) |
+| coordinator | — | REMOVED | no | 0 | Tombstoned 2026-07-31 — swarm mission dispatch moved to orchestrator + agent_tower |
 | goop | 7895 | goop | no | 2 | — |
 | voice-coordinator | 7781 | dark | no | 3 | — |
 | voice-bridge | 7792 | dark | no | 3 | — |
