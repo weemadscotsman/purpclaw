@@ -54,7 +54,7 @@ config starts 11. That is intentional — `safe-start` and `doctor` now derive f
 | voice-coordinator | 7781 | voice | no | 3 | voice orchestration + session management |
 | voice-bridge | 7792 | voice | no | 3 | voice WebSocket bridge |
 | stt | 7896 | voice | no | 3 | faster-whisper STT |
-| voice-ingress | — | voice | no | 0 | voiceorchestrator dispatch |
+| voice-ingress | — | dark | no | 0 | voiceorchestrator dispatch |
 | chorus | — | companions | no | 0 | companion reactions |
 | telegram | 7795 | companions | no | 0 | Telegram adapter |
 | vision | 7889 | vision | no | 0 | camera/screen monitor |
@@ -153,7 +153,7 @@ process starts. No explicit `waitFor()` chains found in scanned source.
 | class | services |
 |---|---|
 | Embedded core module | eventbus, state, context-bus, pool, workers, gatekeeper, api, tower, orchestrator (pending state-ownership proof per service) |
-| Lazy on-demand worker | vision, yolo, stt, voice-coordinator, voice-bridge, avatar, chorus, telegram, reasoning |
+| Lazy on-demand worker | vision, yolo, stt, voice-coordinator, voice-bridge, avatar, chorus, telegram, reasoning, voice-ingress |
 | External dependency | nextjs (WebUI — production build broken since 2026-07-30), cognitive spine (Python subprocess on 7888) |
 | Developer-only | goop, harness, drift-watcher |
 | Removed | coordinator (tombstoned), metrics (removed — inline counters only), thringlet (tombstoned — Next.js API route) |
