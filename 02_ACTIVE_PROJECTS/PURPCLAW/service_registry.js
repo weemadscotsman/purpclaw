@@ -41,6 +41,14 @@ const SERVICES = [
   { key: 'coordinator', name: 'Swarm Coordinator', pm2: null, group: 'removed', port: null, healthPort: null, healthPath: null, required: false, note: 'REMOVED 2026-06 — mission pipeline moved to orchestrator + agent_tower; tombstoned 2026-07-31' },
 
   // ── Observability ──────────────────────────────────────────────────────────
+  { key: 'tts-gateway', name: 'TTS Gateway', pm2: 'purpclaw-tts-gateway', group: 'voice', port: 7799, healthPort: 7799, healthPath: '/health', required: false, note: 'Kokoro TTS service; port shared with thringlet bridge' },
+  { key: 'xiaozhi', name: 'Xiaozhi Bridge', pm2: 'purpclaw-xiaozhi', group: 'voice', port: null, healthPort: null, healthPath: null, required: false, note: 'Xiaozhi cloud bridge; port via env var' },
+  { key: 'discord', name: 'Discord Adapter', pm2: 'purpclaw-discord', group: 'companions', port: 7796, healthPort: null, healthPath: null, required: false, note: 'Discord adapter; port via env var' },
+  { key: 'slack', name: 'Slack Adapter', pm2: 'purpclaw-slack', group: 'companions', port: 7797, healthPort: null, healthPath: null, required: false, note: 'Slack adapter; port via env var' },
+  { key: 'static-server', name: 'Static File Server', pm2: 'purpclaw-static-server', group: 'developer', port: 3000, healthPort: null, healthPath: null, required: false, note: 'static file server; port shared with nextjs dev' },
+  { key: 'cowork', name: 'Cowork HUD', pm2: 'purpclaw-cowork', group: 'developer', port: null, healthPort: null, healthPath: null, required: false, note: 'desktop overlay HUD; port via env var' },
+  { key: 'email', name: 'Email Gateway', pm2: 'purpclaw-email', group: 'companions', port: 7798, healthPort: null, healthPath: null, required: false, note: 'Email gateway; port shared with harness' },
+
   { key: 'drift-watcher', name: 'Drift Watcher', pm2: 'purpclaw-drift-watcher', group: 'optional', port: null, healthPort: null, healthPath: null, required: false, note: 'auto-monitors registry/capability/doc drift, regenerates mechanical surfaces, flags the rest' },
 ];
 
