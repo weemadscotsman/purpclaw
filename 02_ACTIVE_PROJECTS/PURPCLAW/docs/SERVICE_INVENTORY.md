@@ -46,9 +46,9 @@ never meant to start.
 | workers | 7897 | CORE | yes | 4 | `worker_service.js` |
 | context-bus | 7881 | CORE | yes | 2 | `lib/context-bus.js` |
 | nextjs | 3030 | CORE | yes | 14 | `next` dev server |
-| cognitive | 7880 | CORE | no | 18 | `cognitive_gateway.js` (+ python spine on 7888) |
-| coordinator | 7898 | dark | no | 1 | — |
-| goop | 7895 | dark | no | 2 | — |
+| cognitive | 7880 | cognitive | no | 18 | `cognitive_gateway.js` (+ python spine on 7888) |
+| coordinator | — | REMOVED | no | — | Tombstoned 2026-07-31 — pipeline moved to orchestrator + agent_tower |
+| goop | 7895 | goop | no | 2 | — |
 | voice-coordinator | 7781 | dark | no | 3 | — |
 | voice-bridge | 7792 | dark | no | 3 | — |
 | stt | 7896 | dark | no | 3 | — |
@@ -60,7 +60,7 @@ never meant to start.
 | avatar | 7777 | dark | no | 2 | — |
 | reasoning | 7892 | dark | no | 1 | — |
 | harness | 7798 | dark | no | 4 | — |
-| thringlet | — | DEV | no | 5 | Next.js API route (`app/api/thringlets/`); bridge on :7799 (shared with TTS) |
+| thringlet | — | developer | no | 5 | Next.js API route (`app/api/thringlets/`); bridge on :7799 (shared with TTS) |
 | drift-watcher | — | dark | no | 0 | — |
 
 `thringlet` runs as a **Next.js API route** (`app/api/thringlets/`), not a
