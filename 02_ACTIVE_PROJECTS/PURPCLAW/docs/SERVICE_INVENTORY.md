@@ -37,7 +37,7 @@ never meant to start.
 |---|---|---|---|---|---|
 | eventbus | 7782 | CORE | yes | 17 | `unified_eventbus.js` |
 | state | 7783 | CORE | yes | 7 | `unified_state.js` |
-| api | 7780 | CORE | yes | 44 | `unified_api.js` |
+| api | 7780 | CORE | yes | 44 | `unified_api.js` (5036-line monolith: HTTP + WebSocket + LLM routing) |
 | tower | 7790 | CORE | yes | 20 | `agent_tower.js` |
 | orchestrator | 7784 | CORE | yes | 21 | `orchestrator.js` |
 | gatekeeper | 7791 | CORE | yes | 10 | `gatekeeper.js` |
