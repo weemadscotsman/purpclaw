@@ -19,14 +19,11 @@ const isDark = name => ENABLED !== null && !ENABLED.has(name);
 ].filter(a => !isDark(a.name))
 ```
 
-So the default `pm2 start ecosystem.config.js` now defines **12** apps, not 34.
-`PURPCLAW_SERVICES=all` restores every service; an explicit comma list selects
-exactly those. This landed after a mass start of all 34 saturated the machine.
+So the default `pm2 start ecosystem.config.js` starts **11 CORE apps** (when `PURPCLAW_SERVICES=core`), filtered from the 38 defined in the file. `PURPCLAW_SERVICES=all` restores everything; an explicit comma list selects exactly those. This landed after a mass start of all 38 saturated the machine.
 
-**Consequence:** the service registry lists 27 services while the default PM2
-config defines 12. That is intentional, not drift — but nothing documented it,
-and a health sweep reading the registry will report 15 services "down" that were
-never meant to start.
+**Consequence:** the service registry lists 26 services while the default PM2
+config starts 11. That is intentional — `safe-start` and `doctor` now derive from
+`service_registry.js` as the single source of truth.
 
 ## Inventory
 
