@@ -41,7 +41,7 @@ never meant to start.
 | tower | 7790 | CORE | yes | 20 | `agent_tower.js` |
 | orchestrator | 7784 | CORE | yes | 21 | `orchestrator.js` |
 | gatekeeper | 7791 | CORE | yes | 10 | `gatekeeper.js` |
-| metrics | 7890 | CORE | yes | monitors only | `metrics_aggregator.js` |
+| metrics | — | EMBEDDED | no | — | REMOVED 2026-07-31 — inline counters only; no daemon, no port |
 | pool | 7885 | CORE | yes | 8 | `pool_service.js` |
 | workers | 7897 | CORE | yes | 4 | `worker_service.js` |
 | context-bus | 7881 | CORE | yes | 2 | `lib/context-bus.js` |
@@ -60,11 +60,13 @@ never meant to start.
 | avatar | 7777 | dark | no | 2 | — |
 | reasoning | 7892 | dark | no | 1 | — |
 | harness | 7798 | dark | no | 4 | — |
-| thringlet | 7799 | dark | no | 5 | — |
+| thringlet | — | DEV | no | 5 | Next.js API route (`app/api/thringlets/`); bridge on :7799 (shared with TTS) |
 | drift-watcher | — | dark | no | 0 | — |
 
-`thringlet` is in the registry with **no `ecosystem.config.js` definition at
-all** — it can never start regardless of tier.
+`thringlet` runs as a **Next.js API route** (`app/api/thringlets/`), not a
+PM2 process. The CLI command (`lib/commands/thringlets.js`) routes through the
+Bridge service on `:7799`. It does not need its own PM2 entry — Next.js is
+the host process.
 
 ## Monitored vs used — read this before deleting anything
 

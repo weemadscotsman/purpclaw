@@ -13,13 +13,11 @@ const SERVICES = [
   { key: 'tower', name: 'Agent Tower', pm2: 'purpclaw-tower', group: 'core', port: 7790, healthPort: 7790, healthPath: '/tower/health', statusPath: '/tower/status', required: true },
   { key: 'orchestrator', name: 'Orchestrator', pm2: 'purpclaw-orchestrator', group: 'core', port: 7784, healthPort: 7784, healthPath: '/api/health', required: true },
   { key: 'gatekeeper', name: 'Gatekeeper', pm2: 'purpclaw-gatekeeper', group: 'core', port: 7791, healthPort: 7791, healthPath: '/health', required: true },
-  { key: 'metrics', name: 'Metrics Aggregator', pm2: 'purpclaw-metrics', group: 'core', port: 7890, healthPort: 7890, healthPath: '/health', required: true },
+  { key: 'metrics', name: 'Metrics (Embedded)', pm2: null, group: 'embedded', port: null, healthPort: null, healthPath: null, required: false, note: 'REMOVED 2026-07-31 — inline counters only; no daemon, no port, no PM2 entry' },
   { key: 'pool', name: 'Knowledge Pool', pm2: 'purpclaw-pool', group: 'core', port: 7885, healthPort: 7885, healthPath: '/health', required: true },
   { key: 'workers', name: 'Worker Service', pm2: 'purpclaw-workers', group: 'core', port: 7897, healthPort: 7897, healthPath: '/health', required: true, note: 'overflow worker lane for remote/local agent task dispatch' },
   { key: 'context-bus', name: 'Context Bus', pm2: 'purpclaw-context', group: 'core', port: 7881, healthPort: 7881, healthPath: '/health', required: true },
   { key: 'nextjs', name: 'Mission Control UI', pm2: 'purpclaw-nextjs', group: 'core', port: 3030, healthPort: 3030, healthPath: '/api/health', required: true },
-
-  { key: 'coordinator', name: 'Swarm Coordinator', pm2: 'purpclaw-coordinator', group: 'core', port: 7898, healthPort: 7898, healthPath: '/health', required: false, note: 'mission pipeline: decompose → tower dispatch → validate → synthesize' },
 
   { key: 'goop', name: 'GOOP Playground Broker', pm2: 'purpclaw-goop', group: 'goop', port: 7895, healthPort: 7895, healthPath: '/health', required: false, note: 'default-deny API broker behind the GOOP / Bridge surface' },
 
@@ -38,15 +36,35 @@ const SERVICES = [
 
   { key: 'reasoning', name: 'Reasoning Loop', pm2: 'purpclaw-reasoning', group: 'optional', port: 7892, healthPort: 7892, healthPath: '/health', required: false, note: 'proactive heartbeat tick; opt-in via PURPCLAW_PROACTIVE=1' },
 
-  { key: 'harness', name: 'Harness Service', pm2: 'purpclaw-harness', group: 'optional', port: 7798, healthPort: 7798, healthPath: '/health', required: false, note: 'productivity harness executor' },
-  { key: 'thringlet', name: 'Thringlet Bridge', pm2: 'purpclaw-thringlet', group: 'optional', port: 7799, healthPort: 7799, healthPath: '/health', required: false, note: 'runtime→emotion translator' },
+  { key: 'thringlet', name: 'Thringlet Colony', pm2: null, group: 'developer', port: null, healthPort: null, healthPath: null, required: false, note: 'Next.js API route (app/api/thringlets/); CLI routes through Bridge on :7799. No PM2 entry — Next.js is the host process.' },
+  { key: 'harness', name: 'Harness Service', pm2: 'purpclaw-harness', group: 'developer', port: 7798, healthPort: 7798, healthPath: '/health', required: false, note: 'productivity harness executor' },
+  { key: 'coordinator', name: 'Swarm Coordinator', pm2: 'purpclaw-coordinator', group: 'developer', port: 7898, healthPort: 7898, healthPath: '/health', required: false, note: 'mission pipeline: decompose → tower dispatch → validate → synthesize' },
 
   // ── Observability ──────────────────────────────────────────────────────────
   { key: 'drift-watcher', name: 'Drift Watcher', pm2: 'purpclaw-drift-watcher', group: 'optional', port: null, healthPort: null, healthPath: null, required: false, note: 'auto-monitors registry/capability/doc drift, regenerates mechanical surfaces, flags the rest' },
 ];
 
 const CORE_PM2_NAMES = SERVICES.filter(service => service.group === 'core').map(service => service.pm2);
+const CORE_SERVICE_KEYS = SERVICES.filter(service => service.group === 'core').map(service => service.key);
 const OPTIONAL_PM2_NAMES = SERVICES.filter(service => service.group !== 'core').map(service => service.pm2);
+
+// Derived sets for safe-start and other CLI consumers.
+// DARK: services with flaky Windows startup (camera, Python deps, etc.)
+// DEVELOPER: harness/coordinator — useful but not for normal use
+const DARK_SERVICES = SERVICES
+  .filter(s => ['voice', 'vision', 'yolo', 'stt', 'avatar'].includes(s.key) ||
+               s.key === 'voice-coordinator' || s.key === 'voice-bridge' ||
+               s.key === 'chorus' || s.key === 'reasoning')
+  .map(s => s.key);
+const DARK_PM2_NAMES = SERVICES
+  .filter(s => ['voice', 'vision', 'yolo', 'stt', 'avatar'].includes(s.key) ||
+               s.key === 'voice-coordinator' || s.key === 'voice-bridge' ||
+               s.key === 'chorus' || s.key === 'reasoning')
+  .map(s => s.pm2);
+
+const DEVELOPER_SERVICES = SERVICES
+  .filter(s => s.group === 'developer')
+  .map(s => s.key);
 
 const LAUNCH_PROFILES = {
   minimal: [
@@ -115,7 +133,11 @@ function getLaunchProfile(profile = 'harness') {
 module.exports = {
   SERVICES,
   CORE_PM2_NAMES,
+  CORE_SERVICE_KEYS,
   OPTIONAL_PM2_NAMES,
+  DARK_SERVICES,
+  DARK_PM2_NAMES,
+  DEVELOPER_SERVICES,
   LAUNCH_PROFILES,
   getServices,
   getServicesByGroup,

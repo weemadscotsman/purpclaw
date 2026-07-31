@@ -119,7 +119,7 @@ const PORTS = {
   state        : parseInt(process.env.STATE_PORT         || '7783', 10),
   memory       : parseInt(process.env.MEMORY_PORT        || '7880', 10),
   pool         : parseInt(process.env.POOL_PORT          || '7885', 10),
-  metrics      : parseInt(process.env.METRICS_PORT       || '7890', 10),
+  metrics      : parseInt(process.env.METRICS_PORT       || '7890', 10), // NOTE: metrics daemon removed — embed counters inline
   voice        : parseInt(process.env.VOICE_PORT         || '7781', 10),
   dream        : parseInt(process.env.DREAM_PORT         || '7895', 10),
 };
@@ -5374,8 +5374,7 @@ function cmdHelp() {
     [7881, 'context-bus   — cross-agent context propagation'],
     [7884, 'neuro-symbolic bridge (Python)'],
     [7885, 'pool          — knowledge pool (skills + agents)'],
-    [7889, 'vision-monitor — webcam + YOLO'],
-    [7890, 'metrics       — health polling + SSE heartbeat'],
+    [7880, 'cognitive-spine — vector memory engine'],
     [7895, 'autodream     — memory consolidation'],
     [7897, 'worker-pool   — overflow lane (HTTP/SSH workers)'],
   ];
@@ -8335,9 +8334,9 @@ async function cmdStatus(args) {
   console.log(bBot + '\n');
 
   console.log('  🔥 CORE:');
-  const cores = [7780, 7782, 7783, 7784, 7790, 7791, 7881, 7885, 7890];
-  const names = { 7780:'API', 7782:'Bus', 7783:'State', 7784:'Orch', 7790:'Tower', 7791:'Gate', 7881:'Ctx', 7885:'Pool', 7890:'Metr' };
-  const probePaths = { 7780:'/api/health', 7782:'/health', 7783:'/health', 7784:'/api/health', 7790:'/tower/status', 7791:'/health', 7881:'/health', 7885:'/health', 7890:'/health' };
+  const cores = [7780, 7782, 7783, 7784, 7790, 7791, 7881, 7885, 7880];
+  const names = { 7780:'API', 7782:'Bus', 7783:'State', 7784:'Orch', 7790:'Tower', 7791:'Gate', 7881:'Ctx', 7885:'Pool', 7880:'Cog' };
+  const probePaths = { 7780:'/api/health', 7782:'/health', 7783:'/health', 7784:'/api/health', 7790:'/tower/status', 7791:'/health', 7881:'/health', 7885:'/health', 7880:'/health' };
   // Probe all cores IN PARALLEL. Each entry is a Promise that either resolves
   // with {ok:true,...} (live) or rejects with {ok:false,port,error} (offline).
   const coreResults = await Promise.all(cores.map(p => get(p, probePaths[p] || '/health').catch(e => e)));
