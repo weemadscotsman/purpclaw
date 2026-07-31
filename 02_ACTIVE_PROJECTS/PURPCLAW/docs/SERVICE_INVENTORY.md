@@ -39,7 +39,7 @@ never meant to start.
 | state | 7783 | CORE | yes | 7 | `unified_state.js` |
 | api | 7780 | CORE | yes | 44 | `unified_api.js` (5036-line monolith: HTTP + WebSocket + LLM routing) |
 | tower | 7790 | CORE | yes | 20 | `agent_tower.js` |
-| orchestrator | 7784 | CORE | yes | 21 | `orchestrator.js` |
+| orchestrator | 7784 | CORE | yes | 21 | `orchestrator.js` (workflow queue + job contracts) |
 | gatekeeper | 7791 | CORE | yes | 10 | `gatekeeper.js` |
 | metrics | — | EMBEDDED | no | — | REMOVED 2026-07-31 — inline counters only; no daemon, no port |
 | pool | 7885 | CORE | yes | 8 | `pool_service.js` |
