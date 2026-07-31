@@ -134,19 +134,31 @@ const SLASH_COMMANDS = {
           : `current model: ${current}\n\nusage: /model <name>`;
       }
       ctx.model = name;
+      ctx.autoRoute = false;   // an explicit pick turns auto-routing off
       return `model → ${name}   (applies from the next message)`;
     }
   },
   '/provider': { description: 'switch provider. usage: /provider <name>  |  /provider (shows current)', 
     run: (args, ctx) => {
       const name = args.trim().toLowerCase();
-      if (!name) return `current provider: ${ctx.provider || process.env.LLM_PROVIDER || 'ollama'}`;
+      if (!name) return `current provider: ${ctx.provider || process.env.LLM_PROVIDER || 'minimax'}${ctx.autoRoute ? '  (auto-routing ON — lane picks per task)' : ''}`;
       const PROVIDERS = getProviderNames();
       if (!PROVIDERS.includes(name)) return `unknown provider: ${name}\n  available: ${PROVIDERS.join(', ')}`;
       ctx.provider = name;
+      ctx.autoRoute = false;
       if (!ctx.model) ctx.model = null; // let provider pick default
       return `provider → ${name}`;
     } 
+  },
+  '/auto':     { description: 'auto-route each message to the best lane. usage: /auto on|off',
+    run: (args, ctx) => {
+      const v = args.trim().toLowerCase();
+      if (!v) return `auto-routing: ${ctx.autoRoute ? 'ON' : 'off'}  (usage: /auto on|off)`;
+      if (!['on','off'].includes(v)) return 'usage: /auto on|off';
+      ctx.autoRoute = v === 'on';
+      if (ctx.autoRoute) return 'auto-routing → ON   each message is classified and sent to the matching lane (code / reason / review / longctx)';
+      return `auto-routing → off   using ${ctx.model || 'the session model'}`;
+    }
   },
   '/tools':    { description: 'list available tools (built-in + MCP)',  run: () => {
     const all = TOOLS.list();
@@ -1055,8 +1067,12 @@ async function runOneShot(prompt, ctx, opts = {}) {
     // once before the REPL starts. Without forwarding these per call, the
     // session's ORIGINAL model won every turn: switching model appeared to do
     // nothing and a resumed session silently kept whatever it was created with.
-    if (ctx.model) submitParams.model = ctx.model;
-    if (ctx.provider) submitParams.provider = ctx.provider;
+    if (ctx.autoRoute) {
+      submitParams.auto_route = true;   // gateway hands the router no model, so it classifies
+    } else {
+      if (ctx.model) submitParams.model = ctx.model;
+      if (ctx.provider) submitParams.provider = ctx.provider;
+    }
     if (opts.yes) submitParams.permission_profile = 'dangerous';
     if (opts.maxBudgetUsd) submitParams.usage_limits = { max_budget_usd: opts.maxBudgetUsd };
     if (opts.appendSystemPrompt) submitParams.instructions = opts.appendSystemPrompt;

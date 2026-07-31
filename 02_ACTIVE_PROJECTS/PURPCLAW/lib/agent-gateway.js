@@ -111,7 +111,6 @@ class AgentGateway extends EventEmitter {
       events: [
         'message.delta', 'message.complete', 'tool.start', 'tool.complete',
         'route.selected', 'job.started', 'job.stopped',
-        'route.selected', 'job.started', 'job.stopped',
         'artifact.created',
         'goal.judged', 'goal.continue', 'goal.waiting', 'goal.complete',
         'recipe.started', 'recipe.step.started', 'recipe.step.completed', 'recipe.completed',
@@ -220,8 +219,15 @@ class AgentGateway extends EventEmitter {
           ? params.history.filter(message => message && message.role && message.content)
           : [];
         const runnerHistory = [...history, ...supplementalHistory];
-        const selectedProvider = params.provider || state.provider || this.provider;
-        const selectedModel = params.model || state.model || this.model;
+        // auto_route means "let routing-decisions classify this prompt". That
+        // only works if we hand the router NO model: RD.resolve() takes its
+        // explicit-model branch whenever one is present, so falling back to
+        // state/this here silently disabled auto-routing everywhere — every
+        // request looked explicit because the session always carried a model.
+        // An explicitly passed model still wins over auto.
+        const autoRoute = params.auto_route === true;
+        const selectedProvider = params.provider || (autoRoute ? undefined : (state.provider || this.provider));
+        const selectedModel = params.model || (autoRoute ? undefined : (state.model || this.model));
         usageTracker.request(agentPrompt,runnerHistory);
         const modelSpan=TRACES.startSpan(traceId,'model.generate',{parentId:rootSpan,kind:'client',input:{prompt:agentPrompt,history_length:runnerHistory.length},sensitive:params.trace_sensitive===false,metadata:{provider:selectedProvider,model:selectedModel}}),toolSpans=new Map();
         try{for await (const event of this.runner({
