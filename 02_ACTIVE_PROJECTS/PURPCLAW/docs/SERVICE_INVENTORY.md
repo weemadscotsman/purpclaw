@@ -87,6 +87,67 @@ as a lightweight pull-based scraper.
   service owns which file/DB/socket) and **startup order**. Neither is inferable
   from port references.
 
+## State ownership — what persists to disk
+
+**Scope**: CORE services + services with file/DB state. Read-only observability
+tools (commands, temp scripts) excluded.
+
+| Service | File / Directory | Type | Owner | Notes |
+|---------|-----------------|------|-------|-------|
+| `pool` | `~/.purpclaw/hivemind/skills/` | dir | pool_service | skill index shards — JSON files |
+| `pool` | `~/.purpclaw/hivemind/doctrine/` | dir | pool_service | doctrine index shards — JSON files |
+| `pool` | `~/.purpclaw/hivemind/spring-index.json` | file | pool_service | spring registry — atomic write via `spring-index.json.tmp` |
+| `pool` | `agent_work/pool/index.json` | file | pool_service | pool index |
+| `pool` | `agent_work/pool/queries.jsonl` | file | pool_service | append-only query log — 10K line rotation |
+| `pool` | `agent_work/pool/memory.jsonl` | file | pool_service | append-only memory log — 5K line rotation |
+| `pool` | `agent_work/pool/failures.jsonl` | file | pool_service | append-only failure log |
+| `workers` | `agent_work/worker-tasks.json` | file | worker_service | persistent task store — JSON full-rewrite |
+| `context-bus` | `agent_work/shared.json` | file | context-bus | cross-agent context — write via fcntl lock |
+| `context-bus` | `agent_work/.context.lock` | file | context-bus | fcntl lock file — prevents concurrent writes |
+| `orchestrator` | `~/.purpclaw/sessions/<sessionId>/result.json` | file | orchestrator | workflow result per session — mkdir + write |
+| `orchestrator` | `lib/hivemind/` (in-process) | module | orchestrator | HIVEMIND loaded as in-process module, not a separate service |
+| `api` (unified_api) | `loop_state.json` | file | api | loop state — full-rewrite on update |
+| `api` | `purpclaw_settings.json` | file | api | settings — full-rewrite on save |
+| `api` | `samantha_memory.json` | file | api | Samantha memory — full-rewrite on save |
+| `api` | `agent_score.json` | file | api | agent scoring |
+| `api` | `agent_work/llm_ledger.json` | file | api | LLM cost ledger |
+| `api` | `agent_work/mochi.json` | file | api | mochi state |
+| `api` | `agent_work/evolution.json` | file | api | evolution log |
+| `api` | `agent_work/harness_benchmark.jsonl` | file | api | harness benchmarks |
+| `api` | `agent_work/harness-benchmark-latest.json` | file | api | latest harness result |
+| `lib/a2a-runtime` | `~/.purpclaw/state.db` | sqlite | **SHARED** | SQLite — multiple lib modules write to same file |
+| `lib/agent-component` | `~/.purpclaw/state.db` | sqlite | **SHARED** | same DB as a2a-runtime |
+| `lib/artifact-manager` | `~/.purpclaw/state.db` | sqlite | **SHARED** | same DB |
+| `lib/attachment-manager` | `~/.purpclaw/state.db` | sqlite | **SHARED** | same DB |
+| `lib/teleport` (cmd) | `~/.purpclaw/teleport/<name>/manifest.json` | file | teleport cmd | snapshot export — one-shot |
+| `lib/teleport` (cmd) | `~/.purpclaw/teleport/<name>/context.json` | file | teleport cmd | snapshot export |
+| `lib/teleport` (cmd) | `~/.purpclaw/teleport/<name>/pool.json` | file | teleport cmd | snapshot export |
+| `lib/teleport` (cmd) | `~/.purpclaw/teleport/<name>/orchestrator.json` | file | teleport cmd | snapshot export |
+| `lib/continuity` | `~/.purpclaw/sessions/<id>/snapshot.json` | file | continuity | session snapshots |
+
+**Key findings:**
+
+- **`pool_service.js`** is the most disciplined — append-only JSONL with rotation,
+  spring-index atomic writes, single-writer guarantee documented in
+  `docs/POOL_SERVICE_STATE_CONTRACT.md`.
+- **`context-bus`** uses fcntl lock on `shared.json` — two-process safe write.
+- **`orchestrator`** writes per-session results to `~/.purpclaw/sessions/` — mkdir
+  then write, not atomic.
+- **`unified_api`** is the most write-heavy — 8+ separate files, mostly full-rewrites
+  with no atomicity guarantees.
+- **`state.db` SQLite is shared** across 4 lib modules (a2a-runtime,
+  agent-component, artifact-manager, attachment-manager). No WAL/AUTO_VACUUM
+  observed — concurrent writes from multiple processes are a risk.
+- **hivemind** runs as an in-process module inside orchestrator, not as a separate
+  service. Its state lives in orchestrator's memory.
+- **nextjs, tower, gatekeeper, eventbus, state** — no local file writes observed
+  in scanned source. Eventbus and state are pure in-memory pub/sub and state
+  containers respectively.
+
+**No defined startup order** — services using fcntl locks (context-bus) or
+SQLite (state.db) implicitly require the lock-holder to release before another
+process starts. No explicit `waitFor()` chains found in scanned source.
+
 ## Proposed classification (draft — not yet acted on)
 
 | class | services |
