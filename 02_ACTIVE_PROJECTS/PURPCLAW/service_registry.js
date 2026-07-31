@@ -36,6 +36,7 @@ const SERVICES = [
 
   { key: 'reasoning', name: 'Reasoning Loop', pm2: 'purpclaw-reasoning', group: 'optional', port: 7892, healthPort: 7892, healthPath: '/health', required: false, note: 'proactive heartbeat tick; opt-in via PURPCLAW_PROACTIVE=1' },
 
+  { key: 'gateway-server', name: 'Gateway Server', pm2: 'purpclaw-gateway-server', group: 'gateway', port: 9119, healthPort: 9119, healthPath: '/health', required: false, note: 'bin/purpclaw.js serve — enables /v1/* API endpoints, A2A agent-card, SSE streaming. Without this the endpoints are unreachable.' },
   { key: 'harness', name: 'Harness Service', pm2: 'purpclaw-harness', group: 'developer', port: 7798, healthPort: 7798, healthPath: '/health', required: false, note: 'productivity harness executor' },
   { key: 'coordinator', name: 'Swarm Coordinator', pm2: null, group: 'removed', port: null, healthPort: null, healthPath: null, required: false, note: 'REMOVED 2026-06 — mission pipeline moved to orchestrator + agent_tower; tombstoned 2026-07-31' },
 

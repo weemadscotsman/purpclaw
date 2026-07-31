@@ -45,6 +45,7 @@ config starts 11. That is intentional — `safe-start` and `doctor` now derive f
 | nextjs | 3030 | CORE | yes | 14 | `next` dev server (production build broken — BUILD_ID missing since 2026-07-30) |
 | cognitive | 7880 | CORE | no | 18 | `cognitive_gateway.js` (Python spine subprocess: 1GB Node + up to 8GB Python) |
 | gateway-server | 9119 | gateway | no | — | `bin/purpclaw.js serve` — /v1/* API endpoints, A2A agent-card, SSE streaming |
+| coordinator | — | REMOVED | no | 0 | Tombstoned 2026-07-31 — swarm mission dispatch moved to orchestrator + agent_tower |
 | goop | 7895 | goop | no | 2 | GOOP playground |
 | tts-gateway | 7799 | voice | no | — | Kokoro TTS |
 | xiaozhi | — | voice | no | — | Xiaozhi cloud bridge |
