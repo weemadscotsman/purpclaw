@@ -44,7 +44,7 @@ config starts 11. That is intentional — `safe-start` and `doctor` now derive f
 | context-bus | 7881 | CORE | yes | 2 | context bus messages |
 | nextjs | 3030 | CORE | yes | 14 | `next` dev server (production build broken — BUILD_ID missing since 2026-07-30) |
 | cognitive | 7880 | CORE | no | 18 | `cognitive_gateway.js` (Python spine subprocess: 1GB Node + up to 8GB Python) |
-| coordinator | — | REMOVED | no | 0 | Tombstoned 2026-07-31 — swarm mission dispatch moved to orchestrator + agent_tower |
+| gateway-server | 9119 | gateway | no | — | `bin/purpclaw.js serve` — /v1/* API endpoints, A2A agent-card, SSE streaming |
 | goop | 7895 | goop | no | 2 | GOOP playground |
 | tts-gateway | 7799 | voice | no | — | Kokoro TTS |
 | xiaozhi | — | voice | no | — | Xiaozhi cloud bridge |
@@ -90,10 +90,11 @@ as a lightweight pull-based scraper.
 
 | class | services |
 |---|---|
-| Embedded core module | eventbus, state, context-bus, metrics, pool, workers, gatekeeper (candidates — pending state-ownership proof) |
-| Lazy on-demand worker | vision, yolo, stt, voice-*, avatar, chorus, telegram, remotion/render, python sandbox |
-| External dependency | nextjs (WebUI), cognitive spine's python backend (7888) |
-| Developer-only | goop, harness, drift-watcher, reasoning |
+| Embedded core module | eventbus, state, context-bus, pool, workers, gatekeeper, api, tower, orchestrator (pending state-ownership proof per service) |
+| Lazy on-demand worker | vision, yolo, stt, voice-coordinator, voice-bridge, avatar, chorus, telegram, reasoning |
+| External dependency | nextjs (WebUI — production build broken since 2026-07-30), cognitive spine (Python subprocess on 7888) |
+| Developer-only | goop, harness, thringlet, drift-watcher |
+| Removed | coordinator (tombstoned), metrics (removed — inline counters only) |
 
 This table is a proposal derived from reference counts and tier membership. It
 is **not** a mandate to merge. Each row needs its state ownership and startup
@@ -101,9 +102,8 @@ order established first.
 
 ## Next slice
 
-1. Trace state ownership for the CORE seven (what each writes: files, DB, sockets).
-2. Supervisor/bootstrap owning lifecycle, with an embedded/lazy/external registry.
-3. Move the memory spine's start/stop under the core process.
-4. Real read/write health probes everywhere (`lib/doctor.js` already does this
-   for memory as of `2103fd0`; `purpclaw doctor` in `bin/purpclaw.js` still
-   prints OK for services that are not running and needs the same treatment).
+1. **State ownership**: trace what each CORE service writes (files, DB, sockets) — especially pool, workers, context-bus.
+2. **Next.js production build**: BUILD_ID missing since 2026-07-30 — determine if it is a production dependency or dev-only tool.
+3. **Pool atomic writes**: write the state contract before touching the code (atomic writes, append-log replay, compaction rule, single-writer guarantee, crash test).
+4. **Fill registry gaps**: 7 ecosystem services (xiaozhi, gateway-server, static-server, cowork, tts-gateway, discord, slack, email) not yet in `service_registry.js`.
+5. **Health probes**: doctor already has profile-filtered probes; verify all core services return real health responses.
