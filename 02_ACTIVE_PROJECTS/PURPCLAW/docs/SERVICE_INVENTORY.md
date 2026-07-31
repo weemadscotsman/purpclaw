@@ -56,9 +56,9 @@ config starts 11. That is intentional — `safe-start` and `doctor` now derive f
 | stt | 7896 | dark | no | 3 | faster-whisper STT |
 | voice-ingress | — | dark | no | 0 | voiceorchestrator dispatch |
 | chorus | — | dark | no | 0 | companion reactions |
-| telegram | 7795 | companions | no | 0 | Telegram adapter |
-| vision | 7889 | vision | no | 0 | camera/screen monitor |
-| yolo | 7779 | vision | no | 3 | YOLO detection |
+| telegram | 7795 | dark | no | 0 | Telegram adapter |
+| vision | 7889 | dark | no | 0 | camera/screen monitor |
+| yolo | 7779 | dark | no | 3 | YOLO detection |
 | avatar | 7777 | optional | no | 2 | avatar bridge |
 | reasoning | 7892 | optional | no | 1 | proactive heartbeat (opt-in) |
 | harness | 7798 | developer | no | 4 | harness executor |
@@ -153,8 +153,8 @@ process starts. No explicit `waitFor()` chains found in scanned source.
 | class | services |
 |---|---|
 | Embedded core module | eventbus, state, context-bus, pool, workers, gatekeeper, api, tower, orchestrator (pending state-ownership proof per service) |
-| Lazy on-demand worker | vision, yolo, voice-coordinator, avatar, telegram, reasoning, voice-ingress |
-| Dark (flaky/optional) | chorus, goop, voice-bridge, stt |
+| Lazy on-demand worker | voice-coordinator, avatar, reasoning, voice-ingress |
+| Dark (flaky/optional) | chorus, goop, voice-bridge, stt, telegram, vision, yolo |
 | External dependency | nextjs (WebUI — production build broken since 2026-07-30), cognitive spine (Python subprocess on 7888) |
 | Developer-only | harness, drift-watcher |
 | Removed | coordinator (tombstoned), metrics (removed — inline counters only), thringlet (tombstoned — Next.js API route) |
