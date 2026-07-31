@@ -68,7 +68,6 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
 
 const fs   = require('fs');
 const path = require('path');
-const { runAgent, buildSystemPrompt } = require('../agent-loop');
 const TOOLS = require('../tools');
 const SESSIONS = require('../session-repository');
 const { AgentGateway } = require('../agent-gateway');
@@ -116,10 +115,27 @@ const SLASH_COMMANDS = {
   '/model':    { description: 'switch model. usage: /model <name>  |  /model (shows current)', 
     run: (args, ctx) => {
       const name = args.trim();
-      if (!name) return `current model: ${ctx.model || process.env.LLM_MODEL || 'auto'}`;
+      if (!name) {
+        // Showing only the current model gave no way to discover what else is
+        // selectable. List the configured lanes so `/model <name>` has
+        // something to copy.
+        const current = ctx.model || process.env.LLM_MODEL || 'auto';
+        let lines = [];
+        try {
+          const seen = new Set();
+          for (const l of require('../routing-decisions').listLanes()) {
+            if (!l.model || seen.has(l.model)) continue;
+            seen.add(l.model);
+            lines.push(`  ${l.model === current ? '*' : ' '} ${String(l.model).padEnd(34)} ${l.lane.padEnd(8)} ${l.for || ''}`);
+          }
+        } catch { /* listing is best-effort — never break /model */ }
+        return lines.length
+          ? `current model: ${current}\n\navailable (lane defaults):\n${lines.join('\n')}\n\nusage: /model <name>   (any provider model id is accepted)`
+          : `current model: ${current}\n\nusage: /model <name>`;
+      }
       ctx.model = name;
-      return `model → ${name}`;
-    } 
+      return `model → ${name}   (applies from the next message)`;
+    }
   },
   '/provider': { description: 'switch provider. usage: /provider <name>  |  /provider (shows current)', 
     run: (args, ctx) => {
@@ -1014,7 +1030,11 @@ async function runOneShot(prompt, ctx, opts = {}) {
       console.log(`\x1b[90m  ← ${event.ok ? 'ok' : 'error'}: ${preview}\x1b[0m`);
     }
   });
-  gateway.on('agent.status', event => capture('agent.status', event));
+  gateway.on('route.selected', event => {
+    ctx._routedLane = event.lane;
+    capture('route.selected', event);
+    if (!opts.json && event.label) console.log(`  routed -> ${event.label} (${event.lane || 'default'})`);
+  });  gateway.on('agent.status', event => capture('agent.status', event));
   // EventEmitter treats "error" specially, so the CLI always consumes it.
   gateway.on('error', event => capture('error', event));
 
@@ -1030,6 +1050,13 @@ async function runOneShot(prompt, ctx, opts = {}) {
       max_turns: ctx.maxTurns,
       no_spine: true,
     };
+    // /model and /provider update ctx, but the gateway resolves
+    // `params.model || state.model || this.model` — and the gateway is built
+    // once before the REPL starts. Without forwarding these per call, the
+    // session's ORIGINAL model won every turn: switching model appeared to do
+    // nothing and a resumed session silently kept whatever it was created with.
+    if (ctx.model) submitParams.model = ctx.model;
+    if (ctx.provider) submitParams.provider = ctx.provider;
     if (opts.yes) submitParams.permission_profile = 'dangerous';
     if (opts.maxBudgetUsd) submitParams.usage_limits = { max_budget_usd: opts.maxBudgetUsd };
     if (opts.appendSystemPrompt) submitParams.instructions = opts.appendSystemPrompt;
@@ -1088,91 +1115,6 @@ async function runOneShot(prompt, ctx, opts = {}) {
     else console.error(`\x1b[31m  ✗ ${error.message || error}\x1b[0m`);
     return 1;
   }
-}
-
-async function runOneShotLegacy(prompt, ctx, opts = {}) {
-  // Slash commands short-circuit the agent loop. They're fast, local,
-  // don't need an LLM. Accept both `/foo` and `foo` (the latter for
-  // shells like git-bash that mung a leading slash into a file path).
-  const slash = resolveSlashCommand(prompt);
-  if (slash) {
-    const args = prompt.split(/\s+/).slice(1).join(' ');
-    const out = SLASH_COMMANDS[slash].run(args, ctx);
-    if (out) console.log(out);
-    return 0;
-  }
-  let tokens = 0;
-  let toolCalls = 0;
-  let answer = '';
-  const events = [];
-  // Write-ahead persistence: a crash or provider failure must never erase the
-  // user's directive. The next invocation resumes from this exact point.
-  ctx.history.push({ role: 'user', content: prompt, ts: new Date().toISOString(), status: 'running' });
-  SESSIONS.saveSession(ctx._sessionId, ctx.history, { provider: ctx.provider, model: ctx.model });
-  // Auto model routing + buttery NIM fallback — one engine shared with web + TUI.
-  const { runAgentRouted } = require('../agent-router');
-  // One golden CLI path: never silently jump to another provider endpoint.
-  for await (const ev of runAgentRouted({ prompt, history: ctx.history.slice(0, -1), model: ctx.model, provider: ctx.provider, autoRoute: false, opts: { maxTurns: ctx.maxTurns ?? 10, cwd: process.cwd(), noSpine: true } })) {
-    if (opts.json) events.push(ev);
-    switch (ev.type) {
-      case 'route':
-        if (opts.json) { ctx._routedLane = ev.lane; break; }
-        if (ev.label) console.log(`\x1b[90m  ${ev.fallback ? '↻ glide →' : '▸ routed →'} \x1b[36m${ev.label}\x1b[90m (${ev.lane})\x1b[0m`);
-        ctx._routedLane = ev.lane;
-        break;
-      case 'token':
-        answer += ev.content;
-        if (!opts.json && !opts.noStream) process.stdout.write(ev.content);
-        tokens += ev.content.length;
-        break;
-      case 'tool-call':
-        if (opts.json) { toolCalls++; break; }
-        console.log(`\n\x1b[33m  ⚡ ${ev.tool}\x1b[0m ${JSON.stringify(ev.args).slice(0, 120)}`);
-        toolCalls++;
-        break;
-      case 'tool-result':
-        if (opts.json) break;
-        const preview = (ev.content || ev.error || '').toString().replace(/\n/g, ' ').slice(0, 200);
-        console.log(`\x1b[90m  ← ${ev.ok ? 'ok' : 'error'} (${ev.content?.length || 0} chars): ${preview}\x1b[0m`);
-        break;
-      case 'turn':
-        if (opts.json) break;
-        if (ev.turn > 1) console.log(`\n\x1b[90m  --- turn ${ev.turn}/${ev.maxTurns} ---\x1b[0m`);
-        break;
-      case 'done':
-        answer = ev.totalContent || answer;
-        ctx.history[ctx.history.length - 1].status = 'complete';
-        ctx.history.push({ role: 'assistant', content: answer, ts: new Date().toISOString(), status: 'complete' });
-        SESSIONS.saveSession(ctx._sessionId, ctx.history, { provider: ctx.provider, model: ctx.model });
-        ctx._tokens = ctx._tokens || { prompt: 0, completion: 0, calls: 0 };
-        ctx._tokens.completion += tokens;
-        ctx._tokens.calls += 1;
-        if (opts.json) {
-          console.log(JSON.stringify({ ok: true, answer, turns: ev.turns, toolCalls, route: ctx._routedLane, events }));
-          return 0;
-        }
-        if (opts.noStream && answer) process.stdout.write(answer);
-        console.log(`\n\n\x1b[90m  ─── done in ${ev.turns} turn(s), ${tokens} tokens streamed, ${toolCalls} tool call(s) ───\x1b[0m\n`);
-        return 0;
-      case 'error':
-        ctx.history[ctx.history.length - 1].status = 'failed';
-        ctx.history.push({
-          role: 'assistant',
-          content: `Execution failed before completion. Error: ${ev.error || 'unknown provider error'}. On the next turn, acknowledge this failure, preserve the user's objective, inspect what was completed, and attempt a concrete recovery instead of starting cold.`,
-          ts: new Date().toISOString(),
-          status: 'failed',
-          error: ev.error || 'unknown provider error',
-        });
-        SESSIONS.saveSession(ctx._sessionId, ctx.history, { provider: ctx.provider, model: ctx.model });
-        if (opts.json) {
-          console.log(JSON.stringify({ ok: false, error: ev.error, events }));
-          return 1;
-        }
-        console.error(`\x1b[31m  ✗ ${ev.error}\x1b[0m`);
-        return 1;
-    }
-  }
-  return 0;
 }
 
 async function runInteractive(ctx) {
