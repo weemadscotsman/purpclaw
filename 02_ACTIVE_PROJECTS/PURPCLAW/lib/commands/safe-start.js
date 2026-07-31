@@ -54,18 +54,14 @@ const DARK_SERVICES = [
   'avatar',      // avatar bridge (Python)
 ];
 
-// The "core" cluster — stable services proven to start cleanly on Windows.
-// This is what `purpclaw safe-start --core` brings up. Equivalent to the
-// 16-service baseline that was running fine before the 2026-05-25 cascade.
+// The "core" cluster — 12 stable services proven to start cleanly on Windows.
+// Matches ecosystem.config.js CORE set and SERVICE_INVENTORY.md classification.
+// These are the default when PURPCLAW_SERVICES=core (the default).
+// coordinator and harness are DARK / DEVELOPER-ONLY per SERVICE_INVENTORY.md.
 const CORE_SERVICES = [
   'eventbus', 'state', 'api', 'orchestrator', 'tower',
   'pool', 'context', 'workers', 'gatekeeper', 'metrics',
   'cognitive', 'nextjs',
-  // coordinator (swarm_coordinator :7898) is REQUIRED — the orchestrator's
-  // swarm dispatch fetches http://127.0.0.1:7898/api/coordinate, so without it
-  // every swarm mission fails with "Swarm dispatch failed: fetch failed".
-  // harness (:7798) backs the autonomous mission API. Both belong in core.
-  'coordinator', 'harness',
 ];
 
 function pm2Cmd() {
