@@ -53,7 +53,7 @@ never meant to start.
 | voice-bridge | 7792 | dark | no | 3 | voice WebSocket bridge |
 | stt | 7896 | dark | no | 3 | faster-whisper STT |
 | voice-ingress | — | dark | no | 0 | voiceorchestrator dispatch |
-| chorus | — | dark | no | 0 | — |
+| chorus | — | dark | no | 0 | companion reactions |
 | telegram | 7795 | dark | no | 0 | — |
 | vision | 7889 | dark | no | 0 | — |
 | yolo | 7779 | dark | no | 3 | — |
