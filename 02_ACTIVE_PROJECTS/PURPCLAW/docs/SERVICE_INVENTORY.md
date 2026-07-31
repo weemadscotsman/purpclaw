@@ -152,7 +152,8 @@ process starts. No explicit `waitFor()` chains found in scanned source.
 
 | class | services |
 |---|---|
-| Embedded core module | eventbus, state, context-bus, pool, workers, gatekeeper, api, tower, orchestrator (pending state-ownership proof per service) |
+| Embedded core module | eventbus, state, context-bus, workers, gatekeeper, api, tower, orchestrator (pending state-ownership proof per service) |
+| Pool-as-service (persistent files — cannot be embedded) | pool |
 | Lazy on-demand worker | voice-coordinator, avatar, reasoning, voice-ingress |
 | Dark (flaky/optional) | chorus, goop, voice-bridge, stt, telegram, vision, yolo |
 | External dependency | nextjs (WebUI — production build broken since 2026-07-30), cognitive spine (Python subprocess on 7888) |
