@@ -43,7 +43,7 @@ config starts 11. That is intentional — `safe-start` and `doctor` now derive f
 | workers | 7897 | CORE | yes | 4 | overflow worker lane |
 | context-bus | 7881 | CORE | yes | 2 | context bus messages |
 | nextjs | 3030 | CORE | yes | 14 | `next` dev server (production build broken — BUILD_ID missing since 2026-07-30) |
-| cognitive | 7880 | CORE | no | 18 | `cognitive_gateway.js` (Python spine subprocess: 1GB Node + up to 8GB Python) |
+| cognitive | `scripts/cognitive/memory_archive.json.gz` | file | cognitive (Python spine) | gzip JSON — loaded into Python RAM on startup, periodically persisted atomically via `.tmp` + `.bak` |
 | gateway-server | 9119 | gateway | no | — | `bin/purpclaw.js serve` — /v1/* API endpoints, A2A agent-card, SSE streaming |
 | coordinator | — | REMOVED | no | 0 | Tombstoned 2026-07-31 — swarm mission dispatch moved to orchestrator + agent_tower |
 | goop | 7895 | goop | no | 2 | GOOP playground |
