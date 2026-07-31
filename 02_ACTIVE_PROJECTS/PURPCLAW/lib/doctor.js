@@ -194,12 +194,49 @@ function checkSpendGate() {
 
 // ── Memory spine ────────────────────────────────────────
 async function checkMemory() {
+  // A listening socket is not a working memory. /cognitive/health reports the
+  // backend "healthy" from process liveness, so this check used to pass while
+  // the spine answered nothing: no recall, no storage, agents silently
+  // amnesiac. Health must survive a real round trip — write, read it back,
+  // verify the content is actually ours.
   const probe = await httpProbe(PORTS.spine, '/cognitive/health');
-  if (probe.ok) {
-    setOk('memory', { spine: 'cognitive_spine', port: PORTS.spine, status: probe.status });
-  } else {
-    setWarn('memory', { spine: 'cognitive_spine', port: PORTS.spine, status: probe.status, note: 'start with: python cognitive_spine.py --port 7880' });
+  if (!probe.ok) {
+    setFail('memory', {
+      spine: 'cognitive_spine', port: PORTS.spine, status: probe.status,
+      stage: 'unreachable',
+      note: 'start with: pm2 start ecosystem.config.js --only purpclaw-cognitive',
+    });
+    return;
   }
+
+  const marker = `doctor-probe-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  let mem;
+  try { mem = require('./memory-client'); }
+  catch (e) { setFail('memory', { stage: 'client-load', error: e.message }); return; }
+
+  let id = null;
+  try { id = await mem.ingest(`PURPCLAW doctor round-trip probe ${marker}`, { type: 'note', source: 'doctor', importance: 0.1 }); }
+  catch (e) { setFail('memory', { stage: 'write', error: e.message, note: 'health endpoint says healthy but the write failed' }); return; }
+
+  let found = false, results = 0;
+  try {
+    const rec = await mem.recall(marker, { limit: 5, useCache: false });
+    results = (rec && rec.results && rec.results.length) || 0;
+    found = JSON.stringify(rec || {}).includes(marker);
+  } catch (e) { setFail('memory', { stage: 'read', error: e.message, wroteId: id }); return; }
+
+  if (found) {
+    setOk('memory', { spine: 'cognitive_spine', port: PORTS.spine, roundTrip: 'write->read->verify OK', wroteId: id || '(no id returned)', results });
+  } else {
+    setFail('memory', {
+      spine: 'cognitive_spine', port: PORTS.spine, stage: 'verify',
+      wroteId: id, results,
+      note: 'health endpoint reports healthy but a written memory could not be read back — recall is not returning stored content',
+    });
+  }
+  // No delete: memory-client exposes no removal API, so the probe atom stays.
+  // It is tagged source=doctor and marked low importance so it is identifiable
+  // and cheap. Add a delete here if the spine ever grows one.
 }
 
 // ── Provider keys presence (NOT values) ─────────────────
