@@ -31,14 +31,13 @@ const SERVICES = [
   { key: 'vision', name: 'Vision Monitor', pm2: 'purpclaw-vision', group: 'vision', port: 7889, healthPort: 7889, healthPath: '/health', required: false, note: 'optional; camera/screen dependencies. Moved from 7881 to avoid clash with context-bus.' },
   { key: 'yolo', name: 'YOLO Service', pm2: 'purpclaw-yolo', group: 'vision', port: 7779, healthPort: 7779, healthPath: '/health', required: false, note: 'optional; model/Python dependencies' },
 
-  { key: 'cognitive', name: 'Cognitive Spine', pm2: 'purpclaw-cognitive', group: 'cognitive', port: 7880, healthPort: 7880, healthPath: '/cognitive/health', required: false, note: 'single process: memory+rules+modal+neuro+diagnostics+autodream' },
+  { key: 'cognitive', name: 'Cognitive Spine', pm2: 'purpclaw-cognitive', group: 'core', port: 7880, healthPort: 7880, healthPath: '/cognitive/health', required: false, note: 'single process: memory+rules+modal+neuro+diagnostics+autodream' },
   { key: 'avatar', name: 'Avatar Bridge', pm2: 'purpclaw-avatar', group: 'optional', port: 7777, healthPort: 7777, healthPath: '/health', required: false },
 
   { key: 'reasoning', name: 'Reasoning Loop', pm2: 'purpclaw-reasoning', group: 'optional', port: 7892, healthPort: 7892, healthPath: '/health', required: false, note: 'proactive heartbeat tick; opt-in via PURPCLAW_PROACTIVE=1' },
 
-  { key: 'thringlet', name: 'Thringlet Colony', pm2: null, group: 'developer', port: null, healthPort: null, healthPath: null, required: false, note: 'Next.js API route (app/api/thringlets/); CLI routes through Bridge on :7799. No PM2 entry — Next.js is the host process.' },
   { key: 'harness', name: 'Harness Service', pm2: 'purpclaw-harness', group: 'developer', port: 7798, healthPort: 7798, healthPath: '/health', required: false, note: 'productivity harness executor' },
-  { key: 'coordinator', name: 'Swarm Coordinator', pm2: 'purpclaw-coordinator', group: 'developer', port: 7898, healthPort: 7898, healthPath: '/health', required: false, note: 'mission pipeline: decompose → tower dispatch → validate → synthesize' },
+  { key: 'coordinator', name: 'Swarm Coordinator', pm2: null, group: 'removed', port: null, healthPort: null, healthPath: null, required: false, note: 'REMOVED 2026-06 — mission pipeline moved to orchestrator + agent_tower; tombstoned 2026-07-31' },
 
   // ── Observability ──────────────────────────────────────────────────────────
   { key: 'drift-watcher', name: 'Drift Watcher', pm2: 'purpclaw-drift-watcher', group: 'optional', port: null, healthPort: null, healthPath: null, required: false, note: 'auto-monitors registry/capability/doc drift, regenerates mechanical surfaces, flags the rest' },
@@ -50,7 +49,7 @@ const OPTIONAL_PM2_NAMES = SERVICES.filter(service => service.group !== 'core').
 
 // Derived sets for safe-start and other CLI consumers.
 // DARK: services with flaky Windows startup (camera, Python deps, etc.)
-// DEVELOPER: harness/coordinator — useful but not for normal use
+// DEVELOPER: harness — useful but not for normal use
 const DARK_SERVICES = SERVICES
   .filter(s => ['voice', 'vision', 'yolo', 'stt', 'avatar'].includes(s.key) ||
                s.key === 'voice-coordinator' || s.key === 'voice-bridge' ||
