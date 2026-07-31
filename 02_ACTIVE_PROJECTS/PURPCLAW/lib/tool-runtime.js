@@ -66,7 +66,24 @@ class ToolRuntime extends EventEmitter {
     const callId = context.callId || `tool-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
     const definition=this.registry.list().find(tool=>tool.name===name)||{};
     const inputSchema=definition.inputSchema||definition.input_schema;
-    if(inputSchema){const checked=SCHEMA.validate(args,inputSchema);if(!checked.ok){const failure={ok:false,error:`invalid arguments for ${name}: ${checked.errors.join('; ')}`,code:'TOOL_ARGUMENT_VALIDATION',errors:checked.errors,retryable:true};this.emit('tool.validation.failed',{call_id:callId,tool:name,stage:'input',...failure});return failure;}}
+    if(inputSchema){
+      const checked=SCHEMA.validate(args,inputSchema);
+      if(!checked.ok){
+        // The validator reports JSONPath ("$.agent: required") because that is
+        // correct for structured-output validation. But this string goes
+        // straight to a model as a tool error, and models copy it literally:
+        // observed a real agent answering with {"$.agent":null,"$.task":null}
+        // and then looping ten turns against the same schema. Present plain
+        // field names and state the required set explicitly so the retry has
+        // something correct to copy.
+        const plain=checked.errors.map(e=>String(e).replace(/^\$\.?/,'')||'(root)');
+        const required=Array.isArray(inputSchema.required)?inputSchema.required:[];
+        const hint=required.length?` Required fields: ${required.join(', ')}. Pass a JSON object using exactly these key names.`:'';
+        const failure={ok:false,error:`invalid arguments for ${name}: ${plain.join('; ')}.${hint}`,code:'TOOL_ARGUMENT_VALIDATION',errors:checked.errors,retryable:true};
+        this.emit('tool.validation.failed',{call_id:callId,tool:name,stage:'input',...failure});
+        return failure;
+      }
+    }
     const inputGuard=await GUARDRAILS.runParallel(args,context.inputGuardrails||this.inputGuardrails,{...context,tool:name,stage:'input'});
     if(!inputGuard.ok){const failure={ok:false,error:`tool input guardrail tripped: ${inputGuard.reason}`,code:'TOOL_GUARDRAIL_TRIPPED',tripwire:inputGuard.tripwire,retryable:true};this.emit('tool.guardrail.tripped',{call_id:callId,tool:name,stage:'input',...inputGuard});return failure;}
     // S1 — always-on path security guardrail. Runs after schema/guardrail

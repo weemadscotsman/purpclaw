@@ -418,6 +418,14 @@ async function* agentTurn({ messages, model, provider, opts = {} }) {
  */
 async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   const maxTurns = opts.maxTurns ?? 10;
+  // Loop control: an identical tool call repeated with identical arguments is
+  // never progress. Observed in the wild — a failed spawn followed by ten
+  // rounds of the same ask_user_question, 10 tool calls and 0 output chars.
+  // Second identical call is refused with a message that tells the model to
+  // change approach; a third aborts the run rather than burning the budget.
+  const _callSignatures = new Map();
+  const REPEAT_REFUSE_AT = 2;   // refuse this call, tell the model to change
+  const REPEAT_ABORT_AT  = 3;   // stop the run entirely
   const contextEngine = opts.contextEngine || new ContextCompressor({ contextLength: opts.contextLength || 204_800, threshold: opts.compressionThreshold ?? 0.75 });
   const needsCompact = contextEngine.shouldCompress(history);
   // Codex parity: PreCompact — fire BEFORE compression
@@ -428,12 +436,13 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   // Codex parity: PostCompact — fire AFTER compression
   if (compacted.compressed && PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('PostCompact', { originalCount: history.length, compressedCount: messages.length })).catch(() => {});
   if (prompt) messages.push({ role: 'user', content: prompt });
-  // S1: Lifecycle — SessionStart + PromptSubmit
+  // S1: Lifecycle — PromptSubmit (internal Steering vNext event with message list;
+  //     different topic from OC UserPromptSubmit, kept distinct deliberately).
   if (LIFECYCLE) {
-    LIFECYCLE.sessionStart(opts.sessionId || `session-${Date.now()}`, { provider, model, cwd: opts.cwd });
     LIFECYCLE.promptSubmit(messages, 0).catch(() => {});
   }
-  // Codex parity: SessionStart hook — emit() is synchronous, wrap for safety
+  // Codex parity: SessionStart hook — engine.js forwards this to LIFECYCLE.emit,
+  //     so this is the single canonical fire path (no direct LIFECYCLE.sessionStart).
   if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionStart', { sessionId: opts.sessionId, provider, model, cwd: opts.cwd })).catch(() => {});
   let totalContent = '';
   let turn = 0;
@@ -530,7 +539,6 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       const intr = PRIORITY_STEER.pollInterrupt();
       PRIORITY_STEER.clearInterrupt();
       yield { type: 'priority.interrupt', reason: intr?.reason || 'steer', detail: intr };
-      if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'priority-steer').catch(() => {});
       if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'priority-steer' })).catch(() => {});
       process.removeListener('SIGINT', _sigintHandler);
       yield { type: 'priority.queue', command: next };
@@ -545,7 +553,6 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       } else if (!SESSIONS) {
         console.error(`[CRITICAL] session persistence unavailable — session ${opts.sessionId || '(no id)'} will not be saved`);
       }
-      if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'SIGINT').catch(() => {});
       if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'SIGINT' })).catch(() => {});
       yield { type: 'interrupted', reason: 'SIGINT', turns, totalContent };
       break;
@@ -600,7 +607,6 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       } else if (!SESSIONS) {
         console.error(`[CRITICAL] session persistence unavailable — session ${opts.sessionId || '(no id)'} will not be saved`);
       }
-        if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'error').catch(() => {});
         if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'error', turns, totalContent })).catch(() => {});
         if (MEMORY) { try { MEMORY.react(`agent error: ${ev.error}`, 'agent_loop'); } catch {} }
         if (COGNITIVE) {
@@ -612,7 +618,7 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
         }
         if (IDLE_ENGINE) IDLE_ENGINE.markIdle('agent-loop-error');
         if (SESSION_STORE) SESSION_STORE.writeCleanShutdown();
-        yield { type: 'done', turns: turn, totalContent, error: ev.error };
+        yield { type: 'error', turns: turn, error: ev.error };
         return;
       }
     }
@@ -667,6 +673,28 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
     for (const call of toolCalls) {
       yield { type: 'tool-call', tool: call.tool, args: call.args };
 
+      // ── Duplicate-call guard ──────────────────────────────────────
+      let _sig;
+      try { _sig = call.tool + ':' + JSON.stringify(call.args ?? {}); }
+      catch { _sig = call.tool + ':[unserialisable]'; }
+      const _seen = (_callSignatures.get(_sig) || 0) + 1;
+      _callSignatures.set(_sig, _seen);
+      if (_seen >= REPEAT_ABORT_AT) {
+        yield { type: 'error', error: `Tool execution failed repeatedly: ${call.tool} called ${_seen} times with identical arguments. Returning control to operator with diagnostics.` };
+        yield { type: 'done', turns: turn, totalContent, repeatAbort: true, tool: call.tool };
+        return;
+      }
+      if (_seen === REPEAT_REFUSE_AT) {
+        const repeatResult = {
+          ok: false,
+          code: 'DUPLICATE_TOOL_CALL',
+          error: `${call.tool} was already called with these exact arguments and the result has not changed. Do not repeat it — either change the arguments, use a different tool, or answer the user directly with what you already know.`,
+        };
+        yield { type: 'tool-result', tool: call.tool, result: repeatResult };
+        messages.push({ role: 'user', content: `[tool ${call.tool}] ${repeatResult.error}` });
+        continue;
+      }
+
       // Codex parity: PreToolUse runs BEFORE the tool and may veto it.
       // This was previously fired through Promise.resolve().then(...), which
       // scheduled it as a microtask — the tool had already started by the time
@@ -705,8 +733,8 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       if (FEEDBACK) FEEDBACK.captureToolResult(call.tool, result, { provider, model, turn });
 
       // S1: Lifecycle — PostToolUse
-      if (LIFECYCLE) LIFECYCLE.postToolUse(call.tool, call.args, result, call.id, turn).catch(() => {});
-      // Codex parity: PostToolUse — emit after LIFECYCLE so both buses fire
+      // Codex parity: PostToolUse — engine.js forwards this to LIFECYCLE.emit,
+      //     so this is the single canonical fire path (no direct LIFECYCLE.postToolUse).
       if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('PostToolUse', { tool: call.tool, args: call.args, result, callId: call.id, sessionId: opts.sessionId, turn })).catch(() => {});
 
       // S3: Verified Learning — observe every tool outcome for the gate pipeline
@@ -783,7 +811,7 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
 
     // S4: Priority Steer — drain queued next-command if one is waiting
     if (PRIORITY_STEER) {
-      const queued = PRIORITY_STEER.getQueue();
+      const queued = PRIORITY_STEER.peekQueue();
       if (queued.length > 0) {
         const next = PRIORITY_STEER.queueNext();
         if (next) yield { type: 'priority.queue', command: next };
@@ -800,7 +828,6 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   } else if (!SESSIONS) {
     console.error(`[CRITICAL] session persistence unavailable — session ${opts.sessionId || '(no id)'} will not be saved`);
   }
-  if (LIFECYCLE) LIFECYCLE.sessionEnd(opts.sessionId, 'completed').catch(() => {});
   if (PARITY_HOOKS) Promise.resolve().then(() => PARITY_HOOKS.emit('SessionEnd', { sessionId: opts.sessionId, reason: 'completed', turns, totalContent })).catch(() => {});
   // ── Cognitive spine: record max-turns exit ─────────────────────────
   if (MEMORY) {
