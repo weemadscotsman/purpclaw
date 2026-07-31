@@ -51,7 +51,7 @@ never meant to start.
 | goop | 7895 | goop | no | 2 | — |
 | voice-coordinator | 7781 | dark | no | 3 | voice coordinator |
 | voice-bridge | 7792 | dark | no | 3 | voice WebSocket bridge |
-| stt | 7896 | dark | no | 3 | — |
+| stt | 7896 | dark | no | 3 | faster-whisper STT |
 | voice-ingress | — | dark | no | 0 | — |
 | chorus | — | dark | no | 0 | — |
 | telegram | 7795 | dark | no | 0 | — |
