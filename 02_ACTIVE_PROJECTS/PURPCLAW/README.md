@@ -1,99 +1,114 @@
 # PURPCLAW
 
-> Version: 0.3.0 - Updated: 2026-06-29 - Verified against: local CLI audit - Status: CURRENT
+> Version: 0.4.0 - Updated: 2026-07-31 - Branch: `canonical-parity-clean-v2`
 
-PURPCLAW is a local-first AI workstation OS.
+PURPCLAW is a local-first AI workstation OS for builders who run multiple agents, providers, and tools simultaneously.
 
-It is not just a chatbot, an agent list, or a dashboard. It is a terminal-first system that combines provider routing, agents, workflows, memory, Studio/Council sessions, operational weather, and a governed self-evolution loop.
+It is not a chatbot, a dashboard, or a toy. It is a terminal-first operating environment that routes requests across 17 providers, manages agents with memory and tooling, runs a cognitive spine with vector search, and exposes a full CLI, TUI, and WebUI.
 
-## Current Shape
+## Stack Architecture
 
-PURPCLAW now has six connected layers:
+**34 defined services across 4 tiers:**
 
-| Layer | Purpose | Current truth |
-|---|---|---|
-| Identity | Souls, interviews, values, fears, goals, relationships | `registry/souls.json`, `registry/soul-interviews.json` |
-| Governance | Oracle, Council, dynamic chairs, votes, reputation | `purpclaw council`, `registry/council-profiles.json` |
-| Workflow | Discovery, planning, solutioning, implementation, runtime | `purpclaw next`, `purpclaw workflow` |
-| Studio | Council, radio, arena, emergency, after-hours, commentary | `lib/studio.js`, `registry/studio-modes.json` |
-| Ecology | Timeline, Presence, Residue, meeting memory, ambient life | `purpclaw timeline`, `presence`, `residue` |
-| Evolution | AutoResearch, Auto-Evolve, donor archaeology, proposal gates | `purpclaw autoresearch`, `purpclaw evolve`, `purpclaw donor` |
+| Tier | Count | Behaviour |
+|------|-------|-----------|
+| CORE | 12 | Always-on by default. Starts via `purpclaw safe-start --core` |
+| DARK | 11 | On-demand via `PURPCLAW_SERVICES` env or `purpclaw safe-start --dark` |
+| EXTERNAL | 6 | Telegram, Discord, Slack, Email, Xiaozhi, Next.js |
+| DEV-ONLY | 5 | Harness, GOOP, Drift Watcher, CoWork, Reasoning |
 
-## What Changed In 0.3.0
+Default boot: **12 CORE services**. `purpclaw safe-start --core` launches them sequentially with a circuit breaker (3-restart block). `PURPCLAW_SERVICES=all` restores all 34.
 
-- Canonical soul registry: 95 souls plus 95 interviews.
-- Studio modes: 11 operational behavioural environments.
-- Dynamic Council Mode: Oracle no longer hard-chairs every meeting; domain chairs and relevant specialists are selected by profile.
-- Timeline: persistent organisational event ledger.
-- Presence: rooms can expose occupancy, atmosphere, objects, recent visitors, and traditions.
-- Residue: meetings and incidents leave durable traces.
-- Donor Archaeology: harvested ideas are stored as behavioural laws with provenance and rejected mechanics.
-- Auto-Evolve bridge: donor findings queue into the existing mutator proposal path instead of creating a second evolution engine.
-- AutoResearch front door: `purpclaw autoresearch` and `purpclaw auto-research` route to the existing `E:/training` orchestrator.
-- Folder integration audit: every top-level folder has been mapped with repair batches.
+See `docs/SERVICE_INVENTORY.md` for the full inventory with ports, entry points, and state ownership.
 
 ## Quick Start
 
 ```bash
 npm install
-node bin/purpclaw.js help
-node bin/purpclaw.js status
+npx purpclaw help
+npx purpclaw status
 ```
 
-Core discovery commands:
+## Core Commands
 
 ```bash
-node bin/purpclaw.js next --json
-node bin/purpclaw.js workflow --json
-node bin/purpclaw.js registry audit --json
-node bin/purpclaw.js feature --verify --json
+# System health
+npx purpclaw doctor              # 11-point system check
+npx purpclaw health              # service-level health sweep
+npx purpclaw health --verbose    # full verbose output
+
+# Startup
+npx purpclaw safe-start --core   # sequential boot, 12 CORE services
+npx purpclaw safe-start <name>   # single service with circuit breaker
+npx purpclaw safe-start --dry-run # show plan, no execution
+
+# Parity + evidence
+npx purpclaw parity all          # 84/84 surface slots wired
+npx purpclaw stats              # session + token analytics
+
+# Screen tools (look captures your actual desktop)
+npx purpclaw look               # desktop screenshot
+npx purpclaw screen             # same
+
+# Memory
+npx purpclaw memory status       # cognitive spine state
+npx purpclaw memory ingest <path> # add files to vector store
+
+# Provider routing
+npx purpclaw providers           # show configured providers
+npx purpclaw ask --provider <name> # route to specific provider
+
+# Version
+npx purpclaw --version
 ```
 
-Council and Studio commands:
+## Canonical Parity System
 
-```bash
-node bin/purpclaw.js council "Should we consolidate the provider router?"
-node bin/purpclaw.js studio modes
-node bin/purpclaw.js timeline recent 10
-node bin/purpclaw.js presence tea_room
-node bin/purpclaw.js residue tea_room
-```
+`docs/parity/CANONICAL_PARITY_PRIORITY.md` defines 20 ranked tiers (P0-P3). Surface parity is **84/84** (all action×surface combinations wired). Active gaps include:
 
-Evolution commands:
+- **P0-6** — Skills/commands/hooks/plugins (in progress)
+- **P0-7** — Multi-agent workspace isolation (workspaces.json exists; orchestration testing pending)
+- **P0-8** — Resumable tokens + replay
+- **P0-9** — Verification + evidence harness (not started)
+- **P0-14** — IDE extension (not started)
 
-```bash
-node bin/purpclaw.js autoresearch status
-node bin/purpclaw.js evolve status
-node bin/purpclaw.js donor
-node bin/purpclaw.js donor evolve ambient_tension_from_environment
-```
+Full rankings and completion status in `docs/parity/CANONICAL_PARITY_PRIORITY.md`.
 
-## Canonical Docs
+## Agent Workspaces
 
-- `STATUS.md` - current operating status.
-- `ARCHITECTURE.md` - current architecture.
-- `DOCS_INDEX.md` - documentation ownership and status.
-- `CHANGELOG.md` - release history.
-- `docs/audit/FOLDER_INTEGRATION_AUDIT_2026-06-29.md` - folder-by-folder disconnect audit.
-- `docs/audit/SOUL_STUDIO_INSPECTION_2026-06-29.md` - soul/studio subsystem inspection.
-- `docs/spec/ORACLE_WEATHERMAN_WORKFLOW.md` - operational workflow model.
-- `docs/spec/PURPCLAW_COUNCIL_MODE.md` - Council Mode contract.
+Agents operate from `E:/god folder/purpclaw-agent-hub/.purpclaw/workspaces.json`. 12 roles defined: bigboss, purpclaw, research, review, deploy, codereview, security, performance, ops, docs, test, ci.
 
-## Development Rules
+Worktrees are **banned** — agents operate in the canonical tree unless explicitly isolated. See `AGENT.md` for the full workspace registry and role definitions.
 
-- Files are the brain. State lives in registries, memory files, logs, and handoffs.
-- Read `docs/Router.md` before choosing a division.
-- Read the relevant division pickup before work.
-- Write the relevant handoff after work.
-- Do not move folders from audit findings alone. Create ownership/crosswalk registries first, then move only what is proven inactive.
-- For UI work, read `docs/spec/PURPCLAW_UI_CONSOLIDATION_FREEZE/AGENT_RULES.md` first.
+## Provider Routing
 
-## Current Repair Priorities
+17 providers configured: openai, claude, gemini, openrouter, ollama, kimi, deepseek, together, groq, azure, minimax, siliconflow, novita, navigaii, github, cerebras, fireworks.
 
-1. Route or classify loose command modules.
-2. Fix `purpclaw next` so it detects the live project phase correctly.
-3. Add runtime crosswalk: service -> capability -> surface -> API -> CLI.
-4. Add API route ownership registry.
-5. Wire Registry Audit, Bughunt, AutoResearch, Auto-Evolve, Studio, Donor, and Weatherman into one operational event spine.
+Current active: **minimax** (`LLM_PROVIDER=minimax`, `LLM_MODEL=MiniMax-M3`). SpendGate active — daily cap 1M tokens, per-request cap 16k tokens.
 
-PURPCLAW is now best understood as an organisation simulator for local AI work: specialists with identity, shared memory, governance, operational weather, and an evolution loop.
+## Tool Registry
+
+- **520 registered tools** (as of 2026-07-31)
+- **381 Hermes skills** mapped as native PURPCLAW tools
+- Native spine: screen, GUI, execution, file, web, clipboard, process, music, Remotion
+- `purpclaw tool --list` to enumerate
+
+## Key Files
+
+| File | Purpose |
+|------|---------|
+| `bin/purpclaw.js` | CLI entry, 21 action cases |
+| `AGENT.md` | Workspace registry + agent roles |
+| `docs/SERVICE_INVENTORY.md` | Full service inventory with tiering |
+| `docs/parity/CANONICAL_PARITY_PRIORITY.md` | 20-rank parity system |
+| `lib/agent-gateway.js` | Routing layer — all agents route through here |
+| `lib/cognitive_gateway.js` | Cognitive spine (port 7880) |
+| `lib/memory/spine/` | Vector memory engine |
+| `lib/commands/safe-start.js` | Sequential service launcher with circuit breaker |
+| `lib/commands/stats.js` | Token/session cost analytics |
+| `ecosystem.config.js` | PM2 stack definition |
+
+## Version History
+
+- **0.4.0** (2026-07-31) — Canonical parity (84/84), SERVICE_INVENTORY, safe-start circuit breaker, agent workspace registry, cognitive spine with per-atom fallback, unified_api refactor
+- **0.3.0** (2026-06-29) — Soul registry, Studio modes, Dynamic Council, Timeline, Evolution loop

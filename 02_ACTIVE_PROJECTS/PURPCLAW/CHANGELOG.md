@@ -4,6 +4,45 @@ Curated record of meaningful changes. Append at the bottom; never rewrite histor
 
 ---
 
+## v0.4.0 (2026-07-31) - Canonical parity, SERVICE_INVENTORY, safe-start fix
+
+### New architecture
+- **84/84 surface parity** — all action×surface combinations wired. See `docs/parity/CANONICAL_PARITY_PRIORITY.md` for the 20-rank system.
+- **Service inventory** — `docs/SERVICE_INVENTORY.md` documents all 34 services with tier (CORE/DARK/EXTERNAL/DEV), port, entry point, state ownership, and refs.
+- **Service tiering** — Default boot is 12 CORE services (not 34). `PURPCLAW_SERVICES` env var selects tiers. Ecosystem config gates to CORE by default.
+- **Agent workspace registry** — `AGENT.md` defines 12 agent roles and workspace isolation rules. Worktrees banned.
+
+### New commands
+- `purpclaw doctor` — 11-point system check (tool registry, service health, vault, SpendGate, memory spine, providers, deps, skills, GOOP broker)
+- `purpclaw health` / `purpclaw health --verbose` — service-level health sweep
+- `purpclaw stats` — token/session analytics, cost by task, tool usage
+- `purpclaw parity all` — surface parity enumeration
+- `purpclaw look` / `purpclaw screen` — desktop capture tools (fully wired)
+- `purpclaw safe-start --core --dry-run` — sequential boot plan viewer
+
+### Fixes
+- **safe-start CORE set corrected** — was hardcoding coordinator+harness (DARK/DEV-ONLY tiers) in CORE. Fixed to match ecosystem.config.js CORE set (12 services).
+- **agent_tower routing** — all tower agents now route through `AgentGateway` (not direct `runAgent` call). P0-1 keystone closed.
+- **cognitive spine per-atom fallback** — vector cache dimension mismatch no longer crashes the server.
+- **health check round-trip** — memory spine check now proves write→read→verify, not socket open.
+- **route fix** — `/auto` toggle and `/provider` now report actual routing target (不再说 ollama).
+- **model flag** — `/model` now actually changes the model.
+- **service registry health paths** — tower `/tower/health`, Next.js `/api/health`.
+- **agent-loop identical tool retry** — refuses identical tool calls, aborts on 3rd attempt.
+- **memory append fast-path removed** — full rebuild is correct and safe.
+
+### Refactors
+- **unified_api.js** — session history injection refactored, net -995 lines.
+- **pool_service state contract** — identified 5 persistent files: append-only `.jsonl` event logs and `spring-index.json`. Embedding requires explicit state contract before merge.
+
+### Stack state (as of 2026-07-31)
+- **1 service online**: cognitive spine (1GB Node + up to 8GB Python)
+- **11 services in PM2 ecosystem**: eventbus, state, api, tower, gatekeeper, orchestrator, metrics, pool, context, workers, nextjs (12th = cognitive, already running)
+- **All 33 others**: stopped (dark/external/dev — intentional)
+- **Circuit breaker**: refuses to start any service with >3 historical restarts
+
+---
+
 ## v0.3.0 (2026-06-29) - Organisation runtime, Council ecology, donor-to-evolve bridge
 
 ### New architecture
