@@ -41,7 +41,7 @@ const SERVICES = [
   { key: 'coordinator', name: 'Swarm Coordinator', pm2: null, group: 'removed', port: null, healthPort: null, healthPath: null, required: false, note: 'REMOVED 2026-06 — mission pipeline moved to orchestrator + agent_tower; tombstoned 2026-07-31' },
 
   // ── Observability ──────────────────────────────────────────────────────────
-  { key: 'tts-gateway', name: 'TTS Gateway', pm2: 'purpclaw-tts-gateway', group: 'voice', port: 7799, healthPort: 7799, healthPath: '/health', required: false, note: 'Kokoro TTS service; port shared with thringlet bridge' },
+  { key: 'tts-gateway', name: 'TTS Gateway', pm2: 'purpclaw-tts-gateway', group: 'voice', port: 7799, healthPort: 7799, healthPath: '/health', required: false, note: 'Kokoro TTS service; thringlet runs via Next.js API routes (app/api/thringlets/), not a separate PM2 service' },
   { key: 'xiaozhi', name: 'Xiaozhi Bridge', pm2: 'purpclaw-xiaozhi', group: 'voice', port: null, healthPort: null, healthPath: null, required: false, note: 'Xiaozhi cloud bridge; port via env var' },
   { key: 'discord', name: 'Discord Adapter', pm2: 'purpclaw-discord', group: 'companions', port: 7796, healthPort: null, healthPath: null, required: false, note: 'Discord adapter; port via env var' },
   { key: 'slack', name: 'Slack Adapter', pm2: 'purpclaw-slack', group: 'companions', port: 7797, healthPort: null, healthPath: null, required: false, note: 'Slack adapter; port via env var' },

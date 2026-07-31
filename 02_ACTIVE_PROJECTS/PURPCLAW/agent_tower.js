@@ -304,172 +304,199 @@ async function spawnAgent(agentName, task, options = {}) {
   let totalTokens = 0;
   const fullPrompt = `${agentPrompt}\n\nTASK: ${task}\n\nEXECUTION RULES (critical): You have REAL tools — file read/write/edit, shell, code search, and more (the full list is in your system prompt). Complete the task by EMITTING TOOL CALLS in the exact format {"tool":"<name>","args":{...}} and acting directly. Do NOT ask whether tools exist, request setup/confirmation, or merely describe what you would do — perform the work now with your tools, then report what you did.`;
 
-    // Fork the agent as a separate Node.js child process
-    const { fork } = require('child_process');
-    const childPath = path.join(__dirname, 'lib', 'tower-agent-child.js');
-    const child = fork(childPath, [], {
-      cwd: PURP_DIR,
-      stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-    });
+    // ── Agent execution mode (PURPCLAW_AGENT_MODE) ───────────────────────────
+    // 'fork' (default) — spawn tower-agent-child.js as separate Node process.
+    //   Full isolation, real tool execution, true parallelism.
+    // 'inline' — run via LLM.chat() in the tower process.
+    //   Zero fork overhead. Tool calls are NOT executed (text-only response).
+    //   Suitable for lightweight tasks where full tool execution is not needed.
+    // 'worker-pool' — reserved for future bounded pool (max N concurrent agents).
+    const AGENT_MODE = (process.env.PURPCLAW_AGENT_MODE || 'fork').toLowerCase();
 
-    // Track PID
-    const pid = child.pid;
-    fs.writeFileSync(pidFile, String(pid), 'utf8');
-    activeAgent.pid = pid;
-    console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} forked pid=${pid}`);
-
-    // Handle events streamed back from the child
-    const agentState = { toolCalls: [], text: '' };
-    let runDone = false;
-
-    child.on('message', (msg) => {
-      if (msg.type === 'event') {
-        const ev = msg.event;
-        if (ev.type === 'token') {
-          agentState.text += ev.content || '';
-        } else if (ev.type === 'tool-call') {
-          agentState.toolCalls.push({ name: ev.tool, args: ev.args, result: undefined });
-          broadcast({ type: 'agent_tool_call', agentId, agentName, emoji: agentInfo.emoji, tool: ev.tool, args: ev.args });
-        } else if (ev.type === 'tool-result') {
-          const pending = agentState.toolCalls.filter(tc => tc.result === undefined);
-          const target = pending.length ? pending[0] : null;
-          if (target) target.result = ev.result;
-          else agentState.toolCalls.push({ name: ev.tool, args: ev.args, result: ev.result });
-          broadcast({ type: 'agent_tool_result', agentId, agentName, emoji: agentInfo.emoji, tool: ev.tool, result: ev.result, ok: ev.ok });
-        }
-      } else if (msg.type === 'done') {
-        runDone = true;
-        const { content, error, turns } = msg.result;
-        const toolSummary = agentState.toolCalls.map(tc =>
-          `[${tc.name}] ${JSON.stringify(tc.args || {}).substring(0, 100)} → ${String(tc.result ?? '').substring(0, 200)}`
-        ).join('\n');
-        result = {
-          content: [agentState.text.trim(), toolSummary].filter(Boolean).join('\n\n') || 'Task completed.',
-          toolCalls: agentState.toolCalls,
-          error,
-        };
-        totalTokens = agentState.toolCalls.length;
-        console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} completed (${agentState.toolCalls.length} tool calls, pid=${pid})`);
-        child.disconnect();
-      }
-    });
-
-    child.on('exit', (code, signal) => {
-      if (!runDone) {
-        result = { error: `Child exited unexpectedly code=${code} signal=${signal}`, toolCalls: agentState.toolCalls };
-        console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} child exit unexpected code=${code} signal=${signal}`);
-      }
-      // Clean up pid file
-      try { if (fs.existsSync(pidFile)) fs.unlinkSync(pidFile); } catch (_) {}
-    });
-
-    child.on('error', (e) => {
-      result = { error: `Child fork error: ${e.message}`, toolCalls: agentState.toolCalls };
-      console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} fork error: ${e.message}`);
-    });
-
-    // Send the run command to the child
-    child.send({
-      type: 'run',
-      id: agentId,
-      prompt: fullPrompt,
-      provider: overrideProvider || undefined,
-      model: overrideModel || undefined,
-      role: agentInfo.name,
-      opts: {
-        maxTokens: 4096,
-        temperature: 0.7,
-        maxTurns: options.maxTurns || 10,
-        permissionProfile: options.permissionProfile || 'autonomous',
-        ...llmOverride,
-      },
-    });
-
-    // Promise that resolves when the child sends 'done' or 'error'
-    let resolveResult, rejectResult;
-    const resultPromise = new Promise((resolve, reject) => {
-      resolveResult = resolve;
-      rejectResult = reject;
-    });
-    activeAgent._resultPromise = resultPromise;
-    activeAgent._resolveResult = resolveResult;
-    activeAgent._rejectResult = rejectResult;
-
-    child.on('message', (msg) => {
-      if (msg.type === 'event') {
-        const ev = msg.event;
-        if (ev.type === 'token') {
-          agentState.text += ev.content || '';
-        } else if (ev.type === 'tool-call') {
-          agentState.toolCalls.push({ name: ev.tool, args: ev.args, result: undefined });
-          broadcast({ type: 'agent_tool_call', agentId, agentName, emoji: agentInfo.emoji, tool: ev.tool, args: ev.args });
-        } else if (ev.type === 'tool-result') {
-          const pending = agentState.toolCalls.filter(tc => tc.result === undefined);
-          const target = pending.length ? pending[0] : null;
-          if (target) target.result = ev.result;
-          else agentState.toolCalls.push({ name: ev.tool, args: ev.args, result: ev.result });
-          broadcast({ type: 'agent_tool_result', agentId, agentName, emoji: agentInfo.emoji, tool: ev.tool, result: ev.result, ok: ev.ok });
-        }
-      } else if (msg.type === 'done') {
-        runDone = true;
-        const { content, error, turns } = msg.result;
-        const toolSummary = agentState.toolCalls.map(tc =>
-          `[${tc.name}] ${JSON.stringify(tc.args || {}).substring(0, 100)} → ${String(tc.result ?? '').substring(0, 200)}`
-        ).join('\n');
-        result = {
-          content: [agentState.text.trim(), toolSummary].filter(Boolean).join('\n\n') || 'Task completed.',
-          toolCalls: agentState.toolCalls,
-          error,
-        };
-        totalTokens = agentState.toolCalls.length;
-        console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} completed (${agentState.toolCalls.length} tool calls, pid=${pid})`);
-        resolveResult({ content: result.content, toolCalls: result.toolCalls, error: result.error });
-        child.disconnect();
-      }
-    });
-
-    child.on('exit', (code, signal) => {
-      if (!runDone) {
-        result = { error: `Child exited unexpectedly code=${code} signal=${signal}`, toolCalls: agentState.toolCalls };
-        console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} child exit unexpected code=${code} signal=${signal}`);
-        rejectResult(new Error(`Child exited: code=${code} signal=${signal}`));
-      }
-      // Clean up pid file
-      try { if (fs.existsSync(pidFile)) fs.unlinkSync(pidFile); } catch (_) {}
-    });
-
-    child.on('error', (e) => {
-      result = { error: `Child fork error: ${e.message}`, toolCalls: agentState.toolCalls };
-      console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} fork error: ${e.message}`);
-      rejectResult(e);
-    });
-
-    // Send the run command to the child
-    child.send({
-      type: 'run',
-      id: agentId,
-      prompt: fullPrompt,
-      provider: overrideProvider || undefined,
-      model: overrideModel || undefined,
-      role: agentInfo.name,
-      opts: {
-        maxTokens: 4096,
-        temperature: 0.7,
-        maxTurns: options.maxTurns || 10,
-        permissionProfile: options.permissionProfile || 'autonomous',
-        ...llmOverride,
-      },
-    });
-
-    // Store the child ref so killAgent can abort it
-    activeAgent._child = child;
-
-    // Wait for the child to complete before returning from spawnAgent.
-    // This keeps spawnTeam's await semantics working while agents run as forked processes.
     try {
-      await resultPromise;
-    } catch (err) {
-      // error already set in result above
+      if (AGENT_MODE === 'inline') {
+        // Inline: in-process LLM call, no child fork. Result is text only.
+        console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} inline mode`);
+        try {
+          const LLM = require('./lib/llm-provider');
+          const messages = [{ role: 'user', content: fullPrompt }];
+          const llmOpts = { ...llmOverride, agent: agentId, bypassSpendGate: false };
+          const llmResult = await LLM.chat(messages, llmOpts);
+          if (llmResult.blocked) {
+            result = { content: '', toolCalls: [], error: llmResult.error || 'SpendGate blocked' };
+          } else {
+            result = { content: llmResult.content || '', toolCalls: [], error: llmResult.error || null };
+          }
+        } catch (inlineErr) {
+          result = { content: '', toolCalls: [], error: `Inline error: ${inlineErr.message}` };
+        }
+        activeAgent.status = result.error ? 'error' : 'complete';
+        activeAgent.pid = null;
+        result.totalTokens = 0;
+      } else {
+        // Default fork path: spawn tower-agent-child.js as separate Node process
+        const { fork } = require('child_process');
+        const childPath = path.join(__dirname, 'lib', 'tower-agent-child.js');
+        const child = fork(childPath, [], {
+          cwd: PURP_DIR,
+          stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
+        });
+
+        // Track PID
+        const pid = child.pid;
+        fs.writeFileSync(pidFile, String(pid), 'utf8');
+        activeAgent.pid = pid;
+        console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} forked pid=${pid}`);
+
+        // Handle events streamed back from the child
+        const agentState = { toolCalls: [], text: '' };
+        let runDone = false;
+
+        child.on('message', (msg) => {
+          if (msg.type === 'event') {
+            const ev = msg.event;
+            if (ev.type === 'token') {
+              agentState.text += ev.content || '';
+            } else if (ev.type === 'tool-call') {
+              agentState.toolCalls.push({ name: ev.tool, args: ev.args, result: undefined });
+              broadcast({ type: 'agent_tool_call', agentId, agentName, emoji: agentInfo.emoji, tool: ev.tool, args: ev.args });
+            } else if (ev.type === 'tool-result') {
+              const pending = agentState.toolCalls.filter(tc => tc.result === undefined);
+              const target = pending.length ? pending[0] : null;
+              if (target) target.result = ev.result;
+              else agentState.toolCalls.push({ name: ev.tool, args: ev.args, result: ev.result });
+              broadcast({ type: 'agent_tool_result', agentId, agentName, emoji: agentInfo.emoji, tool: ev.tool, result: ev.result, ok: ev.ok });
+            }
+          } else if (msg.type === 'done') {
+            runDone = true;
+            const { content, error, turns } = msg.result;
+            const toolSummary = agentState.toolCalls.map(tc =>
+              `[${tc.name}] ${JSON.stringify(tc.args || {}).substring(0, 100)} → ${String(tc.result ?? '').substring(0, 200)}`
+            ).join('\n');
+            result = {
+              content: [agentState.text.trim(), toolSummary].filter(Boolean).join('\n\n') || 'Task completed.',
+              toolCalls: agentState.toolCalls,
+              error,
+            };
+            totalTokens = agentState.toolCalls.length;
+            console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} completed (${agentState.toolCalls.length} tool calls, pid=${pid})`);
+            child.disconnect();
+          }
+        });
+
+        child.on('exit', (code, signal) => {
+          if (!runDone) {
+            result = { error: `Child exited unexpectedly code=${code} signal=${signal}`, toolCalls: agentState.toolCalls };
+            console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} child exit unexpected code=${code} signal=${signal}`);
+          }
+          try { if (fs.existsSync(pidFile)) fs.unlinkSync(pidFile); } catch (_) {}
+        });
+
+        child.on('error', (e) => {
+          result = { error: `Child fork error: ${e.message}`, toolCalls: agentState.toolCalls };
+          console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} fork error: ${e.message}`);
+        });
+
+        child.send({
+          type: 'run',
+          id: agentId,
+          prompt: fullPrompt,
+          provider: overrideProvider || undefined,
+          model: overrideModel || undefined,
+          role: agentInfo.name,
+          opts: {
+            maxTokens: 4096,
+            temperature: 0.7,
+            maxTurns: options.maxTurns || 10,
+            permissionProfile: options.permissionProfile || 'autonomous',
+            ...llmOverride,
+          },
+        });
+
+        // Store the child ref so killAgent can abort it
+        activeAgent._child = child;
+
+        // Promise that resolves when the child sends 'done' or 'error'
+        let resolveResult, rejectResult;
+        const resultPromise = new Promise((resolve, reject) => {
+          resolveResult = resolve;
+          rejectResult = reject;
+        });
+        activeAgent._resultPromise = resultPromise;
+        activeAgent._resolveResult = resolveResult;
+        activeAgent._rejectResult = rejectResult;
+
+        child.on('message', (msg) => {
+          if (msg.type === 'event') {
+            const ev = msg.event;
+            if (ev.type === 'token') {
+              agentState.text += ev.content || '';
+            } else if (ev.type === 'tool-call') {
+              agentState.toolCalls.push({ name: ev.tool, args: ev.args, result: undefined });
+              broadcast({ type: 'agent_tool_call', agentId, agentName, emoji: agentInfo.emoji, tool: ev.tool, args: ev.args });
+            } else if (ev.type === 'tool-result') {
+              const pending = agentState.toolCalls.filter(tc => tc.result === undefined);
+              const target = pending.length ? pending[0] : null;
+              if (target) target.result = ev.result;
+              else agentState.toolCalls.push({ name: ev.tool, args: ev.args, result: ev.result });
+              broadcast({ type: 'agent_tool_result', agentId, agentName, emoji: agentInfo.emoji, tool: ev.tool, result: ev.result, ok: ev.ok });
+            }
+          } else if (msg.type === 'done') {
+            runDone = true;
+            const { content, error, turns } = msg.result;
+            const toolSummary = agentState.toolCalls.map(tc =>
+              `[${tc.name}] ${JSON.stringify(tc.args || {}).substring(0, 100)} → ${String(tc.result ?? '').substring(0, 200)}`
+            ).join('\n');
+            result = {
+              content: [agentState.text.trim(), toolSummary].filter(Boolean).join('\n\n') || 'Task completed.',
+              toolCalls: agentState.toolCalls,
+              error,
+            };
+            totalTokens = agentState.toolCalls.length;
+            console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} completed (${agentState.toolCalls.length} tool calls, pid=${pid})`);
+            resolveResult({ content: result.content, toolCalls: result.toolCalls, error: result.error });
+            child.disconnect();
+          }
+        });
+
+        child.on('exit', (code, signal) => {
+          if (!runDone) {
+            result = { error: `Child exited unexpectedly code=${code} signal=${signal}`, toolCalls: agentState.toolCalls };
+            console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} child exit unexpected code=${code} signal=${signal}`);
+            rejectResult(new Error(`Child exited: code=${code} signal=${signal}`));
+          }
+          try { if (fs.existsSync(pidFile)) fs.unlinkSync(pidFile); } catch (_) {}
+        });
+
+        child.on('error', (e) => {
+          result = { error: `Child fork error: ${e.message}`, toolCalls: agentState.toolCalls };
+          console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} fork error: ${e.message}`);
+          rejectResult(e);
+        });
+
+        child.send({
+          type: 'run',
+          id: agentId,
+          prompt: fullPrompt,
+          provider: overrideProvider || undefined,
+          model: overrideModel || undefined,
+          role: agentInfo.name,
+          opts: {
+            maxTokens: 4096,
+            temperature: 0.7,
+            maxTurns: options.maxTurns || 10,
+            permissionProfile: options.permissionProfile || 'autonomous',
+            ...llmOverride,
+          },
+        });
+
+        // Wait for the child to complete before returning from spawnAgent
+        try {
+          await resultPromise;
+        } catch (err) {
+          // error already set in result above
+        }
+      }
     } finally {
     // Post-child cleanup: always runs regardless of fork success or error
     const output = typeof result === 'string' ? result :
