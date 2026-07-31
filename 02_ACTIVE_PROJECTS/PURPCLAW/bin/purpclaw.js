@@ -2657,6 +2657,174 @@ async function cmdAgents() {
   console.log('');
 }
 
+// ── agent (singular) ─────────────────────────────────────────────────────────
+async function cmdAgent(args) {
+  // purpclaw agent [name] — show routing + score + pool status for one agent.
+  // With no name: fall back to roster view.
+  const name = args[0];
+
+  if (!name) {
+    return cmdAgents();
+  }
+
+  sectionHead('  AGENT DETAIL');
+
+  let scoreData = {};
+  try {
+    if (fs.existsSync(AGENT_SCORE)) {
+      scoreData = JSON.parse(fs.readFileSync(AGENT_SCORE, 'utf8'));
+    }
+  } catch { /* no scores yet */ }
+
+  let routing = {};
+  try {
+    routing = require(path.join(PURP_DIR, 'agent_routing_matrix.js')).AGENT_ROUTING;
+  } catch { /* no routing */ }
+
+  const info  = routing[name] || null;
+  const score = scoreData[name];
+
+  if (!info && !score) {
+    console.log(col(C.gray, `  Unknown agent: ${name}`));
+    console.log(col(C.gray, '  Try: purpclaw agents     (roster)'));
+    return 1;
+  }
+
+  let poolData = null;
+  try {
+    poolData = await httpGet(PORTS.orchestrator, '/api/agents', 2000);
+  } catch { /* offline */ }
+  const busy = poolData?.busy?.find(a => a.name === name);
+
+  const divCol = (DIV_COLOUR && DIV_COLOUR[info?.division]) || C.white;
+  console.log(`\n  ${col(C.bold, name)}  ${col(C.gray, info?.role || '')}`);
+  if (info?.division) {
+    console.log(`    ${col(C.gray, 'division:')} ${col(divCol, info.division)}`);
+  }
+  if (info) {
+    console.log(`    ${col(C.gray, 'role:    ')} ${col(C.white, info.role || 'n/a')}`);
+    if (info.capabilities?.length) {
+      console.log(`    ${col(C.gray, 'caps:    ')} ${col(C.cyan, info.capabilities.join(', '))}`);
+    }
+    if (info.model) {
+      console.log(`    ${col(C.gray, 'model:   ')} ${col(C.white, info.model)}`);
+    }
+  }
+  if (score) {
+    console.log(`    ${col(C.gray, 'tasks:   ')} ${col(C.white, String(score.totalTasks ?? 0))}  ${col(C.gray, 'ok rate:')} ${col(C.white, ((score.successRate ?? 0).toFixed(1)) + '%')}`);
+  } else {
+    console.log(`    ${col(C.gray, 'tasks:   ')} ${col(C.gray, 'no recorded tasks')}`);
+  }
+  console.log(`    ${col(C.gray, 'pool:    ')} ${busy ? col(C.cyan, '◉ busy') : col(C.gray, '○ idle')}`);
+  console.log('');
+  return 0;
+}
+
+// ── hook (singular) ──────────────────────────────────────────────────────────
+async function cmdHook(args) {
+  // purpclaw hook <list|show|enable|disable|run|events> [name]
+  // Singular form for the plural `hooks` command. Most subcommands forward
+  // directly to lib/commands/hooks.js.
+  const sub = (args[0] || 'list').toLowerCase();
+  const rest = args.slice(1);
+
+  // Hook loading helpers — duplicated minimally from hooks.js so cmdHook stays
+  // self-contained (loadCmd lives in the dispatch closure, out of scope here).
+  const fsLocal = require('fs');
+  const HOOKS_DIRS = [
+    path.join(PURP_DIR, 'hooks'),
+    path.join(PURP_DIR, 'settings', 'hooks'),
+  ];
+  const TYPE_MAP = {
+    'pretooluse':'PreToolUse','posttooluse':'PostToolUse','precompact':'PreCompact',
+    'postcompact':'PostCompact','sessionstart':'SessionStart','sessionend':'SessionEnd',
+    'userpromptsubmit':'UserPromptSubmit','subagentstart':'SubagentStart',
+    'subagentstop':'SubagentStop','permissionrequest':'PermissionRequest','agentstop':'Stop',
+  };
+
+  // show <name> — filter list to one hook (the hooks module doesn't have show)
+  if (sub === 'show') {
+    const name = rest[0];
+    if (!name) { console.log('\nusage: purpclaw hook show <name>\n'); return 1; }
+    const matches = [];
+    for (const dir of HOOKS_DIRS) {
+      let entries = [];
+      try { entries = fsLocal.readdirSync(dir, { withFileTypes: true }); } catch { continue; }
+      for (const e of entries) {
+        if (!e.isFile() && !e.isSymbolicLink()) continue;
+        const n = e.name;
+        if (!n.endsWith('.kiro.hook') && !n.endsWith('.hook')) continue;
+        const full = path.join(dir, n);
+        try {
+          const raw = fsLocal.readFileSync(full, 'utf8').trim();
+          let obj = null;
+          if (raw.startsWith('{')) {
+            obj = JSON.parse(raw);
+          } else {
+            obj = { name: n.replace(/\.(kiro\.)?hook$/, ''), enabled: true };
+            for (const line of raw.split('\n')) {
+              const m = line.match(/^#\s*(\w+)\s*:\s*(.*)$/);
+              if (!m) continue;
+              if (m[1] === 'event')   obj.when = { type: m[2] };
+              else if (m[1] === 'command') obj.then = { type: 'runCommand', command: m[2] };
+            }
+          }
+          if (obj && obj.name === name) {
+            const rawEvt = obj.when?.type || null;
+            const oc = rawEvt ? (TYPE_MAP[rawEvt.toLowerCase()] || rawEvt) : null;
+            matches.push({
+              name: obj.name,
+              file: full,
+              event: oc,
+              action: obj.then?.type || null,
+              command: obj.then?.command || null,
+              enabled: obj.enabled !== false,
+            });
+          }
+        } catch { /* skip unreadable */ }
+      }
+    }
+    if (!matches.length) {
+      console.log(col(C.gray, `\n  No hook named '${name}'.\n`));
+      console.log(col(C.gray, '  Run `purpclaw hook list` to see registered hooks.'));
+      return 1;
+    }
+    for (const h of matches) {
+      const status = h.enabled ? col(C.green, 'ON ') : col(C.red, 'OFF');
+      console.log(`\n  ${status} ${col(C.bold, h.name)}`);
+      console.log(`    event:   ${h.event || 'unknown'}`);
+      console.log(`    action:  ${h.action || 'n/a'}`);
+      if (h.command) console.log(`    command: ${h.command}`);
+      console.log(`    file:    ${h.file}`);
+    }
+    console.log('');
+    return 0;
+  }
+
+  // All other subcommands forward to hooks.js (list/ls/add/enable/disable/run/events)
+  const fwd = new Set(['list', 'ls', 'add', 'enable', 'disable', 'run', 'events', 'event']);
+  if (!fwd.has(sub)) {
+    console.log(`\npurpclaw hook — singular form for purpclaw hooks
+  purpclaw hook list                  list all hooks
+  purpclaw hook show <name>           show hook details
+  purpclaw hook enable <name>         enable a hook
+  purpclaw hook disable <name>        disable a hook
+  purpclaw hook events                list supported hook events
+  purpclaw hook run <name>            fire a hook by name
+`);
+    return 0;
+  }
+
+  let hooksMod;
+  try {
+    hooksMod = require(path.join(PURP_DIR, 'lib', 'commands', 'hooks.js'));
+  } catch (e) {
+    console.log(`\n[X] Could not load lib/commands/hooks.js: ${e.message}\n`);
+    return 1;
+  }
+  return hooksMod.run([sub, ...rest], {});
+}
+
 // ── archetypes ───────────────────────────────────────────────────────────────
 async function cmdArchetypes(args) {
   const sub = (args[0] || 'list').toLowerCase();
@@ -7251,6 +7419,7 @@ async function cmdPlugins(args) {
       return 0;
     }
     case 'hooks':    return loadCmd('hooks').run(args, sharedCtx());
+    case 'hook':     return cmdHook(args);
     case 'plugin':   return loadCmd('plugin').run(args, sharedCtx());
     case 'app': {
       const { runAppCmd } = require(path.join(PURP_DIR, 'lib', 'commands', 'app-cmd.js'));
@@ -7666,6 +7835,7 @@ async function cmdPlugins(args) {
     case 'model':     return cmdModel(args);
     case 'models':    return cmdModel(args);
     case 'agents':    return cmdAgents();
+    case 'agent':     return cmdAgent(args);
     case 'archetype': return cmdArchetypes(args);
     case 'profiles':  return cmdProfiles();
     case 'workflows': return cmdWorkflows();

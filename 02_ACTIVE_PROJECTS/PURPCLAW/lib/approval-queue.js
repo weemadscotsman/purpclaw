@@ -46,11 +46,20 @@ const ALLOWLIST_FILE = () => path.join(APPROVALS_DIR(), 'allowlist.json');
 
 const AUTO_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 
-// ── YOLO mode (frozen at module load — cannot be flipped mid-process by a skill) ──
-
+// ── YOLO mode removed ──────────────────────────────────────────────────────────
+// PURPCLAW_YOLO_MODE=1 is no longer supported. The approval queue is mandatory
+// in production. Setting the env var is a configuration error that must be
+// surfaced, not silently honored. Approved per chunk-1 parity fix (2026-07-31).
 const _YOLO_MODE_FROZEN = (() => {
   const val = process.env.PURPCLAW_YOLO_MODE;
-  return val === '1' || val === 'true';
+  if (val === '1' || val === 'true') {
+    throw new Error(
+      'PURPCLAW_YOLO_MODE=' + val + ' is no longer supported. The approval ' +
+      'queue is mandatory. Remove the env var from your environment. ' +
+      'For per-call approvals, route through the standard approval flow.'
+    );
+  }
+  return false;
 })();
 
 // ── async_hooks session-key isolation ───────────────────────────────────────────

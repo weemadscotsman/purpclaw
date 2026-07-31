@@ -21,16 +21,27 @@
  *     (so an agent can't rewrite PURPCLAW's own secrets).
  *   - Block symlink escapes via path.resolve() comparison.
  *
- * Override: set PURPCLAW_PATH_SECURITY=off to disable (paranoid mode).
- * Or pass opts.pathSecurity = { allowOutsideScope: true, bypass: 'token' }
- * to specific calls.
+ * Override: pass opts.pathSecurity = { allowOutsideScope: true, bypass: 'token' }
+ * to specific calls. PURPCLAW_PATH_SECURITY=off is no longer supported
+ * (refused at require() time with a clear error).
  */
 
 const path = require('path');
 const fs = require('fs');
 
 const ENV = process.env;
-const OFF = ENV.PURPCLAW_PATH_SECURITY === 'off';
+
+// Hard-fail if a legacy bypass env flag is set. The path-security gate is
+// mandatory in production. Setting this env var is a configuration error
+// that must be surfaced, not silently honored.
+if (ENV.PURPCLAW_PATH_SECURITY === 'off') {
+  throw new Error(
+    'PURPCLAW_PATH_SECURITY=off is no longer supported. The path-security ' +
+    'gate is mandatory. Remove the env var from your environment. ' +
+    'For per-call scoped exceptions, use opts.pathSecurity.allowOutsideScope: true ' +
+    'or opts.pathSecurity.bypass with the matching PURPCLAW_BYPASS_TOKEN.'
+  );
+}
 
 // Tools that touch the filesystem and need path validation.
 const PATH_TOOLS = new Set(['write', 'edit', 'delete', 'shell', 'terminal', 'execute', 'git_write', 'git']);
@@ -157,7 +168,6 @@ function extractPathsFromArgs(name, args = {}) {
  * Wire to lib/tool-runtime.js as a default input guardrail.
  */
 function check(args, context = {}) {
-  if (OFF) return { ok: true };
   const name = context.tool || '';
   if (!PATH_TOOLS.has(name)) return { ok: true };
 
@@ -183,7 +193,7 @@ function check(args, context = {}) {
         ok: false,
         reason: `path_security: '${abs}' is inside protected directory '${protectedPrefix}'. `
           + `Windows system files, .ssh, .aws, .gnupg, .kube, .docker, and credentials are off-limits. `
-          + `Set PURPCLAW_PATH_SECURITY=off to disable (not recommended).`,
+          + `PURPCLAW_PATH_SECURITY=off is no longer supported.`,
       };
     }
     // 2. Outside project root (only when operator did NOT initiate)

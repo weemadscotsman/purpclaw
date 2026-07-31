@@ -30,6 +30,7 @@ const os = require('os');
 
 const AGENT_TOWER = require('./agent_tower.js');
 const SESSION_REPOSITORY = require('./lib/session-repository');
+const { AgentGateway } = require('./lib/agent-gateway');
 
 // ── LLM provider for unified backend access ──
 const LLM = require('./lib/llm-provider');
@@ -37,16 +38,7 @@ const LLM = require('./lib/llm-provider');
 // v2.1 — Cache the full whoami snapshot so the Next.js proxy doesn't timeout.
 const whoamiCache = { data: null, cachedAt: 0, TTL: 15000 };
 
-// Permission profile for the operator-initiated chat surfaces (SSE + JSON).
-// These paths call runAgentRouted directly rather than through AgentGateway,
-// so nothing sets a profile for them and agent-loop falls back to a bare
-// `new ToolRuntime()` at 'standard'. Under 'standard' ls/shell/write are "ask",
-// and because this surface has no approval channel, "ask" resolves to deny —
-// the chat agent could read a file but silently failed every other tool.
-// AgentGateway grants operator-initiated chat 'trusted'; the canonical rule is
-// that the same policy decision applies whatever the surface, so match it.
-// Override to tighten (e.g. 'standard') if this API is ever exposed beyond
-// localhost, at the cost of denying tools until an approval channel exists.
+// Localhost chat has no approval response channel; AgentGateway owns policy and tool dispatch.
 const WEB_CHAT_PERMISSION_PROFILE = process.env.PURPCLAW_WEB_PERMISSION_PROFILE || 'trusted';
 
 // P0-B: Module-level ToolRuntime for every API tool dispatch.
@@ -54,7 +46,10 @@ let _toolRuntime = null;
 function getToolRuntime() {
   if (!_toolRuntime) {
     const { ToolRuntime } = require('./lib/tool-runtime');
-    _toolRuntime = new ToolRuntime({ permissionProfile: 'standard' });
+    // Wire PURPCLAW_WEB_PERMISSION_PROFILE into the constructor so the runtime
+    // honours the operator's chosen profile (default 'trusted'). Previously
+    // the env var was read but the constructor hardcoded 'standard'.
+    _toolRuntime = new ToolRuntime({ permissionProfile: WEB_CHAT_PERMISSION_PROFILE });
   }
   return _toolRuntime;
 }
@@ -418,7 +413,7 @@ async function composerContextHandler(req, res) {
 async function handleChatStream(req, res) {
   const { createEnvelope, setStatus, deriveStatus } = require('./lib/spine/envelope');
   const { buildFailureCard, SSE_EVENT_BY_STATUS } = require('./lib/spine/contract');
-  const { appendTurn, getHistory } = require('./lib/spine/session-store');
+  const { appendTurn } = require('./lib/spine/session-store');
 
   let body = null;
   try { body = await parseBody(req); }
@@ -444,26 +439,7 @@ async function handleChatStream(req, res) {
   sseEvent(res, 'envelope', { envelopeId: env.id, route: 'chat', status: 'pending' });
   sseEvent(res, 'phase', { phase: 'received', message: message.slice(0, 100) });
 
-  // v2.1 — Persist the user turn to the session history BEFORE the provider
-  // call, so a mid-stream crash still leaves the conversation rehydratable.
-  // v2.1 (Phase 4 hardening): wrap in try/catch — if appendTurn fails (e.g.
-  // corrupt session file), log it and keep going instead of crashing the SSE
-  // stream with an unhandled rejection that kills the api process.
-  if (sessionId) {
-    try { appendTurn(sessionId, 'user', message); }
-    catch (e) { try { sseEvent(res, 'warn', { phase: 'session-append-failed', error: e.message }); } catch {} }
-  }
-
-  // v2.1 — Inject recent session history into the prompt so the model has
-  // context. The user said "Provider calls must include session history,
-  // not just the latest user message." The agent-router's runAgentRouted
-  // uses opts.history if present, so we build it from the session store.
-  const history = sessionId ? getHistory(sessionId) : [];
-  const historyMessages = history
-    .filter(t => t && t.role && t.content)
-    .slice(0, 10) // last 5 turns (each is user or assistant)
-    .map(t => ({ role: t.role, content: String(t.content).slice(0, 4000) }));
-
+  // AgentGateway persists the prompt before provider execution and reloads canonical history.
   sseEvent(res, 'phase', { phase: 'thinking' });
 
   // ── STEERING: consult the one router ────────────────────────────────────
@@ -475,7 +451,7 @@ async function handleChatStream(req, res) {
   // (spawnAgents flag, or mode=execute/swarm), open a real kernel job here and
   // terminate as `delegated` — the job runs async (auto-chained) and the UI
   // polls /api/kernel/jobs/[id] for the live chain. Plain chat (no opt-in) is
-  // untouched: it falls through to runAgentRouted below and answers inline.
+  // untouched: it falls through to AgentGateway.submit below and answers inline.
   try {
     const steering = require('./lib/steering-router');
     const decision = steering.classify(message, { mode: body.mode });
@@ -495,7 +471,12 @@ async function handleChatStream(req, res) {
         sseEvent(res, 'delegated', { envelopeId: env.id, jobId: result.jobId, status: 'delegated', route: result.route });
         sseEvent(res, 'phase', { phase: 'done' });
         const note = `Opened a ${result.route} job (${result.jobId}). Tracking it live — poll /api/kernel/jobs/${result.jobId} for the chain.`;
-        if (sessionId) { try { appendTurn(sessionId, 'assistant', note); } catch {} }
+        if (sessionId) {
+          try {
+            appendTurn(sessionId, 'user', message);
+            appendTurn(sessionId, 'assistant', note);
+          } catch {}
+        }
         sseEvent(res, 'done', {
           reply: note, providerStatus: 'delegated', envelopeId: env.id,
           envelopeStatus: 'delegated', jobId: result.jobId, route: result.route, source,
@@ -507,70 +488,61 @@ async function handleChatStream(req, res) {
   } catch (e) { /* steering optional — never block the chat */ }
 
   // ── AUTO PROVIDER ROUTING + buttery fallback ────────────────────────────
-  // All routing + NIM fallback lives in one place (lib/agent-router) so web,
+  // AgentGateway owns routing, tools, persistence, permissions, and lifecycle for web,
   // CLI, and TUI behave identically. It emits `route` events (initial + each
-  // fallback hop) and otherwise yields the same events as runAgent.
+  // fallback hop) through the gateway event contract.
+  let fullReply = '';
+  let modelName = '';
+  let toolCallsUsed = 0;
+  let gatewaySessionId = sessionId || null;
   try {
-    const { runAgentRouted } = require('./lib/agent-router');
-    let fullReply = '';
-    let modelName = '';
-    let toolCallsUsed = 0;
+    const gateway = new AgentGateway({ provider: providerOverride, model: modelOverride, cwd: __dirname });
+    gateway.on('route.selected', ev => {
+      modelName = ev.model || modelName;
+      setStatus(env, 'pending', { provider: ev.provider, model: ev.model });
+      sseEvent(res, 'routed', { lane: ev.lane, model: ev.model, provider: ev.provider, agent: ev.agent, label: ev.label, fallback: ev.fallback, reason: ev.reason, envelopeId: env.id });
+    });
+    gateway.on('job.started', ev => {
+      setStatus(env, 'delegated', { jobId: ev.job_id });
+      sseEvent(res, 'job', { job_id: ev.job_id, lane: ev.lane, project: ev.project, envelopeId: env.id });
+      sseEvent(res, 'delegated', { envelopeId: env.id, jobId: ev.job_id, status: 'delegated' });
+    });
+    gateway.on('job.stopped', ev => {
+      sseEvent(res, 'stopped', { job_id: ev.job_id, stopType: ev.stopType, reason: ev.reason, envelopeId: env.id });
+    });
+    gateway.on('message.delta', ev => {
+      fullReply += ev.delta || '';
+      modelName = ev.model || modelName;
+      sseEvent(res, 'token', { content: ev.delta || '', model: ev.model });
+    });
+    gateway.on('tool.start', ev => {
+      toolCallsUsed++;
+      sseEvent(res, 'tool-call', { tool: ev.tool, args: ev.arguments });
+    });
+    gateway.on('tool.complete', ev => {
+      sseEvent(res, 'tool-result', {
+        tool: ev.tool,
+        ok: ev.ok,
+        content: String(ev.result || ev.error || '').substring(0, 500),
+      });
+    });
+    gateway.on('error', () => {});
 
-    for await (const ev of runAgentRouted({
+    const result = await gateway.submit({
       prompt: message,
-      history: historyMessages,
-      model: modelOverride,
       provider: providerOverride,
+      model: modelOverride,
       lane,
-      autoRoute,
-      opts: {
-        maxTokens: 2048, temperature: 0.7, sessionId,
-        // See the note on the JSON chat path: a bare ToolRuntime denies every
-        // "ask" tool here because this surface has no approval channel.
-        permissionProfile: WEB_CHAT_PERMISSION_PROFILE,
-        // Not operatorInitiated — see the note on the JSON chat path.
-      },
-    })) {
-      if (ev.type === 'job') {
-        // Pipeline registry id — lets the UI wire a Stop button (POST /api/pipeline/stop).
-        // v2.1 — Also bind the envelope: this is a delegation.
-        setStatus(env, 'delegated', { jobId: ev.job_id });
-        sseEvent(res, 'job', { job_id: ev.job_id, lane: ev.lane, project: ev.project, envelopeId: env.id });
-        sseEvent(res, 'delegated', { envelopeId: env.id, jobId: ev.job_id, status: 'delegated' });
-      } else if (ev.type === 'stopped') {
-        sseEvent(res, 'stopped', { job_id: ev.job_id, stopType: ev.stopType, reason: ev.reason, envelopeId: env.id });
-        break;
-      } else if (ev.type === 'route') {
-        modelName = ev.model || modelName;
-        setStatus(env, 'pending', { provider: ev.provider, model: ev.model });
-        sseEvent(res, 'routed', { lane: ev.lane, model: ev.model, provider: ev.provider, agent: ev.agent, label: ev.label, fallback: ev.fallback, reason: ev.reason, envelopeId: env.id });
-      } else if (ev.type === 'token') {
-        fullReply += ev.content;
-        modelName = ev.model || modelName;
-        sseEvent(res, 'token', { content: ev.content, model: ev.model });
-      } else if (ev.type === 'tool-call') {
-        toolCallsUsed++;
-        sseEvent(res, 'tool-call', { tool: ev.tool, args: ev.args });
-      } else if (ev.type === 'tool-result') {
-        sseEvent(res, 'tool-result', {
-          tool: ev.tool,
-          ok: ev.ok,
-          content: (ev.content || ev.error || '').substring(0, 500),
-        });
-      } else if (ev.type === 'done') {
-        // Terminal: answered (the stream emitted its own done event).
-        setStatus(env, fullReply.trim() ? 'answered' : 'no-output');
-        sseEvent(res, 'phase', { phase: 'done' });
-        if (env.status === 'no-output') {
-          // v2.1 — Explicit "no-output" card so the user sees a real terminal.
-          sseEvent(res, 'card', buildFailureCard(env));
-        }
-        break;
-      } else if (ev.type === 'error') {
-        // Re-throw so the outer catch turns this into a failed envelope + card.
-        throw new Error(ev.error);
-      }
-    }
+      auto_route: autoRoute !== false,
+      max_tokens: 2048,
+      temperature: 0.7,
+      session_id: sessionId || undefined,
+      permission_profile: WEB_CHAT_PERMISSION_PROFILE,
+      operator_initiated: false,
+      platform: 'web-sse',
+    });
+    gatewaySessionId = result.session_id;
+    fullReply = result.message || fullReply;
     sseEvent(res, 'phase', { phase: 'done' });
     // Strip inline tool-call markup (DSML / JSON {"tool":...}) the same way
     // the JSON /api/chat path does, so the final `done.reply` is clean for
@@ -597,7 +569,6 @@ async function handleChatStream(req, res) {
     }
     // v2.1 — Persist the assistant turn to the session history so the next
     // /api/chat rehydrates with the full transcript.
-    if (sessionId && cleanedReply) appendTurn(sessionId, 'assistant', cleanedReply);
     sseEvent(res, 'done', {
       reply: cleanedReply,
       rawReply: fullReply,
@@ -607,7 +578,7 @@ async function handleChatStream(req, res) {
       envelopeStatus: env.status,
       jobId: env.jobId || null,
       toolCalls: toolCallsUsed,
-      source,
+      source, sessionId: gatewaySessionId,
     });
     return res.end();
   } catch (e) {
@@ -626,7 +597,7 @@ async function handleChatStream(req, res) {
       envelopeId: env.id,
       envelopeStatus: env.status,
       error: e.message,
-      source,
+      source, sessionId: gatewaySessionId,
     });
     return res.end();
   }
@@ -4395,12 +4366,8 @@ const server = http.createServer(async (req, res) => {
             // carries envelopeId + envelopeStatus so the UI can show cards.
             const { createEnvelope, setStatus } = require('./lib/spine/envelope');
             const { buildFailureCard } = require('./lib/spine/contract');
-            const { appendTurn, getHistory } = require('./lib/spine/session-store');
             const env = createEnvelope({ sessionId, route: 'chat', userText: message, source: 'chat-json' });
-            if (sessionId) appendTurn(sessionId, 'user', message);
-            const historyMessages = sessionId
-              ? getHistory(sessionId).slice(0, 10).map(t => ({ role: t.role, content: String(t.content).slice(0, 4000) }))
-              : [];
+
 
             // v2.1 — Lifecycle flow: called → routed → executed → watched → stopped → logged → verified → repaired → archived.
             const announce = require('./lib/events');
@@ -4410,55 +4377,47 @@ const server = http.createServer(async (req, res) => {
             flow.called('chat', { ...flowTags, msgLen: message.length });
 
             // Auto provider routing + buttery fallback — same one engine as SSE/CLI/TUI.
-            const { runAgentRouted } = require('./lib/agent-router');
             let fullReply = '';
             let modelName = '';
             let toolCalls = [];
             const errors = [];
             let flowRoutedAnnounced = false;
 
-            for await (const ev of runAgentRouted({
-              prompt: message,
-              history: historyMessages,
-              model, provider, lane,
-              opts: {
-                maxTokens: 2048, temperature: 0.7, sessionId,
-                // Without these, agent-loop builds a bare `new ToolRuntime()`
-                // whose 'standard' profile marks ls/shell/write as "ask" — and
-                // with no approval callback on this path, "ask" resolves to
-                // deny. The chat agent could read but silently failed every
-                // other tool. AgentGateway grants operator-initiated chat
-                // 'trusted'; parity requires the same decision on this surface.
-                permissionProfile: WEB_CHAT_PERMISSION_PROFILE,
-                // Deliberately NOT operatorInitiated. An HTTP request is not
-                // provable human presence, and setting it makes governance wave
-                // destructive commands through. Left false, benign shell/ls run
-                // and destructive commands still hit APPROVAL_DENIED.
-              },
-            })) {
-              if (ev.type === 'route') {
-                modelName = ev.model || modelName;
-                setStatus(env, 'pending', { provider: ev.provider, model: ev.model });
-                if (!flowRoutedAnnounced) {
-                  flow.routed(ev.provider || provider || 'auto', ev.model || model || 'auto', { ...flowTags, via: ev.via || null, attempts: ev.attempts || 1 });
-                  flowRoutedAnnounced = true;
-                }
-              } else if (ev.type === 'token') {
-                fullReply += ev.content;
-                modelName = ev.model || modelName;
-              } else if (ev.type === 'tool-call') {
-                toolCalls.push({ tool: ev.tool, args: ev.args });
-                setStatus(env, 'delegated', { jobId: toolCalls.length });
-                flow.executed('tool-call', { ...flowTags, tool: ev.tool, args: ev.args });
-              } else if (ev.type === 'tool-result') {
-                flow.watched('tool-result', { ...flowTags, tool: ev.tool, ok: ev.ok !== false });
-              } else if (ev.type === 'error') {
-                errors.push(ev.error);
-              } else if (ev.type === 'done') {
-                break;
+            const gateway = new AgentGateway({ provider, model, cwd: __dirname });
+            gateway.on('route.selected', ev => {
+              modelName = ev.model || modelName;
+              setStatus(env, 'pending', { provider: ev.provider, model: ev.model });
+              if (!flowRoutedAnnounced) {
+                flow.routed(ev.provider || provider || 'auto', ev.model || model || 'auto', { ...flowTags, via: ev.via || null, attempts: ev.attempts || 1 });
+                flowRoutedAnnounced = true;
               }
-            }
+            });
+            gateway.on('message.delta', ev => {
+              fullReply += ev.delta || '';
+              modelName = ev.model || modelName;
+            });
+            gateway.on('tool.start', ev => {
+              toolCalls.push({ tool: ev.tool, args: ev.arguments });
+              setStatus(env, 'delegated', { jobId: toolCalls.length });
+              flow.executed('tool-call', { ...flowTags, tool: ev.tool, args: ev.arguments });
+            });
+            gateway.on('tool.complete', ev => {
+              flow.watched('tool-result', { ...flowTags, tool: ev.tool, ok: ev.ok !== false });
+            });
+            gateway.on('error', ev => errors.push(ev.error));
 
+            const gatewayResult = await gateway.submit({
+              prompt: message,
+              provider, model, lane,
+              auto_route: true,
+              max_tokens: 2048,
+              temperature: 0.7,
+              session_id: sessionId || undefined,
+              permission_profile: WEB_CHAT_PERMISSION_PROFILE,
+              operator_initiated: false,
+              platform: 'web-json',
+            });
+            fullReply = gatewayResult.message || fullReply;
             flow.stopped(errors.length === 0, { ...flowTags, model: modelName, toolCount: toolCalls.length, durationMs: Date.now() - flowStart });
             flow.logged('events.jsonl', { ...flowTags, replyLen: fullReply.length, toolCount: toolCalls.length });
 
@@ -4495,7 +4454,6 @@ const server = http.createServer(async (req, res) => {
             }
             if (cleanedReply) {
               setStatus(env, 'answered', { provider: env.provider, model: modelName, artifacts: { reply: cleanedReply } });
-              if (sessionId) appendTurn(sessionId, 'assistant', cleanedReply);
             } else if (errors.length) {
               const cls = classifyError(errors.join(' '));
               setStatus(env, 'failed', { provider: env.provider, model: modelName, error: { message: errors.join('; ') }, errorCode: cls.code });
@@ -4515,7 +4473,7 @@ const server = http.createServer(async (req, res) => {
               tool_calls: toolCalls,
               errors: errors.length > 0 ? errors : undefined,
               turns: toolCalls.length > 0 ? 'multi-turn' : 'single',
-              sessionId: sessionId || null,
+              sessionId: gatewayResult.session_id,
             };
             // v2.1 — Every non-answered terminal returns a card so the UI never
             // shows a silent empty success.

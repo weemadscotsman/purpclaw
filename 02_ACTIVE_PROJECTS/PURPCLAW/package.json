@@ -66,6 +66,7 @@
     "truth": "node scripts/audit-agents.mjs",
     "truth:check": "node scripts/audit-agents.mjs --check",
     "audit:runtime-evidence": "node scripts/verify-unified-runtime-audit.js --write",
+    "test:agent-gateway": "node scripts/test-agent-gateway.js",
     "test:cross-surface-session": "node scripts/test-cross-surface-session.js",
     "test:cross-surface-session:e2e": "node scripts/test-cross-surface-session-e2e.js",
     "version:status": "node scripts/manifest.js status",

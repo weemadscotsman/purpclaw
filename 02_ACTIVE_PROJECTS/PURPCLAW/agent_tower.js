@@ -11,18 +11,48 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const LLM = require('./lib/llm-provider');
-const { complete: llmComplete } = LLM;
-// Real tool-calling brain: the same routing-aware agent loop that powers ask/chat.
-// Uses agent-router (runAgentRouted) so tower agents get model routing, NIM fallback,
-// job tracking, and full lifecycle hooks — same as CLI and web surfaces.
-let agentLoopTools = null;
-try {
-  agentLoopTools = require('./lib/agent-router');
-} catch {}
+const { AgentGateway } = require('./lib/agent-gateway');
 
 // Environment Constants
 const PURP_DIR = __dirname;
 const AGENT_TOWER_PORT = process.env.AGENT_TOWER_PORT || 7790;
+
+async function* runAgentThroughGateway({ prompt, provider, model, role, opts = {} }) {
+  const gateway = new AgentGateway({ cwd: PURP_DIR, provider, model });
+  const events = [];
+  gateway.on('tool.start', event => events.push({
+    type: 'tool-call',
+    tool: event.tool,
+    args: event.arguments,
+  }));
+  gateway.on('tool.complete', event => events.push({
+    type: 'tool-result',
+    tool: event.tool,
+    ok: event.ok,
+    result: event.result,
+    error: event.error,
+  }));
+  const result = await gateway.submit({
+    prompt,
+    provider,
+    model,
+    title: `Agent Tower: ${role}`,
+    source: 'agent-tower',
+    platform: 'agent-tower',
+    role,
+    auto_route: true,
+    max_turns: opts.maxTurns || 10,
+    max_tokens: opts.maxTokens,
+    temperature: opts.temperature,
+    permission_profile: opts.permissionProfile || 'autonomous',
+    operator_initiated: false,
+    cwd: PURP_DIR,
+    no_spine: true,
+  });
+  for (const event of events) yield event;
+  yield { type: 'token', content: result.message };
+  yield { type: 'done', totalContent: result.message, turns: result.turns };
+}
 
 // Import companion_swarm for personality-enhanced prompts
 let companionSwarm = null;
@@ -266,26 +296,23 @@ async function spawnAgent(agentName, task, options = {}) {
 
   console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} executing via ${providerName}/${modelName}${overrideProvider || overrideModel ? ' (per-agent override)' : ''}...`);
 
-  // Use the real tool-calling brain (same as ask/chat) if available.
-  // Falls back to one-shot llmComplete for backwards compat.
+  // Execute every Tower agent through the canonical AgentGateway.
+  
   // All result variables initialized to non-undefined defaults.
   // In JavaScript, `let x;` is `let x = undefined;` — that's a bug waiting to happen.
   let result = { content: '(empty response — no agent output captured)', toolCalls: [] };
-  let toolCalls = [];
   let totalTokens = 0;
-
-  if (agentLoopTools) {
-    const { runAgentRouted } = agentLoopTools;
-    const fullPrompt = `${agentPrompt}\n\nTASK: ${task}\n\nEXECUTION RULES (critical): You have REAL tools — file read/write/edit, shell, code search, and more (the full list is in your system prompt). Complete the task by EMITTING TOOL CALLS in the exact format {"tool":"<name>","args":{...}} and acting directly. Do NOT ask whether tools exist, request setup/confirmation, or merely describe what you would do — perform the work now with your tools, then report what you did.`;
+  const fullPrompt = `${agentPrompt}\n\nTASK: ${task}\n\nEXECUTION RULES (critical): You have REAL tools — file read/write/edit, shell, code search, and more (the full list is in your system prompt). Complete the task by EMITTING TOOL CALLS in the exact format {"tool":"<name>","args":{...}} and acting directly. Do NOT ask whether tools exist, request setup/confirmation, or merely describe what you would do — perform the work now with your tools, then report what you did.`;
     const agentState = { toolCalls: [], text: '' };
 
     try {
-      for await (const ev of runAgentRouted({
+      for await (const ev of runAgentThroughGateway({
         prompt: fullPrompt,
         provider: overrideProvider || undefined,
         model: overrideModel || undefined,
-        opts: { maxTokens: 4096, temperature: 0.7, ...llmOverride },
-      })) {
+        role: agentInfo.name,
+        opts: { maxTokens: 4096, temperature: 0.7, maxTurns: options.maxTurns || 10, permissionProfile: options.permissionProfile || 'autonomous', ...llmOverride },
+    })) {
         if (ev.type === 'token') {
           agentState.text += ev.content || '';
         } else if (ev.type === 'tool-call') {
@@ -307,27 +334,11 @@ async function spawnAgent(agentName, task, options = {}) {
       };
       totalTokens = agentState.toolCalls.length;
       console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} completed (${agentState.toolCalls.length} tool calls)`);
-    } catch (e) {
-      console.log(`[TOWER] Agent-loop fell back to one-shot: ${e.message}`);
-      try { const _fs = require('fs'), _p = require('path'); _fs.appendFileSync(_p.join(__dirname, 'agent_work', '_agentloop_err.log'), `[${new Date().toISOString()}] agent-loop threw: ${e && (e.stack || e.message)}\n\n`); } catch (_) {}
-      result = await llmComplete(
-        `${agentPrompt}\n\nTASK: ${task}`,
-        { maxTokens: 4096, temperature: 0.7, ...llmOverride }
-      );
-      if (typeof result === 'string') result = { content: result };
-    }
-  } else {
-    try {
-      const raw = await llmComplete(
-        `${agentPrompt}\n\nTASK: ${task}`,
-        { maxTokens: 4096, temperature: 0.7, ...llmOverride }
-      );
-      result = typeof raw === 'string' ? { content: raw } : raw;
-    } catch (e) {
-      result = { error: e.message };
-    }
+  } catch (e) {
+    console.log(`[TOWER] AgentGateway failed: ${e.message}`);
+    try { const _fs = require('fs'), _p = require('path'); _fs.appendFileSync(_p.join(__dirname, 'agent_work', '_agentloop_err.log'), `[${new Date().toISOString()}] AgentGateway threw: ${e && (e.stack || e.message)}\n\n`); } catch (_) {}
+    result = { error: e.message, toolCalls: agentState.toolCalls };
   }
-  
   const output = typeof result === 'string' ? result :
     result?.content || result?.output || result?.text || result?.error || '(empty response)';
   const exitCode = result?.error ? 1 : 0;

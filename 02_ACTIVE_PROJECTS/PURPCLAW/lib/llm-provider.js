@@ -1350,6 +1350,7 @@ async function* streamChat(messages, opts = {}, cfgOverride = null) {
       || '';
     cfg.extraHeaders = p.extraHeaders || {};
     cfg.model = opts.model || p.defaultModel;
+    cfg.authHeader = p.authHeader || 'Bearer';
   }
 
   // SpendGate: check budget before making the call

@@ -36,6 +36,14 @@ const OC_EVENTS = Object.freeze([
   'SubagentStop',
   'SessionStart',
   'SessionEnd',
+  // The following three are listed in lib/hooks/lifecycle-bus.js HOOK_TOPICS so
+  // listeners can register; lifecycle-bus.js:29-31 names them as "PARITY_HOOKS
+  // emits these non-OC events from agent-loop". They are legitimate Codex
+  // parity events. Allow them so they reach LIFECYCLE.emit() (single-fire via
+  // the engine's emit() → LIFECYCLE.emit() delegation in emit() below).
+  'PreCompact',
+  'PostCompact',
+  'Error',
 ]);
 
 // Ceiling on how long a blocking hook may hold up a tool call. A hook that

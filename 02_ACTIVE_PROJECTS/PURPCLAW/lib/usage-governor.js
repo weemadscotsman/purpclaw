@@ -176,13 +176,16 @@ function gateCheck({ role, provider, model, keySlot }) {
   // Per-key RPM cap (NVIDIA 40, others 18 etc.)
   const rpmCap = PROVIDER_RPM_CAP[provider] || 18;
   const now = Date.now();
-  const allKeys = _loadKeys().filter(k => k.provider === provider);
+  const localProvider = provider === 'ollama' || provider === 'lmstudio';
+  const allKeys = localProvider
+    ? [{ provider, envVar: `LOCAL_${provider.toUpperCase()}`, value: '' }]
+    : _loadKeys().filter(k => k.provider === provider);
   if (allKeys.length === 0) {
     return { ok: false, reason: `no_keys_for_provider:${provider}` };
   }
 
   // If a specific key was requested, check it. Otherwise pick freshest.
-  let chosen = null;
+  let chosen = localProvider ? allKeys[0] : null;
   if (keySlot) {
     const k = allKeys.find(x => x.envVar === keySlot);
     if (k) {

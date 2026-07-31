@@ -23,8 +23,8 @@ export const runtime = 'nodejs';
  *     - done      { reply, model, providerStatus, state, envelopeId }
  *     - error     { error }
  *
- *   If upstream is unreachable, we fall through to a local chat-agent
- *   (lib/chat-agent.js) so the UI never hangs. The fallback response
+ *   If upstream is unreachable, we fall through to the local AgentGateway
+ *   so the UI never hangs. The fallback response
  *   carries `state: 'answered' | 'failed' | 'no_output'`.
  */
 
@@ -211,49 +211,48 @@ function defaultSseHeaders() {
 async function fallbackToLocal(env: any, body: any, message: string, reason: string) {
   try {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { chatWithTools } = await import('../../../lib/chat-agent');
-    // History injection — same as unified_api.js, so the local fallback
-    // rehydrates the session too.
-    const sessionId = env.sessionId;
+    const { AgentGateway } = require('../../../lib/agent-gateway');
     // eslint-disable-next-line @typescript-eslint/no-var-requires
-    let history: any[] = [];
-    if (sessionId) {
-      try {
-        const { getHistory } = require('../../../lib/spine/session-store');
-        history = getHistory(sessionId) || [];
-      } catch {}
-    }
-    if (!Array.isArray(body?.history)) body.history = [];
-    spine().setStatus(env, 'pending', { provider: 'local:chat-agent' });
-    const result = await chatWithTools(
-      [
-        ...history,
-        ...body.history,
-        { role: 'user' as const, content: message },
-      ],
-      {
-        model: body?.model,
-        provider: body?.provider,
-        cwd: process.cwd(),
-        maxTurns: 4,
-      }
-    );
-    const content = result?.content ?? '';
-    if (content && content.length > 0) {
-      spine().setStatus(env, 'answered', { artifacts: { reply: content } });
+    const sessions = require('../../../lib/session-repository.js');
+    const sessionId = env.sessionId;
+    const gateway = new AgentGateway({
+      provider: body?.provider,
+      model: body?.model,
+      cwd: process.cwd(),
+    });
+    gateway.on('error', () => {});
+    spine().setStatus(env, 'pending', { provider: 'local:agent-gateway' });
+    const result = await gateway.submit({
+      prompt: message,
+      session_id: sessionId || undefined,
+      history: Array.isArray(body?.history) ? body.history : [],
+      provider: body?.provider,
+      model: body?.model,
+      auto_route: true,
+      max_turns: 4,
+      permission_profile: process.env.PURPCLAW_WEB_PERMISSION_PROFILE || 'trusted',
+      operator_initiated: false,
+      platform: 'web-fallback',
+      repo_map: false,
+    });
+    const content = result?.message ?? '';
+    const saved = sessions.loadSession(result.session_id);
+    if (content) {
+      spine().setStatus(env, 'answered', { provider: 'local:agent-gateway', artifacts: { reply: content } });
     } else {
       spine().setStatus(env, 'no-output', { errorCode: 'no_output', error: { message: 'local fallback returned empty' } });
     }
     return jsonResponse(env, content ? 200 : 502, {
-      source: 'local:chat-agent',
+      source: 'local:agent-gateway',
       fallback_reason: reason,
       content,
-      messages: Array.isArray(result?.messages) ? result.messages.length : 0,
+      sessionId: result.session_id,
+      messages: saved?.messageCount || saved?.messages?.length || 0,
     });
   } catch (e: any) {
     spine().setStatus(env, 'failed', { errorCode: 'chat_failure', error: { message: e?.message || String(e) } });
     return jsonResponse(env, 503, {
-      source: 'local:chat-agent',
+      source: 'local:agent-gateway',
       fallback_reason: reason,
       error: e?.message || String(e),
     });

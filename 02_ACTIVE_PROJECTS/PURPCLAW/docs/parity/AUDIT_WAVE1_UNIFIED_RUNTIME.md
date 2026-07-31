@@ -38,30 +38,29 @@ web with identical tools, permissions, and history
 
 | Criterion | Status | Current evidence |
 |---|---|---|
-| Agent loop | **FAIL** | The CLI default uses `AgentGateway` (`lib/commands/ask.js:950`, `lib/commands/ask.js:1032`), but a legacy CLI branch calls `runAgentRouted` directly (`lib/commands/ask.js:1049`, `lib/commands/ask.js:1069`). Unified API calls `runAgentRouted` directly (`unified_api.js:503`, `unified_api.js:4411`), and Agent Tower calls `runAgent` directly (`agent_tower.js:281`). |
+| Agent loop | **PASS** | CLI ask (`lib/commands/ask.js:993`), Unified API SSE and JSON chat (`unified_api.js:528`, `unified_api.js:4406`), Agent Tower (`agent_tower.js:35`), and the Next.js local fallback (`app/api/chat/route.ts:225`) now call `AgentGateway.submit`. The isolated contract probe verifies routing options, lifecycle events, tool events, persistence, and the absence of the former entry-point bypasses (`scripts/test-agent-gateway.js:68`, `scripts/test-agent-gateway.js:90`). |
 | Tool registry and permission engine | **FAIL** | Canonical gateway execution constructs a `ToolRuntime` (`lib/agent-gateway.js:192`, `lib/agent-gateway.js:193`). Unified API still has dynamic-skill execution before the gate (`unified_api.js:1143`), an opt-out legacy path (`unified_api.js:1177`), and a large direct-dispatch fallback list (`unified_api.js:1121`, `unified_api.js:1165`). Read-only chat filtering is not enforced (Finding B). |
 | Provider layer | **PARTIAL** | Routed agents share `routing-decisions` and `llm-provider`; explicit providers now win (`lib/agent-router.js:52`, `lib/llm-provider.js:1191`, `lib/llm-provider.js:1337`). A second provider-router remains for status/settings surfaces (`lib/runtime/provider-router.js:71`, `app/api/providers/route.ts:29`) and is not the execution router. |
 | Session store | **PASS** | Gateway and CLI ask use `session-repository` (`lib/agent-gateway.js:4`, `lib/commands/ask.js:27`). Next.js sessions import it directly (`app/api/sessions/route.ts:8`), Unified API lifecycle routes use the same repository (`unified_api.js:32`, `unified_api.js:3091`), and the spine compatibility adapter delegates to it (`lib/spine/session-store.js:8`, `lib/spine/session-store.js:16`). |
 | Skills | **PARTIAL** | The main agent path exposes its registry through `ToolRuntime.catalog` (`lib/tool-runtime.js:36`), but Unified API can execute separately loaded dynamic skills before `ToolRuntime` (`unified_api.js:1143`). |
-| Hooks | **FAIL** | The agent loop emits to two independent buses (`lib/agent-loop.js:35`, `lib/agent-loop.js:36`) and bypass paths do not gain gateway-level behavior. |
+| Hooks | **FAIL** | Conversational entry points now gain gateway-level behavior, but the agent loop still emits to two independent buses (`lib/agent-loop.js:35`, `lib/agent-loop.js:36`) and no proof establishes one canonical hook contract. |
 | Memory | **FAIL / UNKNOWN convergence** | The loop independently wires scoped memory, cognitive client, and memory client (`lib/agent-loop.js:42`, `lib/agent-loop.js:74`, `lib/agent-loop.js:75`). No proof establishes one canonical memory contract across every surface. |
 | Configuration | **FAIL** | Runtime routing reads provider configuration (`lib/routing-decisions.js:55`, `lib/routing-decisions.js:348`), while provider resolution also reads environment/config directly (`lib/llm-provider.js:322`), PM2 declares per-process environment (`ecosystem.config.js:75`), governance reads a project policy file (`lib/governance.js:27`), and Settings OS persists multiple scopes (`lib/runtime/settings-registry.js:12`). |
 | CLI -> desktop/web resume unchanged | **PARTIAL** | A real Next.js API plus Electron run preserves ordered history and metadata across CLI create, web resume, desktop read/write, and fresh-process reload (`scripts/test-cross-surface-session-e2e.js:224`, `scripts/test-cross-surface-session-e2e.js:242`). Identical cross-surface tools and permissions are not yet proven. |
 
-The canonical runtime is executable, but it is not yet canonical across
-surfaces. A successful module load or a 20/20 sprint label does not satisfy the
-cross-surface definition of done.
+The conversational execution entry points now share `AgentGateway`, but the
+runtime remains nonconformant until the permission, hook, memory, and
+configuration criteria also pass.
 
 ## A. Current entry-point map
 
 | Surface | Current path | Conformance |
 |---|---|---|
-| `purpclaw ask` | `AgentGateway.submit` (`lib/commands/ask.js:1032`) -> routed agent -> `runAgent` | Canonical path |
-| `PURPCLAW_LEGACY_AGENT=1 purpclaw ask` | `runOneShotLegacy` (`lib/commands/ask.js:948`) -> `runAgentRouted` (`lib/commands/ask.js:1069`) | Gateway bypass |
+| `purpclaw ask` | `AgentGateway.submit` (`lib/commands/ask.js:993`) -> routed agent -> `runAgent` | Canonical path |
 | TUI ask | shared gateway submit (`scripts/tui-ask.js:467`) | Canonical path |
-| Unified API chat | direct `runAgentRouted` for SSE and JSON (`unified_api.js:503`, `unified_api.js:4411`) | Gateway bypass |
-| Agent Tower | direct `runAgent` (`agent_tower.js:281`) | Router and gateway bypass |
-| Next.js web chat | proxy to Unified API (`app/api/chat/route.ts:31`, `app/api/chat/route.ts:116`); network failure falls back to `chat-agent` (`app/api/chat/route.ts:211`, `app/api/chat/route.ts:214`) | Both paths bypass gateway |
+| Unified API chat | `AgentGateway.submit` for SSE and JSON (`unified_api.js:528`, `unified_api.js:4406`) | Canonical path |
+| Agent Tower | `AgentGateway.submit` through the Tower adapter (`agent_tower.js:35`, `agent_tower.js:317`) | Canonical path |
+| Next.js web chat | proxy to canonical Unified API (`app/api/chat/route.ts:116`); network failure uses local `AgentGateway.submit` (`app/api/chat/route.ts:225`) | Canonical primary and fallback paths |
 | Next.js sessions API | direct `session-repository` (`app/api/sessions/route.ts:8`) | Canonical session store |
 | Unified API sessions API | direct `session-repository` (`unified_api.js:32`, `unified_api.js:3091`) | Canonical session store |
 | MCP server | tools go through `ToolRuntime` (`lib/mcp-server.js:37`, `lib/mcp-server.js:245`); no conversational agent loop | Tool-only surface |
@@ -177,18 +176,21 @@ These probes were run from the project root; the latest cross-surface probe is f
 PM2 state and tool counts are deliberately not treated as stable audit facts.
 They can change while other lanes are working.
 | `npm run test:cross-surface-session:e2e` | PASS, CLI -> Next.js API -> Electron renderer -> fresh-process reload |
+| `node scripts/test-agent-gateway.js` | PASS, isolated fake runner plus static entry-point convergence assertions |
 
 ## F. Required builder order
 
 Completed checkpoint: CLI, Next.js, Unified API compatibility adapters, and
 desktop now share `session-repository`, with a real Electron acceptance test.
+Completed checkpoint: CLI, TUI, Unified API, Agent Tower, and both Next.js chat
+paths now execute through `AgentGateway`.
 
 1. **Close remaining permission-policy gaps.** Route dynamic skills and every effectful
    Unified API tool through `ToolRuntime`; remove the production opt-out.
 2. **Enforce read-only tool scopes.** Construct a filtered `ToolRuntime` for
    `chat-agent` callers rather than passing ignored `opts.tools`.
-3. **Converge entry points.** Move Unified API, Agent Tower, and the web fallback
-   behind `AgentGateway`, then remove the legacy CLI branch.
+3. **Completed: converge entry points.** Unified API, Agent Tower, web fallback,
+   CLI, and TUI now execute behind `AgentGateway`; the legacy CLI branch is gone.
 4. **Unify hooks, memory, and configuration.** Do this after session and tool
    identity are stable so migration tests have a single behavioral target.
 
