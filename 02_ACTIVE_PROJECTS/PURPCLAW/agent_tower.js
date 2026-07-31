@@ -1099,6 +1099,14 @@ function createSseServer() {
     }
   });
 
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`[TOWER] Port ${AGENT_TOWER_PORT} already in use — tower may already be running or a zombie holds the port`);
+    } else {
+      console.error(`[TOWER] Server error:`, err.message);
+    }
+  });
+
   server.listen(AGENT_TOWER_PORT, () => {
     console.log(`[TOWER] Agent Tower listening on port ${AGENT_TOWER_PORT}`);
   });

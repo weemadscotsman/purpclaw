@@ -4992,7 +4992,11 @@ server.listen(PORT, () => {
   connectToBridge();
   if (XIAOZHI_WS_URL) connectWS();
   startLocalTcpServer();
-  AGENT_TOWER.connectToUnifiedApi(PORT);
+  if (typeof AGENT_TOWER?.connectToUnifiedApi === 'function') {
+    AGENT_TOWER.connectToUnifiedApi(PORT);
+  } else {
+    console.warn('[UNIFIED API] Agent Tower not available — skipping connectToUnifiedApi');
+  }
   setTimeout(() => { spawnDivisionAgent('Engineering', 'Initialize system'); spawnDivisionAgent('Security', 'Monitor system'); spawnDivisionAgent('AI Research', 'Analyze patterns'); console.log('[UNIFIED API] Swarm initialized'); }, 1000);
 });
 
