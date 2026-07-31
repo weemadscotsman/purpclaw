@@ -430,6 +430,9 @@ module.exports = {
       restart_delay: 10000,
       max_memory_restart: '256M',
       autorestart: true,
+      env: {
+        PURPCLAW_POOL_PERSIST: '1',  // set to '0' for fully in-memory mode
+      },
       windowsHide: true
     },
     {
