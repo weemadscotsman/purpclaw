@@ -54,12 +54,14 @@ const OPTIONAL_PM2_NAMES = SERVICES.filter(service => service.group !== 'core').
 const DARK_SERVICES = SERVICES
   .filter(s => ['voice', 'vision', 'yolo', 'stt', 'avatar'].includes(s.key) ||
                s.key === 'voice-coordinator' || s.key === 'voice-bridge' ||
-               s.key === 'chorus' || s.key === 'reasoning')
+               s.key === 'chorus' || s.key === 'reasoning' ||
+               s.key === 'telegram' || s.key === 'voice-ingress')
   .map(s => s.key);
 const DARK_PM2_NAMES = SERVICES
   .filter(s => ['voice', 'vision', 'yolo', 'stt', 'avatar'].includes(s.key) ||
                s.key === 'voice-coordinator' || s.key === 'voice-bridge' ||
-               s.key === 'chorus' || s.key === 'reasoning')
+               s.key === 'chorus' || s.key === 'reasoning' ||
+               s.key === 'telegram' || s.key === 'voice-ingress')
   .map(s => s.pm2);
 
 const DEVELOPER_SERVICES = SERVICES
