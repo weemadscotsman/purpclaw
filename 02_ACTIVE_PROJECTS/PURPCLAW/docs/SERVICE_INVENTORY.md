@@ -46,27 +46,28 @@ never meant to start.
 | workers | 7897 | CORE | yes | 4 | overflow worker lane |
 | context-bus | 7881 | CORE | yes | 2 | context bus messages |
 | nextjs | 3030 | CORE | yes | 14 | `next` dev server (production build broken — BUILD_ID missing since 2026-07-30) |
-| cognitive | 7880 | cognitive | no | 18 | `cognitive_gateway.js` (Python spine subprocess: 1GB Node + up to 8GB Python) |
+| cognitive | 7880 | CORE | no | 18 | `cognitive_gateway.js` (Python spine subprocess: 1GB Node + up to 8GB Python) |
 | coordinator | — | REMOVED | no | 0 | Tombstoned 2026-07-31 — swarm mission dispatch moved to orchestrator + agent_tower |
-| goop | 7895 | goop | no | 2 | — |
-| voice-coordinator | 7781 | dark | no | 3 | voice coordinator |
-| voice-bridge | 7792 | dark | no | 3 | voice WebSocket bridge |
-| stt | 7896 | dark | no | 3 | faster-whisper STT |
-| voice-ingress | — | dark | no | 0 | voiceorchestrator dispatch |
-| chorus | — | dark | no | 0 | companion reactions |
-| telegram | 7795 | dark | no | 0 | — |
-| vision | 7889 | dark | no | 0 | — |
-| yolo | 7779 | dark | no | 3 | — |
-| avatar | 7777 | dark | no | 2 | — |
-| reasoning | 7892 | dark | no | 1 | — |
-| harness | 7798 | dark | no | 4 | — |
-| thringlet | — | developer | no | 5 | Next.js API route (`app/api/thringlets/`); bridge on :7799 (shared with TTS) |
-| drift-watcher | — | dark | no | 0 | — |
-
-`thringlet` runs as a **Next.js API route** (`app/api/thringlets/`), not a
-PM2 process. The CLI command (`lib/commands/thringlets.js`) routes through the
-Bridge service on `:7799`. It does not need its own PM2 entry — Next.js is
-the host process.
+| goop | 7895 | goop | no | 2 | GOOP playground |
+| tts-gateway | 7799 | voice | no | — | Kokoro TTS |
+| xiaozhi | — | voice | no | — | Xiaozhi cloud bridge |
+| discord | 7796 | companions | no | — | Discord adapter |
+| slack | 7797 | companions | no | — | Slack adapter |
+| voice-coordinator | 7781 | voice | no | 3 | voice coordinator |
+| voice-bridge | 7792 | voice | no | 3 | voice WebSocket bridge |
+| stt | 7896 | voice | no | 3 | faster-whisper STT |
+| voice-ingress | — | voice | no | 0 | voiceorchestrator dispatch |
+| chorus | — | companions | no | 0 | companion reactions |
+| telegram | 7795 | companions | no | 0 | Telegram adapter |
+| vision | 7889 | vision | no | 0 | camera/screen monitor |
+| yolo | 7779 | vision | no | 3 | YOLO detection |
+| avatar | 7777 | optional | no | 2 | avatar bridge |
+| reasoning | 7892 | optional | no | 1 | proactive heartbeat (opt-in) |
+| harness | 7798 | developer | no | 4 | harness executor |
+| drift-watcher | — | optional | no | 0 | registry/capability drift monitor |
+| static-server | 3000 | developer | no | — | static file server (note: port shared with nextjs dev) |
+| cowork | — | developer | no | — | desktop overlay HUD |
+| email | 7798 | companions | no | — | Email gateway (port shared with harness — confirm actual assignment) |
 
 ## Monitored vs used — read this before deleting anything
 
@@ -102,8 +103,7 @@ been traced, so it stays for now.
 | Embedded core module | eventbus, state, context-bus, metrics, pool, workers, gatekeeper (candidates — pending state-ownership proof) |
 | Lazy on-demand worker | vision, yolo, stt, voice-*, avatar, chorus, telegram, remotion/render, python sandbox |
 | External dependency | nextjs (WebUI), cognitive spine's python backend (7888) |
-| Developer-only | goop, harness, thringlet, drift-watcher, reasoning |
-| Dead or redundant | thringlet (no ecosystem entry) — confirm before removal |
+| Developer-only | goop, harness, drift-watcher, reasoning |
 
 This table is a proposal derived from reference counts and tier membership. It
 is **not** a mandate to merge. Each row needs its state ownership and startup
