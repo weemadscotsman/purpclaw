@@ -49,7 +49,7 @@ never meant to start.
 | cognitive | 7880 | cognitive | no | 18 | `cognitive_gateway.js` (Python spine subprocess: 1GB Node + up to 8GB Python) |
 | coordinator | — | REMOVED | no | 0 | Tombstoned 2026-07-31 — swarm mission dispatch moved to orchestrator + agent_tower |
 | goop | 7895 | goop | no | 2 | — |
-| voice-coordinator | 7781 | dark | no | 3 | — |
+| voice-coordinator | 7781 | dark | no | 3 | voice coordinator |
 | voice-bridge | 7792 | dark | no | 3 | — |
 | stt | 7896 | dark | no | 3 | — |
 | voice-ingress | — | dark | no | 0 | — |
