@@ -52,7 +52,7 @@ config starts 11. That is intentional — `safe-start` and `doctor` now derive f
 | discord | 7796 | companions | no | — | Discord adapter |
 | slack | 7797 | companions | no | — | Slack adapter |
 | voice-coordinator | 7781 | voice | no | 3 | voice orchestration + session management |
-| voice-bridge | 7792 | voice | no | 3 | voice WebSocket bridge |
+| voice-bridge | 7792 | dark | no | 3 | voice WebSocket bridge |
 | stt | 7896 | voice | no | 3 | faster-whisper STT |
 | voice-ingress | — | dark | no | 0 | voiceorchestrator dispatch |
 | chorus | — | dark | no | 0 | companion reactions |
@@ -153,8 +153,8 @@ process starts. No explicit `waitFor()` chains found in scanned source.
 | class | services |
 |---|---|
 | Embedded core module | eventbus, state, context-bus, pool, workers, gatekeeper, api, tower, orchestrator (pending state-ownership proof per service) |
-| Lazy on-demand worker | vision, yolo, stt, voice-coordinator, voice-bridge, avatar, telegram, reasoning, voice-ingress |
-| Dark (flaky/optional) | chorus, goop |
+| Lazy on-demand worker | vision, yolo, stt, voice-coordinator, avatar, telegram, reasoning, voice-ingress |
+| Dark (flaky/optional) | chorus, goop, voice-bridge |
 | External dependency | nextjs (WebUI — production build broken since 2026-07-30), cognitive spine (Python subprocess on 7888) |
 | Developer-only | harness, drift-watcher |
 | Removed | coordinator (tombstoned), metrics (removed — inline counters only), thringlet (tombstoned — Next.js API route) |
