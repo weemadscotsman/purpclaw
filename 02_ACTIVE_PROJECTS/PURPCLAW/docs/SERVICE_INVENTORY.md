@@ -68,17 +68,10 @@ config starts 11. That is intentional — `safe-start` and `doctor` now derive f
 
 ## Monitored vs used — read this before deleting anything
 
-`metrics` (7890) is CORE, `required: true`, always on. Its only references are
-health-check registries:
-
-- `orchestrator.js:2190` — `{ pm2Name: 'purpclaw-metrics', port: 7890, class: 'core' }`
-- `app/hooks/useMissionData.ts:335` — dashboard service row
-- `scripts/tui.js:45` — port map
-
-Nothing fetches data from it. It is **monitored, not consumed** — three places
-check that it is alive and none use its output. That makes it the strongest
-embed-or-delete candidate in the CORE tier, but the state it owns has not yet
-been traced, so it stays for now.
+`metrics` (port 7890) was a **passive scraper** — three places checked it was alive
+but none consumed its output. Removed 2026-07-31; replaced with inline counters.
+If any consumer is later found that depends on its output stream, it can be restored
+as a lightweight pull-based scraper.
 
 ## Method and its limits
 
