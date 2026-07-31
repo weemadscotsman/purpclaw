@@ -1028,7 +1028,14 @@ console.log(`  ${col(C.green, '✔')}  Pool service online`);
 // Compact scorecard: tool count, services, vault, spend, memory, providers, deps, skills, updates.
 async function cmdHealth(args) {
   const { run, formatText } = require('../lib/doctor');
-  const opts = { verbose: args.includes('--verbose') || args.includes('-v') };
+  const profileArg = args.find(a => a.startsWith('--profile='));
+  const profile = profileArg ? profileArg.split('=')[1] :
+                  args.includes('--all') ? 'all' :
+                  args.includes('--running') ? 'running' : 'core';
+  const opts = {
+    verbose: args.includes('--verbose') || args.includes('-v'),
+    profile,
+  };
   if (args.includes('--json')) {
     const r = await run(opts);
     console.log(JSON.stringify(r, null, 2));
