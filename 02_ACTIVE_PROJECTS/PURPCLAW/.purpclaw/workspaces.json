@@ -1,0 +1,5 @@
+{
+  "_doc": "Registry of isolated agent workspaces. An agent that creates a worktree MUST register it here and remove it on completion. Unregistered worktrees are treated as abandoned and may be pruned. See docs/AGENT_WORKSPACE_RULE.md.",
+  "_history": "2026-07-31: 15 unregistered PURPCLAW worktrees were found nested inside the project (.worktrees/, agent_work/worktrees/, purpclaw-slot-0..8). All held zero unique commits. Agents had been reading and debugging those stale copies as if they were the live tree. All removed; this registry exists so it cannot recur silently.",
+  "workspaces": []
+}
