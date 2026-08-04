@@ -24,6 +24,9 @@
  *   const result = await run(task, opts);
  */
 
+const fs   = require('fs');
+const path = require('path');
+
 const { validateTask, normaliseTask } = require('../../packages/task-schema');
 const {
   createResult, pass, partial, block, fail,
@@ -203,6 +206,7 @@ async function run(rawTask, opts = {}) {
   try {
     auditRecord = startTask(task, harnessName);
   } catch (err) {
+    // non-fatal — audit failures must not block the harness
   }
 
   // Create result shell
@@ -347,14 +351,14 @@ async function runCodexFallback(task, ctx, steps, result, auditRecord) {
       const content = fs.readFileSync(fullPath, 'utf8');
       addFileRead(result, fullPath);
       logFileRead(auditRecord?.id, fullPath);
-    } catch {}
+    } catch (e) { /* ignore */ }
   }
 
   // Run verification commands
   const projectRoot = task.repoPath || process.cwd();
   const pkgPath = path.join(projectRoot, 'package.json');
   let hasPkg = false;
-  try { hasPkg = fs.existsSync(pkgPath); } catch {}
+  try { hasPkg = fs.existsSync(pkgPath); } catch (e) { /* ignore */ }
 
   if (hasPkg) {
     for (const [name, script] of Object.entries({

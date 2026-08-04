@@ -1,0 +1,9 @@
+{
+  "name": "@purpclaw/artifact-store",
+  "version": "1.0.0",
+  "description": "PURPCLAW artifact-store service",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test index.test.js"
+  }
+}

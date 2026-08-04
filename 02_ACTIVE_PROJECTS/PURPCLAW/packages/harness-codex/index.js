@@ -108,7 +108,7 @@ async function run(task, ctx, steps, meta) {
     }
 
     // 2. Run build to verify current state (skip if meta.skipVerification)
-    const skipV = meta?.skipVerification || false;
+    const skipV = meta?.skipVerification || ctx?.skipVerification || false;
     if (!skipV) {
       try {
         const pkg = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));

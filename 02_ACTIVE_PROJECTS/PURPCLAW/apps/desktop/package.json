@@ -1,0 +1,16 @@
+{
+  "name": "@purpclaw/desktop",
+  "version": "1.0.0",
+  "description": "PURPCLAW Desktop — native Electron app with full action surface",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^33.0.0"
+  },
+  "author": "PURPCLAW",
+  "license": "MIT"
+}

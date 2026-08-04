@@ -1,0 +1,9 @@
+{
+  "name": "@purpclaw/runner",
+  "version": "1.0.0",
+  "description": "PURPCLAW runner service",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test index.test.js"
+  }
+}

@@ -7996,6 +7996,8 @@ async function cmdPlugins(args) {
     case 'spinebus':   return loadCmd('spinebus').run(args, sharedCtx());
     case 'embeddings': return cmdEmbeddings(args);
     case 'embed':      return cmdEmbeddings(['embed', ...args]);
+    // ── Harness (Phase 2-6 parity packages) ───────────────────────────────
+    case 'harness':   return loadCmd('harness').run(args, sharedCtx());
     // ── Resurrected commands (lib/commands/) ──────────────────────────────
     case 'bughunt':    return loadCmd('bughunt').run(args, sharedCtx());
     case 'ctx-viz':

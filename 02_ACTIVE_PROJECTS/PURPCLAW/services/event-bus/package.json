@@ -1,0 +1,9 @@
+{
+  "name": "@purpclaw/event-bus",
+  "version": "1.0.0",
+  "description": "PURPCLAW event-bus service",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test index.test.js"
+  }
+}

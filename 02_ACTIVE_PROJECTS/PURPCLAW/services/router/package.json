@@ -1,0 +1,9 @@
+{
+  "name": "@purpclaw/router",
+  "version": "1.0.0",
+  "description": "PURPCLAW router service",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test index.test.js"
+  }
+}
