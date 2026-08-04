@@ -584,26 +584,26 @@ Do not call PurpClaw “at parity” until all gates pass.
 
 # 10. FINAL BUILD ORDER
 
-1. [x] Shared task schema              ✓ packages/task-schema/index.js
-2. [x] Shared result schema             ✓ packages/result-schema/index.js
-3. [x] Context spine                   ✓ packages/context-spine/index.js
-4. [x] Verification core               ✓ packages/verification-core/index.js
-5. [x] Memory + audit                 ✓ packages/memory-audit/index.js
-6. [x] Codex harness                  ✓ packages/harness-codex/index.js
-7. [ ] Codex parity tests              framework: run.js — needs real tasks
-8. [x] Claude harness                 ✓ packages/harness-claude/index.js
-9. [ ] Claude parity tests             framework: run.js — needs real tasks
-10. [x] Hermes harness                 ✓ packages/harness-hermes/index.js
-11. [ ] Hermes parity tests            framework: run.js — needs real tasks
-12. [x] MiniMax harness               ✓ packages/harness-minimax/index.js
-13. [ ] MiniMax parity tests           framework: run.js — needs real tasks
-14. [x] Router                        ✓ packages/router/index.js
-15. [ ] Multi-harness sequences        framework: routeSequence() — not tested
-16. [x] CLI/TUI/Web rendering parity  ✓ CLI + /api/harness/parity route
-17. [x] Full end-to-end parity suite  ✓ packages/__tests__/parity/run.js (54 tests)
-18. [ ] Freeze legacy harnesses        needs review
-19. [ ] Migrate active workflows       needs review
-20. [ ] Delete or archive duplicates   needs review
+1. [ ] Shared task schema
+2. [ ] Shared result schema
+3. [ ] Context spine
+4. [ ] Verification core
+5. [ ] Memory + audit
+6. [ ] Codex harness
+7. [ ] Codex parity tests
+8. [ ] Claude harness
+9. [ ] Claude parity tests
+10. [ ] Hermes harness
+11. [ ] Hermes parity tests
+12. [ ] MiniMax harness
+13. [ ] MiniMax parity tests
+14. [ ] Router
+15. [ ] Multi-harness sequences
+16. [ ] CLI/TUI/Web rendering parity
+17. [ ] Full end-to-end parity suite
+18. [ ] Freeze legacy harnesses
+19. [ ] Migrate active workflows
+20. [ ] Delete or archive duplicates
 
 ---
 
