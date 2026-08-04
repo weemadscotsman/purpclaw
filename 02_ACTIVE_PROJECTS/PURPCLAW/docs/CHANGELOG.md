@@ -4,6 +4,160 @@ Curated record of meaningful changes. Append at the bottom; never rewrite histor
 
 ---
 
+## v0.5.0 (2026-08-04) — Incident recovery, spine enabled, documentation contract
+
+All times UTC. Every claim below is tied to a commit; nothing here is
+hand-asserted state.
+
+### Version drift, corrected
+
+`package.json` read `0.3.0` while this file's top entry claimed `v0.4.0`
+(2026-07-31). The 0.4.0 bump was written up but never applied to
+`package.json`, which the documentation contract names as Tier-0 truth for
+version. `0.5.0` is therefore the first release where the two agree. The
+v0.4.0 entry is left intact below — it records what was built, and history is
+not rewritten.
+
+### Incident: 140 modules lost in the 2026-08-04 re-org — recovered
+
+- `19:16:10` — `fd5285e` **Runtime restored.** `lib/*.js` 189 → 328;
+  unresolved local imports 136 → 30; broken files 61 → 28.
+  `bin/purpclaw.js --version` exits 0 for the first time in the session.
+  Source: `E:\PURPCLAW_WORKSPACE\purpclaw`, a separate git repo whose HEAD is
+  `BASELINE: pre-canonical-filesystem-migration` and whose `lib/` held 521 files
+  with original June/July mtimes. Never searched earlier because git has no
+  history for these files — they were never tracked.
+  Restore was additive and demand-driven to fixpoint (4 rounds); no file the
+  canonical tree already had was overwritten.
+- Static `require()` scanning found 136 and stalled. Three blind spots, each
+  found by a different probe: ESM `import()` (`lib/checkpoint-manager.mjs`,
+  41 KB), computed paths
+  (`require(path.join(__dirname,'..','lib','agent-sync'))`), and `require()`
+  calls inside doc-comments, which produced phantom `lib/lib/...` targets and
+  inflated the missing count. `tools/migrations/restore-until-loads.js` answers
+  the first two by reading Node's own `MODULE_NOT_FOUND` instead of guessing.
+- `21:32:34` — `bdef448` **`lib/events.js` corrected.** An earlier report that
+  the recovered 14,276-byte original had replaced a 4,418-byte reconstruction
+  was wrong: the `--force-list` flag never took effect and the result was not
+  checked. The reconstruction had been live since. Now genuinely replaced,
+  signatures verified against all live call sites.
+- Recovery source preserved in-project at
+  `var/artifacts/recovery-source-pristine-20260804_145006/` (3,769 files,
+  93.8 MB). The live workspace tree was being overwritten while work was in
+  progress — 48 of its lib files changed after 19:30 and 51 became stubs under
+  300 bytes, `events.js` among them (14,276 → 170).
+
+### Cognitive spine: enabled for the first time
+
+- `21:12:35` — `7a016b3` `lib/agent-gateway.js` resolved
+  `noSpine: params.no_spine !== false`, so the spine ran only if a caller
+  explicitly passed `no_spine: false`. Nothing in the repository ever did.
+  **The spine had never been consulted by anything.** `agent-loop.js:490`
+  guards the whole recall block behind `!opts.noSpine`; that condition was
+  never true. Now `params.no_spine === true` — absent flag means spine on.
+- Redundant opt-outs removed from `lib/commands/ask.js` (the interactive chat
+  path was excluding the operator's own conversation from recall),
+  `agent_tower.js` and `lib/tower-agent-child.js`.
+- Kept and documented in-file: `lib/eval-manager.js` and
+  `lib/program-optimizer.js`. Evaluation and program compilation must be
+  reproducible; these are the explicitly-stateless routes the memory audit
+  permits.
+- Locked by `tests/contract/spine-default.test.js`.
+
+### Memory gateway: made real
+
+- `19:19:36` — `be392e3` `packages/memory` existed as a directory but could not
+  be imported: no `index.js`, and all seven layer modules required
+  `../../../adapters/...`, resolving to a non-existent `packages/adapters/`.
+- Removed fake-green: `supersede()`, `forget()` and `promote()` returned
+  `{ok:true}` unconditionally without performing anything, and the adapter's
+  `health()` returned `{ok:true}` whenever the spine was unreachable. All now
+  report `NOT_IMPLEMENTED` or real `isOnline()`/`degraded()` state.
+- Seven duplicate 35-line stubs collapsed into one `cognitive-spine/layer.js`.
+  `contract/` and `policy/` were well-formed and entirely unused; `record()`
+  now validates against them and honours `retention: ephemeral`.
+- `lib/memory-gateway.js` added as the compatibility wrapper.
+  `packages/memory/selfcheck.js` passes with the spine down.
+
+### Event bus: restart loop fixed at root
+
+- `unified_eventbus.js` called `server.listen(7782)` at import time.
+  `lib/event-bus.js` proxies to it and `lib/usage-governor.js` requires that,
+  so every process touching the agent-gateway chain tried to bind 7782 and the
+  real service lost the race — 543 restarts on `EADDRINUSE`. `listen()` is now
+  guarded by `require.main === module`.
+
+### Documentation: 1,238 → 372 files
+
+- `20:59:41` — `d229775` Audit. Of 1,094 markdown files, only 282 mentioned
+  PurpClaw. **712 were another project's documentation** —
+  `affaan-m/everything-claude-code` — across six locale trees; `grep -rli
+  purpclaw` returned 0 across all of them.
+- `21:08:04` — `58d30b6` `docs/docs.zip` deleted: a 7.6 MB zip of `docs/`
+  inside `docs/`, 37% of the folder. ECC content moved to
+  `research/references/everything-claude-code/` (kept — third-party MIT,
+  gitignored, `PROVENANCE.md` tracked). `ARCHITECTURE_MAP.md` (108 KB, 159 dead
+  refs, claiming "Live source files: 578") and `STACK_MAP.md` moved to
+  `var/reports/` — generated artifacts in `docs/` rot into confident lies.
+- `22:22:48` — `792d941` Canonical Documentation Contract applied. 195 files
+  tiered by path: evidence 91, archive 73, scoped authority 105, operator
+  controls 97. `docs/audit`, `docs/legacy`, `docs/gauntlet` and `docs/campaign`
+  were each a second name for an existing tier; folded in.
+  `DOCS_INDEX.md` is now generated by
+  `tools/diagnostics/generate-docs-index.js` — six documents had been competing
+  to be the index.
+- Parity authority gate restored to passing. It had been walking `var/` and
+  finding a copy of `CANONICAL_PARITY_PRIORITY.md` inside an incident backup,
+  reporting two canonical claimants; `var/` and `research/` are now excluded.
+  Eight parity docs were additionally missing the authority pointer
+  (pre-existing) and now carry it.
+
+### Security incident — open
+
+- `21:08:04` `58d30b6` committed
+  `docs/.../root-cleanup-2026-06-06/keys.env` (18 lines, one 64-character
+  `INTERNAL_API_KEY`, two 47-character xiaozhi URLs of the form that carries a
+  token in the path; KIMI/MINIMAX/OPENCLAW entries empty). It entered via a
+  broad `git add -- docs` immediately after moving unaudited files through that
+  directory.
+- `22:24:07` — `53aa67f` untracked, and `**/*.env` added to `.gitignore`. File
+  left on disk; it is the operator's.
+- **The blob is still in the history of `58d30b6..53aa67f` (5 commits).**
+  `git branch -r --contains` is empty — not pushed to
+  `github.com/weemadscotsman/purpclaw`. Purging it requires
+  `git filter-branch`, which is blocked by this session's permission mode and
+  needs operator approval. Until then the key must be treated as exposed if the
+  branch is ever pushed.
+- `docs/spec/CREDENTIAL_POOL.md` and `docs/current/token-optimization.md` were
+  scanned and are clean — the matches were markdown table separators.
+
+### Known open
+
+- `docs/current/` (7 files) is unclassified. A directory that permanently calls
+  itself "current" is an anti-pattern the contract forbids by name; where those
+  files belong is a content decision, not a path rule.
+- `docs-gate` still fails on three content claims, deliberately not rewritten:
+  missing `truth-manifest.json`, a parity README citing a non-existent
+  `research/openclaw`, and self-contradictions in
+  `research/PURPCLAW_VS_ALL_CLI_PARITY.md`.
+- `ecosystem.config.js` still lists `purpclaw-metrics` in CORE pointing at a
+  deleted script, and `LAUNCH_PROFILES.all` still admits null-PM2 tombstones.
+- `orchestrator.js` and `worker_service.js` remain absent; the workspace tree
+  holds only 70- and 55-byte stubs.
+- 159 docs still reference files that no longer exist. Most are dated audits,
+  where that is correct history.
+
+### Verified at release
+
+`bin/purpclaw.js --version` → `purpclaw v0.3.0` (pre-bump); nine core modules
+require cleanly (`events`, `memory-client`, `tool-runtime`, `agent-loop`,
+`agent-gateway`, `context-bus`, `session-repository`, `proof-ledger`,
+`pipeline-registry`); `scripts/parity-authority-check.js` passes;
+`tests/contract/spine-default.test.js` passes;
+`packages/memory/selfcheck.js` passes.
+
+---
+
 ## v0.4.0 (2026-07-31) - Canonical parity, SERVICE_INVENTORY, safe-start fix
 
 ### New architecture
