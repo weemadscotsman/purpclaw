@@ -290,4 +290,5 @@ function inferComponentName(goal) {
   return 'NewComponent';
 }
 
-module.exports = { run, generateReactComponent, loadDesignTokens };
+const HARNESS = 'minimax';
+module.exports = { run, HARNESS, generateReactComponent, loadDesignTokens, detectComponentDir };

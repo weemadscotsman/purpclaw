@@ -21,7 +21,7 @@ const nodeGlobals = {
 module.exports = [
   js.configs.recommended,
   {
-    files: ['packages/**/*.js', 'apps/**/*.js', 'services/**/*.js', 'lib/**/*.js', 'bin/**/*.js'],
+    files: ['packages/**/*.js', 'apps/**/*.js', 'services/**/*.js', 'lib/**/*.js', 'bin/**/*.js', 'tests/**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'commonjs',

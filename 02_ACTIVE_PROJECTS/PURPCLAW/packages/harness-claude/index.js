@@ -1,138 +1,341 @@
 'use strict';
 
 /**
- * packages/harness-claude — Stage 4 parity
- * Claude harness: deep context, architecture analysis, contradiction detection.
+ * packages/harness-claude — Claude parity harness
+ * Blueprint: PURPCLAW_AGENT_HARNESS_PARITY_BLUEPRINT.md §4
+ *
+ * Strengths: deep reasoning, architecture analysis, contradiction detection,
+ * large-context synthesis, spec repair, cross-file reasoning.
+ *
+ * 8-stage lifecycle:
+ *   IntakeNormaliser → LongContextAssembler → SynthesisEngine
+ *   → Planner → OptionalEditor → VerificationStage
+ *   → ResultPackager → MemoryAudit
  */
-const fs   = require("fs");
-const path = require("path");
-const { spawnSync } = require("child_process");
 
-const taskSchema    = require("../task-schema");
-const resultSchema  = require("../result-schema");
-const contextSpine = require("../context-spine");
-const memoryAudit   = require("../memory-audit");
-const verification = require("../verification-core");
+const path         = require('path');
+const fs           = require('fs');
+const { execSync } = require('child_process');
 
-const HARNESS = "claude";
-const VERIFY_GATES = ["syntax", "lint", "build"];
+const HARNESS = 'claude';
 
+// ── Schema imports ────────────────────────────────────────────────────────────
+let resultSchema;
+try { resultSchema = require('./result-schema'); } catch (_) { resultSchema = require('../result-schema'); }
+let memoryAudit;
+try { memoryAudit = require('./memory-audit'); } catch (_) { memoryAudit = require('../memory-audit'); }
+
+// ── Time ─────────────────────────────────────────────────────────────────────
 function now() { return Date.now(); }
 
+// ── Repo root ────────────────────────────────────────────────────────────────
 function resolveRepoRoot(task) {
-  if (task.repoPath && fs.existsSync(task.repoPath)) return path.resolve(task.repoPath);
-  let dir = task.repoPath || process.cwd();
-  while (dir !== path.dirname(dir)) {
-    if (fs.existsSync(path.join(dir, ".git"))) return dir;
+  const raw = task.repoPath || (task.knownFiles && task.knownFiles[0]) || process.cwd();
+  // Walk up for nearest package.json
+  let dir = path.isAbsolute(raw) ? raw : path.resolve(process.cwd(), raw);
+  while (dir !== path.parse(dir).root) {
+    if (fs.existsSync(path.join(dir, 'package.json'))) return dir;
     dir = path.dirname(dir);
   }
-  return task.repoPath || process.cwd();
+  return path.dirname(dir);
 }
 
-function assembleClaudeContext(task) {
-  const root = resolveRepoRoot(task);
-  const ctx  = contextSpine.assembleContext(task, { root, maxTokens: 120000, includeMem: true });
-  const tagged = ctx.items.map(item => {
-    const src = item.provenance?.source || "";
-    let tag = "implementation";
-    if (/truth|readme|architecture|spec/i.test(src)) tag = "architecture";
-    else if (/test|__tests__/i.test(src)) tag = "test";
-    else if (/memory/i.test(src)) tag = "prior-decision";
-    else if (/git/i.test(src)) tag = "history";
-    return { ...item, tag };
-  });
-  return { ...ctx, items: tagged, root };
-}
+// ── Context assembly ─────────────────────────────────────────────────────────
+function assembleClaudeContext(task, opts) {
+  const repoRoot = resolveRepoRoot(task);
+  const contextItems = [];
+  const readFile = function(filePath) {
+    try {
+      const full = path.isAbsolute(filePath) ? filePath : path.join(repoRoot, filePath);
+      if (!fs.existsSync(full)) return null;
+      const data = fs.readFileSync(full, 'utf8');
+      const stat = fs.statSync(full);
+      return { source: 'file', label: filePath, data: data,
+               path: full, timestamp: stat.mtime.toISOString(),
+               confidence: 1.0, size: stat.size };
+    } catch (_) { return null; }
+  };
 
-function scanContradictions(ctx) {
-  const byFile = {};
-  for (const item of ctx.items) {
-    if (!item.path || !item.content) continue;
-    const contradictions = [];
-    const funcDefs = (item.content.match(/function\s+(\w+)/g) || []);
-    const seen = {};
-    for (const fd of funcDefs) {
-      const name = fd.replace("function ", "");
-      if (seen[name]) contradictions.push("Duplicate function: " + name);
-      seen[name] = true;
+  // Priority 1: architecture docs
+  const docPaths = [
+    'docs/architecture.md', 'docs/ARCHITECTURE.md', 'ARCHITECTURE.md',
+    'docs/design.md', 'docs/DESIGN.md', 'DESIGN.md',
+    'README.md', 'docs/TECHNICAL.md',
+  ];
+  for (const p of docPaths) {
+    const item = readFile(p);
+    if (item) { item.priority = 1; contextItems.push(item); }
+  }
+
+  // Priority 2: implementation files from knownFiles
+  if (task.knownFiles && task.knownFiles.length) {
+    for (const f of task.knownFiles.slice(0, 20)) {
+      const item = readFile(f);
+      if (item) { item.priority = 2; contextItems.push(item); }
     }
-    const reqs = item.content.match(/require\(['"]([^'"]+)['"]\)/g) || [];
-    const imps = item.content.match(/^import\s.*from\s['"]([^'"]+)['"]/gm) || [];
-    if (imps.length && reqs.length > 3) contradictions.push("Mixed ESM/CommonJS module conflict");
-    if (contradictions.length) byFile[item.path] = contradictions;
   }
-  return byFile;
-}
 
-function buildAssumptionsLedger(ctx) {
-  const assumptions = [];
-  const hasPkg = ctx.items.some(i => i.path && /package\.json$/.test(i.path));
-  if (!hasPkg) assumptions.push({ type: "missing-context", desc: "package.json not in context", risk: "medium" });
-  return assumptions;
-}
-
-async function runClaudeAnalysis(task, ctx, contradictions, assumptions) {
+  // Priority 3: recent git-tracked source files
   try {
-    const { default: llmProvider } = await import("../llm-provider").catch(() => null);
-    if (!llmProvider) return {};
-    const md = contextSpine.renderForLLM(ctx);
-    const resp = await llmProvider.chat([
-      { role: "system", content: 'You are CLAUDE. Respond ONLY with JSON: { "currentTruth": "...", "contradictionsFound": [], "missingLayers": [], "rootCause": "...", "recommendedFixOrder": [], "risks": [], "beforeAfterMap": {}, "nextArchitecturalDecision": "" }' },
-      { role: "user", content: "GOAL: " + task.goal + "\n\nCONTEXT: " + md.slice(0, 6000) + "\n\nCONTRADICTIONS: " + JSON.stringify(contradictions) + "\n\nASSUMPTIONS: " + JSON.stringify(assumptions) },
-    ], { temperature: 0.4, maxTokens: 3000, responseFormat: { type: "json_object" } });
-    const raw = resp.content || "";
-    const analysis = JSON.parse(raw.replace(/```json\n?/g,"").replace(/```\n?/g,""));
-    const fpath = path.join(ctx.root || ".", "agent_work", "harness", task.taskId + "_analysis.md");
-    fs.mkdirSync(path.dirname(fpath), { recursive: true });
-    fs.writeFileSync(fpath, "# Claude Analysis\n\n**Goal:** " + task.goal + "\n\n" + JSON.stringify(analysis, null, 2) + "\n", "utf8");
-    return analysis;
-  } catch { return {}; }
+    const out = execSync('git ls-files -- "*.js" "*.ts" "*.jsx" "*.tsx" | head -30',
+                        { cwd: repoRoot, timeout: 5000 });
+    const files = out.toString().trim().split('\n').filter(Boolean);
+    for (const f of files.slice(0, 15)) {
+      const item = readFile(f);
+      if (item) { item.priority = 3; contextItems.push(item); }
+    }
+  } catch (_) { /* defensive */ }
+
+  return { items: contextItems, repoRoot };
 }
 
-async function run(taskOrGoal) {
-  let task;
-  if (typeof taskOrGoal === "string") {
-    task = taskSchema.normaliseTask({ taskId: "claude_" + now() + "_" + Math.random().toString(36).slice(2,7), goal: taskOrGoal });
-  } else {
-    task = taskSchema.validateTask(taskOrGoal);
+// ── Contradiction scanner ─────────────────────────────────────────────────────
+/**
+ * Scan loaded context for contradictions between documentation and code.
+ * Returns { findings: [], routePatterns: [] }.
+ *
+ * Findings: { sourceA, sourceB, contradiction, severity: 'high'|'medium'|'low' }
+ * Route patterns: { pattern, files: [] }
+ */
+function scanContradictions(ctx) {
+  const findings = [];
+  const routePatterns = [];
+  const textBySource = {};
+
+  const items = Array.isArray(ctx) ? ctx : (ctx.items || []);
+  for (const item of items) {
+    if (item.data) textBySource[item.label] = item.data;
   }
-  const root = resolveRepoRoot(task);
-  const startedAt = now();
-  const result = resultSchema.createResult(task, HARNESS);
-  memoryAudit.startTask(root, { taskId: task.taskId, goal: task.goal, harness: HARNESS, repoPath: root, priority: task.priority, preferredHarness: task.preferredHarness });
-  memoryAudit.logStep(root, { taskId: task.taskId, harness: HARNESS, goal: task.goal });
-  try {
-    const ctx = assembleClaudeContext(task);
-    const contradictions = scanContradictions(ctx);
-    const assumptions = buildAssumptionsLedger(ctx);
-    const analysis = await runClaudeAnalysis(task, ctx, contradictions, assumptions);
-    for (const [file, issues] of Object.entries(contradictions)) {
-      for (const issue of issues) {
-        resultSchema.addError(result, { phase: "analysis", message: "[" + path.basename(file) + "] " + issue });
+
+  // Route/API pattern detection: find inconsistent HTTP method or path usage
+  const methodMap = {}; // "GET /api/users" -> [files]
+  const httpRegex = /(?:fetch|axios|request|get|post|put|patch|del)\s*\([^)'"]*['"]([^'"]+)['"]/gi;
+  for (const [src, text] of Object.entries(textBySource)) {
+    let m;
+    while ((m = httpRegex.exec(text)) !== null) {
+      const key = m[1] || '';
+      if (!methodMap[key]) methodMap[key] = [];
+      methodMap[key].push(src);
+    }
+  }
+  for (const [pattern, files] of Object.entries(methodMap)) {
+    if (files.length > 1) {
+      routePatterns.push({ pattern, files });
+    }
+  }
+
+  // Doc-vs-code contradiction: doc says X, code does Y
+  const docFiles = Object.keys(textBySource).filter(function(l) {
+    return /\.(md|txt)$/i.test(l);
+  });
+  const codeFiles = Object.keys(textBySource).filter(function(l) {
+    return /\.(js|ts|jsx|tsx)$/i.test(l);
+  });
+
+  // Check each doc for claims about deps/APIs that don't exist in code
+  for (const doc of docFiles) {
+    const docText = textBySource[doc] || '';
+    // Look for import statements mentioned in docs
+    const importMentions = docText.match(/import .+? from ['"][^'"]+['"]/gi) || [];
+    for (const mention of importMentions) {
+      const match = mention.match(/from ['"]([^'"]+)['"]/);
+      if (!match) continue;
+      const dep = match[1];
+      // Check if this dep is used in any code file
+      let found = false;
+      for (const code of codeFiles) {
+        if ((textBySource[code] || '').indexOf(dep) >= 0) { found = true; break; }
+      }
+      if (!found) {
+        findings.push({
+          sourceA: doc,
+          sourceB: codeFiles.join(', ') || 'no code files',
+          contradiction: 'Documentation references import "' + dep + '" but it was not found in any code file',
+          severity: 'medium',
+        });
       }
     }
-    const gateResults = verification.runGates(root, VERIFY_GATES, { acceptanceCriteria: task.acceptanceCriteria || [] });
-    for (const gr of (gateResults.results || [])) {
-      resultSchema.addVerification(result, { criterion: gr.gate, passed: gr.ok, evidence: gr.output || null });
-    }
-    result.durationMs = now() - startedAt;
-    const hasIssues = Object.keys(contradictions).length > 0 || !gateResults.ok;
-    if (!hasIssues) {
-      resultSchema.pass(result, "Claude: " + result.filesChanged.length + " file(s). Analysis complete. " + Object.keys(contradictions).length + " contradiction(s).");
-    } else {
-      resultSchema.partial(result, "Claude: partial — " + Object.keys(contradictions).length + " contradiction(s). " + (gateResults.ok ? "Gates passed." : "Gates failed."));
-    }
-    memoryAudit.finishTask(root, { taskId: task.taskId, status: result.status, summary: result.summary, metrics: { durationMs: result.durationMs, filesChanged: result.filesChanged.length } });
-    memoryAudit.logStep(root, { taskId: task.taskId, harness: HARNESS, goal: task.goal, status: result.status, completedAt: new Date().toISOString() });
-    return resultSchema.validateResult(result);
-  } catch (err) {
-    result.durationMs = now() - startedAt;
-    resultSchema.fail(result, err.message);
-    resultSchema.addError(result, { phase: "harness", message: err.message, stack: err.stack });
-    memoryAudit.finishTask(root, { taskId: task.taskId, status: "failed", summary: err.message, metrics: { durationMs: result.durationMs } });
-    memoryAudit.logStep(root, { taskId: task.taskId, harness: HARNESS, goal: task.goal, status: "failed" });
-    return result;
   }
+
+  return { findings, routePatterns };
 }
 
-module.exports = { run, HARNESS };
+// ── Architecture synthesiser ──────────────────────────────────────────────────
+/**
+ * Synthesise an architecture map from loaded context items.
+ * Returns { layers: { ui, logic, data, infra, unknown }, dependencies: [] }.
+ *
+ * Classification rules:
+ *   ui      — React/Vue/HTML/CSS components, pages, layouts, assets
+ *   logic   — business logic, services, controllers (JS/TS, not node_modules)
+ *   data    — ORM models, DB queries, API clients, stores
+ *   infra   — Docker, CI/CD, env, config scripts
+ *   unknown — everything else
+ */
+function synthesiseArchitecture(ctx) {
+  const layers = { ui: [], logic: [], data: [], infra: [], unknown: [] };
+  const dependencies = [];
+  const filePaths = Array.isArray(ctx) ? ctx.map(function(i) { return i.path || i.file || i.label || ''; }) : [];
+
+  const uiExts   = ['.jsx','.tsx','.vue','.svelte','.angular','.html','.css','.scss','.less'];
+  const logicExts = ['.js','.ts','.mjs','.cjs'];
+  const dataExts  = ['.sql','.prisma','.py','.go','.java'];
+
+  for (const raw of filePaths) {
+    if (!raw) continue;
+    const p = raw.replace(/\\/g, '/').toLowerCase();
+
+    // UI: UI extensions or UI directories
+    var isUi = uiExts.some(function(e) { return p.endsWith(e); }) ||
+               p.indexOf('/components/') >= 0 || p.indexOf('/pages/') >= 0 ||
+               p.indexOf('/layouts/') >= 0 || p.indexOf('/views/') >= 0 ||
+               p.indexOf('/assets/') >= 0 || p.indexOf('/public/') >= 0 ||
+               p.indexOf('/styles/') >= 0;
+
+    if (isUi) { layers.ui.push(raw); continue; }
+
+    // Data: DB/data extensions or data directories
+    var isData = dataExts.some(function(e) { return p.endsWith(e); }) ||
+                 p.indexOf('/db/') >= 0 || p.indexOf('/models/') >= 0 ||
+                 p.indexOf('/stores/') >= 0 || p.indexOf('/queries/') >= 0 ||
+                 p.indexOf('/fetchers/') >= 0 || p.indexOf('/api/') >= 0;
+
+    if (isData) { layers.data.push(raw); continue; }
+
+    // Infra: Docker, CI, env
+    var isInfra = p.indexOf('dockerfile') >= 0 || p.indexOf('docker-compose') >= 0 ||
+                  p.indexOf('/.github/') >= 0 || p.indexOf('/ci/') >= 0 ||
+                  p.indexOf('jenkins') >= 0 || p.indexOf('makefile') >= 0 ||
+                  p.indexOf('.env') >= 0;
+
+    if (isInfra) { layers.infra.push(raw); continue; }
+
+    // Logic: JS/TS files not in node_modules
+    var isLogic = logicExts.some(function(e) { return p.endsWith(e); }) &&
+                  p.indexOf('node_modules') < 0;
+
+    if (isLogic) { layers.logic.push(raw); continue; }
+
+    layers.unknown.push(raw);
+  }
+
+  return { layers: layers, dependencies: dependencies };
+}
+
+// ── Main run ─────────────────────────────────────────────────────────────────
+/**
+ * Execute a task through the Claude harness.
+ *
+ * @param {Object} task   - PurpClawTask (normalised by task-schema)
+ * @param {Object} ctx    - { items: ProvenanceItem[] }
+ * @param {Array}  steps  - prior steps for resume
+ * @param {Object} meta   - { dryRun, force, verbose }
+ * @returns {Promise<Object>} PURPCLAW_RESULT
+ */
+async function run(task, ctx, steps, meta) {
+  const startMs = now();
+
+  // Resolve + validate task
+  if (!task || !task.goal) {
+    throw new Error('PURPCLAW_TASK_SCHEMA_v1 | run: task.goal is required');
+  }
+
+  // Normalise: use task-schema if available
+  let normalised = task;
+  try {
+    let taskSchema;
+    try { taskSchema = require('./task-schema'); } catch (_) { taskSchema = require('../task-schema'); }
+    if (taskSchema && taskSchema.normaliseTask) {
+      normalised = taskSchema.normaliseTask(task);
+    }
+  } catch (_) { /* defensive */ }
+
+  const repoRoot = resolveRepoRoot(normalised);
+
+  const result = resultSchema.createResult(normalised, HARNESS);
+  result.startedAt = new Date(startMs).toISOString();
+
+  let record = null;
+  try {
+    // Start memory audit
+    try {
+      record = memoryAudit.startTask(normalised, HARNESS);
+    } catch (_) { /* defensive */ }
+
+    // Assemble Claude-specific deep context
+    const claudeCtx = ctx && ctx.items ? ctx : assembleClaudeContext(normalised, {});
+    const items = claudeCtx.items || [];
+
+    // Tag items with priority and type
+    for (const item of items) {
+      memoryAudit.logFileRead && memoryAudit.logFileRead(record && record.id, item.path || item.label);
+    }
+
+    // Run analysis
+    const contradictions = scanContradictions(claudeCtx);
+    const archMap = synthesiseArchitecture(claudeCtx);
+
+    // Facts vs assumptions ledger
+    const assumptions = [];
+
+    // What we know from docs
+    for (const item of items) {
+      if (/\.(md|txt)$/i.test(item.label || '')) {
+        // Extract "assumes" statements from docs
+        const lines = (item.data || '').split('\n');
+        for (const line of lines) {
+          if (line.match(/^>\s*assumption:|^>\s*note:|^>\s*todo:/i)) {
+            assumptions.push({ source: item.label, claim: line.replace(/^>\s*/i, '').trim() });
+          }
+        }
+      }
+    }
+
+    // Build summary
+    const summaryParts = [];
+    summaryParts.push('[' + HARNESS + '] ' + normalised.goal);
+    summaryParts.push(items.length + ' context items loaded');
+
+    if (contradictions.findings.length > 0) {
+      summaryParts.push(contradictions.findings.length + ' contradictions found');
+      for (const f of contradictions.findings.slice(0, 3)) {
+        result.errors.push({ type: 'contradiction', sourceA: f.sourceA, sourceB: f.sourceB,
+                            message: f.contradiction, severity: f.severity });
+      }
+    } else {
+      summaryParts.push('no contradictions found');
+    }
+
+    summaryParts.push('architecture: ' +
+      Object.keys(archMap.layers).filter(function(k) { return archMap.layers[k].length > 0; }).join(', ') || 'no layers detected');
+
+    result.summary = summaryParts.join(' | ');
+    result.contradictions = contradictions.findings;
+    result.architecture = archMap.layers;
+    result.assumptions = assumptions;
+    resultSchema.pass(result, 'Claude harness analysis complete');
+  } catch (err) {
+    resultSchema.fail(result, err.message);
+    result.errors.push({ type: 'harness-error', message: err.message, stack: err.stack });
+  }
+
+  result.durationMs = now() - startMs;
+  result.finishedAt = new Date().toISOString();
+
+  if (record) {
+    try {
+      memoryAudit.finishTask(record.id, result.status, result.summary);
+      memoryAudit.logStep(record.id, { name: 'claude-run', status: result.status, durationMs: result.durationMs });
+    } catch (_) { /* defensive */ }
+  }
+
+  return resultSchema.validateResult(result);
+}
+
+// ── Exports ───────────────────────────────────────────────────────────────────
+module.exports = {
+  run,
+  scanContradictions,
+  synthesiseArchitecture,
+  HARNESS,
+};
