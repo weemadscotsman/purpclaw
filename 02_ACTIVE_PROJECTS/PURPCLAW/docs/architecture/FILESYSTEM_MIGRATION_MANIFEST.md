@@ -8,15 +8,15 @@ Generated: 2026-08-04
 
 | metric | value |
 |---|---|
-| source files scanned repo-wide | 259 |
-| `lib/` files classified | 188 |
-| unresolved local imports (repo-wide) | 136 |
-| distinct missing modules | 153 |
-| possible packages/ duplicates | 3 |
+| source files scanned repo-wide | 401 |
+| `lib/` files classified | 329 |
+| unresolved local imports (repo-wide) | 30 |
+| distinct missing modules | 45 |
+| possible packages/ duplicates | 4 |
 
 ## Migration readiness
 
-**NOT READY.** 153 import targets do not resolve. Moving files
+**NOT READY.** 45 import targets do not resolve. Moving files
 while the graph is broken copies the damage into `packages/` and makes it look
 intentional. Phase 3 is blocked until this reaches zero or every survivor is a
 deliberate, recorded stub.
@@ -25,30 +25,30 @@ deliberate, recorded stub.
 
 | classification | files |
 |---|---|
-| service-adapter | 85 |
-| unknown | 62 |
-| tool-runtime | 7 |
-| tool-implementation | 7 |
-| harness | 4 |
-| organisation | 4 |
-| orchestration | 4 |
-| routing | 3 |
-| provider | 3 |
+| unknown | 159 |
+| service-adapter | 87 |
+| orchestration | 13 |
+| tool-implementation | 10 |
+| tool-runtime | 8 |
+| memory | 8 |
+| core-runtime | 7 |
+| organisation | 7 |
+| routing | 7 |
+| studio | 6 |
+| provider | 6 |
+| harness | 5 |
+| session | 4 |
 | test-helper | 2 |
-| core-runtime | 2 |
-| studio | 2 |
-| session | 2 |
-| memory | 1 |
 
 ## Status
 
 | status | files |
 |---|---|
-| live | 107 |
-| broken | 61 |
-| orphan | 16 |
+| live | 272 |
+| broken | 28 |
+| orphan | 23 |
+| duplicate | 4 |
 | test-helper | 2 |
-| duplicate | 2 |
 
 ## Missing modules, by fan-in
 
@@ -57,67 +57,51 @@ Every row is a hard or soft import target that does not exist on disk.
 | refs | missing target | first referenced by |
 |---|---|---|
 | 7 | `packages/adapters/memory-client-wrapper` | `packages/memory/cognitive-spine/affective-interaction/index.js`, `packages/memory/cognitive-spine/counterfactual/index.js` |
-| 3 | `lib/provider-registry` | `lib/agent-gateway.js`, `lib/commands/ask.js` |
-| 3 | `lib/events` | `lib/agent-loop.js`, `lib/memory-client.js` |
-| 3 | `lib/pipeline-registry` | `gatekeeper.js`, `lib/agent-router.js` |
-| 3 | `lib/job-chain` | `bin/purpclaw.js`, `lib/api-harness-kernel.js` |
-| 3 | `lib/proof-ledger` | `bin/purpclaw.js`, `lib/tools-parity.js` |
-| 3 | `lib/steering-router` | `bin/purpclaw.js`, `lib/tools-parity.js` |
-| 2 | `lib/retrieval-engine` | `lib/agent-component.js`, `lib/agent-gateway.js` |
-| 2 | `lib/messaging-registry` | `lib/agent-gateway.js`, `lib/messaging-runtime.js` |
-| 2 | `lib/cognitive-client` | `lib/agent-loop.js`, `lib/doctor.js` |
-| 2 | `lib/file-watcher` | `lib/agent-loop.js`, `lib/commands/watch.js` |
-| 2 | `lib/pulse` | `lib/agent-loop.js`, `unified_api.js` |
-| 2 | `lib/session-store` | `bin/purpclaw.js`, `lib/agent-loop.js` |
-| 2 | `lib/user-feedback` | `lib/agent-loop.js`, `lib/self-evolution-loop.js` |
-| 2 | `lib/job-contract` | `lib/api-harness-kernel.js`, `lib/harness/engine.js` |
-| 2 | `lib/omnicode-bridge` | `lib/api-harness-kernel.js`, `lib/mcp.js` |
-| 2 | `lib/training-buffer` | `lib/api-harness-kernel.js`, `lib/commands/training.js` |
-| 2 | `lib/awaken/awaken-state` | `lib/awaken/awaken-preflight.js`, `lib/commands/awaken.js` |
-| 2 | `lib/memory-consistency` | `lib/commands/bigboss.js`, `lib/tools/index.js` |
-| 2 | `lib/harness/benchmark` | `lib/commands/harness.js`, `lib/harness/engine.js` |
-| 2 | `lib/harvest/crawler` | `lib/commands/harvest.js`, `unified_api.js` |
-| 2 | `lib/harvest/extractors` | `lib/commands/harvest.js`, `unified_api.js` |
-| 2 | `lib/harvest/indexer` | `lib/commands/harvest.js`, `unified_api.js` |
-| 2 | `lib/spend-gate` | `lib/commands/pocket.js`, `lib/llm-provider.js` |
-| 2 | `lib/agent-registry` | `lib/commands/roster.js`, `lib/tools-parity.js` |
-| 2 | `lib/scheduler/nl-cron` | `lib/commands/schedule.js`, `lib/cron-manager.js` |
-| 2 | `lib/spine/session-store` | `lib/core/work-engine.js`, `unified_api.js` |
-| 2 | `lib/workflow-state` | `lib/graph-runtime.js`, `lib/workflow-manager.js` |
-| 2 | `agent_score.js` | `lib/harness/engine.js`, `swarm_coordinator.js` |
-| 2 | `lib/runtime/computer-use` | `lib/runtime/autonomy-runner.js`, `lib/tools-gui.js` |
-| 2 | `lib/cost-ledger` | `bin/purpclaw.js`, `lib/tools/index.js` |
-| 2 | `lib/system-manifest` | `lib/tools/index.js`, `unified_api.js` |
-| 2 | `lib/insight` | `bin/purpclaw.js`, `lib/tools-parity.js` |
-| 2 | `lib/purpflow` | `bin/purpclaw.js`, `lib/tools-parity.js` |
+| 3 | `agent_score.js` | `lib/harness/benchmark.js`, `lib/harness/engine.js` |
+| 2 | `agent_routing_matrix` | `agent_tower.js`, `lib/stack-truth.js` |
 | 2 | `podcast_studio/shared_log` | `podcast_studio/podcast_runner.js`, `podcast_studio/turn_manager.js` |
-| 2 | `lib/runtime/telemetry-console` | `pool_service.js`, `unified_api.js` |
-| 1 | `lib/component-pipeline` | `lib/agent-gateway.js` |
-| 1 | `lib/delegation-manager` | `lib/agent-gateway.js` |
-| 1 | `lib/execution-runtime` | `lib/agent-gateway.js` |
-| 1 | `lib/goal-controller` | `lib/agent-gateway.js` |
-| 1 | `lib/output-contract` | `lib/agent-gateway.js` |
-| 1 | `lib/profile-manager` | `lib/agent-gateway.js` |
-| 1 | `lib/recipe-manager` | `lib/agent-gateway.js` |
-| 1 | `lib/repo-map` | `lib/agent-gateway.js` |
-| 1 | `lib/run-context` | `lib/agent-gateway.js` |
-| 1 | `lib/usage-limits` | `lib/agent-gateway.js` |
-| 1 | `lib/verification-runner` | `lib/agent-gateway.js` |
-| 1 | `lib/context-compressor` | `lib/agent-loop.js` |
-| 1 | `lib/continuity` | `lib/agent-loop.js` |
-| 1 | `lib/idle-engine` | `lib/agent-loop.js` |
-| 1 | `lib/phase-router` | `lib/agent-loop.js` |
-| 1 | `lib/priority-steer` | `lib/agent-loop.js` |
-| 1 | `lib/prompt-builder` | `lib/agent-loop.js` |
-| 1 | `lib/runtime/privacy-policy` | `lib/agent-loop.js` |
-| 1 | `lib/verification-gate` | `lib/agent-loop.js` |
-| 1 | `lib/deep-research-group` | `lib/api-harness-kernel.js` |
-| 1 | `lib/config-loader` | `lib/commands/ask.js` |
-| 1 | `lib/user-commands` | `lib/commands/ask.js` |
-| 1 | `lib/awaken/awaken-events` | `lib/commands/awaken.js` |
-| 1 | `lib/awaken/awaken-loop` | `lib/commands/awaken.js` |
+| 1 | `lib/lib/agent-health` | `lib/agent-health.js` |
+| 1 | `lib/lib/cognitive-client` | `lib/cognitive-client.js` |
+| 1 | `parity/cli/router.js` | `lib/commands/help.js` |
+| 1 | `lib/commands/App.jsx` | `lib/commands/init-project.js` |
+| 1 | `parity/memory/scoped.js` | `lib/commands/memory.js` |
+| 1 | `lib/lib/context-bus.js` | `lib/context-bus.js` |
+| 1 | `lib/lib/context-packet` | `lib/context-packet.js` |
+| 1 | `lib/core/lib/core/work-engine` | `lib/core/work-engine.js` |
+| 1 | `lib/config` | `lib/file-watcher.js` |
+| 1 | `lib/harness/lib/harness/engine` | `lib/harness/engine.js` |
+| 1 | `lib/lib/insight` | `lib/insight.js` |
+| 1 | `lib/lib/job-chain` | `lib/job-chain.js` |
+| 1 | `lib/lib/llm-provider` | `lib/llm-provider.js` |
+| 1 | `lib/lib/memory-client` | `lib/memory-client.js` |
+| 1 | `lib/narrator/lib/narrator/eventbus-bridge` | `lib/narrator/eventbus-bridge.js` |
+| 1 | `lib/lib/output-vault` | `lib/output-vault.js` |
+| 1 | `lib/lib/proof-ledger` | `lib/proof-ledger.js` |
+| 1 | `lib/lib/pty` | `lib/pty.js` |
+| 1 | `lib/runtime/lib/runtime/autonomy-runner` | `lib/runtime/autonomy-runner.js` |
+| 1 | `lib/scheduler/lib/scheduler/nl-cron.js` | `lib/scheduler/nl-cron.js` |
+| 1 | `lib/lib/screen-look` | `lib/screen-look.js` |
+| 1 | `lib/lib/session-portability` | `lib/session-portability.js` |
+| 1 | `lib/lib/soul-registry` | `lib/soul-registry.js` |
+| 1 | `lib/lib/stack-truth` | `lib/stack-truth.js` |
+| 1 | `lib/lib/tool-cache` | `lib/tool-cache.js` |
+| 1 | `lib/training/lib/training/personal-dataset` | `lib/training/personal-dataset.js` |
+| 1 | `lib/lib/with-pipeline` | `lib/with-pipeline.js` |
+| 1 | `packages/harness-claude/memory-audit` | `packages/harness-claude/index.js` |
+| 1 | `packages/harness-claude/result-schema` | `packages/harness-claude/index.js` |
+| 1 | `packages/harness-claude/task-schema` | `packages/harness-claude/index.js` |
+| 1 | `packages/harness-core/packages/harness-core` | `packages/harness-core/index.js` |
+| 1 | `packages/memory/context/memory-client` | `packages/memory/context/scoped-memory.js` |
+| 1 | `apps/lib/llm-provider` | `apps/companion-chorus/src/minimax.js` |
+| 1 | `podcast_studio/topic_picker` | `podcast_studio/podcast_runner.js` |
+| 1 | `podcast_studio/tts` | `podcast_studio/podcast_runner.js` |
+| 1 | `companion_swarm.js` | `agent_tower.js` |
+| 1 | `task_decomposer.js` | `swarm_coordinator.js` |
+| 1 | `../companion_swarm.js` | `unified_api.js` |
+| 1 | `digital_shaman.js` | `unified_api.js` |
+| 1 | `shaman_evaluator.js` | `unified_api.js` |
+| 1 | `shaman_prompts.js` | `unified_api.js` |
 
-_93 further targets omitted; see `data/migrations/unresolved-imports.json` for the complete list._
 
 ## Batches
 
@@ -126,15 +110,15 @@ previous one has zero remaining callers of its compatibility wrappers.
 
 | batch | files |
 |---|---|
-| 1-memory-sessions | 3 |
-| 2-permissions-tools | 9 |
-| 3-providers-routing | 6 |
-| 4-orchestration-pipeline | 4 |
-| 5-harness | 4 |
-| 6-organisation-council | 4 |
-| 7-studio-ecology | 2 |
-| 8-utilities-tools | 92 |
-| 9-compatibility | 64 |
+| 1-memory-sessions | 12 |
+| 2-permissions-tools | 15 |
+| 3-providers-routing | 13 |
+| 4-orchestration-pipeline | 13 |
+| 5-harness | 5 |
+| 6-organisation-council | 7 |
+| 7-studio-ecology | 6 |
+| 8-utilities-tools | 97 |
+| 9-compatibility | 161 |
 
 ## Rules this manifest encodes
 

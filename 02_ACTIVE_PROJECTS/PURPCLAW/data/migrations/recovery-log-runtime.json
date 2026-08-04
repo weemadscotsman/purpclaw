@@ -1,0 +1,22 @@
+{
+  "source": "E:/PURPCLAW_WORKSPACE/purpclaw",
+  "entrypoint": [
+    "bin/purpclaw.js",
+    "--version"
+  ],
+  "restored": [
+    {
+      "file": "lib/agent-sync.js",
+      "bytes": 3086
+    },
+    {
+      "file": "lib/proactive-maintenance.js",
+      "bytes": 2480
+    },
+    {
+      "file": "lib/spaghetti-audit.js",
+      "bytes": 4794
+    }
+  ],
+  "unfound": []
+}

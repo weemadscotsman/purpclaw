@@ -60,6 +60,25 @@
       "writes: state.db"
     ]
   },
+  "lib/accuracy-fish.js": {
+    "source": "lib/accuracy-fish.js",
+    "destination": "var/quarantine/accuracy-fish.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/harness/engine.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
   "lib/agent-component.js": {
     "source": "lib/agent-component.js",
     "destination": "var/quarantine/agent-component.js",
@@ -71,6 +90,7 @@
     ],
     "imports": [
       "lib/guardrail-manager.js",
+      "lib/retrieval-engine.js",
       "lib/schema-validator.js",
       "lib/session-state-service.js"
     ],
@@ -79,12 +99,11 @@
     ],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "9-compatibility",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "2 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./retrieval-engine",
       "writes: state.db"
     ]
   },
@@ -98,6 +117,7 @@
       "lib/commands/ask.js",
       "lib/commands/eval.js",
       "lib/cron-manager.js",
+      "lib/delegation-manager.js",
       "lib/messaging-runtime.js",
       "lib/tower-agent-child.js",
       "unified_api.js"
@@ -109,10 +129,14 @@
       "lib/artifact-manager.js",
       "lib/attachment-manager.js",
       "lib/checkpoint-manager.js",
+      "lib/component-pipeline.js",
       "lib/context-engine.js",
       "lib/cron-manager.js",
+      "lib/delegation-manager.js",
       "lib/eval-manager.js",
       "lib/event-ledger.js",
+      "lib/execution-runtime.js",
+      "lib/goal-controller.js",
       "lib/goal-manager.js",
       "lib/graph-runtime.js",
       "lib/guardrail-manager.js",
@@ -120,11 +144,19 @@
       "lib/instruction-resolver.js",
       "lib/invocation-manager.js",
       "lib/mcp.js",
+      "lib/messaging-registry.js",
       "lib/messaging-runtime.js",
       "lib/namespace-store.js",
+      "lib/output-contract.js",
       "lib/permission-manager.js",
       "lib/plugin-manager.js",
+      "lib/profile-manager.js",
       "lib/program-optimizer.js",
+      "lib/provider-registry.js",
+      "lib/recipe-manager.js",
+      "lib/repo-map.js",
+      "lib/retrieval-engine.js",
+      "lib/run-context.js",
       "lib/schema-validator.js",
       "lib/session-repository.js",
       "lib/session-state-service.js",
@@ -134,17 +166,43 @@
       "lib/telemetry-manager.js",
       "lib/tool-runtime.js",
       "lib/trace-manager.js",
+      "lib/usage-limits.js",
+      "lib/verification-runner.js",
       "lib/workflow-manager.js"
     ],
     "stateOwned": [],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "8-utilities-tools",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "8 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/agent-health.js": {
+    "source": "lib/agent-health.js",
+    "destination": "var/quarantine/agent-health.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/stack-truth.js",
+      "lib/tools-parity.js"
+    ],
+    "imports": [
+      "lib/agent-personas.js",
+      "lib/agent-registry.js",
+      "lib/tools/index.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
     "risk": "critical",
     "status": "broken",
     "evidence": [
-      "7 static importer(s) repo-wide",
+      "2 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./provider-registry, ./profile-manager, ./delegation-manager, ./messaging-registry, ./repo-map, ./verification-runner, ./output-contract, ./run-context, ./usage-limits, ./retrieval-engine, ./component-pipeline, ./goal-controller, ./recipe-manager, ./execution-runtime"
+      "BROKEN: unresolved requires -> ./lib/agent-health"
     ]
   },
   "lib/agent-loop.js": {
@@ -159,26 +217,81 @@
     ],
     "imports": [
       "agent_tower.js",
+      "lib/cognitive-client.js",
+      "lib/context-compressor.js",
+      "lib/continuity.js",
+      "lib/events.js",
+      "lib/file-watcher.js",
       "lib/hooks/lifecycle-bus.js",
+      "lib/idle-engine.js",
       "lib/llm-provider.js",
       "lib/memory-client.js",
+      "lib/phase-router.js",
+      "lib/priority-steer.js",
+      "lib/prompt-builder.js",
+      "lib/pulse.js",
       "lib/repo-mapper.js",
+      "lib/runtime/privacy-policy.js",
       "lib/scoped-memory.js",
       "lib/session-repository.js",
+      "lib/session-store.js",
       "lib/tool-runtime.js",
       "lib/tools/index.js",
+      "lib/user-feedback.js",
+      "lib/verification-gate.js",
       "lib/whoami.js",
       "parity/hooks/engine.js"
     ],
     "stateOwned": [],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "2-permissions-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "3 static importer(s) repo-wide",
-      "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./prompt-builder, ./context-compressor, ./events, ./continuity, ./session-store, ./priority-steer, ./verification-gate, ./phase-router, ./user-feedback, ./idle-engine, ./cognitive-client, ./file-watcher, ./runtime/privacy-policy, ./pulse"
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/agent-personas.js": {
+    "source": "lib/agent-personas.js",
+    "destination": "var/quarantine/agent-personas.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-health.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/agent-registry.js": {
+    "source": "lib/agent-registry.js",
+    "destination": "packages/core/organisation/agent-registry.js",
+    "classification": "organisation",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-health.js",
+      "lib/commands/roster.js",
+      "lib/stack-truth.js",
+      "lib/system-manifest.js",
+      "lib/tools-parity.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "6-organisation-council",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "5 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
   "lib/agent-router.js": {
@@ -191,18 +304,60 @@
     ],
     "imports": [
       "lib/agent-loop.js",
+      "lib/pipeline-registry.js",
       "lib/routing-decisions.js",
       "lib/usage-governor.js"
     ],
     "stateOwned": [],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "3-providers-routing",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "1 static importer(s) repo-wide",
-      "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./pipeline-registry"
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/agent-sync.js": {
+    "source": "lib/agent-sync.js",
+    "destination": "var/quarantine/agent-sync.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [],
+    "imports": [],
+    "stateOwned": [
+      "harness_lessons.jsonl",
+      "evolution-log.jsonl",
+      "memory.jsonl",
+      "agent-sync-err.log"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "orphan",
+    "evidence": [
+      "0 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: harness_lessons.jsonl, evolution-log.jsonl, memory.jsonl, agent-sync-err.log"
+    ]
+  },
+  "lib/agents/archetypes.js": {
+    "source": "lib/agents/archetypes.js",
+    "destination": "var/quarantine/archetypes.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli",
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli"
     ]
   },
   "lib/api-harness-kernel.js": {
@@ -211,26 +366,32 @@
     "classification": "harness",
     "entrypoint": false,
     "importedBy": [
+      "lib/stack-truth.js",
+      "lib/steering-router.js",
       "unified_api.js"
     ],
     "imports": [
+      "lib/deep-research-group.js",
       "lib/governance.js",
       "lib/harness/engine.js",
+      "lib/job-chain.js",
+      "lib/job-contract.js",
       "lib/mcp.js",
-      "lib/tools/index.js"
+      "lib/omnicode-bridge.js",
+      "lib/tools/index.js",
+      "lib/training-buffer.js"
     ],
     "stateOwned": [
       ".json",
       "${job.id}.json"
     ],
-    "runtimeOwner": "purpclaw-api",
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "5-harness",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
-      "1 static importer(s) repo-wide",
-      "reached from: purpclaw-api",
-      "BROKEN: unresolved requires -> ./job-contract, ./omnicode-bridge, ./deep-research-group, ./training-buffer, ./job-chain",
+      "3 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
       "writes: .json, ${job.id}.json"
     ]
   },
@@ -324,24 +485,264 @@
       "writes: state.db, .json, .log"
     ]
   },
+  "lib/autotune.js": {
+    "source": "lib/autotune.js",
+    "destination": "var/quarantine/autotune.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/autotune.js",
+      "lib/tools/index.js"
+    ],
+    "imports": [
+      "lib/autotune.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/awaken/awaken-events.js": {
+    "source": "lib/awaken/awaken-events.js",
+    "destination": "var/quarantine/awaken-events.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/awaken/awaken-loop.js",
+      "lib/commands/awaken.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "events.jsonl"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: events.jsonl"
+    ]
+  },
+  "lib/awaken/awaken-loop.js": {
+    "source": "lib/awaken/awaken-loop.js",
+    "destination": "var/quarantine/awaken-loop.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/awaken.js"
+    ],
+    "imports": [
+      "lib/awaken/awaken-events.js",
+      "lib/awaken/awaken-permissions.js",
+      "lib/awaken/awaken-preflight.js",
+      "lib/awaken/awaken-state.js"
+    ],
+    "stateOwned": [
+      "${runId}_${name}.json",
+      "agent_score.json",
+      ".idle_engine_state.json",
+      "evolution-log.jsonl",
+      "proposed.jsonl",
+      ".ndjson",
+      "snapshot.json",
+      "llm-ledger.jsonl",
+      ".json",
+      "smith-neo-ledger.json",
+      "mochi.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: ${runId}_${name}.json, agent_score.json, .idle_engine_state.json, evolution-log.jsonl, proposed.jsonl, .ndjson, snapshot.json, llm-ledger.jsonl, .json, smith-neo-ledger.json, mochi.json"
+    ]
+  },
+  "lib/awaken/awaken-permissions.js": {
+    "source": "lib/awaken/awaken-permissions.js",
+    "destination": "packages/tools/runtime/awaken-permissions.js",
+    "classification": "tool-runtime",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/awaken/awaken-loop.js",
+      "lib/commands/awaken.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "2-permissions-tools",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
   "lib/awaken/awaken-preflight.js": {
     "source": "lib/awaken/awaken-preflight.js",
     "destination": "var/quarantine/awaken-preflight.js",
     "classification": "unknown",
     "entrypoint": false,
     "importedBy": [
+      "lib/awaken/awaken-loop.js",
       "lib/commands/awaken.js"
+    ],
+    "imports": [
+      "lib/awaken/awaken-state.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
+  "lib/awaken/awaken-state.js": {
+    "source": "lib/awaken/awaken-state.js",
+    "destination": "var/quarantine/awaken-state.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/awaken/awaken-loop.js",
+      "lib/awaken/awaken-preflight.js",
+      "lib/commands/awaken.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "awaken-state.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "3 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: awaken-state.json"
+    ]
+  },
+  "lib/billing-lifecycle.js": {
+    "source": "lib/billing-lifecycle.js",
+    "destination": "var/quarantine/billing-lifecycle.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/spend-gate.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "billing-config.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: billing-config.json"
+    ]
+  },
+  "lib/business/operations.js": {
+    "source": "lib/business/operations.js",
+    "destination": "var/quarantine/operations.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/business.js"
+    ],
+    "imports": [
+      "lib/business/store.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
+  "lib/business/store.js": {
+    "source": "lib/business/store.js",
+    "destination": "var/quarantine/store.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/business/operations.js",
+      "lib/business/twilio.js",
+      "lib/commands/business.js"
     ],
     "imports": [],
     "stateOwned": [],
     "runtimeOwner": null,
     "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "3 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
+  "lib/business/twilio.js": {
+    "source": "lib/business/twilio.js",
+    "destination": "var/quarantine/twilio.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/business.js"
+    ],
+    "imports": [
+      "lib/business/store.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
     "risk": "low",
-    "status": "broken",
+    "status": "live",
     "evidence": [
       "1 static importer(s) repo-wide",
-      "not reachable from any PM2 entrypoint or the CLI",
-      "BROKEN: unresolved requires -> ./awaken-state"
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
+  "lib/canonical-memory-sync.js": {
+    "source": "lib/canonical-memory-sync.js",
+    "destination": "packages/memory/canonical-memory-sync.js",
+    "classification": "memory",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/harness/engine.js"
+    ],
+    "imports": [
+      "lib/memory-client.js"
+    ],
+    "stateOwned": [
+      "memory.jsonl",
+      "harness_lessons.jsonl",
+      "evolution-log.jsonl",
+      ".canonical-memory-sync.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "1-memory-sessions",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: memory.jsonl, harness_lessons.jsonl, evolution-log.jsonl, .canonical-memory-sync.json"
     ]
   },
   "lib/chaos-campaign.js": {
@@ -374,7 +775,9 @@
     "destination": "var/quarantine/chat-agent.js",
     "classification": "unknown",
     "entrypoint": false,
-    "importedBy": [],
+    "importedBy": [
+      "lib/deep-research-group.js"
+    ],
     "imports": [
       "lib/agent-loop.js",
       "lib/llm-provider.js",
@@ -382,13 +785,13 @@
       "lib/tools/index.js"
     ],
     "stateOwned": [],
-    "runtimeOwner": null,
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "9-compatibility",
-    "risk": "low",
-    "status": "orphan",
+    "risk": "high",
+    "status": "live",
     "evidence": [
-      "0 static importer(s) repo-wide",
-      "not reachable from any PM2 entrypoint or the CLI"
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
   "lib/checkpoint-manager.js": {
@@ -400,6 +803,7 @@
       "lib/agent-gateway.js",
       "lib/checkpoint-manager.js",
       "lib/commands/ask.js",
+      "lib/continuity.js",
       "lib/tool-runtime.js"
     ],
     "imports": [
@@ -411,8 +815,31 @@
     "risk": "high",
     "status": "live",
     "evidence": [
-      "4 static importer(s) repo-wide",
+      "5 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/checkpoint-manager.mjs": {
+    "source": "lib/checkpoint-manager.mjs",
+    "destination": "var/quarantine/checkpoint-manager.mjs",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [],
+    "imports": [],
+    "stateOwned": [
+      "*.log",
+      "${dirHash}.json",
+      ".json",
+      "package.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "orphan",
+    "evidence": [
+      "0 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: *.log, ${dirHash}.json, .json, package.json"
     ]
   },
   "lib/child-registry.js": {
@@ -428,9 +855,14 @@
       "lib/commands/open.js",
       "lib/commands/pocket.js",
       "lib/commands/remotion.js",
+      "lib/harvest/extractors.js",
+      "lib/pocket-updater.js",
+      "lib/purpflow.js",
+      "lib/runtime/computer-use.js",
       "lib/tools-pc.js",
       "lib/tools-remotion.js",
       "lib/tools/index.js",
+      "lib/tools/skills-registry.js",
       "unified_api.js"
     ],
     "imports": [],
@@ -440,8 +872,35 @@
     "risk": "high",
     "status": "live",
     "evidence": [
-      "11 static importer(s) repo-wide",
+      "16 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/cloud-sync.js": {
+    "source": "lib/cloud-sync.js",
+    "destination": "var/quarantine/cloud-sync.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "config.json",
+      "manifest.json",
+      "session-${sessionId}.json",
+      ".json",
+      "meta.json",
+      "messages.json"
+    ],
+    "runtimeOwner": "cli",
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli",
+      "writes: config.json, manifest.json, session-${sessionId}.json, .json, meta.json, messages.json"
     ]
   },
   "lib/code-interpreter.js": {
@@ -461,6 +920,28 @@
     "evidence": [
       "1 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/cognitive-client.js": {
+    "source": "lib/cognitive-client.js",
+    "destination": "packages/memory/cognitive-client.js",
+    "classification": "memory",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js",
+      "lib/doctor.js",
+      "swarm_coordinator.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "1-memory-sessions",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "3 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "BROKEN: unresolved requires -> ./lib/cognitive-client"
     ]
   },
   "lib/commands/action.js": {
@@ -545,25 +1026,27 @@
       "lib/agent-gateway.js",
       "lib/checkpoint-manager.js",
       "lib/commands/bigboss.js",
+      "lib/config-loader.js",
       "lib/llm-provider.js",
       "lib/mcp.js",
       "lib/memory-client.js",
       "lib/permission-manager.js",
+      "lib/provider-registry.js",
       "lib/routing-decisions.js",
       "lib/session-repository.js",
       "lib/tools/index.js",
+      "lib/user-commands.js",
       "lib/whoami.js"
     ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../provider-registry, ../user-commands, ../config-loader"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/autofix-pr.js": {
@@ -617,18 +1100,21 @@
     "entrypoint": false,
     "importedBy": [],
     "imports": [
-      "lib/awaken/awaken-preflight.js"
+      "lib/awaken/awaken-events.js",
+      "lib/awaken/awaken-loop.js",
+      "lib/awaken/awaken-permissions.js",
+      "lib/awaken/awaken-preflight.js",
+      "lib/awaken/awaken-state.js"
     ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../awaken/awaken-permissions, ../awaken/awaken-loop, ../awaken/awaken-state, ../awaken/awaken-events"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/bigboss.js": {
@@ -642,19 +1128,19 @@
     "imports": [
       "lib/chaos-campaign.js",
       "lib/child-registry.js",
+      "lib/memory-consistency.js",
       "lib/smith-neo.js",
       "lib/tools/index.js"
     ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "1 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../memory-consistency"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/browser.js": {
@@ -681,17 +1167,19 @@
     "classification": "studio",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/mochi-sprites.js",
+      "lib/mochi.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "7-studio-ecology",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../mochi, ../mochi-sprites"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/bughunt.js": {
@@ -718,17 +1206,20 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/business/operations.js",
+      "lib/business/store.js",
+      "lib/business/twilio.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../business/operations, ../business/twilio, ../business/store"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/capabilities.js": {
@@ -778,7 +1269,9 @@
     "importedBy": [
       "unified_api.js"
     ],
-    "imports": [],
+    "imports": [
+      "lib/vector/index.js"
+    ],
     "stateOwned": [
       "vectors.json",
       "meta.json",
@@ -791,13 +1284,12 @@
     ],
     "runtimeOwner": "purpclaw-api+cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "1 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
       "reached from: purpclaw-api, cli(dynamic)",
-      "BROKEN: unresolved requires -> ../vector",
       "writes: vectors.json, meta.json, symbols.json, filemap.json, .log, .ndjson, .json, vectors.meta.json"
     ]
   },
@@ -861,17 +1353,18 @@
     "classification": "organisation",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/crew.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "6-organisation-council",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../crew"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/ctx-viz.js": {
@@ -941,17 +1434,18 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/drift-watcher.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../drift-watcher.js"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/eval-auto-fix.js": {
@@ -1001,18 +1495,18 @@
     "entrypoint": false,
     "importedBy": [],
     "imports": [
-      "lib/evolution/mutator.js"
+      "lib/evolution/mutator.js",
+      "lib/evolution/skill-forge.js"
     ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../evolution/skill-forge"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/feature.js": {
@@ -1057,17 +1551,18 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/file-index.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../file-index"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/gc.js": {
@@ -1127,18 +1622,18 @@
     "entrypoint": false,
     "importedBy": [],
     "imports": [
+      "lib/harness/benchmark.js",
       "lib/harness/engine.js"
     ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../harness/benchmark"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/harvest.js": {
@@ -1147,20 +1642,23 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/harvest/crawler.js",
+      "lib/harvest/extractors.js",
+      "lib/harvest/indexer.js"
+    ],
     "stateOwned": [
       "harvest-config.json",
       "harvest-scan-cache.json"
     ],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "medium",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
       "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../harvest/crawler, ../harvest/extractors, ../harvest/indexer",
       "writes: harvest-config.json, harvest-scan-cache.json"
     ]
   },
@@ -1245,17 +1743,18 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/identity.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../identity"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/init-project.js": {
@@ -1322,17 +1821,18 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/liveforge.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../liveforge"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/llm.js": {
@@ -1379,17 +1879,18 @@
     "importedBy": [
       "lib/commands/plugin.js"
     ],
-    "imports": [],
+    "imports": [
+      "lib/marketplace.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "1 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../marketplace"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/mcp.js": {
@@ -1459,17 +1960,18 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/mycelium.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../mycelium"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/next.js": {
@@ -1534,17 +2036,18 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/oracle.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../oracle.js"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/overview.js": {
@@ -1654,7 +2157,11 @@
     "entrypoint": false,
     "importedBy": [],
     "imports": [
-      "lib/child-registry.js"
+      "lib/child-registry.js",
+      "lib/pocket-updater.js",
+      "lib/pocket-vault.js",
+      "lib/spend-gate.js",
+      "lib/telemetry.js"
     ],
     "stateOwned": [
       ".pocket-state.json",
@@ -1663,13 +2170,12 @@
     ],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "medium",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
       "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../pocket-vault, ../spend-gate, ../telemetry, ../pocket-updater",
       "writes: .pocket-state.json, model_registry.json, package.json"
     ]
   },
@@ -1829,17 +2335,18 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/agent-registry.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../agent-registry"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/safe-start.js": {
@@ -1910,18 +2417,18 @@
     "entrypoint": false,
     "importedBy": [],
     "imports": [
-      "lib/cron-manager.js"
+      "lib/cron-manager.js",
+      "lib/scheduler/nl-cron.js"
     ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../scheduler/nl-cron"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/secrets.js": {
@@ -1969,6 +2476,7 @@
       "lib/commands/tour.js"
     ],
     "imports": [
+      "lib/core/provider-status.js",
       "lib/llm-provider.js"
     ],
     "stateOwned": [
@@ -1976,13 +2484,12 @@
     ],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "medium",
+    "status": "live",
     "evidence": [
       "1 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
       "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../core/provider-status",
       "writes: config.json"
     ]
   },
@@ -1992,17 +2499,21 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/skill-usage.js",
+      "lib/skills-deps.js",
+      "lib/skills-guard.js",
+      "lib/skills-hub.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../skills-deps, ../skills-guard, ../skills-hub, ../skill-usage"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/smoke.js": {
@@ -2029,17 +2540,18 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/spinebus.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../spinebus"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/stats.js": {
@@ -2069,17 +2581,18 @@
     "classification": "organisation",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/team-router.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "6-organisation-council",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../team-router"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/telemetry.js": {
@@ -2088,17 +2601,18 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/runtime/pipeline-telemetry.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../runtime/pipeline-telemetry"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/teleport.js": {
@@ -2175,17 +2689,18 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/training-buffer.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../training-buffer"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/vault.js": {
@@ -2214,17 +2729,18 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/file-watcher.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../file-watcher"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/weather.js": {
@@ -2233,17 +2749,18 @@
     "classification": "service-adapter",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/weatherman.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli(dynamic)",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "0 static importer(s) repo-wide",
       "CLI command module — loaded dynamically at bin/purpclaw.js:6104, invisible to static analysis",
-      "reached from: cli(dynamic)",
-      "BROKEN: unresolved requires -> ../weatherman.js"
+      "reached from: cli(dynamic)"
     ]
   },
   "lib/commands/workers.js": {
@@ -2300,6 +2817,46 @@
       "reached from: cli(dynamic)"
     ]
   },
+  "lib/component-pipeline.js": {
+    "source": "lib/component-pipeline.js",
+    "destination": "packages/core/orchestration/component-pipeline.js",
+    "classification": "orchestration",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "imports": [
+      "lib/schema-validator.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "4-orchestration-pipeline",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/config-loader.js": {
+    "source": "lib/config-loader.js",
+    "destination": "var/quarantine/config-loader.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/ask.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
   "lib/context-bus.js": {
     "source": "lib/context-bus.js",
     "destination": "var/quarantine/context-bus.js",
@@ -2319,6 +2876,27 @@
       "reached from: purpclaw-context",
       "BROKEN: unresolved requires -> ./lib/context-bus.js",
       "writes: shared.json"
+    ]
+  },
+  "lib/context-compressor.js": {
+    "source": "lib/context-compressor.js",
+    "destination": "var/quarantine/context-compressor.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js"
+    ],
+    "imports": [
+      "lib/llm-provider.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
   "lib/context-engine.js": {
@@ -2342,6 +2920,75 @@
       "possible duplicate of packages/memory/context/context-engine.js — compare before choosing a winner, do NOT assume packages/ wins"
     ]
   },
+  "lib/context-packet.js": {
+    "source": "lib/context-packet.js",
+    "destination": "var/quarantine/context-packet.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "swarm_coordinator.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "_manifest.json",
+      "_result.json"
+    ],
+    "runtimeOwner": "purpclaw-api",
+    "migrationBatch": "9-compatibility",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: purpclaw-api",
+      "BROKEN: unresolved requires -> ./lib/context-packet",
+      "writes: _manifest.json, _result.json"
+    ]
+  },
+  "lib/continuity.js": {
+    "source": "lib/continuity.js",
+    "destination": "var/quarantine/continuity.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js"
+    ],
+    "imports": [
+      "lib/checkpoint-manager.js",
+      "lib/memory-client.js"
+    ],
+    "stateOwned": [
+      "snapshot.json",
+      "meta.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: snapshot.json, meta.json"
+    ]
+  },
+  "lib/core/provider-status.js": {
+    "source": "lib/core/provider-status.js",
+    "destination": "packages/core/providers/provider-status.js",
+    "classification": "provider",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/setup.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "3-providers-routing",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
   "lib/core/work-engine.js": {
     "source": "lib/core/work-engine.js",
     "destination": "var/quarantine/work-engine.js",
@@ -2350,7 +2997,8 @@
     "importedBy": [],
     "imports": [
       "lib/agent-loop.js",
-      "lib/model-router.js"
+      "lib/model-router.js",
+      "lib/spine/session-store.js"
     ],
     "stateOwned": [],
     "runtimeOwner": null,
@@ -2360,7 +3008,32 @@
     "evidence": [
       "0 static importer(s) repo-wide",
       "not reachable from any PM2 entrypoint or the CLI",
-      "BROKEN: unresolved requires -> ./lib/core/work-engine, ../spine/session-store"
+      "BROKEN: unresolved requires -> ./lib/core/work-engine"
+    ]
+  },
+  "lib/cost-ledger.js": {
+    "source": "lib/cost-ledger.js",
+    "destination": "var/quarantine/cost-ledger.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/tools/index.js"
+    ],
+    "imports": [
+      "lib/spend-gate.js"
+    ],
+    "stateOwned": [
+      "cost-ledger.jsonl"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: cost-ledger.jsonl"
     ]
   },
   "lib/cowork-overlay.js": {
@@ -2388,6 +3061,31 @@
       "writes: .screen_context.json, .cowork_state.json"
     ]
   },
+  "lib/crew.js": {
+    "source": "lib/crew.js",
+    "destination": "packages/core/organisation/crew.js",
+    "classification": "organisation",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/crew.js"
+    ],
+    "imports": [
+      "lib/llm-provider.js",
+      "lib/pipeline-registry.js"
+    ],
+    "stateOwned": [
+      "pipeline-report.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "6-organisation-council",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: pipeline-report.json"
+    ]
+  },
   "lib/cron-manager.js": {
     "source": "lib/cron-manager.js",
     "destination": "var/quarantine/cron-manager.js",
@@ -2398,20 +3096,114 @@
       "lib/commands/schedule.js"
     ],
     "imports": [
-      "lib/agent-gateway.js"
+      "lib/agent-gateway.js",
+      "lib/scheduler/nl-cron.js"
     ],
     "stateOwned": [
       "state.db"
     ],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "9-compatibility",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "2 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./scheduler/nl-cron",
       "writes: state.db"
+    ]
+  },
+  "lib/curator.js": {
+    "source": "lib/curator.js",
+    "destination": "var/quarantine/curator.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/idle-engine.js"
+    ],
+    "imports": [
+      "lib/llm-provider.js",
+      "lib/model-router.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/deep-audit.js": {
+    "source": "lib/deep-audit.js",
+    "destination": "var/quarantine/deep-audit.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "imports": [
+      "agent_tower.js",
+      "lib/identity.js",
+      "lib/pocket-vault.js",
+      "lib/spend-gate.js",
+      "lib/tools/index.js",
+      "lib/tools/skills-registry.js",
+      "service_registry.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli",
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli"
+    ]
+  },
+  "lib/deep-research-group.js": {
+    "source": "lib/deep-research-group.js",
+    "destination": "var/quarantine/deep-research-group.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/api-harness-kernel.js"
+    ],
+    "imports": [
+      "lib/chat-agent.js",
+      "lib/llm-provider.js",
+      "lib/rate-limiter.js",
+      "lib/self-context.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/delegation-manager.js": {
+    "source": "lib/delegation-manager.js",
+    "destination": "packages/core/organisation/delegation-manager.js",
+    "classification": "organisation",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "imports": [
+      "lib/agent-gateway.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "6-organisation-council",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
   "lib/desktop-launcher.js": {
@@ -2442,6 +3234,7 @@
       "bin/purpclaw.js"
     ],
     "imports": [
+      "lib/cognitive-client.js",
       "lib/memory-client.js",
       "lib/tools/index.js",
       "service_registry.js"
@@ -2449,12 +3242,11 @@
     "stateOwned": [],
     "runtimeOwner": "cli",
     "migrationBatch": "9-compatibility",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "low",
+    "status": "live",
     "evidence": [
       "1 static importer(s) repo-wide",
-      "reached from: cli",
-      "BROKEN: unresolved requires -> ./cognitive-client"
+      "reached from: cli"
     ]
   },
   "lib/donor-archaeology.js": {
@@ -2464,7 +3256,8 @@
     "entrypoint": false,
     "importedBy": [],
     "imports": [
-      "lib/evolution/mutator.js"
+      "lib/evolution/mutator.js",
+      "lib/timeline.js"
     ],
     "stateOwned": [
       "donor-artifacts.json"
@@ -2472,12 +3265,80 @@
     "runtimeOwner": null,
     "migrationBatch": "9-compatibility",
     "risk": "medium",
-    "status": "broken",
+    "status": "orphan",
     "evidence": [
       "0 static importer(s) repo-wide",
       "not reachable from any PM2 entrypoint or the CLI",
-      "BROKEN: unresolved requires -> ./timeline",
       "writes: donor-artifacts.json"
+    ]
+  },
+  "lib/drift-watcher.js": {
+    "source": "lib/drift-watcher.js",
+    "destination": "var/quarantine/drift-watcher.js",
+    "classification": "unknown",
+    "entrypoint": true,
+    "importedBy": [
+      "lib/commands/drift.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "drift-report.json",
+      "index.json",
+      "manifest.json",
+      "version.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: drift-report.json, index.json, manifest.json, version.json"
+    ]
+  },
+  "lib/embeddings.js": {
+    "source": "lib/embeddings.js",
+    "destination": "var/quarantine/embeddings.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli",
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli"
+    ]
+  },
+  "lib/erosion.js": {
+    "source": "lib/erosion.js",
+    "destination": "var/quarantine/erosion.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/studio.js"
+    ],
+    "imports": [
+      "lib/studio-constants.js"
+    ],
+    "stateOwned": [
+      "meeting-memories.json"
+    ],
+    "runtimeOwner": "cli",
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli",
+      "writes: meeting-memories.json"
     ]
   },
   "lib/eval-manager.js": {
@@ -2573,6 +3434,31 @@
       "writes: state.db"
     ]
   },
+  "lib/events.js": {
+    "source": "lib/events.js",
+    "destination": "var/quarantine/events.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js",
+      "lib/idle-engine.js",
+      "lib/job-chain.js",
+      "lib/memory-client.js",
+      "lib/narrator/eventbus-bridge.js",
+      "lib/pulse.js",
+      "unified_api.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "7 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
   "lib/evolution/mutator.js": {
     "source": "lib/evolution/mutator.js",
     "destination": "var/quarantine/mutator.js",
@@ -2581,6 +3467,7 @@
     "importedBy": [
       "lib/commands/evolve.js",
       "lib/donor-archaeology.js",
+      "lib/harness/benchmark.js",
       "lib/harness/engine.js"
     ],
     "imports": [],
@@ -2595,14 +3482,41 @@
       "cold-agents.json",
       "regression-alerts.jsonl"
     ],
-    "runtimeOwner": "purpclaw-api",
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "4 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: proposed.jsonl, applied.jsonl, history.jsonl, score-deltas.jsonl, .json, agent_work/evolution/cold-agents.json, agent_work/evolution/regression-alerts.jsonl, cold-agents.json, regression-alerts.jsonl"
+    ]
+  },
+  "lib/evolution/skill-forge.js": {
+    "source": "lib/evolution/skill-forge.js",
+    "destination": "var/quarantine/skill-forge.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/evolve.js"
+    ],
+    "imports": [
+      "lib/job-contract.js"
+    ],
+    "stateOwned": [
+      "history.jsonl",
+      ".json",
+      "${p.id}.json",
+      "${id}.json"
+    ],
+    "runtimeOwner": null,
     "migrationBatch": "9-compatibility",
     "risk": "medium",
     "status": "live",
     "evidence": [
-      "3 static importer(s) repo-wide",
-      "reached from: purpclaw-api",
-      "writes: proposed.jsonl, applied.jsonl, history.jsonl, score-deltas.jsonl, .json, agent_work/evolution/cold-agents.json, agent_work/evolution/regression-alerts.jsonl, cold-agents.json, regression-alerts.jsonl"
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: history.jsonl, .json, ${p.id}.json, ${id}.json"
     ]
   },
   "lib/exec-policy.js": {
@@ -2627,6 +3541,25 @@
       "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
+  "lib/execution-runtime.js": {
+    "source": "lib/execution-runtime.js",
+    "destination": "var/quarantine/execution-runtime.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
   "lib/feature-parity.js": {
     "source": "lib/feature-parity.js",
     "destination": "var/quarantine/feature-parity.js",
@@ -2644,13 +3577,105 @@
       "not reachable from any PM2 entrypoint or the CLI"
     ]
   },
+  "lib/file-index.js": {
+    "source": "lib/file-index.js",
+    "destination": "var/quarantine/file-index.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/find.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      ".json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: .json"
+    ]
+  },
+  "lib/file-watcher.js": {
+    "source": "lib/file-watcher.js",
+    "destination": "var/quarantine/file-watcher.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js",
+      "lib/commands/watch.js"
+    ],
+    "imports": [
+      "lib/session-store.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "BROKEN: unresolved requires -> ./config"
+    ]
+  },
+  "lib/gate-pipeline.js": {
+    "source": "lib/gate-pipeline.js",
+    "destination": "packages/core/orchestration/gate-pipeline.js",
+    "classification": "orchestration",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/idle-engine.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      ".gate_pipeline_state.json",
+      "historical_footprint.json",
+      ".json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "4-orchestration-pipeline",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: .gate_pipeline_state.json, historical_footprint.json, .json"
+    ]
+  },
+  "lib/goal-controller.js": {
+    "source": "lib/goal-controller.js",
+    "destination": "var/quarantine/goal-controller.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "imports": [
+      "lib/goal-manager.js",
+      "lib/llm-provider.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
   "lib/goal-manager.js": {
     "source": "lib/goal-manager.js",
     "destination": "var/quarantine/goal-manager.js",
     "classification": "unknown",
     "entrypoint": false,
     "importedBy": [
-      "lib/agent-gateway.js"
+      "lib/agent-gateway.js",
+      "lib/goal-controller.js"
     ],
     "imports": [],
     "stateOwned": [
@@ -2661,7 +3686,7 @@
     "risk": "high",
     "status": "live",
     "evidence": [
-      "1 static importer(s) repo-wide",
+      "2 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
       "writes: state.db"
     ]
@@ -2700,18 +3725,19 @@
     "importedBy": [
       "lib/agent-gateway.js"
     ],
-    "imports": [],
+    "imports": [
+      "lib/workflow-state.js"
+    ],
     "stateOwned": [
       "state.db"
     ],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "9-compatibility",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "1 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./workflow-state",
       "writes: state.db"
     ]
   },
@@ -2723,6 +3749,7 @@
     "importedBy": [
       "lib/agent-component.js",
       "lib/agent-gateway.js",
+      "lib/output-contract.js",
       "lib/tool-runtime.js"
     ],
     "imports": [
@@ -2734,8 +3761,36 @@
     "risk": "high",
     "status": "live",
     "evidence": [
-      "3 static importer(s) repo-wide",
+      "4 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/harness/benchmark.js": {
+    "source": "lib/harness/benchmark.js",
+    "destination": "packages/harness-core/benchmark.js",
+    "classification": "harness",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/harness.js",
+      "lib/harness/engine.js"
+    ],
+    "imports": [
+      "lib/evolution/mutator.js",
+      "lib/harness/engine.js"
+    ],
+    "stateOwned": [
+      "history.jsonl",
+      "${job.id}.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "5-harness",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "BROKEN: unresolved requires -> ../../agent_score.js",
+      "writes: history.jsonl, ${job.id}.json"
     ]
   },
   "lib/harness/engine.js": {
@@ -2745,10 +3800,15 @@
     "entrypoint": false,
     "importedBy": [
       "lib/api-harness-kernel.js",
-      "lib/commands/harness.js"
+      "lib/commands/harness.js",
+      "lib/harness/benchmark.js"
     ],
     "imports": [
+      "lib/accuracy-fish.js",
+      "lib/canonical-memory-sync.js",
       "lib/evolution/mutator.js",
+      "lib/harness/benchmark.js",
+      "lib/job-contract.js",
       "lib/llm-provider.js",
       "lib/memory-client.js"
     ],
@@ -2756,14 +3816,14 @@
       "harness_lessons.jsonl",
       "$job.id}.json"
     ],
-    "runtimeOwner": "purpclaw-api",
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "5-harness",
     "risk": "critical",
     "status": "broken",
     "evidence": [
-      "2 static importer(s) repo-wide",
-      "reached from: purpclaw-api",
-      "BROKEN: unresolved requires -> ./lib/harness/engine, ../../agent_score.js, ../canonical-memory-sync, ../job-contract, ../accuracy-fish, ./benchmark",
+      "3 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "BROKEN: unresolved requires -> ./lib/harness/engine, ../../agent_score.js",
       "writes: harness_lessons.jsonl, $job.id}.json"
     ]
   },
@@ -2801,6 +3861,73 @@
       "not reachable from any PM2 entrypoint or the CLI"
     ]
   },
+  "lib/harvest/crawler.js": {
+    "source": "lib/harvest/crawler.js",
+    "destination": "var/quarantine/crawler.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/harvest.js",
+      "unified_api.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "purpclaw-api",
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: purpclaw-api"
+    ]
+  },
+  "lib/harvest/extractors.js": {
+    "source": "lib/harvest/extractors.js",
+    "destination": "var/quarantine/extractors.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/harvest.js",
+      "unified_api.js"
+    ],
+    "imports": [
+      "lib/child-registry.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "purpclaw-api",
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: purpclaw-api"
+    ]
+  },
+  "lib/harvest/indexer.js": {
+    "source": "lib/harvest/indexer.js",
+    "destination": "var/quarantine/indexer.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/harvest.js",
+      "unified_api.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "harvest-index.json",
+      "harvest-ledger.jsonl",
+      "${dateStr}.ndjson"
+    ],
+    "runtimeOwner": "purpclaw-api",
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: purpclaw-api",
+      "writes: harvest-index.json, harvest-ledger.jsonl, ${dateStr}.ndjson"
+    ]
+  },
   "lib/hooks/lifecycle-bus.js": {
     "source": "lib/hooks/lifecycle-bus.js",
     "destination": "var/quarantine/lifecycle-bus.js",
@@ -2820,6 +3947,78 @@
       "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
+  "lib/identity.js": {
+    "source": "lib/identity.js",
+    "destination": "var/quarantine/identity.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/identity.js",
+      "lib/deep-audit.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "identity.json"
+    ],
+    "runtimeOwner": "cli",
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli",
+      "writes: identity.json"
+    ]
+  },
+  "lib/idle-engine.js": {
+    "source": "lib/idle-engine.js",
+    "destination": "var/quarantine/idle-engine.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js"
+    ],
+    "imports": [
+      "lib/curator.js",
+      "lib/events.js",
+      "lib/gate-pipeline.js",
+      "lib/pipeline-registry.js",
+      "lib/training/personal-dataset.js",
+      "lib/user-feedback.js"
+    ],
+    "stateOwned": [
+      ".idle_engine_state.json",
+      "idle_engine.log"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: .idle_engine_state.json, idle_engine.log"
+    ]
+  },
+  "lib/imagegen/video_engine.js": {
+    "source": "lib/imagegen/video_engine.js",
+    "destination": "var/quarantine/video_engine.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/tools/index.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
   "lib/index-manager.js": {
     "source": "lib/index-manager.js",
     "destination": "var/quarantine/index-manager.js",
@@ -2827,7 +4026,8 @@
     "entrypoint": false,
     "importedBy": [
       "lib/agent-gateway.js",
-      "lib/namespace-store.js"
+      "lib/namespace-store.js",
+      "lib/retrieval-engine.js"
     ],
     "imports": [],
     "stateOwned": [
@@ -2838,9 +4038,37 @@
     "risk": "high",
     "status": "live",
     "evidence": [
-      "2 static importer(s) repo-wide",
+      "3 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
       "writes: state.db"
+    ]
+  },
+  "lib/insight.js": {
+    "source": "lib/insight.js",
+    "destination": "var/quarantine/insight.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/purpflow.js",
+      "lib/tools-parity.js"
+    ],
+    "imports": [
+      "lib/job-chain.js",
+      "lib/memory-client.js"
+    ],
+    "stateOwned": [
+      "insights.jsonl"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "3 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "BROKEN: unresolved requires -> ./lib/insight",
+      "writes: insights.jsonl"
     ]
   },
   "lib/instruction-resolver.js": {
@@ -2884,22 +4112,131 @@
       "writes: state.db"
     ]
   },
+  "lib/job-chain.js": {
+    "source": "lib/job-chain.js",
+    "destination": "packages/core/orchestration/job-chain.js",
+    "classification": "orchestration",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/api-harness-kernel.js",
+      "lib/insight.js",
+      "lib/purpflow.js",
+      "lib/stack-truth.js",
+      "lib/steering-router.js",
+      "lib/tools-parity.js"
+    ],
+    "imports": [
+      "lib/events.js",
+      "lib/proof-ledger.js",
+      "lib/trace-store.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "4-orchestration-pipeline",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "7 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "BROKEN: unresolved requires -> ./lib/job-chain"
+    ]
+  },
+  "lib/job-contract.js": {
+    "source": "lib/job-contract.js",
+    "destination": "packages/core/orchestration/job-contract.js",
+    "classification": "orchestration",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/api-harness-kernel.js",
+      "lib/evolution/skill-forge.js",
+      "lib/harness/engine.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "4-orchestration-pipeline",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "3 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/kanban/config.js": {
+    "source": "lib/kanban/config.js",
+    "destination": "var/quarantine/config.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/kanban/db-schema.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "config.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: config.json"
+    ]
+  },
   "lib/kanban/db-schema.js": {
     "source": "lib/kanban/db-schema.js",
     "destination": "var/quarantine/db-schema.js",
     "classification": "unknown",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/kanban/config.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": null,
     "migrationBatch": "9-compatibility",
     "risk": "low",
-    "status": "broken",
+    "status": "orphan",
     "evidence": [
       "0 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
+  "lib/liveforge.js": {
+    "source": "lib/liveforge.js",
+    "destination": "var/quarantine/liveforge.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/liveforge.js"
+    ],
+    "imports": [
+      "lib/tools/index.js"
+    ],
+    "stateOwned": [
+      "events.jsonl",
+      "receipts.jsonl",
+      "lessons.pending.jsonl",
+      "invocation-registry.json",
+      "tool-routes.json",
+      "generated-tool-proposals.jsonl",
+      "approved-patterns.json",
+      "lesson-replays.jsonl",
+      ")}.json",
+      ".json",
+      "skills_registry.json",
+      "AGENT_REGISTRY.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
       "not reachable from any PM2 entrypoint or the CLI",
-      "BROKEN: unresolved requires -> ./config"
+      "writes: events.jsonl, receipts.jsonl, lessons.pending.jsonl, invocation-registry.json, tool-routes.json, generated-tool-proposals.jsonl, approved-patterns.json, lesson-replays.jsonl, )}.json, .json, skills_registry.json, AGENT_REGISTRY.json"
     ]
   },
   "lib/llm-provider.js": {
@@ -2915,7 +4252,13 @@
       "lib/commands/claudecode.js",
       "lib/commands/eval-auto-fix.js",
       "lib/commands/setup.js",
+      "lib/context-compressor.js",
+      "lib/crew.js",
+      "lib/curator.js",
+      "lib/deep-research-group.js",
+      "lib/goal-controller.js",
       "lib/harness/engine.js",
+      "lib/provider-registry.js",
       "lib/routing-decisions.js",
       "lib/runtime/autonomy-runner.js",
       "lib/screen-look.js",
@@ -2925,6 +4268,7 @@
       "unified_api.js"
     ],
     "imports": [
+      "lib/spend-gate.js",
       "lib/usage-governor.js"
     ],
     "stateOwned": [
@@ -2936,10 +4280,29 @@
     "risk": "critical",
     "status": "broken",
     "evidence": [
-      "15 static importer(s) repo-wide",
+      "21 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./lib/llm-provider, ./spend-gate",
+      "BROKEN: unresolved requires -> ./lib/llm-provider",
       "writes: provider-config.json, llm-ledger.jsonl"
+    ]
+  },
+  "lib/marketplace.js": {
+    "source": "lib/marketplace.js",
+    "destination": "var/quarantine/marketplace.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/marketplace.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
     ]
   },
   "lib/mcp-server.js": {
@@ -2982,19 +4345,19 @@
       "lib/mcp.js"
     ],
     "imports": [
-      "lib/mcp.js"
+      "lib/mcp.js",
+      "lib/omnicode-bridge.js"
     ],
     "stateOwned": [
       "mcp.json"
     ],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "9-compatibility",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "6 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./omnicode-bridge",
       "writes: mcp.json"
     ]
   },
@@ -3006,27 +4369,102 @@
     "importedBy": [
       "agent_tower.js",
       "lib/agent-loop.js",
+      "lib/canonical-memory-sync.js",
       "lib/commands/ask.js",
+      "lib/continuity.js",
       "lib/doctor.js",
       "lib/harness/engine.js",
+      "lib/insight.js",
       "lib/scoped-memory.js",
       "lib/self-evolution-loop.js",
+      "lib/stack-truth.js",
       "lib/tools-parity.js",
       "packages/context-spine/index.js",
       "packages/memory/adapters/memory-client-wrapper.js",
       "swarm_coordinator.js",
       "unified_api.js"
     ],
-    "imports": [],
+    "imports": [
+      "lib/events.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "1-memory-sessions",
     "risk": "critical",
     "status": "broken",
     "evidence": [
-      "12 static importer(s) repo-wide",
+      "16 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./lib/memory-client, ./events"
+      "BROKEN: unresolved requires -> ./lib/memory-client"
+    ]
+  },
+  "lib/memory-consistency.js": {
+    "source": "lib/memory-consistency.js",
+    "destination": "packages/memory/memory-consistency.js",
+    "classification": "memory",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/bigboss.js",
+      "lib/tools/index.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "reliability-ledger.json",
+      "memory.jsonl",
+      "mochi.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "1-memory-sessions",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: reliability-ledger.json, memory.jsonl, mochi.json"
+    ]
+  },
+  "lib/memory-retention.js": {
+    "source": "lib/memory-retention.js",
+    "destination": "packages/memory/memory-retention.js",
+    "classification": "memory",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/runtime/pipeline-telemetry.js",
+      "lib/trace-store.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "journal.jsonl",
+      "state.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-pool+purpclaw-tower",
+    "migrationBatch": "1-memory-sessions",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-pool, purpclaw-tower",
+      "writes: journal.jsonl, state.json"
+    ]
+  },
+  "lib/messaging-registry.js": {
+    "source": "lib/messaging-registry.js",
+    "destination": "var/quarantine/messaging-registry.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js",
+      "lib/messaging-runtime.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
   "lib/messaging-runtime.js": {
@@ -3038,20 +4476,67 @@
       "lib/agent-gateway.js"
     ],
     "imports": [
-      "lib/agent-gateway.js"
+      "lib/agent-gateway.js",
+      "lib/messaging-registry.js"
     ],
     "stateOwned": [
       "state.db"
     ],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "9-compatibility",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "1 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./messaging-registry",
       "writes: state.db"
+    ]
+  },
+  "lib/mochi-sprites.js": {
+    "source": "lib/mochi-sprites.js",
+    "destination": "packages/studio/mochi-sprites.js",
+    "classification": "studio",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/buddy.js",
+      "lib/mochi-sprites.js",
+      "lib/mochi.js"
+    ],
+    "imports": [
+      "lib/mochi-sprites.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "7-studio-ecology",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "3 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
+  "lib/mochi.js": {
+    "source": "lib/mochi.js",
+    "destination": "packages/studio/mochi.js",
+    "classification": "studio",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/buddy.js"
+    ],
+    "imports": [
+      "lib/mochi-sprites.js"
+    ],
+    "stateOwned": [
+      "mochi.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "7-studio-ecology",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: mochi.json"
     ]
   },
   "lib/model-router.js": {
@@ -3060,19 +4545,50 @@
     "classification": "routing",
     "entrypoint": false,
     "importedBy": [
-      "lib/core/work-engine.js"
+      "lib/core/work-engine.js",
+      "lib/curator.js",
+      "lib/stack-truth.js"
     ],
     "imports": [
       "lib/routing-decisions.js"
     ],
     "stateOwned": [],
-    "runtimeOwner": null,
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "3-providers-routing",
-    "risk": "low",
+    "risk": "high",
     "status": "live",
     "evidence": [
-      "1 static importer(s) repo-wide",
-      "not reachable from any PM2 entrypoint or the CLI"
+      "3 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/mycelium.js": {
+    "source": "lib/mycelium.js",
+    "destination": "var/quarantine/mycelium.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/mycelium.js",
+      "lib/spinebus.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "spores.jsonl",
+      "routes.jsonl",
+      "bundles.jsonl",
+      "conflicts.jsonl",
+      "patterns.pending.jsonl",
+      "patterns.approved.jsonl",
+      "receipts.jsonl"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: spores.jsonl, routes.jsonl, bundles.jsonl, conflicts.jsonl, patterns.pending.jsonl, patterns.approved.jsonl, receipts.jsonl"
     ]
   },
   "lib/namespace-store.js": {
@@ -3099,13 +4615,60 @@
       "writes: state.db"
     ]
   },
+  "lib/narrator/eventbus-bridge.js": {
+    "source": "lib/narrator/eventbus-bridge.js",
+    "destination": "var/quarantine/eventbus-bridge.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "unified_api.js"
+    ],
+    "imports": [
+      "lib/events.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "purpclaw-api",
+    "migrationBatch": "9-compatibility",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: purpclaw-api",
+      "BROKEN: unresolved requires -> ./lib/narrator/eventbus-bridge"
+    ]
+  },
+  "lib/omni/omnicode-adapter.js": {
+    "source": "lib/omni/omnicode-adapter.js",
+    "destination": "packages/core/adapters/omnicode-adapter.js",
+    "classification": "service-adapter",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/omni/omnicode-adapter.js",
+      "lib/omni/truth-scanner.js"
+    ],
+    "imports": [
+      "lib/omni/omnicode-adapter.js",
+      "lib/with-pipeline.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "8-utilities-tools",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
   "lib/omni/truth-scanner.js": {
     "source": "lib/omni/truth-scanner.js",
     "destination": "var/quarantine/truth-scanner.js",
     "classification": "unknown",
     "entrypoint": false,
     "importedBy": [],
-    "imports": [],
+    "imports": [
+      "lib/omni/omnicode-adapter.js"
+    ],
     "stateOwned": [
       ".json",
       "index.json",
@@ -3115,12 +4678,96 @@
     "runtimeOwner": null,
     "migrationBatch": "9-compatibility",
     "risk": "medium",
-    "status": "broken",
+    "status": "orphan",
     "evidence": [
       "0 static importer(s) repo-wide",
       "not reachable from any PM2 entrypoint or the CLI",
-      "BROKEN: unresolved requires -> ./omnicode-adapter",
       "writes: .json, index.json, truth-scan.jsonl, truth-snapshot.json"
+    ]
+  },
+  "lib/omnicode-bridge.js": {
+    "source": "lib/omnicode-bridge.js",
+    "destination": "var/quarantine/omnicode-bridge.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/api-harness-kernel.js",
+      "lib/mcp.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/oracle.js": {
+    "source": "lib/oracle.js",
+    "destination": "var/quarantine/oracle.js",
+    "classification": "unknown",
+    "entrypoint": true,
+    "importedBy": [
+      "lib/commands/oracle.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
+  "lib/output-contract.js": {
+    "source": "lib/output-contract.js",
+    "destination": "var/quarantine/output-contract.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "imports": [
+      "lib/guardrail-manager.js",
+      "lib/schema-validator.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/output-vault.js": {
+    "source": "lib/output-vault.js",
+    "destination": "var/quarantine/output-vault.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/pipeline-registry.js",
+      "unified_api.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "index.jsonl"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-gatekeeper+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-gatekeeper, purpclaw-tower",
+      "BROKEN: unresolved requires -> ./lib/output-vault",
+      "writes: index.jsonl"
     ]
   },
   "lib/parity/hooks/engine.js": {
@@ -3140,6 +4787,28 @@
       "not reachable from any PM2 entrypoint or the CLI"
     ]
   },
+  "lib/parseltongue.js": {
+    "source": "lib/parseltongue.js",
+    "destination": "var/quarantine/parseltongue.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/parseltongue.js",
+      "lib/tools/index.js"
+    ],
+    "imports": [
+      "lib/parseltongue.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
   "lib/path-security.js": {
     "source": "lib/path-security.js",
     "destination": "packages/tools/runtime/path-security.js",
@@ -3157,6 +4826,26 @@
     "evidence": [
       "1 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/paths.js": {
+    "source": "lib/paths.js",
+    "destination": "var/quarantine/paths.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/runtime/computer-use.js",
+      "lib/runtime/pipeline-telemetry.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-pool+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-pool, purpclaw-tower"
     ]
   },
   "lib/permission-manager.js": {
@@ -3219,6 +4908,75 @@
       "not reachable from any PM2 entrypoint or the CLI"
     ]
   },
+  "lib/phase-router.js": {
+    "source": "lib/phase-router.js",
+    "destination": "packages/core/routing/phase-router.js",
+    "classification": "routing",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js",
+      "lib/steering-router.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "3-providers-routing",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/pipeline-registry.js": {
+    "source": "lib/pipeline-registry.js",
+    "destination": "packages/core/orchestration/pipeline-registry.js",
+    "classification": "orchestration",
+    "entrypoint": false,
+    "importedBy": [
+      "gatekeeper.js",
+      "lib/agent-router.js",
+      "lib/crew.js",
+      "lib/idle-engine.js",
+      "lib/with-pipeline.js",
+      "unified_api.js"
+    ],
+    "imports": [
+      "lib/output-vault.js",
+      "lib/proof-ledger.js"
+    ],
+    "stateOwned": [
+      "jobs.jsonl"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-gatekeeper+purpclaw-tower",
+    "migrationBatch": "4-orchestration-pipeline",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "6 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-gatekeeper, purpclaw-tower",
+      "writes: jobs.jsonl"
+    ]
+  },
+  "lib/plugin-isolator.js": {
+    "source": "lib/plugin-isolator.js",
+    "destination": "var/quarantine/plugin-isolator.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/plugin-manager.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
   "lib/plugin-manager.js": {
     "source": "lib/plugin-manager.js",
     "destination": "var/quarantine/plugin-manager.js",
@@ -3230,6 +4988,8 @@
       "lib/tool-runtime.js"
     ],
     "imports": [
+      "lib/plugin-isolator.js",
+      "lib/provider-registry.js",
       "lib/tool-runtime.js",
       "lib/tools/index.js"
     ],
@@ -3239,13 +4999,145 @@
     ],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "9-compatibility",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "3 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./plugin-isolator, ./provider-registry",
       "writes: plugins.json, plugin.json"
+    ]
+  },
+  "lib/pocket-updater.js": {
+    "source": "lib/pocket-updater.js",
+    "destination": "var/quarantine/pocket-updater.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/pocket.js"
+    ],
+    "imports": [
+      "lib/child-registry.js",
+      "lib/signed-manifest.js"
+    ],
+    "stateOwned": [
+      "updater-state.json",
+      "updater-config.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: updater-state.json, updater-config.json"
+    ]
+  },
+  "lib/pocket-vault.js": {
+    "source": "lib/pocket-vault.js",
+    "destination": "var/quarantine/pocket-vault.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/pocket.js",
+      "lib/deep-audit.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      ".log"
+    ],
+    "runtimeOwner": "cli",
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli",
+      "writes: .log"
+    ]
+  },
+  "lib/priority-steer.js": {
+    "source": "lib/priority-steer.js",
+    "destination": "var/quarantine/priority-steer.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/proactive-maintenance.js": {
+    "source": "lib/proactive-maintenance.js",
+    "destination": "var/quarantine/proactive-maintenance.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [],
+    "imports": [],
+    "stateOwned": [
+      ".proactive_maintenance.json",
+      "package.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "orphan",
+    "evidence": [
+      "0 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: .proactive_maintenance.json, package.json"
+    ]
+  },
+  "lib/profile-manager.js": {
+    "source": "lib/profile-manager.js",
+    "destination": "var/quarantine/profile-manager.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "config.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: config.json"
+    ]
+  },
+  "lib/profile-router.js": {
+    "source": "lib/profile-router.js",
+    "destination": "packages/core/routing/profile-router.js",
+    "classification": "routing",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "profiles.json"
+    ],
+    "runtimeOwner": "cli",
+    "migrationBatch": "3-providers-routing",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli",
+      "writes: profiles.json"
     ]
   },
   "lib/program-optimizer.js": {
@@ -3257,19 +5149,19 @@
       "lib/agent-gateway.js"
     ],
     "imports": [
-      "lib/eval-manager.js"
+      "lib/eval-manager.js",
+      "lib/signature-adapter.js"
     ],
     "stateOwned": [
       "state.db"
     ],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "9-compatibility",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "1 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./signature-adapter",
       "writes: state.db"
     ]
   },
@@ -3294,6 +5186,76 @@
       "not reachable from any PM2 entrypoint or the CLI"
     ]
   },
+  "lib/prompt-builder.js": {
+    "source": "lib/prompt-builder.js",
+    "destination": "var/quarantine/prompt-builder.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/proof-ledger.js": {
+    "source": "lib/proof-ledger.js",
+    "destination": "var/quarantine/proof-ledger.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/job-chain.js",
+      "lib/pipeline-registry.js",
+      "lib/purpflow.js",
+      "lib/tools-parity.js",
+      "unified_api.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "ledger.jsonl"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-gatekeeper+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "6 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-gatekeeper, purpclaw-tower",
+      "BROKEN: unresolved requires -> ./lib/proof-ledger",
+      "writes: ledger.jsonl"
+    ]
+  },
+  "lib/provider-registry.js": {
+    "source": "lib/provider-registry.js",
+    "destination": "packages/core/providers/provider-registry.js",
+    "classification": "provider",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js",
+      "lib/commands/ask.js",
+      "lib/plugin-manager.js"
+    ],
+    "imports": [
+      "lib/llm-provider.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "3-providers-routing",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "3 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
   "lib/pty.js": {
     "source": "lib/pty.js",
     "destination": "var/quarantine/pty.js",
@@ -3314,6 +5276,163 @@
       "BROKEN: unresolved requires -> ./lib/pty"
     ]
   },
+  "lib/pulse.js": {
+    "source": "lib/pulse.js",
+    "destination": "var/quarantine/pulse.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js",
+      "unified_api.js"
+    ],
+    "imports": [
+      "lib/events.js"
+    ],
+    "stateOwned": [
+      "notifications.jsonl",
+      "events.jsonl"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: notifications.jsonl, events.jsonl"
+    ]
+  },
+  "lib/purpflow.js": {
+    "source": "lib/purpflow.js",
+    "destination": "var/quarantine/purpflow.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/tools-parity.js"
+    ],
+    "imports": [
+      "lib/child-registry.js",
+      "lib/insight.js",
+      "lib/job-chain.js",
+      "lib/proof-ledger.js",
+      "lib/stack-truth.js",
+      "lib/steering-router.js"
+    ],
+    "stateOwned": [
+      "${id}.json",
+      "package.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: ${id}.json, package.json"
+    ]
+  },
+  "lib/pxpipe.js": {
+    "source": "lib/pxpipe.js",
+    "destination": "var/quarantine/pxpipe.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/tools/index.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/rate-limiter.js": {
+    "source": "lib/rate-limiter.js",
+    "destination": "var/quarantine/rate-limiter.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/deep-research-group.js",
+      "lib/rate-limiter.js"
+    ],
+    "imports": [
+      "lib/rate-limiter.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/recipe-manager.js": {
+    "source": "lib/recipe-manager.js",
+    "destination": "var/quarantine/recipe-manager.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "imports": [
+      "lib/tool-runtime.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/release-sign.js": {
+    "source": "lib/release-sign.js",
+    "destination": "var/quarantine/release-sign.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli",
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli"
+    ]
+  },
+  "lib/repo-map.js": {
+    "source": "lib/repo-map.js",
+    "destination": "var/quarantine/repo-map.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
   "lib/repo-mapper.js": {
     "source": "lib/repo-mapper.js",
     "destination": "var/quarantine/repo-mapper.js",
@@ -3324,6 +5443,28 @@
       "lib/commands/repomap.js"
     ],
     "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/retrieval-engine.js": {
+    "source": "lib/retrieval-engine.js",
+    "destination": "var/quarantine/retrieval-engine.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-component.js",
+      "lib/agent-gateway.js"
+    ],
+    "imports": [
+      "lib/index-manager.js"
+    ],
     "stateOwned": [],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "9-compatibility",
@@ -3363,6 +5504,27 @@
       "writes: llm-ledger.jsonl"
     ]
   },
+  "lib/run-context.js": {
+    "source": "lib/run-context.js",
+    "destination": "var/quarantine/run-context.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "imports": [
+      "lib/schema-validator.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
   "lib/runtime/autonomy-runner.js": {
     "source": "lib/runtime/autonomy-runner.js",
     "destination": "packages/core/runtime/autonomy-runner.js",
@@ -3370,7 +5532,8 @@
     "entrypoint": false,
     "importedBy": [],
     "imports": [
-      "lib/llm-provider.js"
+      "lib/llm-provider.js",
+      "lib/runtime/computer-use.js"
     ],
     "stateOwned": [],
     "runtimeOwner": null,
@@ -3380,7 +5543,110 @@
     "evidence": [
       "0 static importer(s) repo-wide",
       "not reachable from any PM2 entrypoint or the CLI",
-      "BROKEN: unresolved requires -> ./lib/runtime/autonomy-runner, ./computer-use"
+      "BROKEN: unresolved requires -> ./lib/runtime/autonomy-runner"
+    ]
+  },
+  "lib/runtime/computer-use.js": {
+    "source": "lib/runtime/computer-use.js",
+    "destination": "packages/core/runtime/computer-use.js",
+    "classification": "core-runtime",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/runtime/autonomy-runner.js",
+      "lib/tools-gui.js",
+      "lib/tools-windows-mcp.js"
+    ],
+    "imports": [
+      "lib/child-registry.js",
+      "lib/paths.js",
+      "lib/runtime/settings-registry.js",
+      "lib/screen-look.js",
+      "lib/tools-windows-mcp.js"
+    ],
+    "stateOwned": [
+      "computer-use-audit.jsonl"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "2-permissions-tools",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "3 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: computer-use-audit.jsonl"
+    ]
+  },
+  "lib/runtime/pipeline-telemetry.js": {
+    "source": "lib/runtime/pipeline-telemetry.js",
+    "destination": "packages/core/orchestration/pipeline-telemetry.js",
+    "classification": "orchestration",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/telemetry.js",
+      "lib/runtime/telemetry-console.js"
+    ],
+    "imports": [
+      "lib/memory-retention.js",
+      "lib/paths.js",
+      "lib/runtime/privacy-policy.js",
+      "lib/trace-store.js"
+    ],
+    "stateOwned": [
+      "pipeline.jsonl",
+      "-${Date.now()}.jsonl"
+    ],
+    "runtimeOwner": "purpclaw-api+purpclaw-pool",
+    "migrationBatch": "4-orchestration-pipeline",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: purpclaw-api, purpclaw-pool",
+      "writes: pipeline.jsonl, -${Date.now()}.jsonl"
+    ]
+  },
+  "lib/runtime/ports.js": {
+    "source": "lib/runtime/ports.js",
+    "destination": "packages/core/runtime/ports.js",
+    "classification": "core-runtime",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/runtime/ports.js",
+      "lib/runtime/settings-registry.js"
+    ],
+    "imports": [
+      "lib/runtime/ports.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "2-permissions-tools",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/runtime/privacy-policy.js": {
+    "source": "lib/runtime/privacy-policy.js",
+    "destination": "packages/core/runtime/privacy-policy.js",
+    "classification": "core-runtime",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js",
+      "lib/runtime/pipeline-telemetry.js",
+      "lib/self-context.js",
+      "lib/training-buffer.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-pool+purpclaw-tower",
+    "migrationBatch": "2-permissions-tools",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "4 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-pool, purpclaw-tower"
     ]
   },
   "lib/runtime/provider-config.js": {
@@ -3390,7 +5656,8 @@
     "entrypoint": false,
     "importedBy": [
       "lib/commands/provider.js",
-      "lib/routing-decisions.js"
+      "lib/routing-decisions.js",
+      "lib/stack-truth.js"
     ],
     "imports": [],
     "stateOwned": [
@@ -3401,9 +5668,78 @@
     "risk": "high",
     "status": "live",
     "evidence": [
-      "2 static importer(s) repo-wide",
+      "3 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
       "writes: provider-config.json"
+    ]
+  },
+  "lib/runtime/settings-registry.js": {
+    "source": "lib/runtime/settings-registry.js",
+    "destination": "packages/core/runtime/settings-registry.js",
+    "classification": "core-runtime",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/runtime/computer-use.js"
+    ],
+    "imports": [
+      "lib/runtime/ports.js",
+      "lib/spend-gate.js"
+    ],
+    "stateOwned": [
+      "settings.json",
+      "spend-config.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "2-permissions-tools",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: settings.json, spend-config.json"
+    ]
+  },
+  "lib/runtime/telemetry-console.js": {
+    "source": "lib/runtime/telemetry-console.js",
+    "destination": "packages/core/runtime/telemetry-console.js",
+    "classification": "core-runtime",
+    "entrypoint": false,
+    "importedBy": [
+      "pool_service.js",
+      "unified_api.js"
+    ],
+    "imports": [
+      "lib/runtime/pipeline-telemetry.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "purpclaw-api+purpclaw-pool",
+    "migrationBatch": "2-permissions-tools",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: purpclaw-api, purpclaw-pool"
+    ]
+  },
+  "lib/scheduler/nl-cron.js": {
+    "source": "lib/scheduler/nl-cron.js",
+    "destination": "packages/core/orchestration/nl-cron.js",
+    "classification": "orchestration",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/schedule.js",
+      "lib/cron-manager.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "4-orchestration-pipeline",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "BROKEN: unresolved requires -> ./lib/scheduler/nl-cron.js"
     ]
   },
   "lib/schema-validator.js": {
@@ -3414,11 +5750,16 @@
     "importedBy": [
       "lib/agent-component.js",
       "lib/agent-gateway.js",
+      "lib/component-pipeline.js",
       "lib/eval-manager.js",
       "lib/event-workflow.js",
       "lib/guardrail-manager.js",
+      "lib/output-contract.js",
+      "lib/run-context.js",
+      "lib/signature-adapter.js",
       "lib/task-manager.js",
-      "lib/tool-runtime.js"
+      "lib/tool-runtime.js",
+      "lib/workflow-state.js"
     ],
     "imports": [],
     "stateOwned": [],
@@ -3427,7 +5768,7 @@
     "risk": "high",
     "status": "live",
     "evidence": [
-      "7 static importer(s) repo-wide",
+      "12 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
@@ -3482,10 +5823,12 @@
     "entrypoint": false,
     "importedBy": [
       "lib/cowork-overlay.js",
+      "lib/runtime/computer-use.js",
       "lib/tools-gui.js"
     ],
     "imports": [
-      "lib/llm-provider.js"
+      "lib/llm-provider.js",
+      "lib/workspace-awareness.js"
     ],
     "stateOwned": [
       ".screen_context.json"
@@ -3495,9 +5838,9 @@
     "risk": "critical",
     "status": "broken",
     "evidence": [
-      "2 static importer(s) repo-wide",
+      "3 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./lib/screen-look, ./workspace-awareness.js",
+      "BROKEN: unresolved requires -> ./lib/screen-look",
       "writes: .screen_context.json"
     ]
   },
@@ -3544,6 +5887,28 @@
       "writes: harness_lessons.jsonl"
     ]
   },
+  "lib/self-context.js": {
+    "source": "lib/self-context.js",
+    "destination": "var/quarantine/self-context.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/deep-research-group.js",
+      "swarm_coordinator.js"
+    ],
+    "imports": [
+      "lib/runtime/privacy-policy.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
   "lib/self-evolution-loop.js": {
     "source": "lib/self-evolution-loop.js",
     "destination": "var/quarantine/self-evolution-loop.js",
@@ -3551,7 +5916,8 @@
     "entrypoint": false,
     "importedBy": [],
     "imports": [
-      "lib/memory-client.js"
+      "lib/memory-client.js",
+      "lib/user-feedback.js"
     ],
     "stateOwned": [
       "self-eval.json"
@@ -3559,12 +5925,37 @@
     "runtimeOwner": null,
     "migrationBatch": "9-compatibility",
     "risk": "medium",
-    "status": "broken",
+    "status": "orphan",
     "evidence": [
       "0 static importer(s) repo-wide",
       "not reachable from any PM2 entrypoint or the CLI",
-      "BROKEN: unresolved requires -> ./user-feedback",
       "writes: self-eval.json"
+    ]
+  },
+  "lib/session-portability.js": {
+    "source": "lib/session-portability.js",
+    "destination": "packages/core/session/session-portability.js",
+    "classification": "session",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "${sessionKey}.json",
+      ".json",
+      ".ndjson",
+      "${destKey}.json"
+    ],
+    "runtimeOwner": "cli",
+    "migrationBatch": "1-memory-sessions",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli",
+      "BROKEN: unresolved requires -> ./lib/session-portability",
+      "writes: ${sessionKey}.json, .json, .ndjson, ${destKey}.json"
     ]
   },
   "lib/session-repository.js": {
@@ -3576,6 +5967,7 @@
       "lib/agent-gateway.js",
       "lib/agent-loop.js",
       "lib/commands/ask.js",
+      "lib/spine/session-store.js",
       "unified_api.js"
     ],
     "imports": [],
@@ -3587,7 +5979,7 @@
     "risk": "high",
     "status": "live",
     "evidence": [
-      "4 static importer(s) repo-wide",
+      "5 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
       "writes: state.db"
     ]
@@ -3617,6 +6009,71 @@
       "writes: state.db"
     ]
   },
+  "lib/session-store.js": {
+    "source": "lib/session-store.js",
+    "destination": "packages/core/session/session-store.js",
+    "classification": "session",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/agent-loop.js",
+      "lib/file-watcher.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "restart_counts.json",
+      "sessions.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "1-memory-sessions",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "3 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: restart_counts.json, sessions.json"
+    ]
+  },
+  "lib/signature-adapter.js": {
+    "source": "lib/signature-adapter.js",
+    "destination": "packages/core/adapters/signature-adapter.js",
+    "classification": "service-adapter",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/program-optimizer.js"
+    ],
+    "imports": [
+      "lib/schema-validator.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "8-utilities-tools",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/signed-manifest.js": {
+    "source": "lib/signed-manifest.js",
+    "destination": "var/quarantine/signed-manifest.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/pocket-updater.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
   "lib/skill-registry.js": {
     "source": "lib/skill-registry.js",
     "destination": "var/quarantine/skill-registry.js",
@@ -3636,6 +6093,98 @@
     "evidence": [
       "1 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/skill-usage.js": {
+    "source": "lib/skill-usage.js",
+    "destination": "var/quarantine/skill-usage.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/skills.js",
+      "lib/tools/skills-registry.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      ".usage.json",
+      "lock.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: .usage.json, lock.json"
+    ]
+  },
+  "lib/skills-deps.js": {
+    "source": "lib/skills-deps.js",
+    "destination": "var/quarantine/skills-deps.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/skills.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
+  "lib/skills-guard.js": {
+    "source": "lib/skills-guard.js",
+    "destination": "var/quarantine/skills-guard.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/skills.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      ".json",
+      "${shortHash}-${sourceId}.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: .json, ${shortHash}-${sourceId}.json"
+    ]
+  },
+  "lib/skills-hub.js": {
+    "source": "lib/skills-hub.js",
+    "destination": "var/quarantine/skills-hub.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/skills.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "lock.json",
+      "audit.log",
+      "taps.json",
+      "${key}.json",
+      "skills.sh.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: lock.json, audit.log, taps.json, ${key}.json, skills.sh.json"
     ]
   },
   "lib/smith-neo.js": {
@@ -3667,17 +6216,316 @@
     "destination": "var/quarantine/soul-registry.js",
     "classification": "unknown",
     "entrypoint": false,
+    "importedBy": [
+      "lib/studio.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli",
+    "migrationBatch": "9-compatibility",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli",
+      "BROKEN: unresolved requires -> ./lib/soul-registry"
+    ]
+  },
+  "lib/spaghetti-audit.js": {
+    "source": "lib/spaghetti-audit.js",
+    "destination": "var/quarantine/spaghetti-audit.js",
+    "classification": "unknown",
+    "entrypoint": false,
     "importedBy": [],
     "imports": [],
     "stateOwned": [],
     "runtimeOwner": null,
     "migrationBatch": "9-compatibility",
     "risk": "low",
-    "status": "broken",
+    "status": "orphan",
     "evidence": [
       "0 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
+  "lib/spend-gate.js": {
+    "source": "lib/spend-gate.js",
+    "destination": "var/quarantine/spend-gate.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/pocket.js",
+      "lib/cost-ledger.js",
+      "lib/deep-audit.js",
+      "lib/llm-provider.js",
+      "lib/runtime/settings-registry.js"
+    ],
+    "imports": [
+      "lib/billing-lifecycle.js"
+    ],
+    "stateOwned": [
+      "spend-config.json",
+      "spend-log.jsonl",
+      "spend-state.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "5 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: spend-config.json, spend-log.jsonl, spend-state.json"
+    ]
+  },
+  "lib/spine-shim.js": {
+    "source": "lib/spine-shim.js",
+    "destination": "var/quarantine/spine-shim.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "unified_api.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "purpclaw-api",
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: purpclaw-api"
+    ]
+  },
+  "lib/spine/contract.js": {
+    "source": "lib/spine/contract.js",
+    "destination": "packages/memory/contract.js",
+    "classification": "memory",
+    "entrypoint": false,
+    "importedBy": [
+      "unified_api.js"
+    ],
+    "imports": [
+      "lib/spine/envelope.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "purpclaw-api",
+    "migrationBatch": "1-memory-sessions",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: purpclaw-api"
+    ]
+  },
+  "lib/spine/envelope.js": {
+    "source": "lib/spine/envelope.js",
+    "destination": "packages/memory/envelope.js",
+    "classification": "memory",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/spine/contract.js",
+      "unified_api.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "purpclaw-api",
+    "migrationBatch": "1-memory-sessions",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: purpclaw-api"
+    ]
+  },
+  "lib/spine/session-store.js": {
+    "source": "lib/spine/session-store.js",
+    "destination": "packages/memory/session-store.js",
+    "classification": "memory",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/core/work-engine.js",
+      "unified_api.js"
+    ],
+    "imports": [
+      "lib/session-repository.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "purpclaw-api",
+    "migrationBatch": "1-memory-sessions",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: purpclaw-api"
+    ]
+  },
+  "lib/spinebus.js": {
+    "source": "lib/spinebus.js",
+    "destination": "var/quarantine/spinebus.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/spinebus.js"
+    ],
+    "imports": [
+      "lib/mycelium.js",
+      "lib/tools/index.js"
+    ],
+    "stateOwned": [
+      "jobs.jsonl",
+      "routes.jsonl",
+      "touches.jsonl",
+      "receipts.jsonl",
+      "lessons.jsonl",
+      "dream_queue.jsonl",
+      "registry-cache.json",
+      "skills_registry.json",
+      "AGENT_REGISTRY.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
       "not reachable from any PM2 entrypoint or the CLI",
-      "BROKEN: unresolved requires -> ./lib/soul-registry"
+      "writes: jobs.jsonl, routes.jsonl, touches.jsonl, receipts.jsonl, lessons.jsonl, dream_queue.jsonl, registry-cache.json, skills_registry.json, AGENT_REGISTRY.json"
+    ]
+  },
+  "lib/stack-truth.js": {
+    "source": "lib/stack-truth.js",
+    "destination": "var/quarantine/stack-truth.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/purpflow.js",
+      "lib/tools-parity.js"
+    ],
+    "imports": [
+      "lib/agent-health.js",
+      "lib/agent-registry.js",
+      "lib/api-harness-kernel.js",
+      "lib/job-chain.js",
+      "lib/memory-client.js",
+      "lib/model-router.js",
+      "lib/runtime/provider-config.js",
+      "lib/steering-router.js",
+      "lib/tools/index.js",
+      "lib/tools/skills-registry.js",
+      "service_registry.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "BROKEN: unresolved requires -> ./lib/stack-truth, ../agent_routing_matrix"
+    ]
+  },
+  "lib/steering-router.js": {
+    "source": "lib/steering-router.js",
+    "destination": "packages/core/routing/steering-router.js",
+    "classification": "routing",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/purpflow.js",
+      "lib/stack-truth.js",
+      "lib/tools-parity.js",
+      "unified_api.js"
+    ],
+    "imports": [
+      "lib/api-harness-kernel.js",
+      "lib/job-chain.js",
+      "lib/phase-router.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "3-providers-routing",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "5 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/stm.js": {
+    "source": "lib/stm.js",
+    "destination": "var/quarantine/stm.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/stm.js",
+      "lib/tools/index.js"
+    ],
+    "imports": [
+      "lib/stm.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/studio-constants.js": {
+    "source": "lib/studio-constants.js",
+    "destination": "packages/studio/studio-constants.js",
+    "classification": "studio",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/erosion.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli",
+    "migrationBatch": "7-studio-ecology",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli"
+    ]
+  },
+  "lib/studio.js": {
+    "source": "lib/studio.js",
+    "destination": "packages/studio/studio.js",
+    "classification": "studio",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "imports": [
+      "lib/erosion.js",
+      "lib/soul-registry.js",
+      "lib/timeline.js"
+    ],
+    "stateOwned": [
+      "studio-modes.json",
+      "studio-world-state.json",
+      "studio-session-log.json",
+      "studio-memory.json",
+      "souls.json",
+      "council-profiles.json",
+      "meeting-memories.json",
+      "private-conversations.json",
+      "council-votes.json"
+    ],
+    "runtimeOwner": "cli",
+    "migrationBatch": "7-studio-ecology",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli",
+      "writes: studio-modes.json, studio-world-state.json, studio-session-log.json, studio-memory.json, souls.json, council-profiles.json, meeting-memories.json, private-conversations.json, council-votes.json"
     ]
   },
   "lib/surface-capabilities.js": {
@@ -3695,6 +6543,29 @@
     "evidence": [
       "0 static importer(s) repo-wide",
       "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
+  "lib/system-manifest.js": {
+    "source": "lib/system-manifest.js",
+    "destination": "var/quarantine/system-manifest.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/tools/index.js",
+      "unified_api.js"
+    ],
+    "imports": [
+      "lib/agent-registry.js",
+      "lib/tools/index.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
   "lib/task-manager.js": {
@@ -3744,6 +6615,25 @@
       "writes: state.db"
     ]
   },
+  "lib/team-router.js": {
+    "source": "lib/team-router.js",
+    "destination": "packages/core/routing/team-router.js",
+    "classification": "routing",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/team.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "3-providers-routing",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
   "lib/telemetry-manager.js": {
     "source": "lib/telemetry-manager.js",
     "destination": "var/quarantine/telemetry-manager.js",
@@ -3764,6 +6654,77 @@
       "1 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
       "writes: state.db"
+    ]
+  },
+  "lib/telemetry.js": {
+    "source": "lib/telemetry.js",
+    "destination": "var/quarantine/telemetry.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/pocket.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "telemetry.jsonl",
+      "telemetry-export.json"
+    ],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "writes: telemetry.jsonl, telemetry-export.json"
+    ]
+  },
+  "lib/timeline.js": {
+    "source": "lib/timeline.js",
+    "destination": "var/quarantine/timeline.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/donor-archaeology.js",
+      "lib/studio.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "timeline.json",
+      "council-votes.json",
+      "studio-session-log.json"
+    ],
+    "runtimeOwner": "cli",
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli",
+      "writes: timeline.json, council-votes.json, studio-session-log.json"
+    ]
+  },
+  "lib/tool-cache.js": {
+    "source": "lib/tool-cache.js",
+    "destination": "var/quarantine/tool-cache.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/tools/index.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      ".json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "BROKEN: unresolved requires -> ./lib/tool-cache",
+      "writes: .json"
     ]
   },
   "lib/tool-gate.js": {
@@ -3800,6 +6761,7 @@
       "lib/chat-agent.js",
       "lib/mcp-server.js",
       "lib/plugin-manager.js",
+      "lib/recipe-manager.js",
       "unified_api.js"
     ],
     "imports": [
@@ -3818,7 +6780,7 @@
     "risk": "high",
     "status": "live",
     "evidence": [
-      "6 static importer(s) repo-wide",
+      "7 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
@@ -3832,17 +6794,17 @@
     ],
     "imports": [
       "lib/llm-provider.js",
+      "lib/runtime/computer-use.js",
       "lib/screen-look.js"
     ],
     "stateOwned": [],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "1 static importer(s) repo-wide",
-      "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./runtime/computer-use"
+      "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
   "lib/tools-parity.js": {
@@ -3854,17 +6816,24 @@
       "lib/tools/index.js"
     ],
     "imports": [
-      "lib/memory-client.js"
+      "lib/agent-health.js",
+      "lib/agent-registry.js",
+      "lib/insight.js",
+      "lib/job-chain.js",
+      "lib/memory-client.js",
+      "lib/proof-ledger.js",
+      "lib/purpflow.js",
+      "lib/stack-truth.js",
+      "lib/steering-router.js"
     ],
     "stateOwned": [],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "1 static importer(s) repo-wide",
-      "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./steering-router, ./stack-truth, ./job-chain, ./proof-ledger, ./insight, ./purpflow, ./agent-health, ./agent-registry"
+      "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
   "lib/tools-pc.js": {
@@ -3913,12 +6882,34 @@
       "writes: package.json, .remotion-props.json"
     ]
   },
+  "lib/tools-windows-mcp.js": {
+    "source": "lib/tools-windows-mcp.js",
+    "destination": "packages/tools/tools-windows-mcp.js",
+    "classification": "tool-implementation",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/runtime/computer-use.js"
+    ],
+    "imports": [
+      "lib/runtime/computer-use.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "8-utilities-tools",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
   "lib/tools/index.js": {
     "source": "lib/tools/index.js",
     "destination": "packages/tools/index.js",
     "classification": "tool-implementation",
     "entrypoint": false,
     "importedBy": [
+      "lib/agent-health.js",
       "lib/agent-loop.js",
       "lib/api-harness-kernel.js",
       "lib/chat-agent.js",
@@ -3926,46 +6917,105 @@
       "lib/commands/bigboss.js",
       "lib/commands/remotion.js",
       "lib/commands/tour.js",
+      "lib/deep-audit.js",
       "lib/doctor.js",
+      "lib/liveforge.js",
       "lib/mcp-server.js",
       "lib/plugin-manager.js",
+      "lib/spinebus.js",
+      "lib/stack-truth.js",
+      "lib/system-manifest.js",
       "lib/tool-runtime.js",
       "lib/whoami.js",
       "unified_api.js"
     ],
     "imports": [
+      "lib/autotune.js",
       "lib/chaos-campaign.js",
       "lib/child-registry.js",
       "lib/code-interpreter.js",
+      "lib/cost-ledger.js",
       "lib/exec-policy.js",
       "lib/governance.js",
+      "lib/imagegen/video_engine.js",
       "lib/llm-provider.js",
+      "lib/memory-consistency.js",
+      "lib/parseltongue.js",
       "lib/permission-manager.js",
       "lib/pty.js",
+      "lib/pxpipe.js",
       "lib/screen-camera-tools.js",
       "lib/smith-neo.js",
+      "lib/stm.js",
+      "lib/system-manifest.js",
+      "lib/tool-cache.js",
       "lib/tool-gate.js",
       "lib/tools-gui.js",
       "lib/tools-parity.js",
       "lib/tools-pc.js",
       "lib/tools-remotion.js",
-      "lib/tools/parity/hooks/engine.js"
+      "lib/tools/parity/hooks/engine.js",
+      "lib/tools/skills-registry.js",
+      "lib/tools/web-search-rate-limit.js",
+      "lib/user-agents.js"
     ],
     "stateOwned": [],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "8-utilities-tools",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "duplicate",
     "evidence": [
-      "13 static importer(s) repo-wide",
+      "19 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ../tool-cache, ../system-manifest, ../cost-ledger, ../parseltongue, ../autotune, ../stm, ../memory-consistency, ../imagegen/video_engine, ../user-agents, ../pxpipe, ./skills-registry, ./web-search-rate-limit",
       "possible duplicate of packages/context-spine/index.js, packages/harness-claude/index.js, packages/harness-codex/index.js, packages/harness-core/index.js, packages/harness-hermes/index.js, packages/harness-minimax/index.js, packages/index.js, packages/memory/cognitive-spine/affective-interaction/index.js, packages/memory/cognitive-spine/counterfactual/index.js, packages/memory/cognitive-spine/episodic/index.js, packages/memory/cognitive-spine/procedural/index.js, packages/memory/cognitive-spine/semantic/index.js, packages/memory/cognitive-spine/symbolic/index.js, packages/memory/cognitive-spine/temporal/index.js, packages/memory/contract/index.js, packages/memory/gateway/index.js, packages/memory/policy/index.js, packages/memory-audit/index.js, packages/result-schema/index.js, packages/router/index.js, packages/task-schema/index.js, packages/verification-core/index.js — compare before choosing a winner, do NOT assume packages/ wins"
     ]
   },
   "lib/tools/parity/hooks/engine.js": {
     "source": "lib/tools/parity/hooks/engine.js",
     "destination": "packages/tools/engine.js",
+    "classification": "tool-implementation",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/tools/index.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "8-utilities-tools",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/tools/skills-registry.js": {
+    "source": "lib/tools/skills-registry.js",
+    "destination": "packages/tools/skills-registry.js",
+    "classification": "tool-implementation",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/deep-audit.js",
+      "lib/stack-truth.js",
+      "lib/tools/index.js"
+    ],
+    "imports": [
+      "lib/child-registry.js",
+      "lib/skill-usage.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "8-utilities-tools",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "3 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/tools/web-search-rate-limit.js": {
+    "source": "lib/tools/web-search-rate-limit.js",
+    "destination": "packages/tools/web-search-rate-limit.js",
     "classification": "tool-implementation",
     "entrypoint": false,
     "importedBy": [
@@ -4024,6 +7074,87 @@
       "writes: state.db"
     ]
   },
+  "lib/trace-store.js": {
+    "source": "lib/trace-store.js",
+    "destination": "var/quarantine/trace-store.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/job-chain.js",
+      "lib/runtime/pipeline-telemetry.js"
+    ],
+    "imports": [
+      "lib/memory-retention.js"
+    ],
+    "stateOwned": [
+      "recent.jsonl"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-pool+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "3 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-pool, purpclaw-tower",
+      "writes: recent.jsonl"
+    ]
+  },
+  "lib/training-buffer.js": {
+    "source": "lib/training-buffer.js",
+    "destination": "var/quarantine/training-buffer.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/api-harness-kernel.js",
+      "lib/commands/training.js"
+    ],
+    "imports": [
+      "lib/runtime/privacy-policy.js"
+    ],
+    "stateOwned": [
+      "stats.json",
+      "${todayStamp()}.ndjson",
+      ".ndjson",
+      "baseline-${stamp}.jsonl",
+      "baseline-${stamp}.json",
+      "baseline-${stamp}.sharegpt.json",
+      "baseline-${stamp}.chatml.jsonl"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: stats.json, ${todayStamp()}.ndjson, .ndjson, baseline-${stamp}.jsonl, baseline-${stamp}.json, baseline-${stamp}.sharegpt.json, baseline-${stamp}.chatml.jsonl"
+    ]
+  },
+  "lib/training/personal-dataset.js": {
+    "source": "lib/training/personal-dataset.js",
+    "destination": "var/quarantine/personal-dataset.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/idle-engine.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      ".ndjson",
+      "personal-training-${format}.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "critical",
+    "status": "broken",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "BROKEN: unresolved requires -> ./lib/training/personal-dataset",
+      "writes: .ndjson, personal-training-${format}.json"
+    ]
+  },
   "lib/tts/gateway.js": {
     "source": "lib/tts/gateway.js",
     "destination": "packages/core/adapters/gateway.js",
@@ -4063,6 +7194,221 @@
       "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
+  "lib/usage-limits.js": {
+    "source": "lib/usage-limits.js",
+    "destination": "var/quarantine/usage-limits.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/usage-pricing.js": {
+    "source": "lib/usage-pricing.js",
+    "destination": "var/quarantine/usage-pricing.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "pricing-cache.json",
+      "usage-${Date.now()}.json"
+    ],
+    "runtimeOwner": "cli",
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli",
+      "writes: pricing-cache.json, usage-${Date.now()}.json"
+    ]
+  },
+  "lib/user-agents.js": {
+    "source": "lib/user-agents.js",
+    "destination": "var/quarantine/user-agents.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/tools/index.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/user-commands.js": {
+    "source": "lib/user-commands.js",
+    "destination": "var/quarantine/user-commands.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/ask.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
+  "lib/user-feedback.js": {
+    "source": "lib/user-feedback.js",
+    "destination": "var/quarantine/user-feedback.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js",
+      "lib/idle-engine.js",
+      "lib/self-evolution-loop.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "stats.json",
+      "${y}-${m}-${day}.ndjson",
+      ".ndjson"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "3 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: stats.json, ${y}-${m}-${day}.ndjson, .ndjson"
+    ]
+  },
+  "lib/vector/index.js": {
+    "source": "lib/vector/index.js",
+    "destination": "var/quarantine/index.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/commands/code.js"
+    ],
+    "imports": [
+      "lib/vector/providers/faissProvider.js"
+    ],
+    "stateOwned": [
+      "vector-provider.json",
+      "flat_store.json"
+    ],
+    "runtimeOwner": "purpclaw-api",
+    "migrationBatch": "9-compatibility",
+    "risk": "medium",
+    "status": "duplicate",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: purpclaw-api",
+      "writes: vector-provider.json, flat_store.json",
+      "possible duplicate of packages/context-spine/index.js, packages/harness-claude/index.js, packages/harness-codex/index.js, packages/harness-core/index.js, packages/harness-hermes/index.js, packages/harness-minimax/index.js, packages/index.js, packages/memory/cognitive-spine/affective-interaction/index.js, packages/memory/cognitive-spine/counterfactual/index.js, packages/memory/cognitive-spine/episodic/index.js, packages/memory/cognitive-spine/procedural/index.js, packages/memory/cognitive-spine/semantic/index.js, packages/memory/cognitive-spine/symbolic/index.js, packages/memory/cognitive-spine/temporal/index.js, packages/memory/contract/index.js, packages/memory/gateway/index.js, packages/memory/policy/index.js, packages/memory-audit/index.js, packages/result-schema/index.js, packages/router/index.js, packages/task-schema/index.js, packages/verification-core/index.js — compare before choosing a winner, do NOT assume packages/ wins"
+    ]
+  },
+  "lib/vector/providers/faissProvider.js": {
+    "source": "lib/vector/providers/faissProvider.js",
+    "destination": "packages/core/providers/faissProvider.js",
+    "classification": "provider",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/vector/index.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      "metadata.jsonl",
+      "tombstones.json"
+    ],
+    "runtimeOwner": "purpclaw-api",
+    "migrationBatch": "3-providers-routing",
+    "risk": "medium",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: purpclaw-api",
+      "writes: metadata.jsonl, tombstones.json"
+    ]
+  },
+  "lib/verification-gate.js": {
+    "source": "lib/verification-gate.js",
+    "destination": "var/quarantine/verification-gate.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-loop.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      ".json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: .json"
+    ]
+  },
+  "lib/verification-runner.js": {
+    "source": "lib/verification-runner.js",
+    "destination": "var/quarantine/verification-runner.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/weatherman.js": {
+    "source": "lib/weatherman.js",
+    "destination": "var/quarantine/weatherman.js",
+    "classification": "unknown",
+    "entrypoint": true,
+    "importedBy": [
+      "lib/commands/weather.js"
+    ],
+    "imports": [],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "9-compatibility",
+    "risk": "low",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
   "lib/whoami.js": {
     "source": "lib/whoami.js",
     "destination": "var/quarantine/whoami.js",
@@ -4089,6 +7435,28 @@
       "reached from: cli, purpclaw-api, purpclaw-tower"
     ]
   },
+  "lib/with-pipeline.js": {
+    "source": "lib/with-pipeline.js",
+    "destination": "packages/core/orchestration/with-pipeline.js",
+    "classification": "orchestration",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/omni/omnicode-adapter.js"
+    ],
+    "imports": [
+      "lib/pipeline-registry.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": null,
+    "migrationBatch": "4-orchestration-pipeline",
+    "risk": "low",
+    "status": "broken",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "not reachable from any PM2 entrypoint or the CLI",
+      "BROKEN: unresolved requires -> ./lib/with-pipeline"
+    ]
+  },
   "lib/workflow-manager.js": {
     "source": "lib/workflow-manager.js",
     "destination": "packages/core/orchestration/workflow-manager.js",
@@ -4099,7 +7467,8 @@
       "scripts/test-workflow-approval.js"
     ],
     "imports": [
-      "lib/approval-queue.js"
+      "lib/approval-queue.js",
+      "lib/workflow-state.js"
     ],
     "stateOwned": [
       "state.db",
@@ -4107,12 +7476,11 @@
     ],
     "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
     "migrationBatch": "4-orchestration-pipeline",
-    "risk": "critical",
-    "status": "broken",
+    "risk": "high",
+    "status": "live",
     "evidence": [
       "2 static importer(s) repo-wide",
       "reached from: cli, purpclaw-api, purpclaw-tower",
-      "BROKEN: unresolved requires -> ./workflow-state",
       "writes: state.db, ${input}.json"
     ]
   },
@@ -4131,6 +7499,51 @@
     "evidence": [
       "0 static importer(s) repo-wide",
       "not reachable from any PM2 entrypoint or the CLI"
+    ]
+  },
+  "lib/workflow-state.js": {
+    "source": "lib/workflow-state.js",
+    "destination": "packages/core/orchestration/workflow-state.js",
+    "classification": "orchestration",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/graph-runtime.js",
+      "lib/workflow-manager.js"
+    ],
+    "imports": [
+      "lib/schema-validator.js"
+    ],
+    "stateOwned": [],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "4-orchestration-pipeline",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "2 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower"
+    ]
+  },
+  "lib/workspace-awareness.js": {
+    "source": "lib/workspace-awareness.js",
+    "destination": "var/quarantine/workspace-awareness.js",
+    "classification": "unknown",
+    "entrypoint": false,
+    "importedBy": [
+      "lib/screen-look.js"
+    ],
+    "imports": [],
+    "stateOwned": [
+      ".workspace_awareness.json",
+      "purpclaw-workspace-awareness.json"
+    ],
+    "runtimeOwner": "cli+purpclaw-api+purpclaw-tower",
+    "migrationBatch": "9-compatibility",
+    "risk": "high",
+    "status": "live",
+    "evidence": [
+      "1 static importer(s) repo-wide",
+      "reached from: cli, purpclaw-api, purpclaw-tower",
+      "writes: .workspace_awareness.json, purpclaw-workspace-awareness.json"
     ]
   }
 }

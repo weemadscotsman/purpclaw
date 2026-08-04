@@ -10,9 +10,18 @@
     ],
     "unresolved": []
   },
+  "lib/accuracy-fish.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/harness/engine.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
   "lib/agent-component.js": {
     "imports": [
       "lib/guardrail-manager.js",
+      "lib/retrieval-engine.js",
       "lib/schema-validator.js",
       "lib/session-state-service.js"
     ],
@@ -27,9 +36,7 @@
       "node:sqlite",
       "path"
     ],
-    "unresolved": [
-      "./retrieval-engine"
-    ]
+    "unresolved": []
   },
   "lib/agent-gateway.js": {
     "imports": [
@@ -39,10 +46,14 @@
       "lib/artifact-manager.js",
       "lib/attachment-manager.js",
       "lib/checkpoint-manager.js",
+      "lib/component-pipeline.js",
       "lib/context-engine.js",
       "lib/cron-manager.js",
+      "lib/delegation-manager.js",
       "lib/eval-manager.js",
       "lib/event-ledger.js",
+      "lib/execution-runtime.js",
+      "lib/goal-controller.js",
       "lib/goal-manager.js",
       "lib/graph-runtime.js",
       "lib/guardrail-manager.js",
@@ -50,11 +61,19 @@
       "lib/instruction-resolver.js",
       "lib/invocation-manager.js",
       "lib/mcp.js",
+      "lib/messaging-registry.js",
       "lib/messaging-runtime.js",
       "lib/namespace-store.js",
+      "lib/output-contract.js",
       "lib/permission-manager.js",
       "lib/plugin-manager.js",
+      "lib/profile-manager.js",
       "lib/program-optimizer.js",
+      "lib/provider-registry.js",
+      "lib/recipe-manager.js",
+      "lib/repo-map.js",
+      "lib/retrieval-engine.js",
+      "lib/run-context.js",
       "lib/schema-validator.js",
       "lib/session-repository.js",
       "lib/session-state-service.js",
@@ -64,6 +83,8 @@
       "lib/telemetry-manager.js",
       "lib/tool-runtime.js",
       "lib/trace-manager.js",
+      "lib/usage-limits.js",
+      "lib/verification-runner.js",
       "lib/workflow-manager.js"
     ],
     "importedBy": [
@@ -71,6 +92,7 @@
       "lib/commands/ask.js",
       "lib/commands/eval.js",
       "lib/cron-manager.js",
+      "lib/delegation-manager.js",
       "lib/messaging-runtime.js",
       "lib/tower-agent-child.js",
       "unified_api.js"
@@ -78,34 +100,51 @@
     "external": [
       "events"
     ],
+    "unresolved": []
+  },
+  "lib/agent-health.js": {
+    "imports": [
+      "lib/agent-personas.js",
+      "lib/agent-registry.js",
+      "lib/tools/index.js"
+    ],
+    "importedBy": [
+      "lib/stack-truth.js",
+      "lib/tools-parity.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
     "unresolved": [
-      "./component-pipeline",
-      "./delegation-manager",
-      "./execution-runtime",
-      "./goal-controller",
-      "./messaging-registry",
-      "./output-contract",
-      "./profile-manager",
-      "./provider-registry",
-      "./recipe-manager",
-      "./repo-map",
-      "./retrieval-engine",
-      "./run-context",
-      "./usage-limits",
-      "./verification-runner"
+      "./lib/agent-health"
     ]
   },
   "lib/agent-loop.js": {
     "imports": [
       "agent_tower.js",
+      "lib/cognitive-client.js",
+      "lib/context-compressor.js",
+      "lib/continuity.js",
+      "lib/events.js",
+      "lib/file-watcher.js",
       "lib/hooks/lifecycle-bus.js",
+      "lib/idle-engine.js",
       "lib/llm-provider.js",
       "lib/memory-client.js",
+      "lib/phase-router.js",
+      "lib/priority-steer.js",
+      "lib/prompt-builder.js",
+      "lib/pulse.js",
       "lib/repo-mapper.js",
+      "lib/runtime/privacy-policy.js",
       "lib/scoped-memory.js",
       "lib/session-repository.js",
+      "lib/session-store.js",
       "lib/tool-runtime.js",
       "lib/tools/index.js",
+      "lib/user-feedback.js",
+      "lib/verification-gate.js",
       "lib/whoami.js",
       "parity/hooks/engine.js"
     ],
@@ -118,26 +157,38 @@
       "fs",
       "path"
     ],
-    "unresolved": [
-      "./cognitive-client",
-      "./context-compressor",
-      "./continuity",
-      "./events",
-      "./file-watcher",
-      "./idle-engine",
-      "./phase-router",
-      "./priority-steer",
-      "./prompt-builder",
-      "./pulse",
-      "./runtime/privacy-policy",
-      "./session-store",
-      "./user-feedback",
-      "./verification-gate"
-    ]
+    "unresolved": []
+  },
+  "lib/agent-personas.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-health.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/agent-registry.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-health.js",
+      "lib/commands/roster.js",
+      "lib/stack-truth.js",
+      "lib/system-manifest.js",
+      "lib/tools-parity.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
   },
   "lib/agent-router.js": {
     "imports": [
       "lib/agent-loop.js",
+      "lib/pipeline-registry.js",
       "lib/routing-decisions.js",
       "lib/usage-governor.js"
     ],
@@ -145,18 +196,45 @@
       "lib/agent-gateway.js"
     ],
     "external": [],
-    "unresolved": [
-      "./pipeline-registry"
-    ]
+    "unresolved": []
+  },
+  "lib/agent-sync.js": {
+    "imports": [],
+    "importedBy": [],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/agents/archetypes.js": {
+    "imports": [],
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
   },
   "lib/api-harness-kernel.js": {
     "imports": [
+      "lib/deep-research-group.js",
       "lib/governance.js",
       "lib/harness/engine.js",
+      "lib/job-chain.js",
+      "lib/job-contract.js",
       "lib/mcp.js",
-      "lib/tools/index.js"
+      "lib/omnicode-bridge.js",
+      "lib/tools/index.js",
+      "lib/training-buffer.js"
     ],
     "importedBy": [
+      "lib/stack-truth.js",
+      "lib/steering-router.js",
       "unified_api.js"
     ],
     "external": [
@@ -165,13 +243,7 @@
       "http",
       "path"
     ],
-    "unresolved": [
-      "./deep-research-group",
-      "./job-chain",
-      "./job-contract",
-      "./omnicode-bridge",
-      "./training-buffer"
-    ]
+    "unresolved": []
   },
   "lib/approval-prompt.js": {
     "imports": [],
@@ -228,9 +300,63 @@
     ],
     "unresolved": []
   },
-  "lib/awaken/awaken-preflight.js": {
+  "lib/autotune.js": {
+    "imports": [
+      "lib/autotune.js"
+    ],
+    "importedBy": [
+      "lib/autotune.js",
+      "lib/tools/index.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/awaken/awaken-events.js": {
     "imports": [],
     "importedBy": [
+      "lib/awaken/awaken-loop.js",
+      "lib/commands/awaken.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/awaken/awaken-loop.js": {
+    "imports": [
+      "lib/awaken/awaken-events.js",
+      "lib/awaken/awaken-permissions.js",
+      "lib/awaken/awaken-preflight.js",
+      "lib/awaken/awaken-state.js"
+    ],
+    "importedBy": [
+      "lib/commands/awaken.js"
+    ],
+    "external": [
+      "abort-controller",
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/awaken/awaken-permissions.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/awaken/awaken-loop.js",
+      "lib/commands/awaken.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/awaken/awaken-preflight.js": {
+    "imports": [
+      "lib/awaken/awaken-state.js"
+    ],
+    "importedBy": [
+      "lib/awaken/awaken-loop.js",
       "lib/commands/awaken.js"
     ],
     "external": [
@@ -239,9 +365,83 @@
       "http",
       "path"
     ],
-    "unresolved": [
-      "./awaken-state"
-    ]
+    "unresolved": []
+  },
+  "lib/awaken/awaken-state.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/awaken/awaken-loop.js",
+      "lib/awaken/awaken-preflight.js",
+      "lib/commands/awaken.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/billing-lifecycle.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/spend-gate.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/business/operations.js": {
+    "imports": [
+      "lib/business/store.js"
+    ],
+    "importedBy": [
+      "lib/commands/business.js"
+    ],
+    "external": [
+      "crypto"
+    ],
+    "unresolved": []
+  },
+  "lib/business/store.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/business/operations.js",
+      "lib/business/twilio.js",
+      "lib/commands/business.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/business/twilio.js": {
+    "imports": [
+      "lib/business/store.js"
+    ],
+    "importedBy": [
+      "lib/commands/business.js"
+    ],
+    "external": [
+      "crypto"
+    ],
+    "unresolved": []
+  },
+  "lib/canonical-memory-sync.js": {
+    "imports": [
+      "lib/memory-client.js"
+    ],
+    "importedBy": [
+      "lib/harness/engine.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
   },
   "lib/chaos-campaign.js": {
     "imports": [
@@ -264,7 +464,9 @@
       "lib/tool-runtime.js",
       "lib/tools/index.js"
     ],
-    "importedBy": [],
+    "importedBy": [
+      "lib/deep-research-group.js"
+    ],
     "external": [],
     "unresolved": []
   },
@@ -276,9 +478,23 @@
       "lib/agent-gateway.js",
       "lib/checkpoint-manager.js",
       "lib/commands/ask.js",
+      "lib/continuity.js",
       "lib/tool-runtime.js"
     ],
     "external": [
+      "path",
+      "url"
+    ],
+    "unresolved": []
+  },
+  "lib/checkpoint-manager.mjs": {
+    "imports": [],
+    "importedBy": [],
+    "external": [
+      "child_process",
+      "crypto",
+      "fs",
+      "os",
       "path",
       "url"
     ],
@@ -294,14 +510,33 @@
       "lib/commands/open.js",
       "lib/commands/pocket.js",
       "lib/commands/remotion.js",
+      "lib/harvest/extractors.js",
+      "lib/pocket-updater.js",
+      "lib/purpflow.js",
+      "lib/runtime/computer-use.js",
       "lib/tools-pc.js",
       "lib/tools-remotion.js",
       "lib/tools/index.js",
+      "lib/tools/skills-registry.js",
       "unified_api.js"
     ],
     "external": [
       "child_process",
       "path"
+    ],
+    "unresolved": []
+  },
+  "lib/cloud-sync.js": {
+    "imports": [],
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "os",
+      "path",
+      "zlib"
     ],
     "unresolved": []
   },
@@ -318,6 +553,20 @@
       "path"
     ],
     "unresolved": []
+  },
+  "lib/cognitive-client.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-loop.js",
+      "lib/doctor.js",
+      "swarm_coordinator.js"
+    ],
+    "external": [
+      "http"
+    ],
+    "unresolved": [
+      "./lib/cognitive-client"
+    ]
   },
   "lib/commands/action.js": {
     "imports": [],
@@ -357,13 +606,16 @@
       "lib/agent-gateway.js",
       "lib/checkpoint-manager.js",
       "lib/commands/bigboss.js",
+      "lib/config-loader.js",
       "lib/llm-provider.js",
       "lib/mcp.js",
       "lib/memory-client.js",
       "lib/permission-manager.js",
+      "lib/provider-registry.js",
       "lib/routing-decisions.js",
       "lib/session-repository.js",
       "lib/tools/index.js",
+      "lib/user-commands.js",
       "lib/whoami.js"
     ],
     "importedBy": [],
@@ -373,11 +625,7 @@
       "path",
       "readline"
     ],
-    "unresolved": [
-      "../config-loader",
-      "../provider-registry",
-      "../user-commands"
-    ]
+    "unresolved": []
   },
   "lib/commands/autofix-pr.js": {
     "imports": [],
@@ -402,21 +650,21 @@
   },
   "lib/commands/awaken.js": {
     "imports": [
-      "lib/awaken/awaken-preflight.js"
+      "lib/awaken/awaken-events.js",
+      "lib/awaken/awaken-loop.js",
+      "lib/awaken/awaken-permissions.js",
+      "lib/awaken/awaken-preflight.js",
+      "lib/awaken/awaken-state.js"
     ],
     "importedBy": [],
     "external": [],
-    "unresolved": [
-      "../awaken/awaken-events",
-      "../awaken/awaken-loop",
-      "../awaken/awaken-permissions",
-      "../awaken/awaken-state"
-    ]
+    "unresolved": []
   },
   "lib/commands/bigboss.js": {
     "imports": [
       "lib/chaos-campaign.js",
       "lib/child-registry.js",
+      "lib/memory-consistency.js",
       "lib/smith-neo.js",
       "lib/tools/index.js"
     ],
@@ -427,9 +675,7 @@
       "fs",
       "path"
     ],
-    "unresolved": [
-      "../memory-consistency"
-    ]
+    "unresolved": []
   },
   "lib/commands/browser.js": {
     "imports": [],
@@ -438,17 +684,17 @@
     "unresolved": []
   },
   "lib/commands/buddy.js": {
-    "imports": [],
+    "imports": [
+      "lib/mochi-sprites.js",
+      "lib/mochi.js"
+    ],
     "importedBy": [],
     "external": [
       "fs",
       "path",
       "readline"
     ],
-    "unresolved": [
-      "../mochi",
-      "../mochi-sprites"
-    ]
+    "unresolved": []
   },
   "lib/commands/bughunt.js": {
     "imports": [],
@@ -462,14 +708,14 @@
     "unresolved": []
   },
   "lib/commands/business.js": {
-    "imports": [],
+    "imports": [
+      "lib/business/operations.js",
+      "lib/business/store.js",
+      "lib/business/twilio.js"
+    ],
     "importedBy": [],
     "external": [],
-    "unresolved": [
-      "../business/operations",
-      "../business/store",
-      "../business/twilio"
-    ]
+    "unresolved": []
   },
   "lib/commands/capabilities.js": {
     "imports": [],
@@ -494,7 +740,9 @@
     "unresolved": []
   },
   "lib/commands/code.js": {
-    "imports": [],
+    "imports": [
+      "lib/vector/index.js"
+    ],
     "importedBy": [
       "unified_api.js"
     ],
@@ -504,9 +752,7 @@
       "http",
       "path"
     ],
-    "unresolved": [
-      "../vector"
-    ]
+    "unresolved": []
   },
   "lib/commands/cognition.js": {
     "imports": [],
@@ -535,12 +781,12 @@
     "unresolved": []
   },
   "lib/commands/crew.js": {
-    "imports": [],
+    "imports": [
+      "lib/crew.js"
+    ],
     "importedBy": [],
     "external": [],
-    "unresolved": [
-      "../crew"
-    ]
+    "unresolved": []
   },
   "lib/commands/ctx-viz.js": {
     "imports": [],
@@ -574,12 +820,12 @@
     "unresolved": []
   },
   "lib/commands/drift.js": {
-    "imports": [],
+    "imports": [
+      "lib/drift-watcher.js"
+    ],
     "importedBy": [],
     "external": [],
-    "unresolved": [
-      "../drift-watcher.js"
-    ]
+    "unresolved": []
   },
   "lib/commands/eval-auto-fix.js": {
     "imports": [
@@ -603,16 +849,15 @@
   },
   "lib/commands/evolve.js": {
     "imports": [
-      "lib/evolution/mutator.js"
+      "lib/evolution/mutator.js",
+      "lib/evolution/skill-forge.js"
     ],
     "importedBy": [],
     "external": [
       "fs",
       "path"
     ],
-    "unresolved": [
-      "../evolution/skill-forge"
-    ]
+    "unresolved": []
   },
   "lib/commands/feature.js": {
     "imports": [],
@@ -632,15 +877,15 @@
     "unresolved": []
   },
   "lib/commands/find.js": {
-    "imports": [],
+    "imports": [
+      "lib/file-index.js"
+    ],
     "importedBy": [],
     "external": [
       "fs",
       "path"
     ],
-    "unresolved": [
-      "../file-index"
-    ]
+    "unresolved": []
   },
   "lib/commands/gc.js": {
     "imports": [],
@@ -663,6 +908,7 @@
   },
   "lib/commands/harness.js": {
     "imports": [
+      "lib/harness/benchmark.js",
       "lib/harness/engine.js"
     ],
     "importedBy": [],
@@ -671,22 +917,20 @@
       "http",
       "path"
     ],
-    "unresolved": [
-      "../harness/benchmark"
-    ]
+    "unresolved": []
   },
   "lib/commands/harvest.js": {
-    "imports": [],
+    "imports": [
+      "lib/harvest/crawler.js",
+      "lib/harvest/extractors.js",
+      "lib/harvest/indexer.js"
+    ],
     "importedBy": [],
     "external": [
       "fs",
       "path"
     ],
-    "unresolved": [
-      "../harvest/crawler",
-      "../harvest/extractors",
-      "../harvest/indexer"
-    ]
+    "unresolved": []
   },
   "lib/commands/heal.js": {
     "imports": [
@@ -727,16 +971,16 @@
     "unresolved": []
   },
   "lib/commands/identity.js": {
-    "imports": [],
+    "imports": [
+      "lib/identity.js"
+    ],
     "importedBy": [],
     "external": [
       "fs",
       "os",
       "path"
     ],
-    "unresolved": [
-      "../identity"
-    ]
+    "unresolved": []
   },
   "lib/commands/init-project.js": {
     "imports": [],
@@ -772,14 +1016,14 @@
     "unresolved": []
   },
   "lib/commands/liveforge.js": {
-    "imports": [],
+    "imports": [
+      "lib/liveforge.js"
+    ],
     "importedBy": [],
     "external": [
       "fs"
     ],
-    "unresolved": [
-      "../liveforge"
-    ]
+    "unresolved": []
   },
   "lib/commands/llm.js": {
     "imports": [],
@@ -798,14 +1042,14 @@
     "unresolved": []
   },
   "lib/commands/marketplace.js": {
-    "imports": [],
+    "imports": [
+      "lib/marketplace.js"
+    ],
     "importedBy": [
       "lib/commands/plugin.js"
     ],
     "external": [],
-    "unresolved": [
-      "../marketplace"
-    ]
+    "unresolved": []
   },
   "lib/commands/mcp.js": {
     "imports": [
@@ -835,14 +1079,14 @@
     "unresolved": []
   },
   "lib/commands/mycelium.js": {
-    "imports": [],
+    "imports": [
+      "lib/mycelium.js"
+    ],
     "importedBy": [],
     "external": [
       "fs"
     ],
-    "unresolved": [
-      "../mycelium"
-    ]
+    "unresolved": []
   },
   "lib/commands/next.js": {
     "imports": [],
@@ -877,12 +1121,12 @@
     "unresolved": []
   },
   "lib/commands/oracle.js": {
-    "imports": [],
+    "imports": [
+      "lib/oracle.js"
+    ],
     "importedBy": [],
     "external": [],
-    "unresolved": [
-      "../oracle.js"
-    ]
+    "unresolved": []
   },
   "lib/commands/overview.js": {
     "imports": [],
@@ -937,7 +1181,11 @@
   },
   "lib/commands/pocket.js": {
     "imports": [
-      "lib/child-registry.js"
+      "lib/child-registry.js",
+      "lib/pocket-updater.js",
+      "lib/pocket-vault.js",
+      "lib/spend-gate.js",
+      "lib/telemetry.js"
     ],
     "importedBy": [],
     "external": [
@@ -948,12 +1196,7 @@
       "path",
       "readline"
     ],
-    "unresolved": [
-      "../pocket-updater",
-      "../pocket-vault",
-      "../spend-gate",
-      "../telemetry"
-    ]
+    "unresolved": []
   },
   "lib/commands/ponytail.js": {
     "imports": [],
@@ -1034,15 +1277,15 @@
     "unresolved": []
   },
   "lib/commands/roster.js": {
-    "imports": [],
+    "imports": [
+      "lib/agent-registry.js"
+    ],
     "importedBy": [],
     "external": [
       "fs",
       "path"
     ],
-    "unresolved": [
-      "../agent-registry"
-    ]
+    "unresolved": []
   },
   "lib/commands/safe-start.js": {
     "imports": [],
@@ -1082,13 +1325,12 @@
   },
   "lib/commands/schedule.js": {
     "imports": [
-      "lib/cron-manager.js"
+      "lib/cron-manager.js",
+      "lib/scheduler/nl-cron.js"
     ],
     "importedBy": [],
     "external": [],
-    "unresolved": [
-      "../scheduler/nl-cron"
-    ]
+    "unresolved": []
   },
   "lib/commands/secrets.js": {
     "imports": [],
@@ -1112,6 +1354,7 @@
   },
   "lib/commands/setup.js": {
     "imports": [
+      "lib/core/provider-status.js",
       "lib/llm-provider.js"
     ],
     "importedBy": [
@@ -1125,12 +1368,15 @@
       "path",
       "readline"
     ],
-    "unresolved": [
-      "../core/provider-status"
-    ]
+    "unresolved": []
   },
   "lib/commands/skills.js": {
-    "imports": [],
+    "imports": [
+      "lib/skill-usage.js",
+      "lib/skills-deps.js",
+      "lib/skills-guard.js",
+      "lib/skills-hub.js"
+    ],
     "importedBy": [],
     "external": [
       "child_process",
@@ -1138,12 +1384,7 @@
       "os",
       "path"
     ],
-    "unresolved": [
-      "../skill-usage",
-      "../skills-deps",
-      "../skills-guard",
-      "../skills-hub"
-    ]
+    "unresolved": []
   },
   "lib/commands/smoke.js": {
     "imports": [],
@@ -1157,14 +1398,14 @@
     "unresolved": []
   },
   "lib/commands/spinebus.js": {
-    "imports": [],
+    "imports": [
+      "lib/spinebus.js"
+    ],
     "importedBy": [],
     "external": [
       "fs"
     ],
-    "unresolved": [
-      "../spinebus"
-    ]
+    "unresolved": []
   },
   "lib/commands/stats.js": {
     "imports": [],
@@ -1177,23 +1418,23 @@
     "unresolved": []
   },
   "lib/commands/team.js": {
-    "imports": [],
+    "imports": [
+      "lib/team-router.js"
+    ],
     "importedBy": [],
     "external": [
       "http",
       "path"
     ],
-    "unresolved": [
-      "../team-router"
-    ]
+    "unresolved": []
   },
   "lib/commands/telemetry.js": {
-    "imports": [],
+    "imports": [
+      "lib/runtime/pipeline-telemetry.js"
+    ],
     "importedBy": [],
     "external": [],
-    "unresolved": [
-      "../runtime/pipeline-telemetry"
-    ]
+    "unresolved": []
   },
   "lib/commands/teleport.js": {
     "imports": [],
@@ -1230,16 +1471,16 @@
     "unresolved": []
   },
   "lib/commands/training.js": {
-    "imports": [],
+    "imports": [
+      "lib/training-buffer.js"
+    ],
     "importedBy": [],
     "external": [
       "child_process",
       "fs",
       "path"
     ],
-    "unresolved": [
-      "../training-buffer"
-    ]
+    "unresolved": []
   },
   "lib/commands/vault.js": {
     "imports": [
@@ -1255,23 +1496,23 @@
     "unresolved": []
   },
   "lib/commands/watch.js": {
-    "imports": [],
+    "imports": [
+      "lib/file-watcher.js"
+    ],
     "importedBy": [],
     "external": [
       "fs",
       "path"
     ],
-    "unresolved": [
-      "../file-watcher"
-    ]
+    "unresolved": []
   },
   "lib/commands/weather.js": {
-    "imports": [],
+    "imports": [
+      "lib/weatherman.js"
+    ],
     "importedBy": [],
     "external": [],
-    "unresolved": [
-      "../weatherman.js"
-    ]
+    "unresolved": []
   },
   "lib/commands/workers.js": {
     "imports": [],
@@ -1299,6 +1540,30 @@
     ],
     "unresolved": []
   },
+  "lib/component-pipeline.js": {
+    "imports": [
+      "lib/schema-validator.js"
+    ],
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/config-loader.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/ask.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/context-bus.js": {
     "imports": [],
     "importedBy": [],
@@ -1312,6 +1577,21 @@
       "./lib/context-bus.js"
     ]
   },
+  "lib/context-compressor.js": {
+    "imports": [
+      "lib/llm-provider.js"
+    ],
+    "importedBy": [
+      "lib/agent-loop.js"
+    ],
+    "external": [
+      "\n+ ",
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/context-engine.js": {
     "imports": [],
     "importedBy": [
@@ -1321,10 +1601,52 @@
     "external": [],
     "unresolved": []
   },
+  "lib/context-packet.js": {
+    "imports": [],
+    "importedBy": [
+      "swarm_coordinator.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": [
+      "./lib/context-packet"
+    ]
+  },
+  "lib/continuity.js": {
+    "imports": [
+      "lib/checkpoint-manager.js",
+      "lib/memory-client.js"
+    ],
+    "importedBy": [
+      "lib/agent-loop.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/core/provider-status.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/setup.js"
+    ],
+    "external": [
+      "dotenv",
+      "http",
+      "https"
+    ],
+    "unresolved": []
+  },
   "lib/core/work-engine.js": {
     "imports": [
       "lib/agent-loop.js",
-      "lib/model-router.js"
+      "lib/model-router.js",
+      "lib/spine/session-store.js"
     ],
     "importedBy": [],
     "external": [
@@ -1335,9 +1657,24 @@
       "path"
     ],
     "unresolved": [
-      "../spine/session-store",
       "./lib/core/work-engine"
     ]
+  },
+  "lib/cost-ledger.js": {
+    "imports": [
+      "lib/spend-gate.js"
+    ],
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/tools/index.js"
+    ],
+    "external": [
+      "assert",
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
   },
   "lib/cowork-overlay.js": {
     "imports": [
@@ -1355,9 +1692,24 @@
     ],
     "unresolved": []
   },
+  "lib/crew.js": {
+    "imports": [
+      "lib/llm-provider.js",
+      "lib/pipeline-registry.js"
+    ],
+    "importedBy": [
+      "lib/commands/crew.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/cron-manager.js": {
     "imports": [
-      "lib/agent-gateway.js"
+      "lib/agent-gateway.js",
+      "lib/scheduler/nl-cron.js"
     ],
     "importedBy": [
       "lib/agent-gateway.js",
@@ -1368,9 +1720,73 @@
       "node:sqlite",
       "path"
     ],
-    "unresolved": [
-      "./scheduler/nl-cron"
-    ]
+    "unresolved": []
+  },
+  "lib/curator.js": {
+    "imports": [
+      "lib/llm-provider.js",
+      "lib/model-router.js"
+    ],
+    "importedBy": [
+      "lib/idle-engine.js"
+    ],
+    "external": [
+      "assert",
+      "fs",
+      "http",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/deep-audit.js": {
+    "imports": [
+      "agent_tower.js",
+      "lib/identity.js",
+      "lib/pocket-vault.js",
+      "lib/spend-gate.js",
+      "lib/tools/index.js",
+      "lib/tools/skills-registry.js",
+      "service_registry.js"
+    ],
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "external": [
+      " + mod + ",
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/deep-research-group.js": {
+    "imports": [
+      "lib/chat-agent.js",
+      "lib/llm-provider.js",
+      "lib/rate-limiter.js",
+      "lib/self-context.js"
+    ],
+    "importedBy": [
+      "lib/api-harness-kernel.js"
+    ],
+    "external": [
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/delegation-manager.js": {
+    "imports": [
+      "lib/agent-gateway.js"
+    ],
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "external": [
+      "events"
+    ],
+    "unresolved": []
   },
   "lib/desktop-launcher.js": {
     "imports": [],
@@ -1388,6 +1804,7 @@
   },
   "lib/doctor.js": {
     "imports": [
+      "lib/cognitive-client.js",
       "lib/memory-client.js",
       "lib/tools/index.js",
       "service_registry.js"
@@ -1404,22 +1821,55 @@
       "os",
       "path"
     ],
-    "unresolved": [
-      "./cognitive-client"
-    ]
+    "unresolved": []
   },
   "lib/donor-archaeology.js": {
     "imports": [
-      "lib/evolution/mutator.js"
+      "lib/evolution/mutator.js",
+      "lib/timeline.js"
     ],
     "importedBy": [],
     "external": [
       "fs",
       "path"
     ],
-    "unresolved": [
-      "./timeline"
-    ]
+    "unresolved": []
+  },
+  "lib/drift-watcher.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/drift.js"
+    ],
+    "external": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/embeddings.js": {
+    "imports": [],
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "external": [
+      "https"
+    ],
+    "unresolved": []
+  },
+  "lib/erosion.js": {
+    "imports": [
+      "lib/studio-constants.js"
+    ],
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/studio.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
   },
   "lib/eval-manager.js": {
     "imports": [
@@ -1478,12 +1928,43 @@
     ],
     "unresolved": []
   },
+  "lib/events.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-loop.js",
+      "lib/idle-engine.js",
+      "lib/job-chain.js",
+      "lib/memory-client.js",
+      "lib/narrator/eventbus-bridge.js",
+      "lib/pulse.js",
+      "unified_api.js"
+    ],
+    "external": [
+      "assert",
+      "http"
+    ],
+    "unresolved": []
+  },
   "lib/evolution/mutator.js": {
     "imports": [],
     "importedBy": [
       "lib/commands/evolve.js",
       "lib/donor-archaeology.js",
+      "lib/harness/benchmark.js",
       "lib/harness/engine.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/evolution/skill-forge.js": {
+    "imports": [
+      "lib/job-contract.js"
+    ],
+    "importedBy": [
+      "lib/commands/evolve.js"
     ],
     "external": [
       "fs",
@@ -1505,6 +1986,17 @@
     ],
     "unresolved": []
   },
+  "lib/execution-runtime.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "external": [
+      "child_process",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/feature-parity.js": {
     "imports": [],
     "importedBy": [],
@@ -1515,10 +2007,63 @@
     ],
     "unresolved": []
   },
+  "lib/file-index.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/find.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/file-watcher.js": {
+    "imports": [
+      "lib/session-store.js"
+    ],
+    "importedBy": [
+      "lib/agent-loop.js",
+      "lib/commands/watch.js"
+    ],
+    "external": [
+      "chokidar",
+      "fs",
+      "path"
+    ],
+    "unresolved": [
+      "./config"
+    ]
+  },
+  "lib/gate-pipeline.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/idle-engine.js"
+    ],
+    "external": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/goal-controller.js": {
+    "imports": [
+      "lib/goal-manager.js",
+      "lib/llm-provider.js"
+    ],
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
   "lib/goal-manager.js": {
     "imports": [],
     "importedBy": [
-      "lib/agent-gateway.js"
+      "lib/agent-gateway.js",
+      "lib/goal-controller.js"
     ],
     "external": [
       "fs",
@@ -1542,7 +2087,9 @@
     "unresolved": []
   },
   "lib/graph-runtime.js": {
-    "imports": [],
+    "imports": [
+      "lib/workflow-state.js"
+    ],
     "importedBy": [
       "lib/agent-gateway.js"
     ],
@@ -1552,9 +2099,7 @@
       "node:sqlite",
       "path"
     ],
-    "unresolved": [
-      "./workflow-state"
-    ]
+    "unresolved": []
   },
   "lib/guardrail-manager.js": {
     "imports": [
@@ -1563,20 +2108,44 @@
     "importedBy": [
       "lib/agent-component.js",
       "lib/agent-gateway.js",
+      "lib/output-contract.js",
       "lib/tool-runtime.js"
     ],
     "external": [],
     "unresolved": []
   },
-  "lib/harness/engine.js": {
+  "lib/harness/benchmark.js": {
     "imports": [
       "lib/evolution/mutator.js",
+      "lib/harness/engine.js"
+    ],
+    "importedBy": [
+      "lib/commands/harness.js",
+      "lib/harness/engine.js"
+    ],
+    "external": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "unresolved": [
+      "../../agent_score.js"
+    ]
+  },
+  "lib/harness/engine.js": {
+    "imports": [
+      "lib/accuracy-fish.js",
+      "lib/canonical-memory-sync.js",
+      "lib/evolution/mutator.js",
+      "lib/harness/benchmark.js",
+      "lib/job-contract.js",
       "lib/llm-provider.js",
       "lib/memory-client.js"
     ],
     "importedBy": [
       "lib/api-harness-kernel.js",
-      "lib/commands/harness.js"
+      "lib/commands/harness.js",
+      "lib/harness/benchmark.js"
     ],
     "external": [
       "events",
@@ -1586,10 +2155,6 @@
     ],
     "unresolved": [
       "../../agent_score.js",
-      "../accuracy-fish",
-      "../canonical-memory-sync",
-      "../job-contract",
-      "./benchmark",
       "./lib/harness/engine"
     ]
   },
@@ -1605,6 +2170,46 @@
     "external": [],
     "unresolved": []
   },
+  "lib/harvest/crawler.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/harvest.js",
+      "unified_api.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/harvest/extractors.js": {
+    "imports": [
+      "lib/child-registry.js"
+    ],
+    "importedBy": [
+      "lib/commands/harvest.js",
+      "unified_api.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/harvest/indexer.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/harvest.js",
+      "unified_api.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/hooks/lifecycle-bus.js": {
     "imports": [],
     "importedBy": [
@@ -1615,11 +2220,59 @@
     ],
     "unresolved": []
   },
+  "lib/identity.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/identity.js",
+      "lib/deep-audit.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/idle-engine.js": {
+    "imports": [
+      "lib/curator.js",
+      "lib/events.js",
+      "lib/gate-pipeline.js",
+      "lib/pipeline-registry.js",
+      "lib/training/personal-dataset.js",
+      "lib/user-feedback.js"
+    ],
+    "importedBy": [
+      "lib/agent-loop.js"
+    ],
+    "external": [
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/imagegen/video_engine.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/tools/index.js"
+    ],
+    "external": [
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/index-manager.js": {
     "imports": [],
     "importedBy": [
       "lib/agent-gateway.js",
-      "lib/namespace-store.js"
+      "lib/namespace-store.js",
+      "lib/retrieval-engine.js"
     ],
     "external": [
       "crypto",
@@ -1628,6 +2281,25 @@
       "path"
     ],
     "unresolved": []
+  },
+  "lib/insight.js": {
+    "imports": [
+      "lib/job-chain.js",
+      "lib/memory-client.js"
+    ],
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/purpflow.js",
+      "lib/tools-parity.js"
+    ],
+    "external": [
+      "assert",
+      "fs",
+      "path"
+    ],
+    "unresolved": [
+      "./lib/insight"
+    ]
   },
   "lib/instruction-resolver.js": {
     "imports": [],
@@ -1650,8 +2322,57 @@
     ],
     "unresolved": []
   },
-  "lib/kanban/db-schema.js": {
+  "lib/job-chain.js": {
+    "imports": [
+      "lib/events.js",
+      "lib/proof-ledger.js",
+      "lib/trace-store.js"
+    ],
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/api-harness-kernel.js",
+      "lib/insight.js",
+      "lib/purpflow.js",
+      "lib/stack-truth.js",
+      "lib/steering-router.js",
+      "lib/tools-parity.js"
+    ],
+    "external": [
+      "assert"
+    ],
+    "unresolved": [
+      "./lib/job-chain"
+    ]
+  },
+  "lib/job-contract.js": {
     "imports": [],
+    "importedBy": [
+      "lib/api-harness-kernel.js",
+      "lib/evolution/skill-forge.js",
+      "lib/harness/engine.js"
+    ],
+    "external": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/kanban/config.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/kanban/db-schema.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/kanban/db-schema.js": {
+    "imports": [
+      "lib/kanban/config.js"
+    ],
     "importedBy": [],
     "external": [
       "better-sqlite3",
@@ -1659,12 +2380,25 @@
       "path",
       "sqlite3"
     ],
-    "unresolved": [
-      "./config"
-    ]
+    "unresolved": []
+  },
+  "lib/liveforge.js": {
+    "imports": [
+      "lib/tools/index.js"
+    ],
+    "importedBy": [
+      "lib/commands/liveforge.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
   },
   "lib/llm-provider.js": {
     "imports": [
+      "lib/spend-gate.js",
       "lib/usage-governor.js"
     ],
     "importedBy": [
@@ -1675,7 +2409,13 @@
       "lib/commands/claudecode.js",
       "lib/commands/eval-auto-fix.js",
       "lib/commands/setup.js",
+      "lib/context-compressor.js",
+      "lib/crew.js",
+      "lib/curator.js",
+      "lib/deep-research-group.js",
+      "lib/goal-controller.js",
       "lib/harness/engine.js",
+      "lib/provider-registry.js",
       "lib/routing-decisions.js",
       "lib/runtime/autonomy-runner.js",
       "lib/screen-look.js",
@@ -1694,9 +2434,21 @@
       "url"
     ],
     "unresolved": [
-      "./lib/llm-provider",
-      "./spend-gate"
+      "./lib/llm-provider"
     ]
+  },
+  "lib/marketplace.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/marketplace.js"
+    ],
+    "external": [
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
   },
   "lib/mcp-server.js": {
     "imports": [
@@ -1712,7 +2464,8 @@
   },
   "lib/mcp.js": {
     "imports": [
-      "lib/mcp.js"
+      "lib/mcp.js",
+      "lib/omnicode-bridge.js"
     ],
     "importedBy": [
       "lib/agent-gateway.js",
@@ -1729,20 +2482,24 @@
       "os",
       "path"
     ],
-    "unresolved": [
-      "./omnicode-bridge"
-    ]
+    "unresolved": []
   },
   "lib/memory-client.js": {
-    "imports": [],
+    "imports": [
+      "lib/events.js"
+    ],
     "importedBy": [
       "agent_tower.js",
       "lib/agent-loop.js",
+      "lib/canonical-memory-sync.js",
       "lib/commands/ask.js",
+      "lib/continuity.js",
       "lib/doctor.js",
       "lib/harness/engine.js",
+      "lib/insight.js",
       "lib/scoped-memory.js",
       "lib/self-evolution-loop.js",
+      "lib/stack-truth.js",
       "lib/tools-parity.js",
       "packages/context-spine/index.js",
       "packages/memory/adapters/memory-client-wrapper.js",
@@ -1753,13 +2510,50 @@
       "http"
     ],
     "unresolved": [
-      "./events",
       "./lib/memory-client"
     ]
   },
+  "lib/memory-consistency.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/bigboss.js",
+      "lib/tools/index.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/memory-retention.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/runtime/pipeline-telemetry.js",
+      "lib/trace-store.js"
+    ],
+    "external": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/messaging-registry.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-gateway.js",
+      "lib/messaging-runtime.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/messaging-runtime.js": {
     "imports": [
-      "lib/agent-gateway.js"
+      "lib/agent-gateway.js",
+      "lib/messaging-registry.js"
     ],
     "importedBy": [
       "lib/agent-gateway.js"
@@ -1769,18 +2563,57 @@
       "node:sqlite",
       "path"
     ],
-    "unresolved": [
-      "./messaging-registry"
-    ]
+    "unresolved": []
+  },
+  "lib/mochi-sprites.js": {
+    "imports": [
+      "lib/mochi-sprites.js"
+    ],
+    "importedBy": [
+      "lib/commands/buddy.js",
+      "lib/mochi-sprites.js",
+      "lib/mochi.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/mochi.js": {
+    "imports": [
+      "lib/mochi-sprites.js"
+    ],
+    "importedBy": [
+      "lib/commands/buddy.js"
+    ],
+    "external": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "unresolved": []
   },
   "lib/model-router.js": {
     "imports": [
       "lib/routing-decisions.js"
     ],
     "importedBy": [
-      "lib/core/work-engine.js"
+      "lib/core/work-engine.js",
+      "lib/curator.js",
+      "lib/stack-truth.js"
     ],
     "external": [],
+    "unresolved": []
+  },
+  "lib/mycelium.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/mycelium.js",
+      "lib/spinebus.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
     "unresolved": []
   },
   "lib/namespace-store.js": {
@@ -1797,16 +2630,95 @@
     ],
     "unresolved": []
   },
+  "lib/narrator/eventbus-bridge.js": {
+    "imports": [
+      "lib/events.js"
+    ],
+    "importedBy": [
+      "unified_api.js"
+    ],
+    "external": [],
+    "unresolved": [
+      "./lib/narrator/eventbus-bridge"
+    ]
+  },
+  "lib/omni/omnicode-adapter.js": {
+    "imports": [
+      "lib/omni/omnicode-adapter.js",
+      "lib/with-pipeline.js"
+    ],
+    "importedBy": [
+      "lib/omni/omnicode-adapter.js",
+      "lib/omni/truth-scanner.js"
+    ],
+    "external": [
+      "child_process",
+      "fs",
+      "path",
+      "readline"
+    ],
+    "unresolved": []
+  },
   "lib/omni/truth-scanner.js": {
-    "imports": [],
+    "imports": [
+      "lib/omni/omnicode-adapter.js"
+    ],
     "importedBy": [],
     "external": [
       "crypto",
       "fs",
       "path"
     ],
+    "unresolved": []
+  },
+  "lib/omnicode-bridge.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/api-harness-kernel.js",
+      "lib/mcp.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/oracle.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/oracle.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/output-contract.js": {
+    "imports": [
+      "lib/guardrail-manager.js",
+      "lib/schema-validator.js"
+    ],
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/output-vault.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/pipeline-registry.js",
+      "unified_api.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
     "unresolved": [
-      "./omnicode-adapter"
+      "./lib/output-vault"
     ]
   },
   "lib/parity/hooks/engine.js": {
@@ -1817,10 +2729,33 @@
     ],
     "unresolved": []
   },
+  "lib/parseltongue.js": {
+    "imports": [
+      "lib/parseltongue.js"
+    ],
+    "importedBy": [
+      "lib/parseltongue.js",
+      "lib/tools/index.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
   "lib/path-security.js": {
     "imports": [],
     "importedBy": [
       "lib/tool-runtime.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/paths.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/runtime/computer-use.js",
+      "lib/runtime/pipeline-telemetry.js"
     ],
     "external": [
       "fs",
@@ -1859,8 +2794,52 @@
     "external": [],
     "unresolved": []
   },
+  "lib/phase-router.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-loop.js",
+      "lib/steering-router.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/pipeline-registry.js": {
+    "imports": [
+      "lib/output-vault.js",
+      "lib/proof-ledger.js"
+    ],
+    "importedBy": [
+      "gatekeeper.js",
+      "lib/agent-router.js",
+      "lib/crew.js",
+      "lib/idle-engine.js",
+      "lib/with-pipeline.js",
+      "unified_api.js"
+    ],
+    "external": [
+      "events",
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/plugin-isolator.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/plugin-manager.js"
+    ],
+    "external": [
+      "fs",
+      "path",
+      "worker_threads"
+    ],
+    "unresolved": []
+  },
   "lib/plugin-manager.js": {
     "imports": [
+      "lib/plugin-isolator.js",
+      "lib/provider-registry.js",
       "lib/tool-runtime.js",
       "lib/tools/index.js"
     ],
@@ -1874,14 +2853,86 @@
       "js-yaml",
       "path"
     ],
-    "unresolved": [
-      "./plugin-isolator",
-      "./provider-registry"
-    ]
+    "unresolved": []
+  },
+  "lib/pocket-updater.js": {
+    "imports": [
+      "lib/child-registry.js",
+      "lib/signed-manifest.js"
+    ],
+    "importedBy": [
+      "lib/commands/pocket.js"
+    ],
+    "external": [
+      "child_process",
+      "crypto",
+      "fs",
+      "https",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/pocket-vault.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/pocket.js",
+      "lib/deep-audit.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/priority-steer.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-loop.js"
+    ],
+    "external": [
+      "events"
+    ],
+    "unresolved": []
+  },
+  "lib/proactive-maintenance.js": {
+    "imports": [],
+    "importedBy": [],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/profile-manager.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/profile-router.js": {
+    "imports": [],
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
   },
   "lib/program-optimizer.js": {
     "imports": [
-      "lib/eval-manager.js"
+      "lib/eval-manager.js",
+      "lib/signature-adapter.js"
     ],
     "importedBy": [
       "lib/agent-gateway.js"
@@ -1892,9 +2943,7 @@
       "node:sqlite",
       "path"
     ],
-    "unresolved": [
-      "./signature-adapter"
-    ]
+    "unresolved": []
   },
   "lib/project-requirements.js": {
     "imports": [
@@ -1909,6 +2958,49 @@
       "os",
       "path"
     ],
+    "unresolved": []
+  },
+  "lib/prompt-builder.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-loop.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/proof-ledger.js": {
+    "imports": [],
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/job-chain.js",
+      "lib/pipeline-registry.js",
+      "lib/purpflow.js",
+      "lib/tools-parity.js",
+      "unified_api.js"
+    ],
+    "external": [
+      "events",
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": [
+      "./lib/proof-ledger"
+    ]
+  },
+  "lib/provider-registry.js": {
+    "imports": [
+      "lib/llm-provider.js"
+    ],
+    "importedBy": [
+      "lib/agent-gateway.js",
+      "lib/commands/ask.js",
+      "lib/plugin-manager.js"
+    ],
+    "external": [],
     "unresolved": []
   },
   "lib/pty.js": {
@@ -1926,6 +3018,105 @@
       "./lib/pty"
     ]
   },
+  "lib/pulse.js": {
+    "imports": [
+      "lib/events.js"
+    ],
+    "importedBy": [
+      "lib/agent-loop.js",
+      "unified_api.js"
+    ],
+    "external": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/purpflow.js": {
+    "imports": [
+      "lib/child-registry.js",
+      "lib/insight.js",
+      "lib/job-chain.js",
+      "lib/proof-ledger.js",
+      "lib/stack-truth.js",
+      "lib/steering-router.js"
+    ],
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/tools-parity.js"
+    ],
+    "external": [
+      "assert",
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/pxpipe.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/tools/index.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path",
+      "zlib"
+    ],
+    "unresolved": []
+  },
+  "lib/rate-limiter.js": {
+    "imports": [
+      "lib/rate-limiter.js"
+    ],
+    "importedBy": [
+      "lib/deep-research-group.js",
+      "lib/rate-limiter.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/recipe-manager.js": {
+    "imports": [
+      "lib/tool-runtime.js"
+    ],
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "external": [
+      "fs",
+      "js-yaml",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/release-sign.js": {
+    "imports": [],
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/repo-map.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/repo-mapper.js": {
     "imports": [],
     "importedBy": [
@@ -1936,6 +3127,17 @@
       "fs",
       "path"
     ],
+    "unresolved": []
+  },
+  "lib/retrieval-engine.js": {
+    "imports": [
+      "lib/index-manager.js"
+    ],
+    "importedBy": [
+      "lib/agent-component.js",
+      "lib/agent-gateway.js"
+    ],
+    "external": [],
     "unresolved": []
   },
   "lib/routing-decisions.js": {
@@ -1956,22 +3158,93 @@
     ],
     "unresolved": []
   },
+  "lib/run-context.js": {
+    "imports": [
+      "lib/schema-validator.js"
+    ],
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
   "lib/runtime/autonomy-runner.js": {
     "imports": [
-      "lib/llm-provider.js"
+      "lib/llm-provider.js",
+      "lib/runtime/computer-use.js"
     ],
     "importedBy": [],
     "external": [],
     "unresolved": [
-      "./computer-use",
       "./lib/runtime/autonomy-runner"
     ]
+  },
+  "lib/runtime/computer-use.js": {
+    "imports": [
+      "lib/child-registry.js",
+      "lib/paths.js",
+      "lib/runtime/settings-registry.js",
+      "lib/screen-look.js",
+      "lib/tools-windows-mcp.js"
+    ],
+    "importedBy": [
+      "lib/runtime/autonomy-runner.js",
+      "lib/tools-gui.js",
+      "lib/tools-windows-mcp.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/runtime/pipeline-telemetry.js": {
+    "imports": [
+      "lib/memory-retention.js",
+      "lib/paths.js",
+      "lib/runtime/privacy-policy.js",
+      "lib/trace-store.js"
+    ],
+    "importedBy": [
+      "lib/commands/telemetry.js",
+      "lib/runtime/telemetry-console.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/runtime/ports.js": {
+    "imports": [
+      "lib/runtime/ports.js"
+    ],
+    "importedBy": [
+      "lib/runtime/ports.js",
+      "lib/runtime/settings-registry.js"
+    ],
+    "external": [
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/runtime/privacy-policy.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-loop.js",
+      "lib/runtime/pipeline-telemetry.js",
+      "lib/self-context.js",
+      "lib/training-buffer.js"
+    ],
+    "external": [],
+    "unresolved": []
   },
   "lib/runtime/provider-config.js": {
     "imports": [],
     "importedBy": [
       "lib/commands/provider.js",
-      "lib/routing-decisions.js"
+      "lib/routing-decisions.js",
+      "lib/stack-truth.js"
     ],
     "external": [
       "fs",
@@ -1980,16 +3253,60 @@
     ],
     "unresolved": []
   },
+  "lib/runtime/settings-registry.js": {
+    "imports": [
+      "lib/runtime/ports.js",
+      "lib/spend-gate.js"
+    ],
+    "importedBy": [
+      "lib/runtime/computer-use.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/runtime/telemetry-console.js": {
+    "imports": [
+      "lib/runtime/pipeline-telemetry.js"
+    ],
+    "importedBy": [
+      "pool_service.js",
+      "unified_api.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/scheduler/nl-cron.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/schedule.js",
+      "lib/cron-manager.js"
+    ],
+    "external": [
+      "${input}"
+    ],
+    "unresolved": [
+      "./lib/scheduler/nl-cron.js"
+    ]
+  },
   "lib/schema-validator.js": {
     "imports": [],
     "importedBy": [
       "lib/agent-component.js",
       "lib/agent-gateway.js",
+      "lib/component-pipeline.js",
       "lib/eval-manager.js",
       "lib/event-workflow.js",
       "lib/guardrail-manager.js",
+      "lib/output-contract.js",
+      "lib/run-context.js",
+      "lib/signature-adapter.js",
       "lib/task-manager.js",
-      "lib/tool-runtime.js"
+      "lib/tool-runtime.js",
+      "lib/workflow-state.js"
     ],
     "external": [],
     "unresolved": []
@@ -2024,10 +3341,12 @@
   },
   "lib/screen-look.js": {
     "imports": [
-      "lib/llm-provider.js"
+      "lib/llm-provider.js",
+      "lib/workspace-awareness.js"
     ],
     "importedBy": [
       "lib/cowork-overlay.js",
+      "lib/runtime/computer-use.js",
       "lib/tools-gui.js"
     ],
     "external": [
@@ -2037,8 +3356,7 @@
       "path"
     ],
     "unresolved": [
-      "./lib/screen-look",
-      "./workspace-awareness.js"
+      "./lib/screen-look"
     ]
   },
   "lib/secret-vault.js": {
@@ -2064,17 +3382,48 @@
     ],
     "unresolved": []
   },
+  "lib/self-context.js": {
+    "imports": [
+      "lib/runtime/privacy-policy.js"
+    ],
+    "importedBy": [
+      "lib/deep-research-group.js",
+      "swarm_coordinator.js"
+    ],
+    "external": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/self-evolution-loop.js": {
     "imports": [
-      "lib/memory-client.js"
+      "lib/memory-client.js",
+      "lib/user-feedback.js"
     ],
     "importedBy": [],
     "external": [
       "fs",
       "path"
     ],
+    "unresolved": []
+  },
+  "lib/session-portability.js": {
+    "imports": [],
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "external": [
+      "child_process",
+      "crypto",
+      "fs",
+      "os",
+      "path",
+      "zlib"
+    ],
     "unresolved": [
-      "./user-feedback"
+      "./lib/session-portability"
     ]
   },
   "lib/session-repository.js": {
@@ -2083,6 +3432,7 @@
       "lib/agent-gateway.js",
       "lib/agent-loop.js",
       "lib/commands/ask.js",
+      "lib/spine/session-store.js",
       "unified_api.js"
     ],
     "external": [
@@ -2107,6 +3457,43 @@
     ],
     "unresolved": []
   },
+  "lib/session-store.js": {
+    "imports": [],
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/agent-loop.js",
+      "lib/file-watcher.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/signature-adapter.js": {
+    "imports": [
+      "lib/schema-validator.js"
+    ],
+    "importedBy": [
+      "lib/program-optimizer.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/signed-manifest.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/pocket-updater.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/skill-registry.js": {
     "imports": [
       "lib/plugin-manager.js"
@@ -2117,6 +3504,58 @@
     "external": [
       "fs",
       "js-yaml",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/skill-usage.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/skills.js",
+      "lib/tools/skills-registry.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/skills-deps.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/skills.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/skills-guard.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/skills.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/skills-hub.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/skills.js"
+    ],
+    "external": [
+      "child_process",
+      "crypto",
+      "fs",
+      "http",
+      "https",
+      "os",
       "path"
     ],
     "unresolved": []
@@ -2136,7 +3575,9 @@
   },
   "lib/soul-registry.js": {
     "imports": [],
-    "importedBy": [],
+    "importedBy": [
+      "lib/studio.js"
+    ],
     "external": [
       "fs",
       "path"
@@ -2145,10 +3586,192 @@
       "./lib/soul-registry"
     ]
   },
+  "lib/spaghetti-audit.js": {
+    "imports": [],
+    "importedBy": [],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/spend-gate.js": {
+    "imports": [
+      "lib/billing-lifecycle.js"
+    ],
+    "importedBy": [
+      "lib/commands/pocket.js",
+      "lib/cost-ledger.js",
+      "lib/deep-audit.js",
+      "lib/llm-provider.js",
+      "lib/runtime/settings-registry.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/spine/contract.js": {
+    "imports": [
+      "lib/spine/envelope.js"
+    ],
+    "importedBy": [
+      "unified_api.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/spine/envelope.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/spine/contract.js",
+      "unified_api.js"
+    ],
+    "external": [
+      "crypto"
+    ],
+    "unresolved": []
+  },
+  "lib/spine/session-store.js": {
+    "imports": [
+      "lib/session-repository.js"
+    ],
+    "importedBy": [
+      "lib/core/work-engine.js",
+      "unified_api.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/spine-shim.js": {
+    "imports": [],
+    "importedBy": [
+      "unified_api.js"
+    ],
+    "external": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/spinebus.js": {
+    "imports": [
+      "lib/mycelium.js",
+      "lib/tools/index.js"
+    ],
+    "importedBy": [
+      "lib/commands/spinebus.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/stack-truth.js": {
+    "imports": [
+      "lib/agent-health.js",
+      "lib/agent-registry.js",
+      "lib/api-harness-kernel.js",
+      "lib/job-chain.js",
+      "lib/memory-client.js",
+      "lib/model-router.js",
+      "lib/runtime/provider-config.js",
+      "lib/steering-router.js",
+      "lib/tools/index.js",
+      "lib/tools/skills-registry.js",
+      "service_registry.js"
+    ],
+    "importedBy": [
+      "lib/purpflow.js",
+      "lib/tools-parity.js"
+    ],
+    "external": [
+      "assert"
+    ],
+    "unresolved": [
+      "../agent_routing_matrix",
+      "./lib/stack-truth"
+    ]
+  },
+  "lib/steering-router.js": {
+    "imports": [
+      "lib/api-harness-kernel.js",
+      "lib/job-chain.js",
+      "lib/phase-router.js"
+    ],
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/purpflow.js",
+      "lib/stack-truth.js",
+      "lib/tools-parity.js",
+      "unified_api.js"
+    ],
+    "external": [
+      "assert"
+    ],
+    "unresolved": []
+  },
+  "lib/stm.js": {
+    "imports": [
+      "lib/stm.js"
+    ],
+    "importedBy": [
+      "lib/stm.js",
+      "lib/tools/index.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/studio-constants.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/erosion.js"
+    ],
+    "external": [
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/studio.js": {
+    "imports": [
+      "lib/erosion.js",
+      "lib/soul-registry.js",
+      "lib/timeline.js"
+    ],
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/surface-capabilities.js": {
     "imports": [],
     "importedBy": [],
     "external": [],
+    "unresolved": []
+  },
+  "lib/system-manifest.js": {
+    "imports": [
+      "lib/agent-registry.js",
+      "lib/tools/index.js"
+    ],
+    "importedBy": [
+      "lib/tools/index.js",
+      "unified_api.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
     "unresolved": []
   },
   "lib/task-manager.js": {
@@ -2180,6 +3803,16 @@
     ],
     "unresolved": []
   },
+  "lib/team-router.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/team.js"
+    ],
+    "external": [
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/telemetry-manager.js": {
     "imports": [],
     "importedBy": [
@@ -2192,6 +3825,44 @@
       "path"
     ],
     "unresolved": []
+  },
+  "lib/telemetry.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/pocket.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/timeline.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/donor-archaeology.js",
+      "lib/studio.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/tool-cache.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/tools/index.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": [
+      "./lib/tool-cache"
+    ]
   },
   "lib/tool-gate.js": {
     "imports": [
@@ -2227,6 +3898,7 @@
       "lib/chat-agent.js",
       "lib/mcp-server.js",
       "lib/plugin-manager.js",
+      "lib/recipe-manager.js",
       "unified_api.js"
     ],
     "external": [
@@ -2237,24 +3909,37 @@
   },
   "lib/tools/index.js": {
     "imports": [
+      "lib/autotune.js",
       "lib/chaos-campaign.js",
       "lib/child-registry.js",
       "lib/code-interpreter.js",
+      "lib/cost-ledger.js",
       "lib/exec-policy.js",
       "lib/governance.js",
+      "lib/imagegen/video_engine.js",
       "lib/llm-provider.js",
+      "lib/memory-consistency.js",
+      "lib/parseltongue.js",
       "lib/permission-manager.js",
       "lib/pty.js",
+      "lib/pxpipe.js",
       "lib/screen-camera-tools.js",
       "lib/smith-neo.js",
+      "lib/stm.js",
+      "lib/system-manifest.js",
+      "lib/tool-cache.js",
       "lib/tool-gate.js",
       "lib/tools-gui.js",
       "lib/tools-parity.js",
       "lib/tools-pc.js",
       "lib/tools-remotion.js",
-      "lib/tools/parity/hooks/engine.js"
+      "lib/tools/parity/hooks/engine.js",
+      "lib/tools/skills-registry.js",
+      "lib/tools/web-search-rate-limit.js",
+      "lib/user-agents.js"
     ],
     "importedBy": [
+      "lib/agent-health.js",
       "lib/agent-loop.js",
       "lib/api-harness-kernel.js",
       "lib/chat-agent.js",
@@ -2262,9 +3947,14 @@
       "lib/commands/bigboss.js",
       "lib/commands/remotion.js",
       "lib/commands/tour.js",
+      "lib/deep-audit.js",
       "lib/doctor.js",
+      "lib/liveforge.js",
       "lib/mcp-server.js",
       "lib/plugin-manager.js",
+      "lib/spinebus.js",
+      "lib/stack-truth.js",
+      "lib/system-manifest.js",
       "lib/tool-runtime.js",
       "lib/whoami.js",
       "unified_api.js"
@@ -2280,20 +3970,7 @@
       "path",
       "readline"
     ],
-    "unresolved": [
-      "../autotune",
-      "../cost-ledger",
-      "../imagegen/video_engine",
-      "../memory-consistency",
-      "../parseltongue",
-      "../pxpipe",
-      "../stm",
-      "../system-manifest",
-      "../tool-cache",
-      "../user-agents",
-      "./skills-registry",
-      "./web-search-rate-limit"
-    ]
+    "unresolved": []
   },
   "lib/tools/parity/hooks/engine.js": {
     "imports": [],
@@ -2305,22 +3982,54 @@
     ],
     "unresolved": []
   },
+  "lib/tools/skills-registry.js": {
+    "imports": [
+      "lib/child-registry.js",
+      "lib/skill-usage.js"
+    ],
+    "importedBy": [
+      "lib/deep-audit.js",
+      "lib/stack-truth.js",
+      "lib/tools/index.js"
+    ],
+    "external": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/tools/web-search-rate-limit.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/tools/index.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
   "lib/tools-gui.js": {
     "imports": [
       "lib/llm-provider.js",
+      "lib/runtime/computer-use.js",
       "lib/screen-look.js"
     ],
     "importedBy": [
       "lib/tools/index.js"
     ],
     "external": [],
-    "unresolved": [
-      "./runtime/computer-use"
-    ]
+    "unresolved": []
   },
   "lib/tools-parity.js": {
     "imports": [
-      "lib/memory-client.js"
+      "lib/agent-health.js",
+      "lib/agent-registry.js",
+      "lib/insight.js",
+      "lib/job-chain.js",
+      "lib/memory-client.js",
+      "lib/proof-ledger.js",
+      "lib/purpflow.js",
+      "lib/stack-truth.js",
+      "lib/steering-router.js"
     ],
     "importedBy": [
       "lib/tools/index.js"
@@ -2329,16 +4038,7 @@
       "fs",
       "path"
     ],
-    "unresolved": [
-      "./agent-health",
-      "./agent-registry",
-      "./insight",
-      "./job-chain",
-      "./proof-ledger",
-      "./purpflow",
-      "./stack-truth",
-      "./steering-router"
-    ]
+    "unresolved": []
   },
   "lib/tools-pc.js": {
     "imports": [
@@ -2372,6 +4072,20 @@
     ],
     "unresolved": []
   },
+  "lib/tools-windows-mcp.js": {
+    "imports": [
+      "lib/runtime/computer-use.js"
+    ],
+    "importedBy": [
+      "lib/runtime/computer-use.js"
+    ],
+    "external": [
+      "@modelcontextprotocol/sdk/client/index.js",
+      "@modelcontextprotocol/sdk/client/stdio.js",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/tower-agent-child.js": {
     "imports": [
       "lib/agent-gateway.js"
@@ -2390,6 +4104,50 @@
       "crypto",
       "fs",
       "node:sqlite",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/trace-store.js": {
+    "imports": [
+      "lib/memory-retention.js"
+    ],
+    "importedBy": [
+      "bin/purpclaw.js",
+      "lib/job-chain.js",
+      "lib/runtime/pipeline-telemetry.js"
+    ],
+    "external": [
+      "events",
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/training/personal-dataset.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/idle-engine.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": [
+      "./lib/training/personal-dataset"
+    ]
+  },
+  "lib/training-buffer.js": {
+    "imports": [
+      "lib/runtime/privacy-policy.js"
+    ],
+    "importedBy": [
+      "lib/api-harness-kernel.js",
+      "lib/commands/training.js"
+    ],
+    "external": [
+      "fs",
       "path"
     ],
     "unresolved": []
@@ -2418,6 +4176,125 @@
     "external": [],
     "unresolved": []
   },
+  "lib/usage-limits.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/usage-pricing.js": {
+    "imports": [],
+    "importedBy": [
+      "bin/purpclaw.js"
+    ],
+    "external": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/user-agents.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/tools/index.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/user-commands.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/ask.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/user-feedback.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-loop.js",
+      "lib/idle-engine.js",
+      "lib/self-evolution-loop.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/vector/index.js": {
+    "imports": [
+      "lib/vector/providers/faissProvider.js"
+    ],
+    "importedBy": [
+      "lib/commands/code.js"
+    ],
+    "external": [
+      "child_process",
+      "fs",
+      "path",
+      "perf_hooks"
+    ],
+    "unresolved": []
+  },
+  "lib/vector/providers/faissProvider.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/vector/index.js"
+    ],
+    "external": [
+      "child_process",
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/verification-gate.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-loop.js"
+    ],
+    "external": [
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/verification-runner.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/agent-gateway.js"
+    ],
+    "external": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/weatherman.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/commands/weather.js"
+    ],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
   "lib/whoami.js": {
     "imports": [
       "agent_tower.js",
@@ -2438,9 +4315,22 @@
     ],
     "unresolved": []
   },
+  "lib/with-pipeline.js": {
+    "imports": [
+      "lib/pipeline-registry.js"
+    ],
+    "importedBy": [
+      "lib/omni/omnicode-adapter.js"
+    ],
+    "external": [],
+    "unresolved": [
+      "./lib/with-pipeline"
+    ]
+  },
   "lib/workflow-manager.js": {
     "imports": [
-      "lib/approval-queue.js"
+      "lib/approval-queue.js",
+      "lib/workflow-state.js"
     ],
     "importedBy": [
       "lib/agent-gateway.js",
@@ -2452,13 +4342,33 @@
       "node:sqlite",
       "path"
     ],
-    "unresolved": [
-      "./workflow-state"
-    ]
+    "unresolved": []
   },
   "lib/workflow-registry.js": {
     "imports": [],
     "importedBy": [],
+    "external": [
+      "fs",
+      "path"
+    ],
+    "unresolved": []
+  },
+  "lib/workflow-state.js": {
+    "imports": [
+      "lib/schema-validator.js"
+    ],
+    "importedBy": [
+      "lib/graph-runtime.js",
+      "lib/workflow-manager.js"
+    ],
+    "external": [],
+    "unresolved": []
+  },
+  "lib/workspace-awareness.js": {
+    "imports": [],
+    "importedBy": [
+      "lib/screen-look.js"
+    ],
     "external": [
       "fs",
       "path"
@@ -2501,9 +4411,27 @@
   },
   "bin/purpclaw.js": {
     "imports": [
+      "lib/agents/archetypes.js",
       "lib/child-registry.js",
+      "lib/cloud-sync.js",
+      "lib/cost-ledger.js",
       "lib/cowork-overlay.js",
+      "lib/deep-audit.js",
       "lib/doctor.js",
+      "lib/embeddings.js",
+      "lib/erosion.js",
+      "lib/insight.js",
+      "lib/job-chain.js",
+      "lib/profile-router.js",
+      "lib/proof-ledger.js",
+      "lib/purpflow.js",
+      "lib/release-sign.js",
+      "lib/session-portability.js",
+      "lib/session-store.js",
+      "lib/steering-router.js",
+      "lib/studio.js",
+      "lib/trace-store.js",
+      "lib/usage-pricing.js",
       "lib/whoami.js"
     ],
     "importedBy": [],
@@ -2520,26 +4448,7 @@
       "readline",
       "url"
     ],
-    "unresolved": [
-      "../lib/agents/archetypes",
-      "../lib/cloud-sync",
-      "../lib/cost-ledger",
-      "../lib/deep-audit",
-      "../lib/embeddings",
-      "../lib/erosion",
-      "../lib/insight",
-      "../lib/job-chain",
-      "../lib/profile-router",
-      "../lib/proof-ledger",
-      "../lib/purpflow",
-      "../lib/release-sign",
-      "../lib/session-portability",
-      "../lib/session-store",
-      "../lib/steering-router",
-      "../lib/studio",
-      "../lib/trace-store",
-      "../lib/usage-pricing"
-    ]
+    "unresolved": []
   },
   "services/artifact-store/index.js": {
     "imports": [],
@@ -2693,6 +4602,7 @@
       "lib/memory-client.js"
     ],
     "importedBy": [
+      "packages/memory/cognitive-spine/layer.js",
       "packages/memory/gateway/index.js"
     ],
     "external": [],
@@ -2721,6 +4631,16 @@
     "unresolved": [
       "../../../adapters/memory-client-wrapper"
     ]
+  },
+  "packages/memory/cognitive-spine/layer.js": {
+    "imports": [
+      "packages/memory/adapters/memory-client-wrapper.js",
+      "packages/memory/contract/index.js",
+      "packages/memory/policy/index.js"
+    ],
+    "importedBy": [],
+    "external": [],
+    "unresolved": []
   },
   "packages/memory/cognitive-spine/procedural/index.js": {
     "imports": [],
@@ -2775,7 +4695,9 @@
   },
   "packages/memory/contract/index.js": {
     "imports": [],
-    "importedBy": [],
+    "importedBy": [
+      "packages/memory/cognitive-spine/layer.js"
+    ],
     "external": [],
     "unresolved": []
   },
@@ -2789,7 +4711,9 @@
   },
   "packages/memory/policy/index.js": {
     "imports": [],
-    "importedBy": [],
+    "importedBy": [
+      "packages/memory/cognitive-spine/layer.js"
+    ],
     "external": [],
     "unresolved": []
   },
@@ -3183,6 +5107,7 @@
       "lib/agent-gateway.js",
       "lib/agent-loop.js",
       "lib/commands/tour.js",
+      "lib/deep-audit.js",
       "lib/whoami.js",
       "unified_api.js"
     ],
@@ -3229,7 +5154,9 @@
     "unresolved": []
   },
   "gatekeeper.js": {
-    "imports": [],
+    "imports": [
+      "lib/pipeline-registry.js"
+    ],
     "importedBy": [],
     "external": [
       "child_process",
@@ -3237,34 +5164,37 @@
       "http",
       "path"
     ],
-    "unresolved": [
-      "./lib/pipeline-registry"
-    ]
+    "unresolved": []
   },
   "pool_service.js": {
-    "imports": [],
+    "imports": [
+      "lib/runtime/telemetry-console.js"
+    ],
     "importedBy": [],
     "external": [
       "fs",
       "http",
       "path"
     ],
-    "unresolved": [
-      "./lib/runtime/telemetry-console"
-    ]
+    "unresolved": []
   },
   "service_registry.js": {
     "imports": [],
     "importedBy": [
-      "lib/doctor.js"
+      "lib/deep-audit.js",
+      "lib/doctor.js",
+      "lib/stack-truth.js"
     ],
     "external": [],
     "unresolved": []
   },
   "swarm_coordinator.js": {
     "imports": [
+      "lib/cognitive-client.js",
+      "lib/context-packet.js",
       "lib/llm-provider.js",
-      "lib/memory-client.js"
+      "lib/memory-client.js",
+      "lib/self-context.js"
     ],
     "importedBy": [
       "unified_api.js"
@@ -3277,9 +5207,6 @@
     ],
     "unresolved": [
       "./agent_score.js",
-      "./lib/cognitive-client.js",
-      "./lib/context-packet.js",
-      "./lib/self-context.js",
       "./task_decomposer.js"
     ]
   },
@@ -3290,9 +5217,25 @@
       "lib/api-harness-kernel.js",
       "lib/child-registry.js",
       "lib/commands/code.js",
+      "lib/events.js",
+      "lib/harvest/crawler.js",
+      "lib/harvest/extractors.js",
+      "lib/harvest/indexer.js",
       "lib/llm-provider.js",
       "lib/memory-client.js",
+      "lib/narrator/eventbus-bridge.js",
+      "lib/output-vault.js",
+      "lib/pipeline-registry.js",
+      "lib/proof-ledger.js",
+      "lib/pulse.js",
+      "lib/runtime/telemetry-console.js",
       "lib/session-repository.js",
+      "lib/spine-shim.js",
+      "lib/spine/contract.js",
+      "lib/spine/envelope.js",
+      "lib/spine/session-store.js",
+      "lib/steering-router.js",
+      "lib/system-manifest.js",
       "lib/tool-runtime.js",
       "lib/tools/index.js",
       "lib/whoami.js",
@@ -3317,22 +5260,6 @@
     "unresolved": [
       "../companion_swarm.js",
       "./digital_shaman.js",
-      "./lib/events",
-      "./lib/harvest/crawler",
-      "./lib/harvest/extractors",
-      "./lib/harvest/indexer",
-      "./lib/narrator/eventbus-bridge",
-      "./lib/output-vault",
-      "./lib/pipeline-registry",
-      "./lib/proof-ledger",
-      "./lib/pulse",
-      "./lib/runtime/telemetry-console",
-      "./lib/spine-shim",
-      "./lib/spine/contract",
-      "./lib/spine/envelope",
-      "./lib/spine/session-store",
-      "./lib/steering-router",
-      "./lib/system-manifest",
       "./shaman_evaluator.js",
       "./shaman_prompts.js"
     ]

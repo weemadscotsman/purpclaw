@@ -12,240 +12,18 @@
     ]
   },
   {
-    "target": "lib/provider-registry",
-    "refs": [
-      "lib/agent-gateway.js",
-      "lib/commands/ask.js",
-      "lib/plugin-manager.js"
-    ]
-  },
-  {
-    "target": "lib/events",
-    "refs": [
-      "lib/agent-loop.js",
-      "lib/memory-client.js",
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/pipeline-registry",
-    "refs": [
-      "gatekeeper.js",
-      "lib/agent-router.js",
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/job-chain",
-    "refs": [
-      "bin/purpclaw.js",
-      "lib/api-harness-kernel.js",
-      "lib/tools-parity.js"
-    ]
-  },
-  {
-    "target": "lib/proof-ledger",
-    "refs": [
-      "bin/purpclaw.js",
-      "lib/tools-parity.js",
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/steering-router",
-    "refs": [
-      "bin/purpclaw.js",
-      "lib/tools-parity.js",
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/retrieval-engine",
-    "refs": [
-      "lib/agent-component.js",
-      "lib/agent-gateway.js"
-    ]
-  },
-  {
-    "target": "lib/messaging-registry",
-    "refs": [
-      "lib/agent-gateway.js",
-      "lib/messaging-runtime.js"
-    ]
-  },
-  {
-    "target": "lib/cognitive-client",
-    "refs": [
-      "lib/agent-loop.js",
-      "lib/doctor.js"
-    ]
-  },
-  {
-    "target": "lib/file-watcher",
-    "refs": [
-      "lib/agent-loop.js",
-      "lib/commands/watch.js"
-    ]
-  },
-  {
-    "target": "lib/pulse",
-    "refs": [
-      "lib/agent-loop.js",
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/session-store",
-    "refs": [
-      "bin/purpclaw.js",
-      "lib/agent-loop.js"
-    ]
-  },
-  {
-    "target": "lib/user-feedback",
-    "refs": [
-      "lib/agent-loop.js",
-      "lib/self-evolution-loop.js"
-    ]
-  },
-  {
-    "target": "lib/job-contract",
-    "refs": [
-      "lib/api-harness-kernel.js",
-      "lib/harness/engine.js"
-    ]
-  },
-  {
-    "target": "lib/omnicode-bridge",
-    "refs": [
-      "lib/api-harness-kernel.js",
-      "lib/mcp.js"
-    ]
-  },
-  {
-    "target": "lib/training-buffer",
-    "refs": [
-      "lib/api-harness-kernel.js",
-      "lib/commands/training.js"
-    ]
-  },
-  {
-    "target": "lib/awaken/awaken-state",
-    "refs": [
-      "lib/awaken/awaken-preflight.js",
-      "lib/commands/awaken.js"
-    ]
-  },
-  {
-    "target": "lib/memory-consistency",
-    "refs": [
-      "lib/commands/bigboss.js",
-      "lib/tools/index.js"
-    ]
-  },
-  {
-    "target": "lib/harness/benchmark",
-    "refs": [
-      "lib/commands/harness.js",
-      "lib/harness/engine.js"
-    ]
-  },
-  {
-    "target": "lib/harvest/crawler",
-    "refs": [
-      "lib/commands/harvest.js",
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/harvest/extractors",
-    "refs": [
-      "lib/commands/harvest.js",
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/harvest/indexer",
-    "refs": [
-      "lib/commands/harvest.js",
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/spend-gate",
-    "refs": [
-      "lib/commands/pocket.js",
-      "lib/llm-provider.js"
-    ]
-  },
-  {
-    "target": "lib/agent-registry",
-    "refs": [
-      "lib/commands/roster.js",
-      "lib/tools-parity.js"
-    ]
-  },
-  {
-    "target": "lib/scheduler/nl-cron",
-    "refs": [
-      "lib/commands/schedule.js",
-      "lib/cron-manager.js"
-    ]
-  },
-  {
-    "target": "lib/spine/session-store",
-    "refs": [
-      "lib/core/work-engine.js",
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/workflow-state",
-    "refs": [
-      "lib/graph-runtime.js",
-      "lib/workflow-manager.js"
-    ]
-  },
-  {
     "target": "agent_score.js",
     "refs": [
+      "lib/harness/benchmark.js",
       "lib/harness/engine.js",
       "swarm_coordinator.js"
     ]
   },
   {
-    "target": "lib/runtime/computer-use",
+    "target": "agent_routing_matrix",
     "refs": [
-      "lib/runtime/autonomy-runner.js",
-      "lib/tools-gui.js"
-    ]
-  },
-  {
-    "target": "lib/cost-ledger",
-    "refs": [
-      "bin/purpclaw.js",
-      "lib/tools/index.js"
-    ]
-  },
-  {
-    "target": "lib/system-manifest",
-    "refs": [
-      "lib/tools/index.js",
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/insight",
-    "refs": [
-      "bin/purpclaw.js",
-      "lib/tools-parity.js"
-    ]
-  },
-  {
-    "target": "lib/purpflow",
-    "refs": [
-      "bin/purpclaw.js",
-      "lib/tools-parity.js"
+      "agent_tower.js",
+      "lib/stack-truth.js"
     ]
   },
   {
@@ -256,220 +34,15 @@
     ]
   },
   {
-    "target": "lib/runtime/telemetry-console",
+    "target": "lib/lib/agent-health",
     "refs": [
-      "pool_service.js",
-      "unified_api.js"
+      "lib/agent-health.js"
     ]
   },
   {
-    "target": "lib/component-pipeline",
+    "target": "lib/lib/cognitive-client",
     "refs": [
-      "lib/agent-gateway.js"
-    ]
-  },
-  {
-    "target": "lib/delegation-manager",
-    "refs": [
-      "lib/agent-gateway.js"
-    ]
-  },
-  {
-    "target": "lib/execution-runtime",
-    "refs": [
-      "lib/agent-gateway.js"
-    ]
-  },
-  {
-    "target": "lib/goal-controller",
-    "refs": [
-      "lib/agent-gateway.js"
-    ]
-  },
-  {
-    "target": "lib/output-contract",
-    "refs": [
-      "lib/agent-gateway.js"
-    ]
-  },
-  {
-    "target": "lib/profile-manager",
-    "refs": [
-      "lib/agent-gateway.js"
-    ]
-  },
-  {
-    "target": "lib/recipe-manager",
-    "refs": [
-      "lib/agent-gateway.js"
-    ]
-  },
-  {
-    "target": "lib/repo-map",
-    "refs": [
-      "lib/agent-gateway.js"
-    ]
-  },
-  {
-    "target": "lib/run-context",
-    "refs": [
-      "lib/agent-gateway.js"
-    ]
-  },
-  {
-    "target": "lib/usage-limits",
-    "refs": [
-      "lib/agent-gateway.js"
-    ]
-  },
-  {
-    "target": "lib/verification-runner",
-    "refs": [
-      "lib/agent-gateway.js"
-    ]
-  },
-  {
-    "target": "lib/context-compressor",
-    "refs": [
-      "lib/agent-loop.js"
-    ]
-  },
-  {
-    "target": "lib/continuity",
-    "refs": [
-      "lib/agent-loop.js"
-    ]
-  },
-  {
-    "target": "lib/idle-engine",
-    "refs": [
-      "lib/agent-loop.js"
-    ]
-  },
-  {
-    "target": "lib/phase-router",
-    "refs": [
-      "lib/agent-loop.js"
-    ]
-  },
-  {
-    "target": "lib/priority-steer",
-    "refs": [
-      "lib/agent-loop.js"
-    ]
-  },
-  {
-    "target": "lib/prompt-builder",
-    "refs": [
-      "lib/agent-loop.js"
-    ]
-  },
-  {
-    "target": "lib/runtime/privacy-policy",
-    "refs": [
-      "lib/agent-loop.js"
-    ]
-  },
-  {
-    "target": "lib/verification-gate",
-    "refs": [
-      "lib/agent-loop.js"
-    ]
-  },
-  {
-    "target": "lib/deep-research-group",
-    "refs": [
-      "lib/api-harness-kernel.js"
-    ]
-  },
-  {
-    "target": "lib/config-loader",
-    "refs": [
-      "lib/commands/ask.js"
-    ]
-  },
-  {
-    "target": "lib/user-commands",
-    "refs": [
-      "lib/commands/ask.js"
-    ]
-  },
-  {
-    "target": "lib/awaken/awaken-events",
-    "refs": [
-      "lib/commands/awaken.js"
-    ]
-  },
-  {
-    "target": "lib/awaken/awaken-loop",
-    "refs": [
-      "lib/commands/awaken.js"
-    ]
-  },
-  {
-    "target": "lib/awaken/awaken-permissions",
-    "refs": [
-      "lib/commands/awaken.js"
-    ]
-  },
-  {
-    "target": "lib/mochi",
-    "refs": [
-      "lib/commands/buddy.js"
-    ]
-  },
-  {
-    "target": "lib/mochi-sprites",
-    "refs": [
-      "lib/commands/buddy.js"
-    ]
-  },
-  {
-    "target": "lib/business/operations",
-    "refs": [
-      "lib/commands/business.js"
-    ]
-  },
-  {
-    "target": "lib/business/store",
-    "refs": [
-      "lib/commands/business.js"
-    ]
-  },
-  {
-    "target": "lib/business/twilio",
-    "refs": [
-      "lib/commands/business.js"
-    ]
-  },
-  {
-    "target": "lib/vector",
-    "refs": [
-      "lib/commands/code.js"
-    ]
-  },
-  {
-    "target": "lib/crew",
-    "refs": [
-      "lib/commands/crew.js"
-    ]
-  },
-  {
-    "target": "lib/drift-watcher.js",
-    "refs": [
-      "lib/commands/drift.js"
-    ]
-  },
-  {
-    "target": "lib/evolution/skill-forge",
-    "refs": [
-      "lib/commands/evolve.js"
-    ]
-  },
-  {
-    "target": "lib/file-index",
-    "refs": [
-      "lib/commands/find.js"
+      "lib/cognitive-client.js"
     ]
   },
   {
@@ -479,27 +52,9 @@
     ]
   },
   {
-    "target": "lib/identity",
-    "refs": [
-      "lib/commands/identity.js"
-    ]
-  },
-  {
     "target": "lib/commands/App.jsx",
     "refs": [
       "lib/commands/init-project.js"
-    ]
-  },
-  {
-    "target": "lib/liveforge",
-    "refs": [
-      "lib/commands/liveforge.js"
-    ]
-  },
-  {
-    "target": "lib/marketplace",
-    "refs": [
-      "lib/commands/marketplace.js"
     ]
   },
   {
@@ -509,93 +64,15 @@
     ]
   },
   {
-    "target": "lib/mycelium",
-    "refs": [
-      "lib/commands/mycelium.js"
-    ]
-  },
-  {
-    "target": "lib/oracle.js",
-    "refs": [
-      "lib/commands/oracle.js"
-    ]
-  },
-  {
-    "target": "lib/pocket-updater",
-    "refs": [
-      "lib/commands/pocket.js"
-    ]
-  },
-  {
-    "target": "lib/pocket-vault",
-    "refs": [
-      "lib/commands/pocket.js"
-    ]
-  },
-  {
-    "target": "lib/telemetry",
-    "refs": [
-      "lib/commands/pocket.js"
-    ]
-  },
-  {
-    "target": "lib/core/provider-status",
-    "refs": [
-      "lib/commands/setup.js"
-    ]
-  },
-  {
-    "target": "lib/skill-usage",
-    "refs": [
-      "lib/commands/skills.js"
-    ]
-  },
-  {
-    "target": "lib/skills-deps",
-    "refs": [
-      "lib/commands/skills.js"
-    ]
-  },
-  {
-    "target": "lib/skills-guard",
-    "refs": [
-      "lib/commands/skills.js"
-    ]
-  },
-  {
-    "target": "lib/skills-hub",
-    "refs": [
-      "lib/commands/skills.js"
-    ]
-  },
-  {
-    "target": "lib/spinebus",
-    "refs": [
-      "lib/commands/spinebus.js"
-    ]
-  },
-  {
-    "target": "lib/team-router",
-    "refs": [
-      "lib/commands/team.js"
-    ]
-  },
-  {
-    "target": "lib/runtime/pipeline-telemetry",
-    "refs": [
-      "lib/commands/telemetry.js"
-    ]
-  },
-  {
-    "target": "lib/weatherman.js",
-    "refs": [
-      "lib/commands/weather.js"
-    ]
-  },
-  {
     "target": "lib/lib/context-bus.js",
     "refs": [
       "lib/context-bus.js"
+    ]
+  },
+  {
+    "target": "lib/lib/context-packet",
+    "refs": [
+      "lib/context-packet.js"
     ]
   },
   {
@@ -605,21 +82,9 @@
     ]
   },
   {
-    "target": "lib/timeline",
+    "target": "lib/config",
     "refs": [
-      "lib/donor-archaeology.js"
-    ]
-  },
-  {
-    "target": "lib/accuracy-fish",
-    "refs": [
-      "lib/harness/engine.js"
-    ]
-  },
-  {
-    "target": "lib/canonical-memory-sync",
-    "refs": [
-      "lib/harness/engine.js"
+      "lib/file-watcher.js"
     ]
   },
   {
@@ -629,9 +94,15 @@
     ]
   },
   {
-    "target": "lib/kanban/config",
+    "target": "lib/lib/insight",
     "refs": [
-      "lib/kanban/db-schema.js"
+      "lib/insight.js"
+    ]
+  },
+  {
+    "target": "lib/lib/job-chain",
+    "refs": [
+      "lib/job-chain.js"
     ]
   },
   {
@@ -647,21 +118,21 @@
     ]
   },
   {
-    "target": "lib/omni/omnicode-adapter",
+    "target": "lib/narrator/lib/narrator/eventbus-bridge",
     "refs": [
-      "lib/omni/truth-scanner.js"
+      "lib/narrator/eventbus-bridge.js"
     ]
   },
   {
-    "target": "lib/plugin-isolator",
+    "target": "lib/lib/output-vault",
     "refs": [
-      "lib/plugin-manager.js"
+      "lib/output-vault.js"
     ]
   },
   {
-    "target": "lib/signature-adapter",
+    "target": "lib/lib/proof-ledger",
     "refs": [
-      "lib/program-optimizer.js"
+      "lib/proof-ledger.js"
     ]
   },
   {
@@ -677,15 +148,21 @@
     ]
   },
   {
+    "target": "lib/scheduler/lib/scheduler/nl-cron.js",
+    "refs": [
+      "lib/scheduler/nl-cron.js"
+    ]
+  },
+  {
     "target": "lib/lib/screen-look",
     "refs": [
       "lib/screen-look.js"
     ]
   },
   {
-    "target": "lib/workspace-awareness.js",
+    "target": "lib/lib/session-portability",
     "refs": [
-      "lib/screen-look.js"
+      "lib/session-portability.js"
     ]
   },
   {
@@ -695,135 +172,27 @@
     ]
   },
   {
-    "target": "lib/autotune",
+    "target": "lib/lib/stack-truth",
     "refs": [
-      "lib/tools/index.js"
+      "lib/stack-truth.js"
     ]
   },
   {
-    "target": "lib/imagegen/video_engine",
+    "target": "lib/lib/tool-cache",
     "refs": [
-      "lib/tools/index.js"
+      "lib/tool-cache.js"
     ]
   },
   {
-    "target": "lib/parseltongue",
+    "target": "lib/training/lib/training/personal-dataset",
     "refs": [
-      "lib/tools/index.js"
+      "lib/training/personal-dataset.js"
     ]
   },
   {
-    "target": "lib/pxpipe",
+    "target": "lib/lib/with-pipeline",
     "refs": [
-      "lib/tools/index.js"
-    ]
-  },
-  {
-    "target": "lib/stm",
-    "refs": [
-      "lib/tools/index.js"
-    ]
-  },
-  {
-    "target": "lib/tool-cache",
-    "refs": [
-      "lib/tools/index.js"
-    ]
-  },
-  {
-    "target": "lib/user-agents",
-    "refs": [
-      "lib/tools/index.js"
-    ]
-  },
-  {
-    "target": "lib/tools/skills-registry",
-    "refs": [
-      "lib/tools/index.js"
-    ]
-  },
-  {
-    "target": "lib/tools/web-search-rate-limit",
-    "refs": [
-      "lib/tools/index.js"
-    ]
-  },
-  {
-    "target": "lib/agent-health",
-    "refs": [
-      "lib/tools-parity.js"
-    ]
-  },
-  {
-    "target": "lib/stack-truth",
-    "refs": [
-      "lib/tools-parity.js"
-    ]
-  },
-  {
-    "target": "lib/agents/archetypes",
-    "refs": [
-      "bin/purpclaw.js"
-    ]
-  },
-  {
-    "target": "lib/cloud-sync",
-    "refs": [
-      "bin/purpclaw.js"
-    ]
-  },
-  {
-    "target": "lib/deep-audit",
-    "refs": [
-      "bin/purpclaw.js"
-    ]
-  },
-  {
-    "target": "lib/embeddings",
-    "refs": [
-      "bin/purpclaw.js"
-    ]
-  },
-  {
-    "target": "lib/erosion",
-    "refs": [
-      "bin/purpclaw.js"
-    ]
-  },
-  {
-    "target": "lib/profile-router",
-    "refs": [
-      "bin/purpclaw.js"
-    ]
-  },
-  {
-    "target": "lib/release-sign",
-    "refs": [
-      "bin/purpclaw.js"
-    ]
-  },
-  {
-    "target": "lib/session-portability",
-    "refs": [
-      "bin/purpclaw.js"
-    ]
-  },
-  {
-    "target": "lib/studio",
-    "refs": [
-      "bin/purpclaw.js"
-    ]
-  },
-  {
-    "target": "lib/trace-store",
-    "refs": [
-      "bin/purpclaw.js"
-    ]
-  },
-  {
-    "target": "lib/usage-pricing",
-    "refs": [
-      "bin/purpclaw.js"
+      "lib/with-pipeline.js"
     ]
   },
   {
@@ -875,33 +244,9 @@
     ]
   },
   {
-    "target": "agent_routing_matrix",
-    "refs": [
-      "agent_tower.js"
-    ]
-  },
-  {
     "target": "companion_swarm.js",
     "refs": [
       "agent_tower.js"
-    ]
-  },
-  {
-    "target": "lib/cognitive-client.js",
-    "refs": [
-      "swarm_coordinator.js"
-    ]
-  },
-  {
-    "target": "lib/context-packet.js",
-    "refs": [
-      "swarm_coordinator.js"
-    ]
-  },
-  {
-    "target": "lib/self-context.js",
-    "refs": [
-      "swarm_coordinator.js"
     ]
   },
   {
@@ -918,36 +263,6 @@
   },
   {
     "target": "digital_shaman.js",
-    "refs": [
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/narrator/eventbus-bridge",
-    "refs": [
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/output-vault",
-    "refs": [
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/spine-shim",
-    "refs": [
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/spine/contract",
-    "refs": [
-      "unified_api.js"
-    ]
-  },
-  {
-    "target": "lib/spine/envelope",
     "refs": [
       "unified_api.js"
     ]

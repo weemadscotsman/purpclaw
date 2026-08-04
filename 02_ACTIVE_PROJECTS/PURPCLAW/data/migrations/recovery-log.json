@@ -1,0 +1,1076 @@
+{
+  "source": "E:/PURPCLAW_WORKSPACE/purpclaw",
+  "applied": true,
+  "rounds": 4,
+  "restored": [
+    {
+      "file": "lib/provider-registry.js",
+      "bytes": 3585,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\provider-registry.js",
+      "refs": 3,
+      "round": 1
+    },
+    {
+      "file": "lib/pipeline-registry.js",
+      "bytes": 12883,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\pipeline-registry.js",
+      "refs": 3,
+      "round": 1
+    },
+    {
+      "file": "lib/job-chain.js",
+      "bytes": 6608,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\job-chain.js",
+      "refs": 3,
+      "round": 1
+    },
+    {
+      "file": "lib/steering-router.js",
+      "bytes": 8287,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\steering-router.js",
+      "refs": 3,
+      "round": 1
+    },
+    {
+      "file": "lib/proof-ledger.js",
+      "bytes": 7500,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\proof-ledger.js",
+      "refs": 3,
+      "round": 1
+    },
+    {
+      "file": "lib/retrieval-engine.js",
+      "bytes": 2450,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\retrieval-engine.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/messaging-registry.js",
+      "bytes": 966,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\messaging-registry.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/session-store.js",
+      "bytes": 19792,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\session-store.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/user-feedback.js",
+      "bytes": 9673,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\user-feedback.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/cognitive-client.js",
+      "bytes": 17699,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\cognitive-client.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/file-watcher.js",
+      "bytes": 13903,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\file-watcher.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/pulse.js",
+      "bytes": 9407,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\pulse.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/job-contract.js",
+      "bytes": 8885,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\job-contract.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/omnicode-bridge.js",
+      "bytes": 8962,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\omnicode-bridge.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/training-buffer.js",
+      "bytes": 11021,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\training-buffer.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/awaken/awaken-state.js",
+      "bytes": 1656,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\awaken\\awaken-state.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/memory-consistency.js",
+      "bytes": 11886,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\memory-consistency.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/harness/benchmark.js",
+      "bytes": 13294,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\harness\\benchmark.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/harvest/crawler.js",
+      "bytes": 3995,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\harvest\\crawler.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/harvest/extractors.js",
+      "bytes": 7286,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\harvest\\extractors.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/harvest/indexer.js",
+      "bytes": 3667,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\harvest\\indexer.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/spend-gate.js",
+      "bytes": 14224,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\spend-gate.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/agent-registry.js",
+      "bytes": 2017,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\agent-registry.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/scheduler/nl-cron.js",
+      "bytes": 9573,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\scheduler\\nl-cron.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/spine/session-store.js",
+      "bytes": 1599,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\spine\\session-store.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/workflow-state.js",
+      "bytes": 1212,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\workflow-state.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/runtime/computer-use.js",
+      "bytes": 7792,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\runtime\\computer-use.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/system-manifest.js",
+      "bytes": 3618,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\system-manifest.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/cost-ledger.js",
+      "bytes": 3424,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\cost-ledger.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/insight.js",
+      "bytes": 5738,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\insight.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/purpflow.js",
+      "bytes": 15501,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\purpflow.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/runtime/telemetry-console.js",
+      "bytes": 3194,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\runtime\\telemetry-console.js",
+      "refs": 2,
+      "round": 1
+    },
+    {
+      "file": "lib/paths.js",
+      "bytes": 1510,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\paths.js",
+      "refs": 2,
+      "round": 2
+    },
+    {
+      "file": "lib/memory-retention.js",
+      "bytes": 8726,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\memory-retention.js",
+      "refs": 2,
+      "round": 2
+    },
+    {
+      "file": "lib/profile-manager.js",
+      "bytes": 1371,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\profile-manager.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/delegation-manager.js",
+      "bytes": 4666,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\delegation-manager.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/repo-map.js",
+      "bytes": 3106,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\repo-map.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/verification-runner.js",
+      "bytes": 1852,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\verification-runner.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/output-contract.js",
+      "bytes": 1561,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\output-contract.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/run-context.js",
+      "bytes": 1143,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\run-context.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/usage-limits.js",
+      "bytes": 1241,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\usage-limits.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/component-pipeline.js",
+      "bytes": 6090,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\component-pipeline.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/goal-controller.js",
+      "bytes": 5500,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\goal-controller.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/recipe-manager.js",
+      "bytes": 3937,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\recipe-manager.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/execution-runtime.js",
+      "bytes": 2641,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\execution-runtime.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/prompt-builder.js",
+      "bytes": 5361,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\prompt-builder.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/context-compressor.js",
+      "bytes": 28735,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\context-compressor.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/continuity.js",
+      "bytes": 7277,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\continuity.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/priority-steer.js",
+      "bytes": 6448,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\priority-steer.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/verification-gate.js",
+      "bytes": 9999,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\verification-gate.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/phase-router.js",
+      "bytes": 8293,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\phase-router.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/idle-engine.js",
+      "bytes": 20722,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\idle-engine.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/runtime/privacy-policy.js",
+      "bytes": 1922,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\runtime\\privacy-policy.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/deep-research-group.js",
+      "bytes": 19265,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\deep-research-group.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/user-commands.js",
+      "bytes": 2816,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\user-commands.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/config-loader.js",
+      "bytes": 4395,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\config-loader.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/awaken/awaken-permissions.js",
+      "bytes": 3546,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\awaken\\awaken-permissions.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/awaken/awaken-loop.js",
+      "bytes": 24585,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\awaken\\awaken-loop.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/awaken/awaken-events.js",
+      "bytes": 3859,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\awaken\\awaken-events.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/mochi.js",
+      "bytes": 11938,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\mochi.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/mochi-sprites.js",
+      "bytes": 15656,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\mochi-sprites.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/business/operations.js",
+      "bytes": 6324,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\business\\operations.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/business/twilio.js",
+      "bytes": 3939,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\business\\twilio.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/business/store.js",
+      "bytes": 1283,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\business\\store.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/vector/index.js",
+      "bytes": 7638,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\vector\\index.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/crew.js",
+      "bytes": 13714,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\crew.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/drift-watcher.js",
+      "bytes": 10865,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\drift-watcher.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/evolution/skill-forge.js",
+      "bytes": 9163,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\evolution\\skill-forge.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/file-index.js",
+      "bytes": 7698,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\file-index.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/identity.js",
+      "bytes": 7505,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\identity.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/liveforge.js",
+      "bytes": 63539,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\liveforge.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/marketplace.js",
+      "bytes": 9785,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\marketplace.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/mycelium.js",
+      "bytes": 19451,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\mycelium.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/oracle.js",
+      "bytes": 7996,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\oracle.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/pocket-vault.js",
+      "bytes": 15383,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\pocket-vault.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/telemetry.js",
+      "bytes": 5077,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\telemetry.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/pocket-updater.js",
+      "bytes": 9037,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\pocket-updater.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/core/provider-status.js",
+      "bytes": 15349,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\core\\provider-status.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/skills-deps.js",
+      "bytes": 9405,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\skills-deps.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/skills-guard.js",
+      "bytes": 32167,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\skills-guard.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/skills-hub.js",
+      "bytes": 69730,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\skills-hub.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/skill-usage.js",
+      "bytes": 25435,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\skill-usage.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/spinebus.js",
+      "bytes": 17641,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\spinebus.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/team-router.js",
+      "bytes": 15636,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\team-router.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/runtime/pipeline-telemetry.js",
+      "bytes": 3581,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\runtime\\pipeline-telemetry.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/weatherman.js",
+      "bytes": 9843,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\weatherman.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/timeline.js",
+      "bytes": 10263,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\timeline.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/canonical-memory-sync.js",
+      "bytes": 6407,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\canonical-memory-sync.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/accuracy-fish.js",
+      "bytes": 7074,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\accuracy-fish.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/kanban/config.js",
+      "bytes": 2293,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\kanban\\config.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/omni/omnicode-adapter.js",
+      "bytes": 16572,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\omni\\omnicode-adapter.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/plugin-isolator.js",
+      "bytes": 5279,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\plugin-isolator.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/signature-adapter.js",
+      "bytes": 932,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\signature-adapter.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/workspace-awareness.js",
+      "bytes": 7651,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\workspace-awareness.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/tool-cache.js",
+      "bytes": 6163,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\tool-cache.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/parseltongue.js",
+      "bytes": 10557,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\parseltongue.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/autotune.js",
+      "bytes": 7331,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\autotune.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/stm.js",
+      "bytes": 4048,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\stm.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/imagegen/video_engine.js",
+      "bytes": 6807,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\imagegen\\video_engine.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/user-agents.js",
+      "bytes": 3207,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\user-agents.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/pxpipe.js",
+      "bytes": 5765,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\pxpipe.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/tools/skills-registry.js",
+      "bytes": 12451,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\tools\\skills-registry.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/tools/web-search-rate-limit.js",
+      "bytes": 1523,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\tools\\web-search-rate-limit.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/stack-truth.js",
+      "bytes": 8049,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\stack-truth.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/agent-health.js",
+      "bytes": 3780,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\agent-health.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/deep-audit.js",
+      "bytes": 13910,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\deep-audit.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/embeddings.js",
+      "bytes": 6087,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\embeddings.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/release-sign.js",
+      "bytes": 4390,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\release-sign.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/profile-router.js",
+      "bytes": 9175,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\profile-router.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/agents/archetypes.js",
+      "bytes": 7137,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\agents\\archetypes.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/usage-pricing.js",
+      "bytes": 8374,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\usage-pricing.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/trace-store.js",
+      "bytes": 2796,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\trace-store.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/cloud-sync.js",
+      "bytes": 15025,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\cloud-sync.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/studio.js",
+      "bytes": 71212,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\studio.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/erosion.js",
+      "bytes": 12181,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\erosion.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/session-portability.js",
+      "bytes": 10581,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\session-portability.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/context-packet.js",
+      "bytes": 8996,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\context-packet.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/self-context.js",
+      "bytes": 17958,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\self-context.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/spine/envelope.js",
+      "bytes": 5097,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\spine\\envelope.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/spine/contract.js",
+      "bytes": 10609,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\spine\\contract.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/narrator/eventbus-bridge.js",
+      "bytes": 4021,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\narrator\\eventbus-bridge.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/spine-shim.js",
+      "bytes": 3146,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\spine-shim.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/output-vault.js",
+      "bytes": 5984,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\output-vault.js",
+      "refs": 1,
+      "round": 1
+    },
+    {
+      "file": "lib/agent-personas.js",
+      "bytes": 4218,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\agent-personas.js",
+      "refs": 1,
+      "round": 2
+    },
+    {
+      "file": "lib/rate-limiter.js",
+      "bytes": 9977,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\rate-limiter.js",
+      "refs": 1,
+      "round": 2
+    },
+    {
+      "file": "lib/studio-constants.js",
+      "bytes": 304,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\studio-constants.js",
+      "refs": 1,
+      "round": 2
+    },
+    {
+      "file": "lib/training/personal-dataset.js",
+      "bytes": 6553,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\training\\personal-dataset.js",
+      "refs": 1,
+      "round": 2
+    },
+    {
+      "file": "lib/gate-pipeline.js",
+      "bytes": 23751,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\gate-pipeline.js",
+      "refs": 1,
+      "round": 2
+    },
+    {
+      "file": "lib/curator.js",
+      "bytes": 50942,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\curator.js",
+      "refs": 1,
+      "round": 2
+    },
+    {
+      "file": "lib/with-pipeline.js",
+      "bytes": 3862,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\with-pipeline.js",
+      "refs": 1,
+      "round": 2
+    },
+    {
+      "file": "lib/signed-manifest.js",
+      "bytes": 4074,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\signed-manifest.js",
+      "refs": 1,
+      "round": 2
+    },
+    {
+      "file": "lib/runtime/settings-registry.js",
+      "bytes": 30382,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\runtime\\settings-registry.js",
+      "refs": 1,
+      "round": 2
+    },
+    {
+      "file": "lib/tools-windows-mcp.js",
+      "bytes": 8146,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\tools-windows-mcp.js",
+      "refs": 1,
+      "round": 2
+    },
+    {
+      "file": "lib/billing-lifecycle.js",
+      "bytes": 39267,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\billing-lifecycle.js",
+      "refs": 1,
+      "round": 2
+    },
+    {
+      "file": "lib/vector/providers/faissProvider.js",
+      "bytes": 5427,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\vector\\providers\\faissProvider.js",
+      "refs": 1,
+      "round": 2
+    },
+    {
+      "file": "lib/runtime/ports.js",
+      "bytes": 11185,
+      "from": "E:\\PURPCLAW_WORKSPACE\\purpclaw\\lib\\runtime\\ports.js",
+      "refs": 1,
+      "round": 3
+    }
+  ],
+  "stillMissing": {
+    "lib/lib/agent-health": [
+      "lib/agent-health.js"
+    ],
+    "lib/lib/cognitive-client": [
+      "lib/cognitive-client.js"
+    ],
+    "parity/cli/router.js": [
+      "lib/commands/help.js"
+    ],
+    "parity/memory/scoped.js": [
+      "lib/commands/memory.js"
+    ],
+    "lib/lib/context-bus.js": [
+      "lib/context-bus.js"
+    ],
+    "lib/lib/context-packet": [
+      "lib/context-packet.js"
+    ],
+    "lib/core/lib/core/work-engine": [
+      "lib/core/work-engine.js"
+    ],
+    "lib/config": [
+      "lib/file-watcher.js"
+    ],
+    "agent_score.js": [
+      "lib/harness/benchmark.js",
+      "lib/harness/engine.js",
+      "swarm_coordinator.js"
+    ],
+    "lib/harness/lib/harness/engine": [
+      "lib/harness/engine.js"
+    ],
+    "lib/lib/insight": [
+      "lib/insight.js"
+    ],
+    "lib/lib/job-chain": [
+      "lib/job-chain.js"
+    ],
+    "lib/lib/llm-provider": [
+      "lib/llm-provider.js"
+    ],
+    "lib/lib/memory-client": [
+      "lib/memory-client.js"
+    ],
+    "lib/narrator/lib/narrator/eventbus-bridge": [
+      "lib/narrator/eventbus-bridge.js"
+    ],
+    "lib/lib/output-vault": [
+      "lib/output-vault.js"
+    ],
+    "lib/lib/proof-ledger": [
+      "lib/proof-ledger.js"
+    ],
+    "lib/lib/pty": [
+      "lib/pty.js"
+    ],
+    "lib/runtime/lib/runtime/autonomy-runner": [
+      "lib/runtime/autonomy-runner.js"
+    ],
+    "lib/scheduler/lib/scheduler/nl-cron.js": [
+      "lib/scheduler/nl-cron.js"
+    ],
+    "lib/lib/screen-look": [
+      "lib/screen-look.js"
+    ],
+    "lib/lib/session-portability": [
+      "lib/session-portability.js"
+    ],
+    "lib/lib/soul-registry": [
+      "lib/soul-registry.js"
+    ],
+    "lib/lib/stack-truth": [
+      "lib/stack-truth.js"
+    ],
+    "agent_routing_matrix": [
+      "lib/stack-truth.js",
+      "agent_tower.js"
+    ],
+    "lib/lib/tool-cache": [
+      "lib/tool-cache.js"
+    ],
+    "lib/training/lib/training/personal-dataset": [
+      "lib/training/personal-dataset.js"
+    ],
+    "lib/lib/with-pipeline": [
+      "lib/with-pipeline.js"
+    ],
+    "podcast_studio/shared_log": [
+      "podcast_studio/podcast_runner.js",
+      "podcast_studio/turn_manager.js"
+    ],
+    "podcast_studio/topic_picker": [
+      "podcast_studio/podcast_runner.js"
+    ],
+    "podcast_studio/tts": [
+      "podcast_studio/podcast_runner.js"
+    ],
+    "companion_swarm.js": [
+      "agent_tower.js"
+    ],
+    "task_decomposer.js": [
+      "swarm_coordinator.js"
+    ],
+    "digital_shaman.js": [
+      "unified_api.js"
+    ],
+    "shaman_evaluator.js": [
+      "unified_api.js"
+    ],
+    "../companion_swarm.js": [
+      "unified_api.js"
+    ],
+    "shaman_prompts.js": [
+      "unified_api.js"
+    ]
+  }
+}
