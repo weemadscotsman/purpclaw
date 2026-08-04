@@ -1,0 +1,799 @@
+{
+  "schema_version": 1,
+  "canonical_authority": "docs/parity/CANONICAL_PARITY_PRIORITY.md",
+  "artifact_role": "NON_AUTHORITATIVE_AUDIT_EVIDENCE",
+  "source_kind": "working_tree_content_hash_manifest",
+  "citation_scope": "fully_qualified_file_line_references_only",
+  "audit": {
+    "path": "docs/parity/AUDIT_WAVE1_UNIFIED_RUNTIME.md",
+    "sha256": "45613976b630ab44abe2834619c8a2ac4101495eeb6247746d491bb3688fd965",
+    "declared_snapshot": null
+  },
+  "git": {
+    "branch": "canonical-parity-clean-v2",
+    "head": "413b25cbc6d6ae57fdb47d1851f5de2d355101bc",
+    "project_prefix": "02_ACTIVE_PROJECTS/PURPCLAW"
+  },
+  "summary": {
+    "citations": 74,
+    "files": 25,
+    "resolved": 74,
+    "failed": 0,
+    "tracked_files": 16,
+    "untracked_files": 9,
+    "dirty_files": 13
+  },
+  "files": [
+    {
+      "path": "agent_tower.js",
+      "exists": true,
+      "sha256": "30ff922f3736332a71a8c6129f65c7f89c0d530cdf87cde27bf04f9b51c935b2",
+      "line_count": 1051,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/agent_tower.js",
+      "tracked": true,
+      "head_blob": "d6e36a3b342316a153673079c9732f35ea90990b",
+      "git_status": "M 02_ACTIVE_PROJECTS/PURPCLAW/agent_tower.js"
+    },
+    {
+      "path": "app/api/chat/route.ts",
+      "exists": true,
+      "sha256": "c88ce7646460e97401f59e79109372f988845e846747fc1e1f80503bce40ed23",
+      "line_count": 260,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/app/api/chat/route.ts",
+      "tracked": true,
+      "head_blob": "7dc4cef0eba20b0f0d4e386d06722ab79c21eb54",
+      "git_status": "M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/chat/route.ts"
+    },
+    {
+      "path": "app/api/providers/route.ts",
+      "exists": true,
+      "sha256": "db50020cabd19f49ca8206880f61450fcd6ec93acc7fbf2fdcce2ae12a724974",
+      "line_count": 75,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/app/api/providers/route.ts",
+      "tracked": true,
+      "head_blob": "68e97b849f36f8c5596afe119d88af9781f0f53f",
+      "git_status": "clean"
+    },
+    {
+      "path": "app/api/sessions/route.ts",
+      "exists": true,
+      "sha256": "6c22f36a9fc4f3372217e59bba08109762023605f72957ed08202995dae4efd2",
+      "line_count": 62,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/app/api/sessions/route.ts",
+      "tracked": true,
+      "head_blob": "1666123b8b41521a36bba351ffe58056c5cb43ed",
+      "git_status": "clean"
+    },
+    {
+      "path": "docs/parity/CANONICAL_PARITY_PRIORITY.md",
+      "exists": true,
+      "sha256": "ff281dadbc1d50f8b2e83516dc711c64ddbefb3715019da608e16b1de6dc1fc7",
+      "line_count": 610,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/CANONICAL_PARITY_PRIORITY.md",
+      "tracked": true,
+      "head_blob": "e60cf1e4cec304c4063a9a8ef1858235ea5a598f",
+      "git_status": "clean"
+    },
+    {
+      "path": "ecosystem.config.js",
+      "exists": true,
+      "sha256": "4e00d31c211e40a0af789ba9ca659a7ebc346ec7e07b02d84a43c917246cdbd4",
+      "line_count": 663,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/ecosystem.config.js",
+      "tracked": true,
+      "head_blob": "0419dc4c68284093ce47d93ec4ab837c7ea06c6f",
+      "git_status": "clean"
+    },
+    {
+      "path": "lib/acp-server.js",
+      "exists": true,
+      "sha256": "01f1c5e1a937a6bf35a1458cb401fefd60a0df66eecd29929b87bfb47172e249",
+      "line_count": 6,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/acp-server.js",
+      "tracked": false,
+      "head_blob": null,
+      "git_status": "?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/acp-server.js"
+    },
+    {
+      "path": "lib/agent-gateway.js",
+      "exists": true,
+      "sha256": "2a63650c9eb3b955769ea898a354c76be72e0ee90ff694e0de876cfdced0e5f4",
+      "line_count": 633,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-gateway.js",
+      "tracked": true,
+      "head_blob": "455405a0511c84309af3f5db1d579fcae7c6da0f",
+      "git_status": "clean"
+    },
+    {
+      "path": "lib/agent-loop.js",
+      "exists": true,
+      "sha256": "1d01e2cf0868a4b40d5177cb568c9ee486d608525090c17343d2d6bb82067a73",
+      "line_count": 829,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-loop.js",
+      "tracked": true,
+      "head_blob": "67960348fa5c9872639c13d92c33fbd4f16e8adc",
+      "git_status": "clean"
+    },
+    {
+      "path": "lib/agent-router.js",
+      "exists": true,
+      "sha256": "9c657c5006554199c4ca03ad91a970e0a189def8ecbf3ef775511341251e582a",
+      "line_count": 151,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-router.js",
+      "tracked": true,
+      "head_blob": "966e5157969314d9bfef7a9a8e77f2e896bf0b53",
+      "git_status": "clean"
+    },
+    {
+      "path": "lib/chat-agent.js",
+      "exists": true,
+      "sha256": "18730f86f331f90e1c4c81090490d2a61b5561843a4b2c14eed75510ce941c0d",
+      "line_count": 101,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/chat-agent.js",
+      "tracked": true,
+      "head_blob": "12669f2db6ba000f83c7bd4e3aac96271cb3965a",
+      "git_status": "clean"
+    },
+    {
+      "path": "lib/commands/ask.js",
+      "exists": true,
+      "sha256": "fad83f061a9a207cfd163768ba6d25696814c4a91137bada523c84068d00442e",
+      "line_count": 1268,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/ask.js",
+      "tracked": true,
+      "head_blob": "9e8be90e983893123b6b222bf3f325a1b0940e29",
+      "git_status": "M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/ask.js"
+    },
+    {
+      "path": "lib/governance.js",
+      "exists": true,
+      "sha256": "49295ec40676cba48b12f23b5d862b79c1fdbe1d78bca0dd2e10ae1811d50461",
+      "line_count": 160,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/governance.js",
+      "tracked": false,
+      "head_blob": null,
+      "git_status": "?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/governance.js"
+    },
+    {
+      "path": "lib/llm-provider.js",
+      "exists": true,
+      "sha256": "66f8ccde46686c36e6076062057450cee09bb55298c79a8559be2e489a99d828",
+      "line_count": 1575,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/llm-provider.js",
+      "tracked": true,
+      "head_blob": "11b3059e769cb2a2980c809fb7b654d76e625d82",
+      "git_status": "clean"
+    },
+    {
+      "path": "lib/mcp-server.js",
+      "exists": true,
+      "sha256": "33ffb886f22cb03dfd8b3df235e1cbb56ba826ec421b9316206b6119dee6fba5",
+      "line_count": 347,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/mcp-server.js",
+      "tracked": true,
+      "head_blob": "654acdd40ec23285c8a63d5e4adc382acd8e6545",
+      "git_status": "clean"
+    },
+    {
+      "path": "lib/permission-manager.js",
+      "exists": true,
+      "sha256": "383bacdd115ee4b6d2a9b8909972f4bdcdeda0d6ce0ee53e17c7d9c36304ae0b",
+      "line_count": 250,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/permission-manager.js",
+      "tracked": false,
+      "head_blob": null,
+      "git_status": "?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/permission-manager.js"
+    },
+    {
+      "path": "lib/routing-decisions.js",
+      "exists": true,
+      "sha256": "287cfcda9774d0efc0b95b6ce1148f1741b3701aeeb9f225b0ddfc508511e380",
+      "line_count": 496,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/routing-decisions.js",
+      "tracked": true,
+      "head_blob": "75704c63ef16db062e30f1ad60410b6b8e5b5d7f",
+      "git_status": "clean"
+    },
+    {
+      "path": "lib/runtime/provider-router.js",
+      "exists": true,
+      "sha256": "8bcf60be56194229408efb2a1619ddd499fa4166e62d91b48564eb7d1b4af3d4",
+      "line_count": 365,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/provider-router.js",
+      "tracked": false,
+      "head_blob": null,
+      "git_status": "?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/provider-router.js"
+    },
+    {
+      "path": "lib/runtime/settings-registry.js",
+      "exists": true,
+      "sha256": "2605f3e6b7cfbff57f27ade1ab25c7fd10bb6f5388cbd013505c9ac9ddd85b2d",
+      "line_count": 437,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/settings-registry.js",
+      "tracked": false,
+      "head_blob": null,
+      "git_status": "?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/settings-registry.js"
+    },
+    {
+      "path": "lib/spine/session-store.js",
+      "exists": true,
+      "sha256": "fbc4aa1b4b86d02e39f2842ad93d3e68fcaa4dd40047279f3c0363299611c022",
+      "line_count": 49,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/spine/session-store.js",
+      "tracked": false,
+      "head_blob": null,
+      "git_status": "?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/spine/session-store.js"
+    },
+    {
+      "path": "lib/tool-runtime.js",
+      "exists": true,
+      "sha256": "b00f53744346b45162457508147ad29ab479fa189838a566b59ecc6d1bc1b3a1",
+      "line_count": 139,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/lib/tool-runtime.js",
+      "tracked": true,
+      "head_blob": "23707780efa733b34b0ac0aec018d71ae75d5aa4",
+      "git_status": "clean"
+    },
+    {
+      "path": "scripts/test-agent-gateway.js",
+      "exists": true,
+      "sha256": "6975a967331cf9a6903467021c3633315e3672c0bb13ca8f7e7f24f62441ffd7",
+      "line_count": 103,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-agent-gateway.js",
+      "tracked": false,
+      "head_blob": null,
+      "git_status": "?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-agent-gateway.js"
+    },
+    {
+      "path": "scripts/test-cross-surface-session-e2e.js",
+      "exists": true,
+      "sha256": "22405ce65fd29b863e4f307ecb978774b4ba243735862aa0f5b25ec9965b694e",
+      "line_count": 261,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-cross-surface-session-e2e.js",
+      "tracked": false,
+      "head_blob": null,
+      "git_status": "?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-cross-surface-session-e2e.js"
+    },
+    {
+      "path": "scripts/tui-ask.js",
+      "exists": true,
+      "sha256": "bacd9554ee04342a662efc18c0077a86e655b9237ec821f8a0145f540156a8bf",
+      "line_count": 558,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/scripts/tui-ask.js",
+      "tracked": false,
+      "head_blob": null,
+      "git_status": "?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/tui-ask.js"
+    },
+    {
+      "path": "unified_api.js",
+      "exists": true,
+      "sha256": "8e4b3d99f3c488df0ab3aea00db4c46a3aa200ef309e566472808cdb10e69670",
+      "line_count": 5034,
+      "git_path": "02_ACTIVE_PROJECTS/PURPCLAW/unified_api.js",
+      "tracked": true,
+      "head_blob": "c49a0f004e9346be23aad1cc9e96d1607177efd1",
+      "git_status": "M 02_ACTIVE_PROJECTS/PURPCLAW/unified_api.js"
+    }
+  ],
+  "citations": [
+    {
+      "path": "agent_tower.js",
+      "line": 35,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "d2942d9252f8d37d650c22a832daeb1e789a5122b37a27a61f400ebcadaae7a2"
+    },
+    {
+      "path": "agent_tower.js",
+      "line": 317,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "2b3e1a6f536c4d2f2ccf3cc885ada95047d16d51418a1331f4a869f91d0bcb3b"
+    },
+    {
+      "path": "app/api/chat/route.ts",
+      "line": 116,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "5af0fd71dff23149ff4267c3a94a2d9bff70012f13fefa1f2667ec0e91a2e86e"
+    },
+    {
+      "path": "app/api/chat/route.ts",
+      "line": 225,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "cf651c37f3390b77e8d2f3c20090e3e79e7933f570ad0f23b235cf9cd977e8c0"
+    },
+    {
+      "path": "app/api/providers/route.ts",
+      "line": 29,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "8a1fc2f9e9c92a9b4359c25b394c1b30a54965ca1ea445d8bb60710d4e43d303"
+    },
+    {
+      "path": "app/api/sessions/route.ts",
+      "line": 8,
+      "occurrences": 3,
+      "resolved": true,
+      "line_sha256": "29d2a83ff9c3b2d06122d31813cc8e9f0866bdd17f2e6337073f5da4a4690d3d"
+    },
+    {
+      "path": "app/api/sessions/route.ts",
+      "line": 21,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "bd360c32fb19aeda8209dd7fdaeb68292ff340a1ff72dc7a1704152efd8e06ad"
+    },
+    {
+      "path": "docs/parity/CANONICAL_PARITY_PRIORITY.md",
+      "line": 94,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "b40d9e059391793ce4dff7195f8365ea41d1201137d055460d4238a4170957d2"
+    },
+    {
+      "path": "docs/parity/CANONICAL_PARITY_PRIORITY.md",
+      "line": 96,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "0add390054e6c0b3db5367839f3cdc8fb9a6f41551a2865b4ee44a10ad4d4129"
+    },
+    {
+      "path": "docs/parity/CANONICAL_PARITY_PRIORITY.md",
+      "line": 111,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "50ebb76690b41f4b539e58dc4e0505c73a0a1d2bf9a2a1cd9db9e8a3151ba4a0"
+    },
+    {
+      "path": "ecosystem.config.js",
+      "line": 75,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "0d3d2f5a8b2fc178b4e5ab7eb9c8c886e2e08b03608f0bd3200c3fb76b4aec0c"
+    },
+    {
+      "path": "lib/acp-server.js",
+      "line": 1,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "4ba7b4c240b96cdfdea751bc469a4c58704f00a29f404cfe5ec133e46853b2bd"
+    },
+    {
+      "path": "lib/agent-gateway.js",
+      "line": 4,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "1908c4d2c1142b9b908af2c213da0a85826408bab0b96c7ad10ca76d18fda3b0"
+    },
+    {
+      "path": "lib/agent-gateway.js",
+      "line": 133,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "lib/agent-gateway.js",
+      "line": 163,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "lib/agent-gateway.js",
+      "line": 192,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "9612a5962821368ee828616e3dda0419a7cbe2109e9faa0a83f6b3081c2fa047"
+    },
+    {
+      "path": "lib/agent-gateway.js",
+      "line": 193,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "62ebf8c92311274436db621b0463118c49894157c086c0539695fe08bb78abdf"
+    },
+    {
+      "path": "lib/agent-loop.js",
+      "line": 35,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "8875279d35b8750200fa5b9242da27e18789451a2f2464164484161d354b1b8a"
+    },
+    {
+      "path": "lib/agent-loop.js",
+      "line": 36,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "3a59472f2aaa96d19f812903eb469f48ba561462d49ce49b3680f7e70c84cb8a"
+    },
+    {
+      "path": "lib/agent-loop.js",
+      "line": 42,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "4d23b4bac0ad5968c4fea8f9a2b2698394e20805b05fbcada4591f772e39b08f"
+    },
+    {
+      "path": "lib/agent-loop.js",
+      "line": 74,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "d420cd18223d3ce57372ac688a3ce1f14702374af15bf7128ecd592628fd4bde"
+    },
+    {
+      "path": "lib/agent-loop.js",
+      "line": 75,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "a6a20295c9d71d00bcefaa2675aabc8bb9360042e96a8f7eabd01acb80d4ed90"
+    },
+    {
+      "path": "lib/agent-loop.js",
+      "line": 419,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "f120c29fe24acdccf9005e2b28f2181b563357e56cb6a221c5314aa06de5e16a"
+    },
+    {
+      "path": "lib/agent-loop.js",
+      "line": 440,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "335ef674e2474fa507a474b660123997d08008cd1c280e280d4025aabb78ee38"
+    },
+    {
+      "path": "lib/agent-loop.js",
+      "line": 676,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "10c3815a22745c1a45fccaede4fe36969fa8c501d30bada8af10b74ac178ae7c"
+    },
+    {
+      "path": "lib/agent-router.js",
+      "line": 52,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "b7d01de378f75dae988e0485acae6d173b44b85082708b48cb34a2981b52ee22"
+    },
+    {
+      "path": "lib/agent-router.js",
+      "line": 92,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "89cbf6ecffe79d72d91fcc3e7d49fe60eca6c8ec53f1917a46aa2d1c5274a367"
+    },
+    {
+      "path": "lib/agent-router.js",
+      "line": 100,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "7b7a5080d4f2cf12ada1496fc88885f184dc3041ac668819d32e3fdf14d314f7"
+    },
+    {
+      "path": "lib/chat-agent.js",
+      "line": 58,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "db68e22e8784d87c2d1148339c7318549487bc1ac016f380665f0454e1f40c52"
+    },
+    {
+      "path": "lib/chat-agent.js",
+      "line": 70,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "a42e13ba48ca236801af1a6412097833e765c486cb851b061259df6fec1e112c"
+    },
+    {
+      "path": "lib/chat-agent.js",
+      "line": 76,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "b37923513a2ae4018db8fdd5017c68068435b138c755c2f359df5aa97651073c"
+    },
+    {
+      "path": "lib/commands/ask.js",
+      "line": 27,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "e8a697ecb6cf54ddc8eba49f3b1109e5409d081591fb85ac1d45a75e88377866"
+    },
+    {
+      "path": "lib/commands/ask.js",
+      "line": 892,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "3d82fb81a937777bcf5f0b988d9af4fa0d4130b7029827659c2c4b5d8c30ed08"
+    },
+    {
+      "path": "lib/commands/ask.js",
+      "line": 993,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "ad07e7ed9320e2191e5971a6b9e46d87ce233045db6b5632cef6f81914873b63"
+    },
+    {
+      "path": "lib/commands/ask.js",
+      "line": 1067,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "787bc68a9b923a5da0c11ab46b2017382e765b7e710d6f0e636f8635b08e6b4e"
+    },
+    {
+      "path": "lib/governance.js",
+      "line": 27,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "73f192bf3cd91b75ebc55ba0a42569c5b7c6ef8dbd849a109b7489156347cb28"
+    },
+    {
+      "path": "lib/llm-provider.js",
+      "line": 322,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "205226e78f631a319a1a2477d6355361119b0d559343a8c68202903a38913ad2"
+    },
+    {
+      "path": "lib/llm-provider.js",
+      "line": 1058,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "7e106f125e967c92a3e217ad16c0e8152ca38df5cc7550922234d6488a921384"
+    },
+    {
+      "path": "lib/llm-provider.js",
+      "line": 1191,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "5c9cb58db64efa91eab631de2af24a20bcb7d0ce058adfcc08f4eb5e517ad06f"
+    },
+    {
+      "path": "lib/llm-provider.js",
+      "line": 1337,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "5c9cb58db64efa91eab631de2af24a20bcb7d0ce058adfcc08f4eb5e517ad06f"
+    },
+    {
+      "path": "lib/mcp-server.js",
+      "line": 37,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "090819610d66fec4fa4e17a5274c92cc55648e8cfac8007358009ad97a5cc436"
+    },
+    {
+      "path": "lib/mcp-server.js",
+      "line": 231,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "0089c004dacf6fa8dcdcf5c1d2dfe5bbd49b494688bbe7ab8c7013c260562d50"
+    },
+    {
+      "path": "lib/mcp-server.js",
+      "line": 234,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "1c5cf22220ee59fc57f1eacfe5e097b892530ed2245f88a8ed169631270e0234"
+    },
+    {
+      "path": "lib/mcp-server.js",
+      "line": 245,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "e3521dab570e5441e0473263b7f9bdbb8b415445358f721217ffab121b99c60f"
+    },
+    {
+      "path": "lib/permission-manager.js",
+      "line": 165,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "6fa03eab29f3fc47efd413e79cf6ec14217bc423fe24b978eb88f3a7fe85d682"
+    },
+    {
+      "path": "lib/permission-manager.js",
+      "line": 173,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "d67cb0f8bec54c45896618f9a56ff3c79e5c8f1f37ecaf6b83fb801292834242"
+    },
+    {
+      "path": "lib/routing-decisions.js",
+      "line": 55,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "eff3c79b146592c604f93a99ab96b9f9f5706e617404a10700c810d55e644553"
+    },
+    {
+      "path": "lib/routing-decisions.js",
+      "line": 348,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "84da3ada53289072ea7d336724ff2515666e89da2c3e4a840c41ea6bc608c5d5"
+    },
+    {
+      "path": "lib/routing-decisions.js",
+      "line": 370,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "270e74403faf49ce96d09228a1539c2d50d2674fd796f82edd76e91cc23a7b86"
+    },
+    {
+      "path": "lib/runtime/provider-router.js",
+      "line": 71,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "76e5072f4ccb270c1e4eae9f8630c37080c50f94f6ce1ff0e824012ac7ad4305"
+    },
+    {
+      "path": "lib/runtime/settings-registry.js",
+      "line": 12,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "2943831144b89c9b03c348b30b7fa73dde56078be242c807277773e00ca77a4f"
+    },
+    {
+      "path": "lib/spine/session-store.js",
+      "line": 8,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "f8b0a036014373c5350f2d291c8106b2a67decebdb9cb9133708f3a1b968ecff"
+    },
+    {
+      "path": "lib/spine/session-store.js",
+      "line": 12,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "ef59d253ad442b78bbe51ce6d9d6f4126c3bd4fb75ea52ffd5e38113775e7ac7"
+    },
+    {
+      "path": "lib/spine/session-store.js",
+      "line": 16,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "457cfd744c5ed085cd0f0543a6e2e33323d6b50313ec4cd4b073a575ac627293"
+    },
+    {
+      "path": "lib/tool-runtime.js",
+      "line": 36,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "1cf55c9e26be23745be3ff2f117fccc8ea18a6af0cd4dfede091a05285e811c4"
+    },
+    {
+      "path": "lib/tool-runtime.js",
+      "line": 63,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "bba5c2cfd5f81dc037a2e78874a2cb39060e9f089e2959fd761fe582f82fdea9"
+    },
+    {
+      "path": "scripts/test-agent-gateway.js",
+      "line": 68,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "75e285bfd035747bb1ce586db47717a5f0abca62cb0ea26360dfcd9db0696028"
+    },
+    {
+      "path": "scripts/test-agent-gateway.js",
+      "line": 90,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "b8368435b525903404fb2cf1c8a05df70df5c63504ac8b90882e0b950ffa50a3"
+    },
+    {
+      "path": "scripts/test-cross-surface-session-e2e.js",
+      "line": 224,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "b90498ad4214a8e50f0d0861cecb1a7d2afc27d04aafc72fe7f13dbb5c76234b"
+    },
+    {
+      "path": "scripts/test-cross-surface-session-e2e.js",
+      "line": 242,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "0e003454871445dddc48bc1859a186a3cbb16b8f1f5dc245bf9a45a993167cee"
+    },
+    {
+      "path": "scripts/tui-ask.js",
+      "line": 467,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "998362cf5aac115b885292bbb4a4ec5920e32b963b5636039cb7b9a284c439dc"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 32,
+      "occurrences": 3,
+      "resolved": true,
+      "line_sha256": "a1200a1a5dfae96b4b0b49fa3007463f6cf685be07dab05c1210306b4ceb964b"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 528,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "cf651c37f3390b77e8d2f3c20090e3e79e7933f570ad0f23b235cf9cd977e8c0"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 1121,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 1124,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "8c7b2ae1a0bc38db6b714db44eb3abc2c65e3a3ebafb49090bd6e03d6ef0dfdd"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 1131,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "cdf8502093d1052c50d70857a35ba36b10075727a304e3b08290e37a1e81fc7f"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 1136,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "3008b036987a3ceaf2084b4ab20ef6c36ee80069685bc534430efd84cfd5657b"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 1143,
+      "occurrences": 3,
+      "resolved": true,
+      "line_sha256": "2c5237738ce293c5e31d1cc66c7ea38f1155b57004d701d7347d9b6082c0de60"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 1149,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "714274db09fc721dfb6211cfed1c36ce69d169952e5985c310c6dda6b342556e"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 1165,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "fc99c85f4bf3edba9b5dc0a538ab7e23455a4a7a47355bb6da131895eb5f167b"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 1177,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "ebab3b869b56f703bd92f468ca9e0d733793c67479da62ca1888b5662d3a784e"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 3091,
+      "occurrences": 3,
+      "resolved": true,
+      "line_sha256": "564c06f1b1ea47275d9b5ce2f5e0aaa92e042a742f043f59f6d5531928013552"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 3125,
+      "occurrences": 1,
+      "resolved": true,
+      "line_sha256": "f0f9cb92b665fde408e59bde39326f9a24a1cc4e6c090aceb1d4075690c8053b"
+    },
+    {
+      "path": "unified_api.js",
+      "line": 4406,
+      "occurrences": 2,
+      "resolved": true,
+      "line_sha256": "7fb431b4b856ed97a736a5b328c896acdef90d0885ad0cceaba7b76f4f50847f"
+    }
+  ],
+  "failures": []
+}

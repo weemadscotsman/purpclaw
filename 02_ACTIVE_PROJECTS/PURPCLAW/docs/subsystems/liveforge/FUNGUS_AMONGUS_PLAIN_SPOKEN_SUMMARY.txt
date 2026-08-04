@@ -1,0 +1,26 @@
+FUNGUS AMONGUS, in normal words:
+
+LIVEFORGE makes the active screens, forms, dashboards, mini-tools, and temporary workspaces.
+
+Fungus Amongus is the underground mycelium that connects everything.
+
+When any agent, tool, or LIVEFORGE surface discovers something useful, it creates a structured packet called a spore.
+
+A spore says:
+- what happened
+- who saw it
+- where the proof is
+- who is allowed to know it
+- how confident it is
+- when it expires
+- whether it can become a reusable pattern
+
+The mycelium stores those spores, searches them, and sends compact nutrient bundles to agents when they need help.
+
+So if one agent learns a better route, hits a tool failure, finds a useful pattern, or gets corrected by the user, the next relevant agent can benefit from that without blindly dumping all memory into every task.
+
+Main safety rule:
+
+Tells all, knows all, shares all only through scope, proof, and permission.
+
+No secret spreading. No fake knowing. No permanent learning without replay.

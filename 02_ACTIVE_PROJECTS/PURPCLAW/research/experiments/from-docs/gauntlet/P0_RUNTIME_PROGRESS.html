@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURPCLAW P0 Gauntlet — Live</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Courier New', monospace; background: #0a0a0f; color: #c0c0c0; min-height: 100vh; padding: 20px; }
+  .container { max-width: 1300px; margin: 0 auto; }
+  h1 { color: #9b59b6; font-size: 1.4rem; margin-bottom: 4px; }
+  .subtitle { color: #555; font-size: 0.75rem; margin-bottom: 16px; }
+  .topbar { display: flex; gap: 16px; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; }
+  .campaign-status { padding: 10px 16px; border-left: 4px solid #333; flex: 0 0 auto; }
+  .campaign-status.NOT_STARTED { border-color: #555; }
+  .campaign-status.RUNNING, .campaign-status.IN_PROGRESS { border-color: #f39c12; }
+  .campaign-status.PASSED, .campaign-status.COMPLETE { border-color: #2ecc71; }
+  .campaign-status.STOPPED, .campaign-status.FAILED { border-color: #e74c3c; }
+  .status-label { font-size: 0.6rem; color: #555; text-transform: uppercase; letter-spacing: 2px; }
+  .status-value { font-size: 1rem; font-weight: bold; margin-top: 2px; }
+  .NOT_STARTED .status-value { color: #555; }
+  .RUNNING .status-value, .IN_PROGRESS .status-value { color: #f39c12; }
+  .PASSED .status-value, .COMPLETE .status-value { color: #2ecc71; }
+  .STOPPED .status-value, .FAILED .status-value { color: #e74c3c; }
+
+  .stats-row { display: flex; gap: 12px; flex-wrap: wrap; flex: 1; }
+  .stat-card { background: #111118; border: 1px solid #1a1a2a; border-radius: 6px; padding: 10px 14px; min-width: 120px; }
+  .stat-label { font-size: 0.6rem; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+  .stat-value { font-size: 1.2rem; font-weight: bold; color: #9b59b6; margin-top: 2px; }
+  .stat-value.ok { color: #2ecc71; }
+  .stat-value.warn { color: #f39c12; }
+  .stat-value.error { color: #e74c3c; }
+
+  .section-title { font-size: 0.65rem; color: #9b59b6; text-transform: uppercase; letter-spacing: 2px; margin: 20px 0 8px; }
+
+  .wave-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .wave-card { background: #111118; border: 1px solid #222; border-radius: 6px; padding: 14px; }
+  .wave-card.PENDING { border-color: #333; opacity: 0.7; }
+  .wave-card.RUNNING, .wave-card.IN_PROGRESS { border-color: #f39c12; box-shadow: 0 0 8px rgba(243,156,18,0.15); }
+  .wave-card.PASSED, .wave-card.COMPLETE { border-color: #2ecc71; }
+  .wave-card.BLOCKED { border-color: #333; opacity: 0.5; }
+  .wave-card.FAILED { border-color: #e74c3c; }
+  .wave-name { font-size: 0.65rem; color: #9b59b6; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .wave-title { font-size: 0.8rem; color: #ccc; margin-bottom: 8px; line-height: 1.3; }
+  .wave-status { font-size: 0.65rem; padding: 2px 8px; border-radius: 3px; display: inline-block; }
+  .wave-status.PENDING { background: #1a1a1a; color: #555; }
+  .wave-status.RUNNING, .wave-status.IN_PROGRESS { background: #3d2a00; color: #f39c12; }
+  .wave-status.PASSED, .wave-status.COMPLETE { background: #0d2d1a; color: #2ecc71; }
+  .wave-status.BLOCKED { background: #1a1a1a; color: #444; }
+  .wave-status.FAILED { background: #2d0d0d; color: #e74c3c; }
+
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.78rem; }
+  th { text-align: left; padding: 8px 10px; background: #0d0d14; color: #9b59b6; border-bottom: 1px solid #2a2a3a; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 1px; }
+  td { padding: 7px 10px; border-bottom: 1px solid #1a1a24; vertical-align: top; }
+  tr:hover td { background: #0f0f18; }
+  .comp { color: #e0e0e0; }
+  .owner { color: #3498db; font-size: 0.7rem; }
+  .wt { color: #555; font-size: 0.65rem; }
+  .iter { color: #f39c12; }
+  .verdict { font-weight: bold; }
+  .verdict.PASS, .verdict.PASSED, .verdict.passed { color: #2ecc71; }
+  .verdict.FAIL, .verdict.FAILED, .verdict.failed { color: #e74c3c; }
+  .verdict.PENDING, .verdict.pending { color: #555; }
+  .verdict.BLOCKED, .verdict.blocked { color: #444; }
+  .verdict.RUNNING, .verdict.IN_PROGRESS { color: #f39c12; }
+  .gap { color: #c0392b; font-size: 0.68rem; max-width: 260px; }
+
+  .quality-bar { background: #111118; border: 1px solid #1a1a2a; border-radius: 6px; padding: 14px; margin-bottom: 20px; }
+  .quality-title { font-size: 0.65rem; color: #9b59b6; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+  .qb-item { display: flex; align-items: flex-start; gap: 10px; padding: 4px 0; border-bottom: 1px solid #1a1a24; font-size: 0.73rem; }
+  .qb-item:last-child { border-bottom: none; }
+  .qb-num { color: #9b59b6; min-width: 18px; font-size: 0.62rem; padding-top: 1px; }
+  .qb-text { color: #909090; line-height: 1.4; flex: 1; }
+  .qb-status { margin-left: auto; font-size: 0.62rem; padding: 1px 6px; border-radius: 3px; white-space: nowrap; }
+  .qb-status.untested { background: #1a1a1a; color: #444; }
+  .qb-status.passed { background: #0d2d1a; color: #2ecc71; }
+  .qb-status.failed { background: #2d0d0d; color: #e74c3c; }
+
+  .audit-panel { background: #111118; border: 1px solid #1a1a2a; border-radius: 6px; padding: 14px; margin-bottom: 20px; }
+  .audit-title { font-size: 0.65rem; color: #9b59b6; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+  .audit-row { display: flex; gap: 24px; flex-wrap: wrap; }
+  .audit-stat { }
+  .audit-stat-label { font-size: 0.6rem; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+  .audit-stat-value { font-size: 1rem; color: #ccc; margin-top: 2px; }
+  .file-delta { color: #f39c12; }
+  .file-delta.none { color: #2ecc71; }
+  .file-list { font-size: 0.65rem; color: #555; margin-top: 4px; max-height: 60px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .log { background: #111118; border: 1px solid #1a1a2a; border-radius: 6px; padding: 14px; margin-bottom: 20px; }
+  .log-title { font-size: 0.65rem; color: #9b59b6; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; }
+  .log-entry { padding: 5px 0; border-bottom: 1px solid #1a1a24; font-size: 0.73rem; color: #777; }
+  .log-entry:last-child { border-bottom: none; }
+  .log-time { color: #444; margin-right: 8px; }
+  .log-action { color: #c0392b; }
+  .log-action.pass { color: #2ecc71; }
+  .log-action.info { color: #555; }
+
+  .parity-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  .parity-card { background: #111118; border: 1px solid #1a1a2a; border-radius: 6px; padding: 12px 16px; flex: 1; min-width: 160px; }
+  .parity-label { font-size: 0.6rem; color: #555; text-transform: uppercase; letter-spacing: 1px; }
+  .parity-value { font-size: 1.1rem; font-weight: bold; margin-top: 4px; }
+  .parity-value.complete { color: #2ecc71; }
+  .parity-value.partial { color: #f39c12; }
+  .parity-value.unknown { color: #555; }
+
+  .footer { margin-top: 30px; padding-top: 12px; border-top: 1px solid #1a1a2a; font-size: 0.62rem; color: #333; text-align: center; }
+  .refresh-info { font-size: 0.62rem; color: #333; margin-top: 4px; }
+  .loading { color: #555; font-size: 0.75rem; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>PURPCLAW P0 Runtime Integrity</h1>
+  <div class="subtitle">Live board · polls public/board/truth-manifest.json every 30s</div>
+
+  <!-- Top bar: campaign status + key stats -->
+  <div class="topbar">
+    <div class="campaign-status" id="campaign-status">
+      <div class="status-label">Campaign</div>
+      <div class="status-value" id="campaign-status-value">LOADING...</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">Files Tracked</div>
+        <div class="stat-value" id="stat-tracked">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Audit Delta</div>
+        <div class="stat-value" id="stat-delta">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Services</div>
+        <div class="stat-value" id="stat-services">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Routes</div>
+        <div class="stat-value" id="stat-routes">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Agents</div>
+        <div class="stat-value" id="stat-agents">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Wave cards -->
+  <div class="section-title">Wave Progress</div>
+  <div class="wave-grid" id="wave-grid">
+    <div class="wave-card"><div class="wave-name">Wave A</div><div class="wave-title">Runtime boot + session persistence</div><div class="wave-status" id="wave-a-status">—</div></div>
+    <div class="wave-card"><div class="wave-name">Wave B</div><div class="wave-title">ToolRuntime + permission enforcement</div><div class="wave-status" id="wave-b-status">—</div></div>
+    <div class="wave-card"><div class="wave-name">Wave C</div><div class="wave-title">Provider routing / lane resolution</div><div class="wave-status" id="wave-c-status">—</div></div>
+    <div class="wave-card"><div class="wave-name">Wave D</div><div class="wave-title">Cross-surface integration + conformance</div><div class="wave-status" id="wave-d-status">—</div></div>
+  </div>
+
+  <!-- Workstreams table -->
+  <div class="section-title">Workstreams</div>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Component</th><th>Owner</th><th>Worktree</th><th>Iterations</th><th>Last Verdict</th><th>Largest Gap</th>
+      </tr>
+    </thead>
+    <tbody id="workstreams-body">
+      <tr><td colspan="7" class="loading">Loading...</td></tr>
+    </tbody>
+  </table>
+
+  <!-- Quality bar -->
+  <div class="section-title">Quality Bar</div>
+  <div class="quality-bar">
+    <div class="quality-title" id="qb-title">Acceptance Criteria</div>
+    <div id="qb-list"><div class="qb-item loading">Loading...</div></div>
+  </div>
+
+  <!-- Integration findings -->
+  <div class="section-title">Integration Findings</div>
+  <table>
+    <thead>
+      <tr><th>ID</th><th>Severity</th><th>Scope</th><th>Finding</th><th>Required Action</th></tr>
+    </thead>
+    <tbody id="findings-body">
+      <tr><td colspan="5" class="loading">Loading...</td></tr>
+    </tbody>
+  </table>
+  <!-- Audit + parity panel -->
+  <div class="audit-panel">
+    <div class="audit-title">Continuous Audit</div>
+    <div class="audit-row">
+      <div class="audit-stat">
+        <div class="audit-stat-label">Last Run</div>
+        <div class="audit-stat-value" id="audit-lastrun">—</div>
+      </div>
+      <div class="audit-stat">
+        <div class="audit-stat-label">Last Change</div>
+        <div class="audit-stat-value" id="audit-lastchange">—</div>
+      </div>
+      <div class="audit-stat">
+        <div class="audit-stat-label">Files Changed</div>
+        <div class="audit-stat-value" id="audit-changed">—</div>
+      </div>
+      <div class="audit-stat">
+        <div class="audit-stat-label">Changed Files</div>
+        <div class="file-list" id="audit-filelist">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parity summary -->
+  <div class="section-title">Parity Status</div>
+  <div class="parity-row" id="parity-row">
+    <div class="parity-card">
+      <div class="parity-label">CLI Parity</div>
+      <div class="parity-value unknown" id="parity-cli">—</div>
+    </div>
+    <div class="parity-card">
+      <div class="parity-label">Product Parity</div>
+      <div class="parity-value unknown" id="parity-product">—</div>
+    </div>
+    <div class="parity-card">
+      <div class="parity-label">Test Parity</div>
+      <div class="parity-value unknown" id="parity-test">—</div>
+    </div>
+  </div>
+
+  <!-- Campaign log -->
+  <div class="log">
+    <div class="log-title">Campaign Log</div>
+    <div id="log-entries">
+      <div class="log-entry"><span class="log-time">—</span><span class="log-action info">Board initialised. Waiting for first data.</span></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    PURPCLAW P0 Runtime Gauntlet · Eddie Cannon<br>
+    <span class="refresh-info" id="refresh-info">Auto-refresh every 60s · last refresh: —</span>
+  </div>
+</div>
+
+<script>
+const MANIFEST = '/board/truth-manifest.json';
+const REFRESH_MS = 60_000;
+let lastLogTs = null;
+
+function relTime(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  const diff = Math.floor((Date.now() - d) / 1000);
+  if (diff < 60) return diff + 's ago';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  return d.toISOString().slice(0, 10);
+}
+
+function setStatus(el, value) {
+  el.textContent = value || '—';
+}
+
+function setWaveCard(id, status) {
+  const card = document.getElementById('wave-' + id.toLowerCase() + '-card') ||
+               document.querySelector(`[data-wave="${id}"]`);
+  const statusEl = document.getElementById('wave-' + id + '-status') ||
+                   document.querySelector(`[data-wave-status="${id}"]`);
+  // Try to find by nearest sibling
+  const allCards = document.querySelectorAll('.wave-card');
+  const waveMap = { A: 0, B: 1, C: 2, D: 3 };
+  if (waveMap[id] !== undefined && allCards[waveMap[id]]) {
+    const card = allCards[waveMap[id]];
+    const statusEl = card.querySelector('.wave-status');
+    if (statusEl) {
+      statusEl.textContent = status || '—';
+      statusEl.className = 'wave-status ' + (status || '');
+      card.className = 'wave-card ' + (status || 'PENDING');
+    }
+  }
+}
+
+function render(m) {
+  // Campaign status
+  const cs = (m.gauntlet?.campaignStatus || 'UNKNOWN').replace('_', ' ');
+  document.getElementById('campaign-status-value').textContent = cs;
+  const csEl = document.getElementById('campaign-status');
+  csEl.className = 'campaign-status ' + (m.gauntlet?.campaignStatus || 'UNKNOWN');
+
+  // Stats
+  document.getElementById('stat-tracked').textContent = m.audit?.tracked?.toLocaleString() || '—';
+  const delta = (m.audit?.added?.length || 0) + (m.audit?.changed?.length || 0) + (m.audit?.removed?.length || 0);
+  const deltaEl = document.getElementById('stat-delta');
+  deltaEl.textContent = delta === 0 ? 'clean' : `+${delta}`;
+  deltaEl.className = 'stat-value ' + (delta === 0 ? 'ok' : 'warn');
+
+  const svcEl = document.getElementById('stat-services');
+  const svcOnline = m.services?.online || 0;
+  const svcTotal = m.services?.total || 0;
+  svcEl.textContent = svcTotal === 0 ? 'N/A' : `${svcOnline}/${svcTotal}`;
+  svcEl.className = 'stat-value ' + (svcTotal === 0 ? '' : svcOnline === svcTotal ? 'ok' : 'warn');
+
+  document.getElementById('stat-routes').textContent = m.routes?.total || '—';
+  document.getElementById('stat-agents').textContent = m.agents?.live_unique ||
+    (m.agents?.onDisk ? m.agents.onDisk : '—');
+
+  // Waves
+  const waves = m.gauntlet?.waves || {};
+  const waveIds = ['A', 'B', 'C', 'D'];
+  const allCards = document.querySelectorAll('.wave-card');
+  waveIds.forEach((id, i) => {
+    const w = waves[id] || {};
+    const status = w.status || 'PENDING';
+    const statusEl = allCards[i]?.querySelector('.wave-status');
+    if (statusEl) {
+      statusEl.textContent = status;
+      statusEl.className = 'wave-status ' + status;
+      allCards[i].className = 'wave-card ' + status;
+    }
+  });
+
+  // Workstreams
+  const wsBody = document.getElementById('workstreams-body');
+  const workstreams = m.gauntlet?.workstreams || {};
+  if (Object.keys(workstreams).length === 0) {
+    wsBody.innerHTML = '<tr><td colspan="7" style="color:#444;font-size:0.75rem;">No workstreams registered yet.</td></tr>';
+  } else {
+    wsBody.innerHTML = Object.entries(workstreams).map(([id, ws]) => {
+      const v = ws.lastVerdict || 'PENDING';
+      return `<tr>
+        <td>${id}</td>
+        <td class="comp">${ws.component || '—'}</td>
+        <td class="owner">${ws.owner || '—'}</td>
+        <td class="wt">${ws.worktree || '—'}</td>
+        <td class="iter">${ws.iterations ?? '—'}</td>
+        <td class="verdict ${v}">${v}</td>
+        <td class="gap">${ws.lastGap || '—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Quality bar
+  const qbList = document.getElementById('qb-list');
+  const qb = m.gauntlet?.qualityBar || [];
+  if (qb.length === 0) {
+    qbList.innerHTML = '<div class="qb-item" style="color:#444;">No quality criteria registered.</div>';
+  } else {
+    qbList.innerHTML = qb.map((q, i) => {
+      // Quality bar entries from P0_RUNTIME_STATE don't have status — they're all untested until proven
+      // We track them as unknown unless the campaign has passed them
+      const status = 'untested';
+      return `<div class="qb-item">
+        <span class="qb-num">${q.id || i + 1}</span>
+        <span class="qb-text">${q.text || q}</span>
+        <span class="qb-status ${status}">${status.toUpperCase()}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Integration findings
+  const findingsBody = document.getElementById('findings-body');
+  const findings = m.gauntlet?.integrationFindings || [];
+  if (findings.length === 0) {
+    findingsBody.innerHTML = '<tr><td colspan="5" style="color:#444;font-size:0.75rem;">No integration findings recorded.</td></tr>';
+  } else {
+    findingsBody.innerHTML = findings.map(finding => {
+      const verdict = finding.severity === 'BLOCKER' ? 'FAIL' : 'PENDING';
+      return `<tr>
+        <td>${finding.id || '—'}</td>
+        <td class="verdict ${verdict}">${finding.severity || 'UNKNOWN'}</td>
+        <td class="comp">${finding.scope || '—'}</td>
+        <td class="gap">${finding.summary || '—'}</td>
+        <td class="gap">${finding.requiredAction || '—'}</td>
+      </tr>`;
+    }).join('');
+  }
+  // Audit panel
+  document.getElementById('audit-lastrun').textContent = relTime(m.audit?.lastRun);
+  document.getElementById('audit-lastchange').textContent = relTime(m.audit?.lastChange);
+  const changed = (m.audit?.changed?.length || 0) + (m.audit?.added?.length || 0) + (m.audit?.removed?.length || 0);
+  document.getElementById('audit-changed').textContent = changed === 0 ? 'None' : `${changed} file(s)`;
+  const changedFiles = [...(m.audit?.added || []), ...(m.audit?.changed || []), ...(m.audit?.removed || [])];
+  document.getElementById('audit-filelist').textContent = changedFiles.length === 0
+    ? 'Clean since last audit'
+    : changedFiles.slice(0, 8).join(', ') + (changedFiles.length > 8 ? ' …' : '');
+
+  // Parity
+  if (m.parity?.available) {
+    const pcli = document.getElementById('parity-cli');
+    const pprod = document.getElementById('parity-product');
+    const ptest = document.getElementById('parity-test');
+    if (pcli) {
+      const cli = m.parity.cliParity;
+      pcli.textContent = cli ? `${cli.done}/${cli.total}` : '—';
+      pcli.className = 'parity-value ' + (!cli || cli.done === cli.total ? 'complete' : cli.done > 0 ? 'partial' : 'unknown');
+    }
+    if (pprod) {
+      const prod = m.parity.productParity;
+      pprod.textContent = prod ? `${prod.done}/${prod.total}` : '—';
+      pprod.className = 'parity-value ' + (!prod || prod.done === prod.total ? 'complete' : prod.done > 0 ? 'partial' : 'unknown');
+    }
+    if (ptest) {
+      const test = m.parity.testParity;
+      ptest.textContent = test ? `${test.done}/${test.total}` : '—';
+      ptest.className = 'parity-value ' + (!test || test.done === test.total ? 'complete' : test.done > 0 ? 'partial' : 'unknown');
+    }
+  }
+
+  // Log — only show new entries
+  const logEl = document.getElementById('log-entries');
+  const newEntries = [];
+  if (m.audit?.lastChange) {
+    const changed2 = (m.audit?.added?.length || 0) + (m.audit?.changed?.length || 0) + (m.audit?.removed?.length || 0);
+    if (changed2 > 0 && m.audit.lastChange !== lastLogTs) {
+      newEntries.push({ ts: m.audit.lastChange, action: 'pass', text: `${changed2} file(s) changed — audit updated` });
+      lastLogTs = m.audit.lastChange;
+    }
+  }
+  if (m.gauntlet?.campaignStatus && m.gauntlet?.campaignStatus !== 'NOT_STARTED') {
+    const wsList = Object.values(m.gauntlet.workstreams || {});
+    const running = wsList.filter(w => w.status === 'RUNNING' || w.status === 'IN_PROGRESS');
+    if (running.length > 0) {
+      newEntries.push({ ts: new Date().toISOString(), action: 'info', text: `${running.length} workstream(s) in progress` });
+    }
+  }
+  if (newEntries.length > 0) {
+    newEntries.forEach(e => {
+      const d = new Date(e.ts);
+      const time = d.toISOString().replace('T', ' ').slice(0, 16);
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      div.innerHTML = `<span class="log-time">${time}</span><span class="log-action ${e.action}">${e.text}</span>`;
+      logEl.prepend(div);
+    });
+    // Keep only last 20
+    while (logEl.children.length > 20) logEl.removeChild(logEl.lastChild);
+  }
+}
+
+async function fetchManifest() {
+  try {
+    const r = await fetch(MANIFEST + '?t=' + Date.now());
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const m = await r.json();
+    render(m);
+    document.getElementById('refresh-info').textContent =
+      'Auto-refresh every 30s · last refresh: ' + new Date().toLocaleTimeString();
+  } catch (e) {
+    console.error('[board] fetch error:', e.message);
+  }
+}
+
+fetchManifest();
+setInterval(fetchManifest, REFRESH_MS);
+</script>
+</body>
+</html>

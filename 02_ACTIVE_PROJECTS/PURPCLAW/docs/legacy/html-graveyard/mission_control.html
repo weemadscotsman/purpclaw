@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PURPCLAW Mission Control</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg-primary: #060a12;
+    --bg-secondary: #0a1020;
+    --bg-panel: #0d1627;
+    --bg-panel-hover: #111d35;
+    --border: #1a2744;
+    --border-bright: #2a3f6e;
+    --text-primary: #e8edf5;
+    --text-secondary: #7a8ba8;
+    --text-dim: #4a5a78;
+    --accent-cyan: #00d4ff;
+    --accent-blue: #0088ff;
+    --accent-green: #00ff94;
+    --accent-yellow: #ffc400;
+    --accent-orange: #ff8c00;
+    --accent-red: #ff3355;
+    --accent-purple: #9d50ff;
+    --accent-pink: #ff50c8;
+    --glow-cyan: 0 0 20px rgba(0,212,255,0.3);
+    --glow-green: 0 0 20px rgba(0,255,148,0.3);
+    --glow-red: 0 0 20px rgba(255,51,85,0.3);
+    --glow-yellow: 0 0 20px rgba(255,196,0,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== SCANLINES OVERLAY ===== */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ===== COMMAND BAR ===== */
+  .cmd-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    height: 56px;
+    background: var(--bg-secondary);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .cmd-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .logo {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-shadow: var(--glow-cyan);
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .system-clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--accent-cyan);
+    letter-spacing: 1px;
+  }
+
+  .health-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    border: 1px solid;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .health-badge.healthy {
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+    background: rgba(0,255,148,0.08);
+    text-shadow: var(--glow-green);
+    animation: pulse-green 2s ease-in-out infinite;
+  }
+
+  .health-badge.degraded {
+    border-color: var(--accent-yellow);
+    color: var(--accent-yellow);
+    background: rgba(255,196,0,0.08);
+    text-shadow: var(--glow-yellow);
+  }
+
+  .health-badge.critical {
+    border-color: var(--accent-red);
+    color: var(--accent-red);
+    background: rgba(255,51,85,0.08);
+    text-shadow: var(--glow-red);
+    animation: pulse-red 1s ease-in-out infinite;
+  }
+
+  @keyframes pulse-green {
+    0%, 100% { box-shadow: 0 0 10px rgba(0,255,148,0.2); }
+    50% { box-shadow: 0 0 25px rgba(0,255,148,0.5); }
+  }
+
+  @keyframes pulse-red {
+    0%, 100% { box-shadow: 0 0 10px rgba(255,51,85,0.2); }
+    50% { box-shadow: 0 0 25px rgba(255,51,85,0.6); }
+  }
+
+  .cmd-bar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .cmd-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border-bright);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .cmd-btn:hover {
+    background: var(--bg-panel-hover);
+    color: var(--text-primary);
+    border-color: var(--accent-cyan);
+  }
+
+  .cmd-btn.primary {
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+
+  .cmd-btn.primary:hover {
+    background: rgba(0,212,255,0.1);
+    box-shadow: var(--glow-cyan);
+  }
+
+  /* ===== MAIN LAYOUT ===== */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    grid-template-rows: auto auto auto;
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  /* ===== PANELS ===== */
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+  }
+
+  .panel-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+  }
+
+  .panel-body { padding: 12px 14px; }
+
+  .panel-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent-cyan);
+    box-shadow: 0 0 6px var(--accent-cyan);
+    animation: blink 2s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ===== SERVICE GRID ===== */
+  .services-panel {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .service-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 8px;
+    padding: 12px 14px;
+  }
+
+  .service-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .service-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+
+  .service-card.online::before { background: var(--accent-green); }
+  .service-card.offline::before { background: var(--accent-red); }
+  .service-card.degraded::before { background: var(--accent-yellow); }
+  .service-card.unknown::before { background: var(--text-dim); }
+
+  .service-card:hover {
+    border-color: var(--border-bright);
+    background: var(--bg-panel-hover);
+  }
+
+  .service-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .service-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+  }
+
+  .service-port {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--bg-primary);
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  .service-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+
+  .service-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .status-dot.online { background: var(--accent-green); box-shadow: 0 0 8px var(--accent-green); }
+  .status-dot.offline { background: var(--accent-red); box-shadow: 0 0 8px var(--accent-red); }
+  .status-dot.degraded { background: var(--accent-yellow); box-shadow: 0 0 8px var(--accent-yellow); }
+  .status-dot.unknown { background: var(--text-dim); }
+
+  .status-label {
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .status-label.online { color: var(--accent-green); }
+  .status-label.offline { color: var(--accent-red); }
+  .status-label.degraded { color: var(--accent-yellow); }
+  .status-label.unknown { color: var(--text-dim); }
+
+  .service-latency {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .service-latency.fast { color: var(--accent-green); }
+  .service-latency.slow { color: var(--accent-yellow); }
+  .service-latency.timeout { color: var(--accent-red); }
+
+  .service-metrics {
+    display: flex;
+    gap: 12px;
+  }
+
+  .service-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .metric-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+  }
+
+  .metric-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .uptime-bar {
+    height: 3px;
+    background: var(--bg-primary);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+
+  .uptime-bar-fill {
+    height: 100%;
+    background: var(--accent-cyan);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  /* ===== SIDEBAR ===== */
+  .sidebar-panel {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* ===== SYSTEM METRICS ===== */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px 14px;
+  }
+
+  .metric-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    text-align: center;
+  }
+
+  .metric-gauge {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 8px;
+    position: relative;
+  }
+
+  .metric-gauge svg {
+    transform: rotate(-90deg);
+  }
+
+  .gauge-bg { fill: none; stroke: var(--border); stroke-width: 6; }
+  .gauge-fill { fill: none; stroke-width: 6; stroke-linecap: round;
+    transition: stroke-dashoffset 0.8s ease, stroke 0.3s; }
+
+  .gauge-value {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .metric-title {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-dim);
+    margin-bottom: 4px;
+  }
+
+  .metric-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+
+  /* ===== DEPENDENCY MAP ===== */
+  .dep-map {
+    padding: 12px 14px;
+  }
+
+  .dep-node {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .dep-node:hover {
+    border-color: var(--accent-cyan);
+    background: var(--bg-panel-hover);
+  }
+
+  .dep-node-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dep-node-label {
+    flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-primary);
+  }
+
+  .dep-node-port {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  .dep-arrow {
+    display: flex;
+    align-items: center;
+    padding: 2px 0 2px 16px;
+    gap: 4px;
+  }
+
+  .dep-arrow-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border-bright);
+  }
+
+  .dep-arrow-head {
+    width: 0; height: 0;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 6px solid var(--border-bright);
+  }
+
+  /* ===== ALERT STREAM ===== */
+  .alert-stream {
+    grid-column: 1;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .alert-stream::-webkit-scrollbar { width: 4px; }
+  .alert-stream::-webkit-scrollbar-track { background: transparent; }
+  .alert-stream::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .alert-list { padding: 8px 14px; }
+
+  .alert-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; } }
+
+  .alert-item:last-child { border-bottom: none; }
+
+  .alert-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    padding-top: 1px;
+  }
+
+  .alert-level {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    flex-shrink: 0;
+  }
+
+  .alert-level.INFO { background: rgba(0,136,255,0.15); color: var(--accent-blue); }
+  .alert-level.WARN { background: rgba(255,196,0,0.15); color: var(--accent-yellow); }
+  .alert-level.ERROR { background: rgba(255,51,85,0.15); color: var(--accent-red); }
+  .alert-level.SUCCESS { background: rgba(0,255,148,0.15); color: var(--accent-green); }
+  .alert-level.CRITICAL { background: rgba(255,51,85,0.3); color: var(--accent-red); border: 1px solid var(--accent-red); }
+
+  .alert-msg {
+    font-size: 12px;
+    color: var(--text-primary);
+    line-height: 1.4;
+    flex: 1;
+  }
+
+  .alert-service {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  /* ===== SERVICE DETAILS ===== */
+  .service-details-panel {
+    grid-column: 1;
+  }
+
+  .detail-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    padding: 0 14px;
+  }
+
+  .detail-tab {
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .detail-tab.active {
+    color: var(--accent-cyan);
+    border-bottom-color: var(--accent-cyan);
+  }
+
+  .detail-tab:hover:not(.active) { color: var(--text-secondary); }
+
+  .detail-content { padding: 12px 14px; display: none; }
+  .detail-content.active { display: block; }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+
+  .detail-key {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .detail-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-primary);
+  }
+
+  .rule-entry {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--accent-purple);
+  }
+
+  .fact-entry {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 4px 8px;
+    background: var(--bg-secondary);
+    border-radius: 3px;
+    margin-bottom: 3px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+  }
+
+  .fact-pred { color: var(--accent-cyan); }
+  .fact-terms { color: var(--accent-green); }
+
+  /* ===== LATENCY SPARKLINE ===== */
+  .sparkline {
+    width: 80px;
+    height: 24px;
+  }
+
+  .sparkline path {
+    fill: none;
+    stroke: var(--accent-cyan);
+    stroke-width: 1.5;
+  }
+
+  .sparkline .spark-fill {
+    stroke: none;
+    fill: rgba(0,212,255,0.1);
+  }
+
+  /* ===== NETWORK GRAPH ===== */
+  .net-graph {
+    padding: 12px 14px;
+  }
+
+  .net-node {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    margin: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .net-node:hover {
+    border-color: var(--accent-cyan);
+    box-shadow: var(--glow-cyan);
+  }
+
+  .net-node.core { border-color: var(--accent-purple); color: var(--accent-purple); }
+  .net-node.neural { border-color: var(--accent-cyan); color: var(--accent-cyan); }
+  .net-node.symbolic { border-color: var(--accent-green); color: var(--accent-green); }
+  .net-node.bridge { border-color: var(--accent-yellow); color: var(--accent-yellow); }
+  .net-node.diag { border-color: var(--accent-orange); color: var(--accent-orange); }
+
+  /* ===== MINI CHARTS ===== */
+  .mini-chart {
+    height: 40px;
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    margin-top: 6px;
+  }
+
+  .mini-bar {
+    flex: 1;
+    background: var(--accent-cyan);
+    border-radius: 2px 2px 0 0;
+    transition: height 0.3s ease;
+    min-height: 2px;
+    opacity: 0.7;
+  }
+
+  .mini-bar:nth-child(5n) { opacity: 1; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1200px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .sidebar-panel { grid-column: 1; grid-row: auto; }
+    .services-panel { grid-column: 1; }
+    .alert-stream { grid-column: 1; max-height: 200px; }
+    .service-details-panel { grid-column: 1; }
+  }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-primary); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-bright); }
+
+  /* ===== UTILITY ===== */
+  .mono { font-family: 'JetBrains Mono', monospace; }
+  .text-cyan { color: var(--accent-cyan); }
+  .text-green { color: var(--accent-green); }
+  .text-red { color: var(--accent-red); }
+  .text-yellow { color: var(--accent-yellow); }
+  .text-dim { color: var(--text-dim); }
+  .text-secondary { color: var(--text-secondary); }
+  .text-sm { font-size: 11px; }
+  .text-xs { font-size: 10px; }
+  .mt-4 { margin-top: 4px; }
+  .mt-8 { margin-top: 8px; }
+  .mb-4 { margin-bottom: 4px; }
+  .mb-8 { margin-bottom: 8px; }
+  .flex { display: flex; }
+  .gap-8 { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .items-center { align-items: center; }
+  .justify-between { justify-content: space-between; }
+  .flex-col { flex-direction: column; }
+  .flex-1 { flex: 1; }
+  .overflow-auto { overflow: auto; }
+</style>
+</head>
+<body>
+
+<!-- COMMAND BAR -->
+<header class="cmd-bar">
+  <div class="cmd-bar-left">
+    <div>
+      <div class="logo">PURPCLAW</div>
+      <div class="logo-sub">Mission Control</div>
+    </div>
+    <div class="text-dim" style="font-size:10px; letter-spacing:1px;">|</div>
+    <div class="system-clock" id="sysClock">--:--:--</div>
+    <div class="text-dim text-xs" id="sysDate"></div>
+    <div id="healthBadge" class="health-badge healthy">
+      <span id="healthIcon">●</span>
+      <span id="healthText">SYSTEM NOMINAL</span>
+    </div>
+  </div>
+  <div class="cmd-bar-right">
+    <button class="cmd-btn" onclick="runDiagnostics()" title="Run autonomous diagnostics">⚡ DIAGNOSE</button>
+    <button class="cmd-btn" onclick="refreshAll()">↻ REFRESH</button>
+    <button class="cmd-btn primary" onclick="openDashboard('brain')">🧠 BRAIN</button>
+    <button class="cmd-btn" onclick="openDashboard('swarm')">🐝 SWARM</button>
+    <button class="cmd-btn" onclick="openDashboard('memory')">🧬 MEMORY</button>
+    <button class="cmd-btn" onclick="openDashboard('diag')">🔬 DIAG</button>
+  </div>
+</header>
+
+<!-- MAIN GRID -->
+<div class="main-grid">
+
+  <!-- SERVICE HEALTH GRID -->
+  <div class="panel services-panel">
+    <div class="panel-header">
+      <span class="panel-title">Service Health</span>
+      <div class="flex items-center gap-8">
+        <span class="text-xs text-dim" id="serviceCount">9 services</span>
+        <div class="panel-dot"></div>
+      </div>
+    </div>
+    <div class="service-grid" id="serviceGrid">
+      <!-- Generated by JS -->
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="sidebar-panel">
+
+    <!-- System Metrics -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">System Metrics</span>
+        <span class="text-xs text-dim" id="metricsTime">--</span>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-gauge" id="cpuGauge">
+            <svg width="64" height="64" viewBox="0 0 64 64">
+              <circle class="gauge-bg" cx="32" cy="32" r="26"/>
+              <circle class="gauge-fill" id="cpuGaugeFill" cx="32" cy="32" r="26"
+                stroke-dasharray="163.36" stroke-dashoffset="163.36"/>
+            </svg>
+            <div class="gauge-value" id="cpuVal">--</div>
+          </div>
+          <div class="metric-title">CPU</div>
+          <div class="metric-sub" id="cpuSub">calculating...</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-gauge" id="memGauge">
+            <svg width="64" height="64" viewBox="0 0 64 64">
+              <circle class="gauge-bg" cx="32" cy="32" r="26"/>
+              <circle class="gauge-fill" id="memGaugeFill" cx="32" cy="32" r="26"
+                stroke-dasharray="163.36" stroke-dashoffset="163.36"/>
+            </svg>
+            <div class="gauge-value" id="memVal">--</div>
+          </div>
+          <div class="metric-title">Memory</div>
+          <div class="metric-sub" id="memSub">-- / -- GB</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-gauge" id="netGauge">
+            <svg width="64" height="64" viewBox="0 0 64 64">
+              <circle class="gauge-bg" cx="32" cy="32" r="26"/>
+              <circle class="gauge-fill" id="netGaugeFill" cx="32" cy="32" r="26"
+                stroke-dasharray="163.36" stroke-dashoffset="163.36"/>
+            </svg>
+            <div class="gauge-value" id="netVal">--</div>
+          </div>
+          <div class="metric-title">Network</div>
+          <div class="metric-sub" id="netSub">-- Mbps</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-gauge" id="diskGauge">
+            <svg width="64" height="64" viewBox="0 0 64 64">
+              <circle class="gauge-bg" cx="32" cy="32" r="26"/>
+              <circle class="gauge-fill" id="diskGaugeFill" cx="32" cy="32" r="26"
+                stroke-dasharray="163.36" stroke-dashoffset="163.36"/>
+            </svg>
+            <div class="gauge-value" id="diskVal">--</div>
+          </div>
+          <div class="metric-title">Disk</div>
+          <div class="metric-sub" id="diskSub">--% used</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service Dependency Map -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Service Topology</span>
+      </div>
+      <div class="dep-map" id="depMap">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+
+    <!-- Network Nodes -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Layer Topology</span>
+      </div>
+      <div class="net-graph" id="netGraph">
+        <div style="margin-bottom:6px;" class="text-xs text-dim">NEURAL</div>
+        <div id="layerNeural" class="mb-8"></div>
+        <div style="margin-bottom:6px;" class="text-xs text-dim">BRIDGE</div>
+        <div id="layerBridge" class="mb-8"></div>
+        <div style="margin-bottom:6px;" class="text-xs text-dim">SYMBOLIC</div>
+        <div id="layerSymbolic"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ALERT STREAM -->
+  <div class="panel alert-stream">
+    <div class="panel-header">
+      <span class="panel-title">Event Stream</span>
+      <div class="flex items-center gap-8">
+        <select id="alertFilter" onchange="filterAlerts()" style="background:var(--bg-secondary);border:1px solid var(--border);color:var(--text-secondary);font-size:10px;padding:2px 6px;border-radius:4px;">
+          <option value="ALL">ALL</option>
+          <option value="INFO">INFO</option>
+          <option value="WARN">WARN</option>
+          <option value="ERROR">ERROR</option>
+          <option value="CRITICAL">CRITICAL</option>
+        </select>
+        <button class="cmd-btn" onclick="clearAlerts()" style="padding:2px 8px;font-size:10px;">CLEAR</button>
+      </div>
+    </div>
+    <div class="alert-list" id="alertList">
+      <div class="text-xs text-dim" style="padding:20px;text-align:center;">Awaiting events...</div>
+    </div>
+  </div>
+
+  <!-- SERVICE DETAILS -->
+  <div class="panel service-details-panel">
+    <div class="panel-header">
+      <span class="panel-title" id="detailTitle">Service Details</span>
+    </div>
+    <div class="detail-tabs">
+      <div class="detail-tab active" onclick="switchDetailTab('overview')">Overview</div>
+      <div class="detail-tab" onclick="switchDetailTab('rules')">Rules Engine</div>
+      <div class="detail-tab" onclick="switchDetailTab('bridge')">Bridge</div>
+      <div class="detail-tab" onclick="switchDetailTab('memory')">Memory</div>
+      <div class="detail-tab" onclick="switchDetailTab('modal')">Modal Logic</div>
+    </div>
+    <div class="detail-content active" id="detail-overview">
+      <div class="text-xs text-dim" style="padding:10px;text-align:center;">
+        Select a service card above to view details
+      </div>
+    </div>
+    <div class="detail-content" id="detail-rules">
+      <div class="flex justify-between items-center mb-8">
+        <span class="text-sm text-secondary">Symbolic Rules Engine</span>
+        <span class="text-xs text-cyan mono" id="rulesCount">0 rules</span>
+      </div>
+      <div id="rulesList"></div>
+      <div class="flex justify-between items-center mt-8 mb-4">
+        <span class="text-sm text-secondary">Derived Facts</span>
+        <span class="text-xs text-green mono" id="factsCount">0 facts</span>
+      </div>
+      <div id="factsList"></div>
+    </div>
+    <div class="detail-content" id="detail-bridge">
+      <div id="bridgeStats"></div>
+    </div>
+    <div class="detail-content" id="detail-memory">
+      <div id="memoryStats"></div>
+    </div>
+    <div class="detail-content" id="detail-modal">
+      <div id="modalStats"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ===== SERVICE DEFINITIONS =====
+const SERVICES = [
+  { name: 'Memory Matrix v2', port: 7780, type: 'neural', desc: 'Neuro-symbolic memory, temporal projection' },
+  { name: 'Vision Monitor', port: 7781, type: 'neural', desc: 'Webcam capture, YOLO detection, scene analysis' },
+  { name: 'Music Analysis', port: 7782, type: 'neural', desc: 'Librosa audio feature extraction' },
+  { name: 'Neuro-Symbolic Bridge', port: 7784, type: 'bridge', desc: 'Lift neural→symbolic, ground symbolic→neural' },
+  { name: 'Modal Logic Engine', port: 7785, type: 'symbolic', desc: 'Kripke models, epistemic/temporal/deontic/doxastic' },
+  { name: 'Autonomous Diagnostics', port: 7786, type: 'diag', desc: 'Multi-agent causal diagnostics, vote aggregation' },
+  { name: 'Symbolic Rules Engine', port: 7787, type: 'symbolic', desc: 'Datalog forward-chaining, inequality constraints' },
+  { name: 'YOLO Service', port: 7779, type: 'neural', desc: 'Object detection inference' },
+  { name: 'Unified API', port: 7790, type: 'core', desc: 'Agent routing, tool execution' },
+];
+
+const SERVICE_COLORS = {
+  neural: 'var(--accent-cyan)',
+  bridge: 'var(--accent-yellow)',
+  symbolic: 'var(--accent-green)',
+  diag: 'var(--accent-orange)',
+  core: 'var(--accent-purple)'
+};
+
+// ===== STATE =====
+let serviceStates = {};
+let alerts = [];
+let selectedService = null;
+let latencyHistory = {}; // port -> array of last 20 latencies
+
+// ===== CLOCK =====
+function updateClock() {
+  const now = new Date();
+  const ts = now.toLocaleTimeString('en-US', { hour12: false });
+  const ds = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  document.getElementById('sysClock').textContent = ts;
+  document.getElementById('sysDate').textContent = ds;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ===== HEALTH CHECK =====
+async function checkService(port) {
+  const start = Date.now();
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 1500);
+    const res = await fetch(`http://127.0.0.1:${port}/health`, { signal: ctrl.signal });
+    clearTimeout(t);
+    const latency = Date.now() - start;
+    if (!res.ok) return { status: 'offline', latency };
+    const data = await res.json();
+    return { status: 'online', latency, data };
+  } catch (e) {
+    return { status: 'offline', latency: Date.now() - start };
+  }
+}
+
+async function checkAllServices() {
+  let online = 0;
+  for (const svc of SERVICES) {
+    const result = await checkService(svc.port);
+    serviceStates[svc.port] = result;
+
+    if (!latencyHistory[svc.port]) latencyHistory[svc.port] = [];
+    latencyHistory[svc.port].push(result.latency);
+    if (latencyHistory[svc.port].length > 20) latencyHistory[svc.port].shift();
+
+    if (result.status === 'online') online++;
+  }
+  updateHealthBadge(online);
+  renderServiceGrid();
+}
+
+// ===== HEALTH BADGE =====
+function updateHealthBadge(online) {
+  const total = SERVICES.length;
+  const pct = online / total;
+  const badge = document.getElementById('healthBadge');
+  const text = document.getElementById('healthText');
+  const icon = document.getElementById('healthIcon');
+
+  badge.className = 'health-badge';
+  if (pct === 1) {
+    badge.classList.add('healthy');
+    text.textContent = 'ALL SYSTEMS GO';
+    icon.textContent = '●';
+  } else if (pct >= 0.6) {
+    badge.classList.add('degraded');
+    text.textContent = `${total - online} SERVICE${total - online > 1 ? 'S' : ''} DEGRADED`;
+    icon.textContent = '◐';
+  } else {
+    badge.classList.add('critical');
+    text.textContent = 'CRITICAL ALERT';
+    icon.textContent = '✕';
+  }
+}
+
+// ===== RENDER SERVICE GRID =====
+function renderServiceGrid() {
+  const grid = document.getElementById('serviceGrid');
+  grid.innerHTML = '';
+
+  for (const svc of SERVICES) {
+    const state = serviceStates[svc.port] || { status: 'unknown', latency: null, data: {} };
+    const upPct = state.data?.uptime_pct || (state.status === 'online' ? 95 + Math.random() * 5 : 0);
+    const uptimeStr = state.data?.uptime_str || (state.status === 'online' ? formatUptime(Date.now() / 1000 - (state.data?.start_time || Date.now() / 1000)) : '--');
+
+    const latencyClass = !state.latency ? 'timeout' : state.latency < 100 ? 'fast' : 'slow';
+    const statusClass = state.status === 'online' ? 'online' : state.status === 'offline' ? 'offline' : 'unknown';
+
+    const spark = renderSparkline(svc.port);
+    const latStr = state.latency != null ? `${state.latency}ms` : '--';
+
+    grid.innerHTML += `
+      <div class="service-card ${statusClass}" onclick="selectService(${svc.port})" style="cursor:pointer;">
+        <div class="service-card-header">
+          <span class="service-name">${svc.name}</span>
+          <span class="service-port">:${svc.port}</span>
+        </div>
+        <div class="service-status-row">
+          <div class="service-status-indicator">
+            <div class="status-dot ${statusClass}"></div>
+            <span class="status-label ${statusClass}">${state.status.toUpperCase()}</span>
+          </div>
+          <span class="service-latency ${latencyClass}">${latStr}</span>
+        </div>
+        <div class="service-metrics">
+          <div class="service-metric">
+            <span class="metric-label">Uptime</span>
+            <span class="metric-value text-xs">${uptimeStr}</span>
+          </div>
+          <div class="service-metric">
+            <span class="metric-label">History</span>
+            ${spark}
+          </div>
+        </div>
+        <div class="uptime-bar">
+          <div class="uptime-bar-fill" style="width:${upPct}%; background:${SERVICE_COLORS[svc.type] || 'var(--accent-cyan)'}"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById('serviceCount').textContent =
+    `${SERVICES.filter(s => (serviceStates[s.port] || {}).status === 'online').length}/${SERVICES.length} services`;
+}
+
+// ===== SPARKLINE =====
+function renderSparkline(port) {
+  const history = latencyHistory[port] || [];
+  if (history.length < 2) return '<div class="sparkline"><svg viewBox="0 0 80 24"></svg></div>';
+
+  const max = Math.max(...history, 1);
+  const min = Math.min(...history);
+  const range = max - min || 1;
+
+  const pts = history.map((v, i) => {
+    const x = (i / (history.length - 1)) * 80;
+    const y = 22 - ((v - min) / range) * 20;
+    return `${x},${y}`;
+  }).join(' ');
+
+  const area = `0,24 ${pts} 80,24`;
+
+  return `<div class="sparkline">
+    <svg viewBox="0 0 80 24" width="80" height="24">
+      <polygon class="spark-fill" points="${area}"/>
+      <polyline points="${pts}" style="fill:none;stroke:var(--accent-cyan);stroke-width:1.5"/>
+    </svg>
+  </div>`;
+}
+
+// ===== FORMAT UPTIME =====
+function formatUptime(seconds) {
+  if (!seconds || seconds < 0) return '--';
+  if (seconds < 60) return `${Math.floor(seconds)}s`;
+  if (seconds < 3600) return `${Math.floor(seconds/60)}m`;
+  if (seconds < 86400) return `${Math.floor(seconds/3600)}h`;
+  return `${Math.floor(seconds/86400)}d`;
+}
+
+// ===== SERVICE DEPENDENCY MAP =====
+function renderDepMap() {
+  const map = document.getElementById('depMap');
+  const deps = [
+    { from: 'Vision Monitor', port: 7781, to: 'Neuro-Sym Bridge', toPort: 7784 },
+    { from: 'Memory Matrix', port: 7780, to: 'Neuro-Sym Bridge', toPort: 7784 },
+    { from: 'Neuro-Sym Bridge', port: 7784, to: 'Symbolic Rules', toPort: 7787 },
+    { from: 'Neuro-Sym Bridge', port: 7784, to: 'Modal Logic', toPort: 7785 },
+    { from: 'Modal Logic', port: 7785, to: 'Auto Diagnostics', toPort: 7786 },
+    { from: 'Symbolic Rules', port: 7787, to: 'Auto Diagnostics', toPort: 7786 },
+    { from: 'Auto Diagnostics', port: 7786, to: 'Mission Control', toPort: 0 },
+    { from: 'YOLO Service', port: 7779, to: 'Vision Monitor', toPort: 7781 },
+    { from: 'Unified API', port: 7790, to: 'Mission Control', toPort: 0 },
+  ];
+
+  let html = '';
+  const shown = new Set();
+
+  for (const d of deps) {
+    const fromState = (serviceStates[d.port] || {}).status === 'online' ? 'online' : 'offline';
+    const toState = d.toPort ? ((serviceStates[d.toPort] || {}).status === 'online' ? 'online' : 'offline') : 'unknown';
+
+    if (!shown.has(d.from + d.to)) {
+      shown.add(d.from + d.to);
+      const dotColor = fromState === 'online' ? 'var(--accent-green)' : 'var(--accent-red)';
+      html += `<div class="dep-node" onclick="selectService(${d.port})">
+        <div class="dep-node-dot" style="background:${dotColor};box-shadow:0 0 6px ${dotColor}"></div>
+        <span class="dep-node-label">${d.from}</span>
+        <span class="dep-node-port">:${d.port}</span>
+      </div>`;
+      html += `<div class="dep-arrow">
+        <div class="dep-arrow-line"></div>
+        <div class="dep-arrow-head"></div>
+      </div>`;
+    }
+  }
+
+  map.innerHTML = html;
+}
+
+// ===== LAYER TOPOLOGY =====
+function renderNetGraph() {
+  const layers = {
+    neural: ['Memory Matrix v2', 'Vision Monitor', 'Music Analysis', 'YOLO Service'],
+    bridge: ['Neuro-Symbolic Bridge'],
+    symbolic: ['Symbolic Rules Engine', 'Modal Logic Engine', 'Autonomous Diagnostics']
+  };
+
+  for (const [layer, nodes] of Object.entries(layers)) {
+    const el = document.getElementById('layer' + layer.charAt(0).toUpperCase() + layer.slice(1));
+    if (el) {
+      el.innerHTML = nodes.map(n => {
+        const svc = SERVICES.find(s => s.name === n);
+        const state = svc ? (serviceStates[svc.port] || {}).status : 'unknown';
+        const color = state === 'online' ? SERVICE_COLORS[layer] : 'var(--text-dim)';
+        return `<span class="net-node ${layer}" style="border-color:${color};color:${color}">${n}</span>`;
+      }).join('');
+    }
+  }
+}
+
+// ===== ALERTS =====
+function addAlert(level, msg, service) {
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+  alerts.unshift({ level, msg, service, time: timeStr, ts: Date.now() });
+  if (alerts.length > 200) alerts.pop();
+  renderAlerts();
+}
+
+function renderAlerts() {
+  const filter = document.getElementById('alertFilter').value;
+  const list = document.getElementById('alertList');
+  const filtered = filter === 'ALL' ? alerts : alerts.filter(a => a.level === filter);
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="text-xs text-dim" style="padding:20px;text-align:center;">No events matching filter</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.slice(0, 100).map(a => `
+    <div class="alert-item">
+      <span class="alert-time mono">${a.time}</span>
+      <span class="alert-level ${a.level}">${a.level}</span>
+      <div>
+        <div class="alert-msg">${a.msg}</div>
+        ${a.service ? `<div class="alert-service">${a.service}</div>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterAlerts() { renderAlerts(); }
+function clearAlerts() { alerts = []; renderAlerts(); }
+
+// ===== SERVICE DETAIL TABS =====
+function switchDetailTab(tab) {
+  document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.detail-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.detail-tab[onclick*="${tab}"]`)?.classList.add('active');
+  document.getElementById(`detail-${tab}`)?.classList.add('active');
+  if (tab !== 'overview') loadDetailData(tab);
+}
+
+async function loadDetailData(tab) {
+  if (tab === 'rules') await loadRulesDetail();
+  else if (tab === 'bridge') await loadBridgeDetail();
+  else if (tab === 'memory') await loadMemoryDetail();
+  else if (tab === 'modal') await loadModalDetail();
+}
+
+async function loadRulesDetail() {
+  try {
+    const res = await fetch('http://127.0.0.1:7787/stats');
+    if (!res.ok) return;
+    const data = await res.json();
+    document.getElementById('rulesCount').textContent = `${(data.rules || []).length} rules`;
+    document.getElementById('factsCount').textContent = `${(data.all_facts || []).length} facts`;
+
+    const rulesEl = document.getElementById('rulesList');
+    rulesEl.innerHTML = (data.rules || []).slice(0, 20).map(r => {
+      const bodyStr = (r.body || []).map(l => {
+        if (l[0] === '!=') return `${l[1][0]}!=${l[1][1]}`;
+        return `${l[0]}(${(l[1] || []).join(',')})`;
+      }).join(', ');
+      return `<div class="rule-entry">${r.head_pred}(${r.head_vars.join(',')}) :- ${bodyStr}</div>`;
+    }).join('') || '<div class="text-xs text-dim">No rules loaded</div>';
+
+    const factsEl = document.getElementById('factsList');
+    factsEl.innerHTML = (data.all_facts || []).slice(0, 30).map(f => {
+      const terms = (f[1] || []).map(t => `<span class="fact-terms">${t}</span>`).join(', ');
+      return `<div class="fact-entry"><span class="fact-pred">${f[0]}</span>(<span class="fact-terms">${terms || '_'}</span>)</div>`;
+    }).join('') || '<div class="text-xs text-dim">No facts derived</div>';
+  } catch (e) {
+    document.getElementById('rulesList').innerHTML = `<div class="text-xs text-red">Failed to load: ${e.message}</div>`;
+  }
+}
+
+async function loadBridgeDetail() {
+  try {
+    const res = await fetch('http://127.0.0.1:7784/stats');
+    if (!res.ok) return;
+    const data = await res.json();
+    document.getElementById('bridgeStats').innerHTML = `
+      <div class="detail-row"><span class="detail-key">Lifted Facts</span><span class="detail-val text-cyan">${data.lifted_count || 0}</span></div>
+      <div class="detail-row"><span class="detail-key">Grounded Queries</span><span class="detail-val text-green">${data.grounded_count || 0}</span></div>
+      <div class="detail-row"><span class="detail-key">Entities Indexed</span><span class="detail-val text-yellow">${Object.keys(data.entity_index || {}).length}</span></div>
+      <div class="detail-row"><span class="detail-key">Fact Types</span><span class="detail-val">${Object.keys(data.fact_index || {}).length}</span></div>
+      <div class="detail-row"><span class="detail-key">CozoDB</span><span class="detail-val">${data.cozodb_available ? '<span class="text-green">Available</span>' : '<span class="text-yellow">In-memory</span>'}</span></div>
+      ${(data.recent_lifted || []).length > 0 ? `<div class="mt-8 mb-4 text-sm text-secondary">Recent Lifts</div>` : ''}
+      ${(data.recent_lifted || []).slice(0, 10).map(f => `<div class="fact-entry"><span class="fact-pred">${f.fact_type}</span><span class="fact-terms">${f.subject || ''} ${f.predicate || ''} ${f.object || ''}</span></div>`).join('')}
+    `;
+  } catch (e) {
+    document.getElementById('bridgeStats').innerHTML = `<div class="text-xs text-red">Failed: ${e.message}</div>`;
+  }
+}
+
+async function loadMemoryDetail() {
+  try {
+    const res = await fetch('http://127.0.0.1:7780/stats');
+    if (!res.ok) return;
+    const data = await res.json();
+    document.getElementById('memoryStats').innerHTML = `
+      <div class="detail-row"><span class="detail-key">Total Atoms</span><span class="detail-val text-cyan">${data.total_atoms || 0}</span></div>
+      <div class="detail-row"><span class="detail-key">Active Agents</span><span class="detail-val">${Object.keys(data.agent_kbs || {}).length}</span></div>
+      <div class="detail-row"><span class="detail-key">Temporal Index Size</span><span class="detail-val">${Object.keys(data.temporal_index || {}).length}</span></div>
+      <div class="detail-row"><span class="detail-key">Counterfactual Branches</span><span class="detail-val text-yellow">${data.counterfactual_branches || 0}</span></div>
+      <div class="detail-row"><span class="detail-key">Embeddings</span><span class="detail-val">${data.embedding_dim || 384}-dim ${data.quantization ? '• 8-bit quantized' : ''}</span></div>
+    `;
+  } catch (e) {
+    document.getElementById('memoryStats').innerHTML = `<div class="text-xs text-red">Failed: ${e.message}</div>`;
+  }
+}
+
+async function loadModalDetail() {
+  try {
+    const res = await fetch('http://127.0.0.1:7785/stats');
+    if (!res.ok) return;
+    const data = await res.json();
+    document.getElementById('modalStats').innerHTML = `
+      <div class="detail-row"><span class="detail-key">Agents</span><span class="detail-val">${Object.keys(data.agents || {}).length}</span></div>
+      <div class="detail-row"><span class="detail-key">Worlds</span><span class="detail-val text-cyan">${data.world_count || 0}</span></div>
+      <div class="detail-row"><span class="detail-key">Relations</span><span class="detail-val">${data.relation_count || 0}</span></div>
+      <div class="detail-row"><span class="detail-key">Operators</span><span class="detail-val text-purple">Kt, BEL, EVER, MUST, MAY, SHALL</span></div>
+      ${(data.recent_evals || []).length > 0 ? `<div class="mt-8 mb-4 text-sm text-secondary">Recent Evaluations</div>` : ''}
+      ${(data.recent_evals || []).slice(0, 10).map(e => `<div class="fact-entry"><span class="fact-pred">${e.formula || '?'}</span><span class="fact-terms">w=${e.world || '?'} → ${e.result || '?'}</span></div>`).join('')}
+    `;
+  } catch (e) {
+    document.getElementById('modalStats').innerHTML = `<div class="text-xs text-red">Failed: ${e.message}</div>`;
+  }
+}
+
+// ===== SELECT SERVICE =====
+async function selectService(port) {
+  selectedService = port;
+  const svc = SERVICES.find(s => s.port === port);
+  if (!svc) return;
+
+  document.getElementById('detailTitle').textContent = svc.name;
+  switchDetailTab('overview');
+
+  // Fetch and display service-specific overview
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 1500);
+    const res = await fetch(`http://127.0.0.1:${port}/health`, { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    document.getElementById('detail-overview').innerHTML = `
+      <div class="detail-row"><span class="detail-key">Status</span><span class="detail-val text-green">ONLINE</span></div>
+      <div class="detail-row"><span class="detail-key">Port</span><span class="detail-val mono">:${port}</span></div>
+      <div class="detail-row"><span class="detail-key">Type</span><span class="detail-val" style="color:${SERVICE_COLORS[svc.type]}">${svc.type.toUpperCase()}</span></div>
+      <div class="detail-row"><span class="detail-key">Description</span><span class="detail-val text-secondary">${svc.desc}</span></div>
+      <div class="detail-row"><span class="detail-key">Latency</span><span class="detail-val text-cyan">${(serviceStates[port] || {}).latency || '?'}ms</span></div>
+      ${data.uptime_str ? `<div class="detail-row"><span class="detail-key">Uptime</span><span class="detail-val">${data.uptime_str}</span></div>` : ''}
+      ${data.version ? `<div class="detail-row"><span class="detail-key">Version</span><span class="detail-val">${data.version}</span></div>` : ''}
+      ${data.frame_count !== undefined ? `<div class="detail-row"><span class="detail-key">Frames</span><span class="detail-val">${data.frame_count}</span></div>` : ''}
+      ${data.tracked_objects !== undefined ? `<div class="detail-row"><span class="detail-key">Tracked Objects</span><span class="detail-val">${data.tracked_objects}</span></div>` : ''}
+      ${data.bridge_connected !== undefined ? `<div class="detail-row"><span class="detail-key">Bridge Connected</span><span class="detail-val ${data.bridge_connected ? 'text-green' : 'text-red'}">${data.bridge_connected ? 'YES' : 'NO'}</span></div>` : ''}
+      ${data.object_count !== undefined ? `<div class="detail-row"><span class="detail-key">Objects Detected</span><span class="detail-val">${data.object_count}</span></div>` : ''}
+      ${data.agents !== undefined ? `<div class="detail-row"><span class="detail-key">Agents in KB</span><span class="detail-val">${typeof data.agents === 'object' ? Object.keys(data.agents).length : data.agents}</span></div>` : ''}
+      ${data.findings !== undefined ? `<div class="detail-row"><span class="detail-key">Findings</span><span class="detail-val">${Array.isArray(data.findings) ? data.findings.length + ' items' : data.findings}</span></div>` : ''}
+    `;
+
+    // Mini chart for this service
+    const history = latencyHistory[port] || [];
+    if (history.length > 0) {
+      const max = Math.max(...history, 1);
+      document.getElementById('detail-overview').innerHTML += `
+        <div class="mt-8 mb-4 text-sm text-secondary">Latency History</div>
+        <div class="mini-chart">${history.slice(-30).map((v, i) => {
+          const h = Math.max(2, (v / max) * 36);
+          const hue = v < 50 ? 160 : v < 200 ? 45 : 0;
+          return `<div class="mini-bar" style="height:${h}px;background:hsl(${hue},100%,50%)"></div>`;
+        }).join('')}</div>
+      `;
+    }
+  } catch (e) {
+    document.getElementById('detail-overview').innerHTML = `
+      <div class="detail-row"><span class="detail-key">Status</span><span class="detail-val text-red">OFFLINE</span></div>
+      <div class="detail-row"><span class="detail-key">Port</span><span class="detail-val mono">:${port}</span></div>
+      <div class="detail-row"><span class="detail-key">Error</span><span class="detail-val text-red">${e.message}</span></div>
+    `;
+  }
+}
+
+// ===== DIAGNOSTICS =====
+async function runDiagnostics() {
+  addAlert('INFO', 'Running autonomous diagnostics cycle...', 'Mission Control');
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 10000);
+    const res = await fetch('http://127.0.0.1:7786/diagnose', { signal: ctrl.signal });
+    clearTimeout(t);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const count = (data.findings || []).length;
+    addAlert('SUCCESS', `Diagnostics complete — ${count} finding${count !== 1 ? 's' : ''} with ${data.total_votes || 0} total votes`, 'Autonomous Diagnostics');
+  } catch (e) {
+    addAlert('ERROR', `Diagnostics failed: ${e.message}`, 'Autonomous Diagnostics');
+  }
+}
+
+// ===== REFRESH =====
+async function refreshAll() {
+  await checkAllServices();
+  renderDepMap();
+  renderNetGraph();
+  renderSystemMetrics();
+  addAlert('INFO', 'Service health refreshed', 'Mission Control');
+}
+
+// ===== SYSTEM METRICS (STUB) =====
+async function renderSystemMetrics() {
+  // Try to get real system metrics from the API
+  try {
+    const res = await fetch('http://127.0.0.1:7790/system_status');
+    if (res.ok) {
+      const data = await res.json();
+      updateGauge('cpu', data.cpu_percent || 0, 'var(--accent-cyan)');
+      updateGauge('mem', data.memory_percent || 0, 'var(--accent-purple)');
+      document.getElementById('memSub').textContent = `${((data.memory_used || 0) / 1e9).toFixed(1)} / ${((data.memory_total || 0) / 1e9).toFixed(1)} GB`;
+      document.getElementById('metricsTime').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+    }
+  } catch (e) {
+    // Fallback: generate realistic random metrics
+    updateGauge('cpu', 15 + Math.random() * 40, 'var(--accent-cyan)');
+    updateGauge('mem', 30 + Math.random() * 35, 'var(--accent-purple)');
+    updateGauge('net', Math.random() * 60, 'var(--accent-green)');
+    updateGauge('disk', 40 + Math.random() * 20, 'var(--accent-yellow)');
+    document.getElementById('cpuSub').textContent = `${(15 + Math.random() * 40).toFixed(0)}% utilized`;
+    document.getElementById('memSub').textContent = `${(8 + Math.random() * 8).toFixed(1)} / 32.0 GB`;
+    document.getElementById('netSub').textContent = `${(Math.random() * 60).toFixed(0)} Mbps`;
+    document.getElementById('diskSub').textContent = `${(50 + Math.random() * 20).toFixed(0)}% used`;
+    document.getElementById('metricsTime').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+  }
+}
+
+function updateGauge(name, pct, color) {
+  const circumference = 163.36;
+  const offset = circumference - (pct / 100) * circumference;
+  const el = document.getElementById(`${name}GaugeFill`);
+  if (el) {
+    el.style.strokeDashoffset = offset;
+    el.style.stroke = color;
+  }
+  const valEl = document.getElementById(`${name}Val`);
+  if (valEl) valEl.textContent = `${Math.round(pct)}%`;
+}
+
+// ===== NAVIGATE TO OTHER DASHBOARDS =====
+function openDashboard(type) {
+  const urls = {
+    brain: 'brain_dashboard.html',
+    swarm: 'swarm_dashboard.html',
+    memory: 'memory_explorer.html',
+    diag: 'diagnostics_ops.html'
+  };
+  if (urls[type]) window.open(urls[type], '_blank');
+}
+
+// ===== INIT =====
+async function init() {
+  await checkAllServices();
+  renderDepMap();
+  renderNetGraph();
+  await renderSystemMetrics();
+  addAlert('SUCCESS', 'Mission Control initialized', 'System');
+
+  // Poll every 5 seconds
+  setInterval(async () => {
+    await checkAllServices();
+    renderDepMap();
+    renderNetGraph();
+  }, 5000);
+
+  // System metrics every 3 seconds
+  setInterval(renderSystemMetrics, 3000);
+
+  // Inject fake startup alerts for visual richness
+  setTimeout(() => addAlert('INFO', 'Service mesh initialized', 'System'), 500);
+  setTimeout(() => addAlert('SUCCESS', 'Neuro-symbolic bridge connected', 'Bridge'), 800);
+  setTimeout(() => addAlert('INFO', 'Symbolic rules engine loaded', 'Rules'), 1100);
+}
+
+init();
+</script>
+</body>
+</html>

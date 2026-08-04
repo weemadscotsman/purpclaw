@@ -1,0 +1,64 @@
+{
+  "surfaceContract": {
+    "required": ["id", "title", "owner", "scope", "allowedEventIds", "state", "createdAt", "updatedAt"],
+    "allowedScope": ["chat", "agent", "division", "system", "tool", "memory", "lesson"]
+  },
+  "eventEnvelope": {
+    "required": ["id", "surfaceId", "eventId", "actor", "payload", "createdAt"],
+    "rules": ["surface must exist", "eventId must be allowed by surface", "payload must satisfy surface.eventSchemas[eventId] when present"]
+  },
+  "lessonProposal": {
+    "required": ["id", "sourceEventId", "surfaceId", "summary", "risk", "status", "createdAt"],
+    "allowedRisk": ["low", "medium", "high"],
+    "allowedStatus": ["pending", "rejected", "approved"]
+  },
+  "invocationRegistry": {
+    "required": ["generatedAt", "counts", "tools", "skills", "agents"],
+    "phase1Rule": "snapshot only; do not execute tools or write files from registry entries"
+  },
+  "patchPreview": {
+    "required": ["id", "surfaceId", "title", "sanitizerProfile", "rawHtml", "sanitizedHtml", "blocked", "warnings", "status", "createdAt"],
+    "sanitizerProfile": "strict_static",
+    "phase2Rule": "preview only; no JavaScript, no external URLs, no forms, no iframe, no tool execution"
+  },
+  "formEvent": {
+    "transport": "/api/liveforge/events",
+    "requiredPayload": ["statePatch"],
+    "phase3Rule": "forms submit Event Envelopes using allowed event IDs only; accepted statePatch updates canonical surface state"
+  },
+  "toolRoute": {
+    "required": ["id", "surfaceId", "eventId", "toolName", "permissionTokenHash", "enabled", "createdAt"],
+    "phase4Rule": "tool execution requires a registered enabled route and matching permission token"
+  },
+  "toolExecutionReceipt": {
+    "requiredKinds": ["tool.requested", "tool.executed"],
+    "stateRule": "tool result is written to surface.state.toolResults[routeId]"
+  },
+  "generatedToolProposal": {
+    "required": ["id", "surfaceId", "kind", "title", "content", "status", "createdAt"],
+    "allowedKind": ["css", "config", "prompt"],
+    "phase5Rule": "saving creates a proposal record only; approval is required before any write"
+  },
+  "approvedGeneratedToolWrite": {
+    "required": ["proposalId", "routeId", "permissionToken"],
+    "phase5Rule": "approved writes must execute through a registered tool-gateway route"
+  },
+  "audiencePolicy": {
+    "visibility": ["public", "private"],
+    "phase6Rule": "private patches return content only to named recipients; others receive explicit policy response with no private content"
+  },
+  "privacyReceipts": {
+    "requiredKinds": ["privacy.patch_access.granted", "privacy.patch_access.denied"]
+  },
+  "lessonReplay": {
+    "required": ["id", "lessonId", "passed", "checks", "createdAt"],
+    "phase7Rule": "promotion requires latest replay to pass"
+  },
+  "approvedPattern": {
+    "required": ["id", "lessonId", "surfaceId", "summary", "risk", "approvedBy", "createdAt"],
+    "phase7Rule": "approved patterns are reusable lesson outputs"
+  },
+  "promotionGate": {
+    "phase7Rule": "failed promotion writes lesson.promotion.rollback; high-risk lesson cannot self-promote"
+  }
+}

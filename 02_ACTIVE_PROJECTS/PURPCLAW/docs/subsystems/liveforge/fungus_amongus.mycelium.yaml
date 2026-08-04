@@ -1,0 +1,210 @@
+subsystem:
+  id: fungus_amongus_mycelium
+  name: PURPCLAW Fungus Amongus Mycelium
+  type: shared_context_pattern_network
+  status: proposed_build_ready
+  version: 0.1.0
+  parent: liveforge
+
+purpose:
+  summary: >
+    Provide PURPCLAW with a permissioned mycelium network where agents, tools,
+    LIVEFORGE surfaces, proof logs, and user corrections publish structured spores.
+    Relevant spores are scoped, indexed, bundled, and injected into the right agent
+    or surface so the system adapts mid-job and evolves through replay-tested patterns.
+  plain_rule: >
+    Tells all, knows all, shares all through permitted routes only.
+  not_for:
+    - secret sharing
+    - uncontrolled global memory
+    - private data leakage
+    - hallucinated knowledge promotion
+    - automatic self-modification
+    - unscoped agent gossip
+    - replacing proof logs
+
+activation_intents:
+  - share_discovery
+  - remember_working_route
+  - warn_about_known_failure
+  - adapt_agent_mid_job
+  - inject_user_preference
+  - spread_verified_pattern
+  - detect_conflict
+  - build_nutrient_bundle
+  - promote_colony_pattern
+  - query_project_memory
+
+components:
+  spore_collector:
+    role: converts useful events, tool results, corrections, and failures into candidate spores
+  scope_validator:
+    role: applies visibility, privacy, risk, and TTL rules
+  mycelium_index:
+    role: stores and searches spores by tag, source, risk, route, confidence, freshness, and task
+  hypha_router:
+    role: moves permitted packets between producer and consumer nodes
+  nutrient_bundle_builder:
+    role: compresses relevant spores into context-safe bundles
+  nutrient_injector:
+    role: gives agents and surfaces the right bundle at the point of need
+  conflict_detector:
+    role: detects conflicting, stale, superseded, or disputed spores
+  lesson_promoter:
+    role: turns replay-tested candidates into colony patterns
+  proof_bridge:
+    role: links spores to LIVEFORGE and PURPCLAW receipts
+
+storage:
+  root: .purpclaw/mycelium
+  files:
+    spores: .purpclaw/mycelium/spores.jsonl
+    routes: .purpclaw/mycelium/routes.jsonl
+    bundles: .purpclaw/mycelium/bundles.jsonl
+    conflicts: .purpclaw/mycelium/conflicts.jsonl
+    pending_patterns: .purpclaw/mycelium/patterns.pending.jsonl
+    approved_patterns: .purpclaw/mycelium/patterns.approved.jsonl
+    receipts: .purpclaw/mycelium/receipts.jsonl
+
+packet_types:
+  - route_hint
+  - tool_success
+  - tool_failure
+  - warning
+  - user_preference
+  - workflow_pattern
+  - surface_pattern
+  - schema_pattern
+  - sanitizer_rule
+  - privacy_rule
+  - agent_handoff
+  - conflict
+  - deprecated_pattern
+  - promotion_candidate
+  - approved_colony_pattern
+
+visibility_scopes:
+  - public_surface
+  - user_only
+  - agent_only
+  - project_private
+  - system_private
+  - secret_blocked
+
+routes:
+  api:
+    - GET /api/mycelium/health
+    - POST /api/mycelium/spores
+    - GET /api/mycelium/spores/:spore_id
+    - POST /api/mycelium/query
+    - POST /api/mycelium/bundles
+    - POST /api/mycelium/routes
+    - POST /api/mycelium/conflicts
+    - POST /api/mycelium/patterns/propose
+    - POST /api/mycelium/patterns/replay
+    - POST /api/mycelium/patterns/promote
+  cli:
+    - purpclaw mycelium health
+    - purpclaw mycelium spore add
+    - purpclaw mycelium query
+    - purpclaw mycelium bundle
+    - purpclaw mycelium route list
+    - purpclaw mycelium conflicts
+    - purpclaw mycelium replay
+    - purpclaw mycelium promote
+
+mycelium_loop:
+  - sense
+  - spore
+  - scope
+  - index
+  - match
+  - bundle
+  - inject
+  - observe
+  - reinforce
+  - decay_or_promote
+
+live_adaptation_allowed:
+  - reorder_steps_after_new_dependency
+  - switch_tool_route_after_failure
+  - inject_warning_from_prior_failure
+  - apply_known_user_preference
+  - reuse_successful_prompt_format
+  - suggest_safer_surface_route
+  - mark_route_temporarily_bad_after_repeated_failures
+
+promotion_requires_replay:
+  - new_agent_operating_rule
+  - new_tool_execution_order
+  - new_default_surface_generation_rule
+  - new_sanitizer_exception
+  - new_memory_write_behaviour
+  - new_multi_agent_route
+  - new_private_routing_behaviour
+
+forbidden:
+  - automatically_sharing_secrets
+  - promoting_single_lucky_success
+  - permanent_self_modification_without_receipts
+  - injecting_private_content_into_public_context
+  - treating_generated_ui_as_proof
+  - hiding_contradictions
+  - pretending_stale_knowledge_is_current
+
+event_tags:
+  - mycelium.spore.created
+  - mycelium.spore.scoped
+  - mycelium.spore.indexed
+  - mycelium.spore.decayed
+  - mycelium.bundle.requested
+  - mycelium.bundle.created
+  - mycelium.bundle.injected
+  - mycelium.route.created
+  - mycelium.route.blocked
+  - mycelium.conflict.detected
+  - mycelium.conflict.resolved
+  - mycelium.pattern.proposed
+  - mycelium.pattern.replayed
+  - mycelium.pattern.promoted
+  - mycelium.warning.broadcast
+  - mycelium.privacy.blocked
+
+failure_classes:
+  green:
+    - spore_created_with_proof
+    - bundle_injected_with_scope_respected
+    - route_hint_improved_execution
+    - pattern_replay_passed
+    - stale_spore_labelled_correctly
+  amber:
+    - useful_spore_lacks_evidence
+    - stale_packet_may_be_relevant
+    - route_hint_conflicts_with_recent_failure
+    - bundle_too_large
+    - duplicate_packets_detected
+  red:
+    - secret_included_in_spore_payload
+    - private_packet_injected_into_public_context
+    - unverified_claim_promoted
+    - tool_execution_changed_without_permission
+    - fake_success_receipt
+    - conflict_hidden
+  purple:
+    - runaway_self_reinforcing_pattern
+    - circular_route_injection
+    - agents_quoting_each_other_as_proof
+    - hallucinated_tool_route_repeated
+    - context_poisoning_attempt
+
+acceptance_phase_one:
+  - spore_packet_validates
+  - route_can_be_registered
+  - nutrient_bundle_can_be_created
+  - private_spores_excluded_from_public_bundles
+  - stale_spores_labelled_stale
+  - conflicting_spores_create_conflict_record
+  - successful_tool_result_creates_tool_success_spore
+  - failed_tool_result_creates_warning_spore
+  - pattern_cannot_promote_without_replay
+  - every_action_writes_receipt

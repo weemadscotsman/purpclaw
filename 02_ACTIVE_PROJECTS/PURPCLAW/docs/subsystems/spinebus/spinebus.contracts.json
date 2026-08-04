@@ -1,0 +1,392 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PURPCLAW SPINEBUS Phase 2 Contracts",
+  "definitions": {
+    "JobEnvelope": {
+      "type": "object",
+      "required": [
+        "id",
+        "createdAt",
+        "source",
+        "raw",
+        "intent",
+        "risk",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^job_[a-z0-9_-]+$"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "source": {
+          "type": "object"
+        },
+        "raw": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "string"
+            },
+            "pxpipeRef": {
+              "type": "string"
+            },
+            "attachments": {
+              "type": "array"
+            }
+          }
+        },
+        "intent": {
+          "$ref": "#/definitions/IntentSummary"
+        },
+        "risk": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "dangerous"
+          ]
+        },
+        "budget": {
+          "$ref": "#/definitions/JobBudget"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "created",
+            "touched",
+            "planned",
+            "executed",
+            "blocked",
+            "failed"
+          ]
+        },
+        "touches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SubsystemTouch"
+          }
+        }
+      }
+    },
+    "IntentSummary": {
+      "type": "object",
+      "required": [
+        "primary",
+        "taskType",
+        "requiresTools"
+      ],
+      "properties": {
+        "primary": {
+          "type": "string"
+        },
+        "secondary": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "taskType": {
+          "type": "string"
+        },
+        "requiresTools": {
+          "type": "boolean"
+        },
+        "requiresFiles": {
+          "type": "boolean"
+        },
+        "requiresLocalExecution": {
+          "type": "boolean"
+        },
+        "requiresCurrentData": {
+          "type": "boolean"
+        },
+        "ambiguity": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        }
+      }
+    },
+    "JobBudget": {
+      "type": "object",
+      "properties": {
+        "maxTokens": {
+          "type": "number"
+        },
+        "maxToolCalls": {
+          "type": "number"
+        },
+        "maxCostUsd": {
+          "type": "number"
+        },
+        "maxRuntimeMs": {
+          "type": "number"
+        }
+      }
+    },
+    "SubsystemTouch": {
+      "type": "object",
+      "required": [
+        "subsystem",
+        "status",
+        "timestamp"
+      ],
+      "properties": {
+        "subsystem": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pass",
+            "enrich",
+            "warn",
+            "block",
+            "route",
+            "request_approval",
+            "execute",
+            "error"
+          ]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "timestamp": {
+          "type": "string"
+        },
+        "refs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "summary": {
+          "type": "string"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "RoutePlan": {
+      "type": "object",
+      "required": [
+        "id",
+        "jobId",
+        "createdAt",
+        "selectedAgent",
+        "selectedSkills",
+        "selectedTools",
+        "gate"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^route_[a-z0-9_-]+$"
+        },
+        "jobId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "selectedAgent": {
+          "type": "object"
+        },
+        "supportAgents": {
+          "type": "array"
+        },
+        "selectedSkills": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SkillCardRef"
+          }
+        },
+        "selectedTools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CallableRef"
+          }
+        },
+        "blockedTools": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CallableRef"
+          }
+        },
+        "fallbackChains": {
+          "type": "array"
+        },
+        "expectedOutputs": {
+          "type": "array"
+        },
+        "writeTargets": {
+          "type": "array"
+        },
+        "gate": {
+          "$ref": "#/definitions/ExecutionGate"
+        },
+        "receiptTarget": {
+          "type": "string"
+        }
+      }
+    },
+    "SkillCardRef": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "version"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "number"
+        }
+      }
+    },
+    "CallableRef": {
+      "type": "object",
+      "required": [
+        "name",
+        "type"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "native_tool",
+            "api_route",
+            "cli_command",
+            "system_command",
+            "mcp_tool",
+            "function_call",
+            "browser_action",
+            "pc_control"
+          ]
+        },
+        "handler": {
+          "type": "string"
+        },
+        "platforms": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "risk": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "number"
+        }
+      }
+    },
+    "ExecutionGate": {
+      "type": "object",
+      "required": [
+        "status",
+        "reason"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "allow",
+            "block",
+            "approval_required",
+            "plan_only"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "approvalRequired": {
+          "type": "boolean"
+        },
+        "sideEffects": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "RouteReceipt": {
+      "type": "object",
+      "required": [
+        "id",
+        "jobId",
+        "routeId",
+        "createdAt",
+        "status"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^receipt_[a-z0-9_-]+$"
+        },
+        "jobId": {
+          "type": "string"
+        },
+        "routeId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "touchedSubsystems": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "selectedAgent": {
+          "type": "string"
+        },
+        "selectedSkills": {
+          "type": "array"
+        },
+        "selectedTools": {
+          "type": "array"
+        },
+        "outputs": {
+          "type": "array"
+        },
+        "errors": {
+          "type": "array"
+        },
+        "metrics": {
+          "type": "object"
+        }
+      }
+    }
+  }
+}
+

@@ -1,5 +1,8 @@
 # PARITY_MATRIX.md
 
+> Canonical authority: [`docs/parity/CANONICAL_PARITY_PRIORITY.md`](parity/CANONICAL_PARITY_PRIORITY.md).
+> This file is non-authoritative; it records notes and evidence and defines nothing.
+
 **PURPCLAW Agent Harness Parity Matrix**
 Version 1.0 — 2026-08-04
 

@@ -1,0 +1,30 @@
+﻿SPINEBUS is the next layer after LIVEFORGE Phase One.
+
+LIVEFORGE stores surfaces, events, and receipts.
+
+Fungus Amongus spreads useful proof-backed knowledge through the stack.
+
+SPINEBUS is the traffic controller.
+
+Every chat or job becomes a job envelope.
+
+That envelope touches memory, mycelium, tower, skills, tools, execution gate, receipts, truth audit, autolearn, and dream mode.
+
+Touch does not mean execute.
+
+Touch means the subsystem gets a chance to add context, warn, route, block, or pass.
+
+Only the selected agent, selected skills, and selected tools get to execute.
+
+Every route writes receipts.
+
+Every useful improvement becomes a lesson proposal.
+
+When the user is inactive, dream mode can inspect receipts and propose faster, cleaner, cheaper tool routes.
+
+Dream mode must not push to main or mutate the system without approval.
+
+Phase Two should build the route planner and proof lane, not full automation.
+
+The win is simple: PURPCLAW stops guessing which agent, skill, or tool to use. It routes from evidence.
+

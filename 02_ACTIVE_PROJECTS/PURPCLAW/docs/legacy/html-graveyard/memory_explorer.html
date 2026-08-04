@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Explorer — PURPCLAW</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg-primary: #060a12;
+    --bg-secondary: #0a0f1e;
+    --bg-panel: #0d1220;
+    --bg-card: #111827;
+    --border: #1e2d45;
+    --accent-cyan: #00d4ff;
+    --accent-teal: #00ffcc;
+    --accent-purple: #a855f7;
+    --accent-orange: #f97316;
+    --accent-green: #22c55e;
+    --accent-red: #ef4444;
+    --accent-yellow: #eab308;
+    --text-primary: #e8eaf0;
+    --text-secondary: #8892a4;
+    --text-dim: #4b5563;
+    --glow-cyan: 0 0 8px rgba(0,212,255,0.4);
+    --glow-purple: 0 0 8px rgba(168,85,247,0.4);
+    --glow-green: 0 0 8px rgba(34,197,94,0.4);
+    --scanline: repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: var(--scanline);
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ── Header ── */
+  header {
+    background: linear-gradient(180deg, #0a0f1e 0%, transparent 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+
+  .header-left { display: flex; align-items: center; gap: 16px; }
+
+  .logo-mark {
+    width: 32px;
+    height: 32px;
+    position: relative;
+  }
+
+  .logo-mark svg { width: 100%; height: 100%; }
+
+  .system-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--accent-teal);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .breadcrumb span { color: var(--accent-cyan); }
+
+  .header-right { display: flex; align-items: center; gap: 16px; }
+
+  .health-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    background: var(--bg-panel);
+  }
+
+  .health-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent-green);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  .health-dot.degraded { background: var(--accent-yellow); }
+  .health-dot.critical { background: var(--accent-red); animation: pulse-dot 0.8s ease-in-out infinite; }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .clock {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Nav Pills ── */
+  .nav-pills {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 3px;
+  }
+
+  .nav-pill {
+    padding: 5px 14px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .nav-pill:hover { color: var(--text-primary); background: rgba(255,255,255,0.04); }
+  .nav-pill.active { background: var(--accent-cyan); color: #000; font-weight: 700; }
+
+  /* ── Layout ── */
+  .app-body {
+    display: grid;
+    grid-template-columns: 320px 1fr 280px;
+    height: calc(100vh - 56px);
+    overflow: hidden;
+  }
+
+  /* ── Left Panel ── */
+  .left-panel {
+    background: var(--bg-secondary);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-section {
+    border-bottom: 1px solid var(--border);
+    padding: 14px;
+  }
+
+  .panel-section:last-child { border-bottom: none; flex: 1; overflow-y: auto; }
+
+  .section-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── Stat Cards Row ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--card-glow, var(--accent-cyan)), transparent);
+    opacity: 0.5;
+  }
+
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 4px;
+  }
+
+  /* ── Forms ── */
+  .form-group { margin-bottom: 10px; }
+
+  .form-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+    display: block;
+  }
+
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 7px 10px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    resize: none;
+  }
+
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent-cyan);
+    box-shadow: var(--glow-cyan);
+  }
+
+  .form-textarea { height: 60px; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.15s;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-primary {
+    background: rgba(0,212,255,0.1);
+    border-color: var(--accent-cyan);
+    color: var(--accent-cyan);
+  }
+
+  .btn-primary:hover {
+    background: rgba(0,212,255,0.2);
+    box-shadow: var(--glow-cyan);
+  }
+
+  .btn-secondary {
+    background: rgba(168,85,247,0.1);
+    border-color: var(--accent-purple);
+    color: var(--accent-purple);
+  }
+
+  .btn-secondary:hover {
+    background: rgba(168,85,247,0.2);
+    box-shadow: var(--glow-purple);
+  }
+
+  .btn-success {
+    background: rgba(34,197,94,0.1);
+    border-color: var(--accent-green);
+    color: var(--accent-green);
+  }
+
+  .btn-success:hover {
+    background: rgba(34,197,94,0.2);
+    box-shadow: var(--glow-green);
+  }
+
+  .btn-orange {
+    background: rgba(249,115,22,0.1);
+    border-color: var(--accent-orange);
+    color: var(--accent-orange);
+  }
+
+  .btn-orange:hover {
+    background: rgba(249,115,22,0.2);
+  }
+
+  .btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+  /* ── Center Panel ── */
+  .center-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .center-main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+  }
+
+  /* ── Memory Atom List ── */
+  .atom-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .atom-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+
+  .atom-card:hover { border-color: var(--accent-cyan); background: rgba(0,212,255,0.03); }
+
+  .atom-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: 3px 0 0 3px;
+    background: var(--type-color, var(--accent-cyan));
+  }
+
+  .atom-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 5px;
+  }
+
+  .atom-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.06);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--type-color, var(--text-secondary));
+  }
+
+  .atom-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    margin-left: auto;
+  }
+
+  .atom-content {
+    font-size: 12px;
+    color: var(--text-primary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .atom-footer {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+  }
+
+  .valence-bar {
+    height: 2px;
+    flex: 1;
+    background: var(--bg-primary);
+    border-radius: 1px;
+    overflow: hidden;
+    max-width: 60px;
+  }
+
+  .valence-fill {
+    height: 100%;
+    border-radius: 1px;
+    transition: width 0.3s;
+  }
+
+  .valence-fill.positive { background: var(--accent-green); }
+  .valence-fill.negative { background: var(--accent-red); }
+  .valence-fill.neutral { background: var(--text-dim); }
+
+  .atom-importance {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--text-dim);
+    margin-left: auto;
+  }
+
+  /* ── Empty State ── */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-dim);
+  }
+
+  .empty-state-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    opacity: 0.3;
+  }
+
+  .empty-state p { font-size: 12px; line-height: 1.6; }
+
+  /* ── Right Panel ── */
+  .right-panel {
+    background: var(--bg-secondary);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Timeline ── */
+  .timeline-container { padding: 14px; border-bottom: 1px solid var(--border); }
+
+  .timeline-scroll { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+
+  .timeline-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 10px;
+    color: var(--text-secondary);
+    transition: all 0.1s;
+  }
+
+  .timeline-item:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+
+  .timeline-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent-teal);
+    flex-shrink: 0;
+  }
+
+  .timeline-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  /* ── Branch List ── */
+  .branch-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .branch-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .branch-card:hover { border-color: var(--accent-purple); }
+
+  .branch-assumption {
+    font-size: 11px;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+
+  .branch-meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .branch-stat {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  .branch-stat span { color: var(--accent-purple); }
+
+  /* ── Lifted Facts ── */
+  .lifted-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .lifted-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+
+  .lifted-predicate {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--accent-teal);
+    margin-bottom: 3px;
+  }
+
+  .lifted-subobj {
+    font-size: 10px;
+    color: var(--text-secondary);
+  }
+
+  .lifted-conf {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--text-dim);
+    margin-top: 3px;
+  }
+
+  /* ── Tabs ── */
+  .tab-bar {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-panel);
+    padding: 0 16px;
+    gap: 0;
+  }
+
+  .tab-btn {
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .tab-btn:hover { color: var(--text-primary); }
+  .tab-btn.active { color: var(--accent-cyan); border-bottom-color: var(--accent-cyan); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── Section Headers ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-cyan);
+  }
+
+  .section-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    background: var(--bg-primary);
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  /* ── Reaction Response ── */
+  .reaction-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px;
+    margin-top: 12px;
+  }
+
+  .reaction-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent-orange);
+    margin-bottom: 8px;
+  }
+
+  .reaction-section { margin-bottom: 8px; }
+  .reaction-label { font-size: 9px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 3px; }
+  .reaction-text { font-size: 11px; color: var(--text-primary); line-height: 1.4; }
+
+  /* ── Memory ID ── */
+  .memory-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--text-dim);
+    background: var(--bg-primary);
+    padding: 1px 5px;
+    border-radius: 3px;
+    word-break: break-all;
+  }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+  /* ── Status indicator ── */
+  .status-bar {
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border);
+    padding: 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  .status-item { display: flex; align-items: center; gap: 5px; }
+  .status-val { color: var(--accent-cyan); }
+
+  /* ── Context Panel ── */
+  .context-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+  }
+
+  .context-item.active { border-color: var(--accent-teal); color: var(--accent-teal); }
+
+  .context-age {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    color: var(--text-dim);
+    margin-left: auto;
+  }
+
+  /* ── Graph ── */
+  .kg-container {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    height: 350px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .kg-svg { width: 100%; height: 100%; }
+
+  /* ── Search Box ── */
+  .search-box {
+    position: relative;
+    margin-bottom: 12px;
+  }
+
+  .search-box input {
+    width: 100%;
+    background: var(--bg-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 7px 10px 7px 28px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .search-box input:focus { border-color: var(--accent-cyan); }
+
+  .search-box::before {
+    content: '⌕';
+    position: absolute;
+    left: 9px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    font-size: 12px;
+  }
+
+  /* ── Reinforcement ── */
+  .reinforcement-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 7px 10px;
+    margin-bottom: 5px;
+    font-size: 10px;
+  }
+
+  .reinforcement-item .type { font-weight: 700; color: var(--accent-orange); text-transform: uppercase; font-size: 8px; letter-spacing: 0.1em; }
+  .reinforcement-item .desc { color: var(--text-secondary); margin-top: 2px; }
+  .reinforcement-item .time { font-family: 'JetBrains Mono', monospace; font-size: 8px; color: var(--text-dim); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="header-left">
+    <div class="logo-mark">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polygon points="16,2 30,10 30,22 16,30 2,22 2,10" fill="none" stroke="#00d4ff" stroke-width="1.5"/>
+        <polygon points="16,6 26,12 26,20 16,26 6,20 6,12" fill="none" stroke="#00ffcc" stroke-width="1" opacity="0.5"/>
+        <circle cx="16" cy="16" r="4" fill="#00d4ff" opacity="0.8"/>
+        <line x1="16" y1="2" x2="16" y2="10" stroke="#00d4ff" stroke-width="1" opacity="0.3"/>
+        <line x1="16" y1="22" x2="16" y2="30" stroke="#00d4ff" stroke-width="1" opacity="0.3"/>
+        <line x1="2" y1="10" x2="10" y2="14" stroke="#00d4ff" stroke-width="1" opacity="0.3"/>
+        <line x1="22" y1="18" x2="30" y2="22" stroke="#00d4ff" stroke-width="1" opacity="0.3"/>
+      </svg>
+    </div>
+    <div>
+      <div class="system-title">MEMORY EXPLORER</div>
+      <div class="breadcrumb">PURPCLAW <span>›</span> Neuro-Symbolic <span>›</span> Memory Matrix v2</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="health-badge">
+      <div class="health-dot" id="healthDot"></div>
+      <span id="healthLabel">CONNECTING</span>
+    </div>
+    <div class="nav-pills">
+      <div class="nav-pill active" onclick="openDashboard('mission')">MISSION</div>
+      <div class="nav-pill" onclick="openDashboard('brain')">BRAIN</div>
+      <div class="nav-pill" onclick="openDashboard('swarm')">SWARM</div>
+      <div class="nav-pill" onclick="openDashboard('diag')">DIAG</div>
+    </div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<!-- ── Main Body ── -->
+<div class="app-body">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+
+    <!-- Stats -->
+    <div class="panel-section">
+      <div class="section-label">SYSTEM STATUS</div>
+      <div class="stats-grid">
+        <div class="stat-card" style="--card-glow: var(--accent-cyan)">
+          <div class="stat-value" id="stat-atoms">—</div>
+          <div class="stat-label">Memory Atoms</div>
+        </div>
+        <div class="stat-card" style="--card-glow: var(--accent-teal)">
+          <div class="stat-value" id="stat-lifted">—</div>
+          <div class="stat-label">Lifted Facts</div>
+        </div>
+        <div class="stat-card" style="--card-glow: var(--accent-purple)">
+          <div class="stat-value" id="stat-branches">—</div>
+          <div class="stat-label">CF Branches</div>
+        </div>
+        <div class="stat-card" style="--card-glow: var(--accent-orange)">
+          <div class="stat-value" id="stat-temporal">—</div>
+          <div class="stat-label">Entities</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ingest -->
+    <div class="panel-section">
+      <div class="section-label">INGEST MEMORY</div>
+      <div class="form-group">
+        <textarea class="form-textarea" id="ingest-content" placeholder="Enter memory content..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-select" id="ingest-type">
+            <option value="text">TEXT</option>
+            <option value="action">ACTION</option>
+            <option value="reaction">REACTION</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Importance</label>
+          <select class="form-select" id="ingest-importance">
+            <option value="0.3">LOW</option>
+            <option value="0.5" selected>MEDIUM</option>
+            <option value="0.7">HIGH</option>
+            <option value="0.9">CRITICAL</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Emotional Valence</label>
+        <input type="range" id="ingest-valence" min="-1" max="1" step="0.1" value="0" style="width:100%;accent-color:var(--accent-cyan)">
+        <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;margin-top:2px">
+          <span>NEGATIVE</span><span id="valence-display">0.0</span><span>POSITIVE</span>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="doIngest()">▲ INGEST TO MEMORY</button>
+    </div>
+
+    <!-- Temporal Projection -->
+    <div class="panel-section">
+      <div class="section-label">TEMPORAL PROJECTION</div>
+      <div class="form-group">
+        <label class="form-label">Query</label>
+        <input type="text" class="form-input" id="project-query" placeholder="e.g. what was I working on...">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Hours Ago</label>
+          <input type="number" class="form-input" id="project-hours" value="1" min="0" step="0.5">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Limit</label>
+          <input type="number" class="form-input" id="project-limit" value="5" min="1" max="20">
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="doProject()">◈ PROJECT BACKWARD</button>
+    </div>
+
+    <!-- Counterfactual -->
+    <div class="panel-section">
+      <div class="section-label">COUNTERFACTUAL REASONING</div>
+      <div class="form-group">
+        <label class="form-label">Memory ID</label>
+        <input type="text" class="form-input" id="cf-memory-id" placeholder="memory_id from list...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Query</label>
+        <input type="text" class="form-input" id="cf-query" placeholder="what would change if...">
+      </div>
+      <button class="btn btn-orange" onclick="doWhatIfForgotten()">◈ WHAT IF FORGOTTEN</button>
+      <div style="margin-top:8px">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Entity</label>
+            <input type="text" class="form-input" id="cf-entity" placeholder="e.g. Alice">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hours Ago</label>
+            <input type="number" class="form-input" id="cf-hours" value="2" min="0.5" step="0.5">
+          </div>
+        </div>
+        <button class="btn btn-orange" onclick="doWhatIfNoticed()" style="margin-top:6px">◈ WHAT IF NOTICED</button>
+      </div>
+    </div>
+
+    <!-- React to Stimulus -->
+    <div class="panel-section">
+      <div class="section-label">REACT TO STIMULUS</div>
+      <div class="form-group">
+        <input type="text" class="form-input" id="stimulus-input" placeholder="Stimulus or trigger...">
+      </div>
+      <button class="btn btn-success" onclick="doReact()">⟳ FULL PIPELINE REACT</button>
+      <div id="reaction-result"></div>
+    </div>
+
+  </div>
+
+  <!-- CENTER PANEL -->
+  <div class="center-panel">
+    <div class="tab-bar">
+      <div class="tab-btn active" onclick="switchTab('memories', this)">MEMORY ATOMS</div>
+      <div class="tab-btn" onclick="switchTab('context', this)">WORKING CONTEXT</div>
+      <div class="tab-btn" onclick="switchTab('graph', this)">KNOWLEDGE GRAPH</div>
+      <div class="tab-btn" onclick="switchTab('reinforce', this)">REINFORCEMENT</div>
+    </div>
+
+    <div class="center-main">
+
+      <!-- MEMORIES TAB -->
+      <div class="tab-content active" id="tab-memories">
+        <div class="section-header">
+          <div class="section-title">Long-Term Memory Atoms</div>
+          <div class="section-count" id="atom-count">0</div>
+        </div>
+        <div class="search-box">
+          <input type="text" id="memory-search" placeholder="Search memories..." oninput="filterMemories()">
+        </div>
+        <div class="btn-row" style="margin-bottom:12px">
+          <button class="btn btn-primary" onclick="loadMemories()">↺ REFRESH</button>
+          <button class="btn btn-secondary" onclick="loadLiftedFacts()">⬡ LIFTED FACTS</button>
+        </div>
+        <div class="atom-list" id="atom-list">
+          <div class="empty-state">
+            <div class="empty-state-icon">🧠</div>
+            <p>No memory atoms loaded.<br>Connect to Memory Matrix v2 on port 7780.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTEXT TAB -->
+      <div class="tab-content" id="tab-context">
+        <div class="section-header">
+          <div class="section-title">Working Memory Context</div>
+        </div>
+        <div id="context-list">
+          <div class="empty-state">
+            <div class="empty-state-icon">⚡</div>
+            <p>Working memory is empty.<br>Working memory holds 7±2 items for 30 seconds.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRAPH TAB -->
+      <div class="tab-content" id="tab-graph">
+        <div class="section-header">
+          <div class="section-title">Symbolic Knowledge Graph</div>
+          <button class="btn btn-secondary" onclick="resetGraph()" style="width:auto;padding:4px 10px;font-size:9px">↺ RESET</button>
+        </div>
+        <div class="kg-container">
+          <svg class="kg-svg" id="kg-svg"></svg>
+        </div>
+        <div id="kg-legend" style="display:flex;gap:12px;margin-top:8px;font-size:9px;flex-wrap:wrap">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#00d4ff"></span>ENTITY</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#a855f7"></span>PATTERN</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#ef4444"></span>ANOMALY</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#22c55e"></span>MEMORY</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:50%;background:#f97316"></span>CAUSAL</span>
+        </div>
+      </div>
+
+      <!-- REINFORCEMENT TAB -->
+      <div class="tab-content" id="tab-reinforce">
+        <div class="section-header">
+          <div class="section-title">Reinforcement Insights</div>
+        </div>
+        <div id="reinforcement-list">
+          <div class="empty-state">
+            <div class="empty-state-icon">🔄</div>
+            <p>No reinforcement insights yet.<br>Run counterfactual queries to generate insights.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <div class="panel-section" style="border-bottom:1px solid var(--border)">
+      <div class="section-label">ENTITY TIMELINE</div>
+      <div class="form-group" style="margin-bottom:8px">
+        <input type="text" class="form-input" id="timeline-entity" placeholder="Entity name...">
+      </div>
+      <button class="btn btn-primary" onclick="doTimeline()" style="margin-bottom:8px">◈ FETCH TIMELINE</button>
+      <div class="timeline-scroll" id="timeline-list">
+        <div class="empty-state" style="padding:16px">
+          <p style="font-size:10px">Enter an entity name<br>to see its memory timeline.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section" style="border-bottom:1px solid var(--border)">
+      <div class="section-label">COUNTERFACTUAL BRANCHES</div>
+      <div class="branch-list" id="branch-list">
+        <div class="empty-state" style="padding:16px">
+          <p style="font-size:10px">No branches yet.<br>Run a "what if" query.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel-section">
+      <div class="section-label">LIFTED FACTS</div>
+      <div class="lifted-list" id="lifted-list">
+        <div class="empty-state" style="padding:16px">
+          <p style="font-size:10px">No lifted facts.<br>Run recall or lift to populate.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Status Bar -->
+<div class="status-bar">
+  <div class="status-item">MEM PORT: <span class="status-val" id="mem-port">7780</span></div>
+  <div class="status-item">ATOMS: <span class="status-val" id="status-atoms">0</span></div>
+  <div class="status-item">LIFTED: <span class="status-val" id="status-lifted">0</span></div>
+  <div class="status-item">BRANCHES: <span class="status-val" id="status-branches">0</span></div>
+  <div class="status-item" style="margin-left:auto">LAST REFRESH: <span class="status-val" id="last-refresh">—</span></div>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  const MEM_PORT = 7780;
+  let atoms = [];
+  let liftedFacts = [];
+  let branches = [];
+  let context = [];
+  let timelineCache = {};
+  let kgNodes = [];
+  let kgEdges = [];
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  async function api(path, method = 'GET', body = null) {
+    try {
+      const opts = { method, headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+      const r = await fetch(`http://localhost:${MEM_PORT}${path}`, opts);
+      if (!r.ok) return { error: `HTTP ${r.status}` };
+      return await r.json();
+    } catch (e) {
+      return { error: e.message };
+    }
+  }
+
+  function formatAge(ts) {
+    const secs = (Date.now() / 1000) - ts;
+    if (secs < 60) return `${Math.floor(secs)}s ago`;
+    if (secs < 3600) return `${Math.floor(secs/60)}m ago`;
+    if (secs < 86400) return `${Math.floor(secs/3600)}h ago`;
+    return `${Math.floor(secs/86400)}d ago`;
+  }
+
+  function formatTime(ts) {
+    return new Date(ts * 1000).toLocaleTimeString();
+  }
+
+  function setHealth(state) {
+    const dot = document.getElementById('healthDot');
+    const label = document.getElementById('healthLabel');
+    dot.className = 'health-dot' + (state === 'healthy' ? '' : ' ' + state);
+    label.textContent = state.toUpperCase();
+  }
+
+  // ── Clock ─────────────────────────────────────────────────────────────────
+  function updateClock() {
+    document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // ── Valence slider ─────────────────────────────────────────────────────────
+  document.getElementById('ingest-valence').addEventListener('input', function() {
+    document.getElementById('valence-display').textContent = parseFloat(this.value).toFixed(1);
+  });
+
+  // ── Dashboard Nav ─────────────────────────────────────────────────────────
+  function openDashboard(type) {
+    const map = { mission: 'mission_control.html', brain: 'brain_dashboard.html', swarm: 'swarm_dashboard.html', diag: 'diagnostics_ops.html' };
+    if (map[type]) window.open(map[type], '_blank');
+  }
+
+  // ── Tabs ───────────────────────────────────────────────────────────────────
+  function switchTab(name, btn) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    const el = document.getElementById('tab-' + name);
+    if (el) el.classList.add('active');
+  }
+
+  // ── Load Stats ─────────────────────────────────────────────────────────────
+  async function loadStats() {
+    const stats = await api('/stats');
+    if (stats.error) { setHealth('critical'); return; }
+    setHealth('healthy');
+    document.getElementById('stat-atoms').textContent = stats.total_atoms ?? 0;
+    document.getElementById('stat-lifted').textContent = stats.lifted_facts ?? 0;
+    document.getElementById('stat-branches').textContent = stats.counterfactual_branches ?? 0;
+    document.getElementById('stat-temporal').textContent = stats.temporal_entities ?? 0;
+    document.getElementById('status-atoms').textContent = stats.total_atoms ?? 0;
+    document.getElementById('status-lifted').textContent = stats.lifted_facts ?? 0;
+    document.getElementById('status-branches').textContent = stats.counterfactual_branches ?? 0;
+  }
+
+  // ── Load Memories ──────────────────────────────────────────────────────────
+  async function loadMemories() {
+    const recallRes = await api('/recall', 'POST', { query: '*', limit: 100 });
+    atoms = recallRes.results || [];
+    renderAtoms(atoms);
+    document.getElementById('atom-count').textContent = atoms.length;
+    document.getElementById('last-refresh').textContent = new Date().toLocaleTimeString();
+  }
+
+  function renderAtoms(list) {
+    const container = document.getElementById('atom-list');
+    if (!list.length) {
+      container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🧠</div><p>No memory atoms found.</p></div>`;
+      return;
+    }
+    const typeColors = { action: '#f97316', reaction: '#a855f7', text: '#00d4ff' };
+    container.innerHTML = list.map(atom => {
+      const color = typeColors[atom.content_type] || '#00d4ff';
+      const valence = atom.emotional_valence || 0;
+      const valClass = valence > 0.1 ? 'positive' : valence < -0.1 ? 'negative' : 'neutral';
+      const valPct = Math.abs(valence) * 50;
+      return `<div class="atom-card" style="--type-color:${color}" onclick="selectAtom('${atom.id}')">
+        <div class="atom-meta">
+          <span class="atom-badge" style="color:${color}">${atom.content_type?.toUpperCase() || 'TEXT'}</span>
+          <span class="memory-id">${atom.id?.substring(0,12)}…</span>
+          <span class="atom-time">${formatAge(atom.timestamp)}</span>
+        </div>
+        <div class="atom-content">${escHtml(atom.content)}</div>
+        <div class="atom-footer">
+          <div class="valence-bar"><div class="valence-fill ${valClass}" style="width:${valPct}%"></div></div>
+          <span class="atom-importance">imp ${((atom.importance||0.5)*100).toFixed(0)}%</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function filterMemories() {
+    const q = document.getElementById('memory-search').value.toLowerCase();
+    if (!q) { renderAtoms(atoms); return; }
+    renderAtoms(atoms.filter(a => a.content?.toLowerCase().includes(q)));
+  }
+
+  function selectAtom(id) {
+    document.getElementById('cf-memory-id').value = id;
+    api('/lift', 'POST', { memory_id: id }).then(r => {
+      if (r && !r.error) {
+        liftedFacts = [r, ...liftedFacts.filter(f => f.memory_id !== id)];
+        renderLiftedFacts();
+      }
+    });
+  }
+
+  // ── Working Context ─────────────────────────────────────────────────────────
+  async function loadContext() {
+    const res = await api('/context');
+    context = res.context || [];
+    renderContext();
+  }
+
+  function renderContext() {
+    const container = document.getElementById('context-list');
+    if (!context.length) {
+      container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚡</div><p>Working memory is empty.<br>7±2 items decay after 30s.</p></div>`;
+      return;
+    }
+    container.innerHTML = context.map(item => {
+      const age = formatAge(item.timestamp || (Date.now()/1000));
+      return `<div class="context-item">
+        <span style="font-size:12px">${escHtml(item.content?.substring(0,60))}</span>
+        <span class="context-age">${age}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // ── Ingest ─────────────────────────────────────────────────────────────────
+  async function doIngest() {
+    const content = document.getElementById('ingest-content').value.trim();
+    if (!content) return;
+    const body = {
+      content,
+      type: document.getElementById('ingest-type').value,
+      importance: parseFloat(document.getElementById('ingest-importance').value),
+      valence: parseFloat(document.getElementById('ingest-valence').value),
+      source: 'memory_explorer'
+    };
+    const res = await api('/ingest', 'POST', body);
+    if (res.error) return alert('Error: ' + res.error);
+    document.getElementById('ingest-content').value = '';
+    await loadMemories();
+    await loadStats();
+  }
+
+  // ── Temporal Projection ────────────────────────────────────────────────────
+  async function doProject() {
+    const query = document.getElementById('project-query').value.trim();
+    if (!query) return;
+    const hours = parseFloat(document.getElementById('project-hours').value) || 1;
+    const limit = parseInt(document.getElementById('project-limit').value) || 5;
+    const targetTime = (Date.now() / 1000) - (hours * 3600);
+    const res = await api('/project', 'POST', { query, target_time: targetTime, limit });
+    if (res.error) return alert('Error: ' + res.error);
+    displayProjection(res);
+  }
+
+  function displayProjection(res) {
+    const mems = res.projected_memories || [];
+    if (!mems.length) {
+      alert('No memories found for this projection.');
+      return;
+    }
+    const罐 = mems.map(m => `[${formatTime(m.timestamp)}] ${m.content}`).join('\n');
+    alert(`Temporal Projection:\n${罐}`);
+  }
+
+  // ── Counterfactual: What If Forgotten ──────────────────────────────────────
+  async function doWhatIfForgotten() {
+    const memoryId = document.getElementById('cf-memory-id').value.trim();
+    const query = document.getElementById('cf-query').value.trim();
+    if (!memoryId) return alert('Enter a memory ID');
+    const res = await api('/what_if/forgotten', 'POST', { memory_id: memoryId, query: query || 'impact analysis' });
+    if (res.error) return alert('Error: ' + res.error);
+    branches.push(res);
+    renderBranches();
+    await loadStats();
+    alert(`Branch created:\n${res.assumption}\nSuppressed: ${res.memories_suppressed}\nHypothetical facts: ${(res.derived_facts_in_branch||[]).length}`);
+  }
+
+  // ── Counterfactual: What If Noticed ───────────────────────────────────────
+  async function doWhatIfNoticed() {
+    const entity = document.getElementById('cf-entity').value.trim();
+    const hours = parseFloat(document.getElementById('cf-hours').value) || 2;
+    if (!entity) return alert('Enter an entity name');
+    const endTime = Date.now() / 1000;
+    const startTime = endTime - (hours * 3600);
+    const res = await api('/what_if/noticed', 'POST', { entity, start_time: startTime, end_time: endTime, query: 'attention analysis' });
+    if (res.error) return alert('Error: ' + res.error);
+    if (res.branch_id) {
+      branches.push(res);
+      renderBranches();
+    }
+    await loadStats();
+    alert(`${res.assumption || 'Analysis complete'}\nAlready noticed: ${res.already_noticed}\n${res.potential_derived?.length ? 'Potential derived: ' + res.potential_derived.length : ''}`);
+  }
+
+  // ── Timeline ────────────────────────────────────────────────────────────────
+  async function doTimeline() {
+    const entity = document.getElementById('timeline-entity').value.trim();
+    if (!entity) return;
+    if (timelineCache[entity]) { renderTimeline(entity, timelineCache[entity]); return; }
+    const res = await api(`/timeline/${encodeURIComponent(entity)}`);
+    if (res.error) return alert('Error: ' + res.error);
+    timelineCache[entity] = res.timeline || [];
+    renderTimeline(entity, timelineCache[entity]);
+  }
+
+  function renderTimeline(entity, items) {
+    const container = document.getElementById('timeline-list');
+    if (!items.length) {
+      container.innerHTML = `<div style="padding:12px;font-size:10px;color:var(--text-dim)">No timeline events for "${escHtml(entity)}"</div>`;
+      return;
+    }
+    container.innerHTML = items.map(item => `
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <span style="flex:1">${escHtml(entity)}</span>
+        <span class="timeline-time">${item.start ? new Date(item.start).toLocaleTimeString() : '?'}</span>
+      </div>
+    `).join('');
+  }
+
+  // ── React to Stimulus ──────────────────────────────────────────────────────
+  async function doReact() {
+    const stimulus = document.getElementById('stimulus-input').value.trim();
+    if (!stimulus) return;
+    const res = await api('/react', 'POST', { stimulus, source: 'memory_explorer' });
+    if (res.error) return alert('Error: ' + res.error);
+    displayReaction(res);
+  }
+
+  function displayReaction(res) {
+    const box = document.getElementById('reaction-result');
+    const recalls = (res.auto_recalls || []).map(r => `• ${r.content?.substring(0,80)}`).join('<br>');
+    const implications = (res.symbolic_implications || []).map(i => `• ${i}`).join('<br>');
+    box.innerHTML = `<div class="reaction-box">
+      <div class="reaction-title">REACTION PIPELINE</div>
+      <div class="reaction-section"><div class="reaction-label">Memory ID</div><div class="reaction-text"><span class="memory-id">${res.memory_id}</span></div></div>
+      <div class="reaction-section"><div class="reaction-label">Lifted Fact</div><div class="reaction-text">${res.lifted_fact?.predicate || 'none'} (conf: ${(res.lifted_fact?.confidence||0).toFixed(2)})</div></div>
+      ${recalls ? `<div class="reaction-section"><div class="reaction-label">Auto-Recalls</div><div class="reaction-text">${recalls}</div></div>` : ''}
+      ${implications ? `<div class="reaction-section"><div class="reaction-label">Symbolic Implications</div><div class="reaction-text">${implications}</div></div>` : ''}
+    </div>`;
+  }
+
+  // ── Lifted Facts ───────────────────────────────────────────────────────────
+  async function loadLiftedFacts() {
+    const res = await api('/lifted');
+    if (res.error) return;
+    liftedFacts = res.lifted_facts || [];
+    renderLiftedFacts();
+  }
+
+  function renderLiftedFacts() {
+    const container = document.getElementById('lifted-list');
+    if (!liftedFacts.length) {
+      container.innerHTML = `<div class="empty-state" style="padding:16px"><p style="font-size:10px">No lifted facts.</p></div>`;
+      return;
+    }
+    container.innerHTML = liftedFacts.slice(0, 30).map(f => `
+      <div class="lifted-card">
+        <div class="lifted-predicate">${escHtml(f.predicate)}</div>
+        <div class="lifted-subobj">${escHtml(f.subject || '?')} → ${escHtml(f.object || '?')}</div>
+        <div class="lifted-conf">conf ${((f.confidence||0)*100).toFixed(0)}% · ${f.memory_id?.substring(0,10)}…</div>
+      </div>
+    `).join('');
+    document.getElementById('status-lifted').textContent = liftedFacts.length;
+  }
+
+  // ── Branches ────────────────────────────────────────────────────────────────
+  async function loadBranches() {
+    const res = await api('/counterfactual/branches');
+    if (res.error) return;
+    branches = res.branches || [];
+    renderBranches();
+  }
+
+  function renderBranches() {
+    const container = document.getElementById('branch-list');
+    if (!branches.length) {
+      container.innerHTML = `<div class="empty-state" style="padding:16px"><p style="font-size:10px">No branches yet.</p></div>`;
+      return;
+    }
+    container.innerHTML = branches.slice(0, 20).map(b => `
+      <div class="branch-card" onclick="loadBranchDetail('${b.branch_id}')">
+        <div class="branch-assumption">${escHtml(b.assumption?.substring(0,100))}</div>
+        <div class="branch-meta">
+          <div class="branch-stat">SUPPRESSED: <span>${b.memories_suppressed ?? '?'}</span></div>
+          <div class="branch-stat">FACTS: <span>${(b.derived_facts_in_branch||[]).length}</span></div>
+        </div>
+      </div>
+    `).join('');
+    document.getElementById('status-branches').textContent = branches.length;
+  }
+
+  function loadBranchDetail(branchId) {
+    alert(`Branch: ${branchId}\n\nUse /what_if/forgotten to explore the branch impact.`);
+  }
+
+  // ── Reinforcement ──────────────────────────────────────────────────────────
+  async function loadReinforcement() {
+    const res = await api('/reinforcement');
+    if (res.error) return;
+    renderReinforcement(res.insights || []);
+  }
+
+  function renderReinforcement(insights) {
+    const container = document.getElementById('reinforcement-list');
+    if (!insights.length) {
+      container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔄</div><p>No insights yet.<br>Run counterfactual queries.</p></div>`;
+      return;
+    }
+    container.innerHTML = insights.slice(0, 20).map(i => `
+      <div class="reinforcement-item">
+        <div class="type">${i.type || 'insight'}</div>
+        <div class="desc">${escHtml(i.assumption || JSON.stringify(i).substring(0,80))}</div>
+        <div class="time">${formatAge(i.timestamp)}</div>
+      </div>
+    `).join('');
+  }
+
+  // ── Knowledge Graph ─────────────────────────────────────────────────────────
+  async function loadKG() {
+    await loadLiftedFacts();
+    buildKG();
+  }
+
+  function buildKG() {
+    const container = document.getElementById('kg-svg');
+    const svg = d3 ? d3.select(container) : null;
+    if (!svg) {
+      // Fallback: simple SVG without D3 physics
+      renderSimpleKG(container);
+      return;
+    }
+
+    const nodes = [];
+    const edges = [];
+    const predColors = {
+      memory_fact: '#00d4ff', action_memory: '#f97316', reactive_memory: '#a855f7',
+      positive_memory: '#22c55e', disturbing_memory: '#ef4444',
+      entity_known: '#00ffcc', derived_knowledge: '#eab308'
+    };
+
+    liftedFacts.forEach(f => {
+      const id = f.memory_id?.substring(0, 12) || Math.random().toString(36).substr(2,6);
+      if (!nodes.find(n => n.id === id)) {
+        nodes.push({ id, label: f.predicate, type: f.predicate, color: predColors[f.predicate] || '#00d4ff', fx: null, fy: null });
+      }
+      if (f.subject && !nodes.find(n => n.id === 's_' + f.subject)) {
+        nodes.push({ id: 's_' + f.subject, label: f.subject, type: 'entity', color: '#00ffcc', fx: null, fy: null });
+      }
+      if (f.subject && f.object) {
+        edges.push({ source: 's_' + f.subject, target: id, label: f.predicate });
+      }
+    });
+
+    kgNodes = nodes;
+    kgEdges = edges;
+    renderForceKG(svg, nodes, edges);
+  }
+
+  function renderForceKG(svg, nodes, edges) {
+    const W = 800, H = 350;
+    svg.selectAll('*').remove();
+
+    // Arrow marker
+    svg.append('defs').append('marker').attr('id', 'arrowhead')
+      .attr('viewBox','-0 -5 10 10').attr('refX',18).attr('refY',0)
+      .attr('orient','auto').attr('markerWidth',6).attr('markerHeight',6)
+      .append('path').attr('d','M 0,-5 L 10,0 L 0,5').attr('fill','#1e2d45');
+
+    const sim = d3 ? d3.forceSimulation(nodes)
+      .force('link', d3.forceLink(edges).id(d => d.id).distance(80))
+      .force('charge', d3.forceManyBody().strength(-200))
+      .force('center', d3.forceCenter(W/2, H/2))
+      .force('collision', d3.forceCollide(30)) : null;
+
+    if (!sim) return;
+
+    const link = svg.append('g').selectAll('line').data(edges).enter().append('line')
+      .attr('stroke','#1e2d45').attr('stroke-width',1.5)
+      .attr('marker-end','url(#arrowhead)');
+
+    const node = svg.append('g').selectAll('g').data(nodes).enter().append('g')
+      .call(d3.drag().on('start', (e,d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+        .on('drag', (e,d) => { d.fx = e.x; d.fy = e.y; })
+        .on('end', (e,d) => { if (!e.active) sim.alphaTarget(0); d.fx = null; d.fy = null; }));
+
+    node.append('circle').attr('r', 8).attr('fill', d => d.color || '#00d4ff').attr('opacity', 0.8);
+    node.append('text').text(d => d.label?.substring(0, 12) || '')
+      .attr('text-anchor','middle').attr('dy', -14)
+      .attr('fill','#8892a4').attr('font-size','9').attr('font-family','JetBrains Mono');
+
+    sim.on('tick', () => {
+      link.attr('x1', d => Math.max(20, Math.min(W-20, d.source.x)))
+          .attr('y1', d => Math.max(20, Math.min(H-20, d.source.y)))
+          .attr('x2', d => Math.max(20, Math.min(W-20, d.target.x)))
+          .attr('y2', d => Math.max(20, Math.min(H-20, d.target.y)));
+      node.attr('transform', d => `translate(${Math.max(20,Math.min(W-20,d.x))},${Math.max(20,Math.min(H-20,d.y))})`);
+    });
+  }
+
+  function renderSimpleKG(container) {
+    if (!liftedFacts.length) {
+      container.innerHTML = `<text x="50%" y="50%" text-anchor="middle" fill="#4b5563" font-family="JetBrains Mono" font-size="11">No lifted facts to display</text>`;
+      return;
+    }
+    const W = 800, H = 350;
+    let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">`;
+    const cx = W/2, cy = H/2, r = 120;
+    const colors = { memory_fact:'#00d4ff',action_memory:'#f97316',reactive_memory:'#a855f7',positive_memory:'#22c55e',entity_known:'#00ffcc' };
+    liftedFacts.slice(0, 12).forEach((f, i) => {
+      const angle = (i / 12) * 2 * Math.PI - Math.PI/2;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      const color = colors[f.predicate] || '#00d4ff';
+      svg += `<circle cx="${x}" cy="${y}" r="8" fill="${color}" opacity="0.8"/>`;
+      svg += `<text x="${x}" y="${y+22}" text-anchor="middle" fill="#8892a4" font-size="8" font-family="JetBrains Mono">${escHtml(f.predicate?.substring(0,12)||'')}</text>`;
+      svg += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#1e2d45" stroke-width="1" opacity="0.5"/>`;
+    });
+    svg += `<circle cx="${cx}" cy="${cy}" r="10" fill="#0d1220" stroke="#00d4ff" stroke-width="1.5"/>`;
+    svg += `<text x="${cx}" y="${cy+4}" text-anchor="middle" fill="#00d4ff" font-size="8" font-family="JetBrains Mono">MEM</text>`;
+    svg += `</svg>`;
+    container.innerHTML = svg;
+  }
+
+  function resetGraph() { buildKG(); }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  async function init() {
+    await loadStats();
+    await loadMemories();
+    await loadContext();
+    await loadBranches();
+    await loadLiftedFacts();
+    await loadReinforcement();
+
+    // Try to load D3 if available, otherwise use simple SVG
+    if (typeof d3 !== 'undefined') {
+      buildKG();
+    } else {
+      // Use simple SVG renderer
+      const container = document.getElementById('kg-svg');
+      renderSimpleKG(container);
+    }
+  }
+
+  // ── Poll ────────────────────────────────────────────────────────────────────
+  setInterval(async () => {
+    await loadStats();
+  }, 8000);
+
+  setInterval(async () => {
+    await loadContext();
+  }, 5000);
+
+  init();
+</script>
+
+<!-- D3.js CDN for force-directed graph -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+</body>
+</html>

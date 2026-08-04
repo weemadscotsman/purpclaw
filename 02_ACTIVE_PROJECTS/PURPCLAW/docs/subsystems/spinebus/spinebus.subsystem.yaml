@@ -1,0 +1,94 @@
+﻿id: purpclaw.spinebus
+name: SPINEBUS
+version: 0.2.0-phase2
+status: proposed
+owner: PURPCLAW
+purpose: >
+  Route every PURPCLAW chat/job through memory, mycelium, tower, skills,
+  tools, execution gates, receipts, truth audit, and learning queues.
+
+depends_on:
+  - liveforge
+  - fungus_amongus
+  - pxpipe
+  - agent_tower
+  - tools_registry
+  - skills_registry
+  - truth_manifest
+
+principles:
+  - every_job_has_envelope
+  - every_subsystem_gets_touched
+  - only_selected_subsystems_execute
+  - no_tool_without_route
+  - no_mutation_without_receipt
+  - no_learning_without_proof
+  - no_promotion_without_replay
+  - no_truth_claim_without_manifest
+
+touchpoints:
+  chat_intake:
+    required: true
+    action: create_job_envelope
+  intent_normalizer:
+    required: true
+    action: classify_and_budget
+  memory_layers:
+    required: true
+    count: 7
+    action: compact_touch
+  mycelium:
+    required: true
+    action: retrieve_spores_and_warnings
+  tower:
+    required: true
+    action: rank_agents
+  skills:
+    required: true
+    action: load_skill_cards
+  tools:
+    required: true
+    action: rank_callables
+  liveforge:
+    required: conditional
+    action: create_surface_when_useful
+  pxpipe:
+    required: conditional
+    action: offload_large_context
+  execution_gate:
+    required: true
+    action: approve_or_block
+  receipts:
+    required: true
+    action: write_route_receipt
+  truth_audit:
+    required: true
+    action: compare_runtime_claims
+  autolearn:
+    required: true
+    action: propose_lessons
+  dreamforge:
+    required: conditional
+    action: queue_inactive_evolution_tasks
+
+phase2_runtime_targets:
+  module: lib/spinebus.js
+  command: lib/commands/spinebus.js
+  api_root: app/api/spinebus
+  storage: agent_work/spinebus
+
+phase2_endpoints:
+  - GET /api/spinebus/health
+  - POST /api/spinebus/envelope
+  - POST /api/spinebus/route
+  - GET /api/spinebus/routes/:id
+  - GET /api/spinebus/registry
+  - POST /api/spinebus/lesson
+  - POST /api/spinebus/dream-queue
+
+phase2_cli:
+  - purpclaw spinebus health
+  - purpclaw spinebus route --text "..."
+  - purpclaw spinebus registry
+  - purpclaw spinebus dream-queue
+

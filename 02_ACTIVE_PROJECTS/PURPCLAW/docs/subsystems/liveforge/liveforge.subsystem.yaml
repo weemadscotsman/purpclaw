@@ -1,0 +1,35 @@
+id: liveforge
+name: PURPCLAW LIVEFORGE
+phase: 7
+status: lesson-distiller-promotion-gate
+storage:
+  root: .purpclaw/liveforge
+  surfaces: .purpclaw/liveforge/surfaces
+  events: .purpclaw/liveforge/events.jsonl
+  receipts: .purpclaw/liveforge/receipts.jsonl
+  lessons: .purpclaw/liveforge/lessons.pending.jsonl
+  invocation_registry: .purpclaw/liveforge/invocation-registry.json
+  patches: .purpclaw/liveforge/patches
+  tool_routes: .purpclaw/liveforge/tool-routes.json
+  generated_tool_proposals: .purpclaw/liveforge/generated-tool-proposals.jsonl
+  approved_writes: .purpclaw/liveforge/approved
+  approved_patterns: .purpclaw/liveforge/approved-patterns.json
+  lesson_replays: .purpclaw/liveforge/lesson-replays.jsonl
+guards:
+  strict_static_sanitizer: true
+  no_javascript: true
+  no_external_network: true
+  no_tool_execution: true
+  registry_snapshot_only: true
+  forms_allowed_event_ids_only: true
+  form_state_updates_via_event_envelopes: true
+  tool_routes_allowlist_only: true
+  tool_permission_token_required: true
+  sandboxed_iframe_preview: true
+  proposal_save_only: true
+  approved_writes_tool_gateway_only: true
+  private_patch_filtering: true
+  privacy_receipts: true
+  no_gaslighting_fallback: true
+  replay_required_before_promotion: true
+  high_risk_no_self_promotion: true

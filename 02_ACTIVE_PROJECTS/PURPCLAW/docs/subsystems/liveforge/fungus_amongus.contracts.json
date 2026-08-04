@@ -1,0 +1,364 @@
+﻿{
+  "spore_packet_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "PURPCLAW Fungus Amongus Spore Packet",
+    "type": "object",
+    "required": [
+      "spore_id",
+      "created_at",
+      "created_by",
+      "source_type",
+      "source_ref",
+      "packet_type",
+      "title",
+      "summary",
+      "payload",
+      "tags",
+      "visibility_scope",
+      "allowed_consumers",
+      "blocked_consumers",
+      "confidence",
+      "evidence_refs",
+      "ttl_seconds",
+      "decay_policy",
+      "risk_level",
+      "promotion_state"
+    ],
+    "properties": {
+      "spore_id": {
+        "type": "string",
+        "pattern": "^spore_[a-zA-Z0-9_-]+$"
+      },
+      "created_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "created_by": {
+        "type": "string"
+      },
+      "source_type": {
+        "type": "string",
+        "enum": [
+          "user",
+          "agent",
+          "tool",
+          "liveforge_surface",
+          "proof_log",
+          "system",
+          "manual_import"
+        ]
+      },
+      "source_ref": {
+        "type": "string"
+      },
+      "packet_type": {
+        "type": "string",
+        "enum": [
+          "route_hint",
+          "tool_success",
+          "tool_failure",
+          "warning",
+          "user_preference",
+          "workflow_pattern",
+          "surface_pattern",
+          "schema_pattern",
+          "sanitizer_rule",
+          "privacy_rule",
+          "agent_handoff",
+          "conflict",
+          "deprecated_pattern",
+          "promotion_candidate",
+          "approved_colony_pattern"
+        ]
+      },
+      "title": {
+        "type": "string",
+        "minLength": 3
+      },
+      "summary": {
+        "type": "string",
+        "minLength": 8
+      },
+      "payload": {
+        "type": "object"
+      },
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "visibility_scope": {
+        "type": "string",
+        "enum": [
+          "public_surface",
+          "user_only",
+          "agent_only",
+          "project_private",
+          "system_private",
+          "secret_blocked"
+        ]
+      },
+      "allowed_consumers": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "blocked_consumers": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "confidence": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      },
+      "evidence_refs": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "ttl_seconds": {
+        "type": "integer",
+        "minimum": 60
+      },
+      "decay_policy": {
+        "type": "string",
+        "enum": [
+          "session",
+          "short",
+          "project",
+          "pinned",
+          "version_bound",
+          "external_fact"
+        ]
+      },
+      "risk_level": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ]
+      },
+      "promotion_state": {
+        "type": "string",
+        "enum": [
+          "raw",
+          "candidate",
+          "replay_required",
+          "approved",
+          "rejected",
+          "deprecated"
+        ]
+      }
+    }
+  },
+  "hypha_route_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "PURPCLAW Fungus Amongus Hypha Route",
+    "type": "object",
+    "required": [
+      "route_id",
+      "producer_node",
+      "consumer_node",
+      "packet_types_allowed",
+      "visibility_allowed",
+      "transform_policy",
+      "rate_limit",
+      "requires_receipt",
+      "enabled"
+    ],
+    "properties": {
+      "route_id": {
+        "type": "string",
+        "pattern": "^hypha_[a-zA-Z0-9_-]+$"
+      },
+      "producer_node": {
+        "type": "string"
+      },
+      "consumer_node": {
+        "type": "string"
+      },
+      "packet_types_allowed": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "visibility_allowed": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "transform_policy": {
+        "type": "string",
+        "enum": [
+          "none",
+          "summarize",
+          "redact_private",
+          "lesson_only",
+          "proof_only"
+        ]
+      },
+      "rate_limit": {
+        "type": "object",
+        "properties": {
+          "max_packets": {
+            "type": "integer"
+          },
+          "window_seconds": {
+            "type": "integer"
+          }
+        },
+        "additionalProperties": false
+      },
+      "requires_receipt": {
+        "type": "boolean"
+      },
+      "enabled": {
+        "type": "boolean"
+      }
+    }
+  },
+  "nutrient_bundle_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "PURPCLAW Fungus Amongus Nutrient Bundle",
+    "type": "object",
+    "required": [
+      "bundle_id",
+      "task_id",
+      "consumer_id",
+      "reason",
+      "spores_included",
+      "spores_suppressed",
+      "max_tokens",
+      "generated_at",
+      "expiry"
+    ],
+    "properties": {
+      "bundle_id": {
+        "type": "string",
+        "pattern": "^nutrient_[a-zA-Z0-9_-]+$"
+      },
+      "task_id": {
+        "type": "string"
+      },
+      "consumer_id": {
+        "type": "string"
+      },
+      "reason": {
+        "type": "string"
+      },
+      "spores_included": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "spores_suppressed": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": [
+            "spore_id",
+            "reason"
+          ],
+          "properties": {
+            "spore_id": {
+              "type": "string"
+            },
+            "reason": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "max_tokens": {
+        "type": "integer",
+        "minimum": 100,
+        "maximum": 8000
+      },
+      "generated_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "expiry": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "colony_pattern_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "PURPCLAW Fungus Amongus Colony Pattern",
+    "type": "object",
+    "required": [
+      "pattern_id",
+      "name",
+      "trigger_conditions",
+      "instruction",
+      "evidence_refs",
+      "replay_tests",
+      "approved_by",
+      "approved_at",
+      "risk_level",
+      "rollback_plan"
+    ],
+    "properties": {
+      "pattern_id": {
+        "type": "string",
+        "pattern": "^colony_[a-zA-Z0-9_-]+$"
+      },
+      "name": {
+        "type": "string"
+      },
+      "trigger_conditions": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "instruction": {
+        "type": "string"
+      },
+      "evidence_refs": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "replay_tests": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "approved_by": {
+        "type": "string"
+      },
+      "approved_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "risk_level": {
+        "type": "string",
+        "enum": [
+          "low",
+          "medium",
+          "high",
+          "critical"
+        ]
+      },
+      "rollback_plan": {
+        "type": "string"
+      }
+    }
+  }
+}

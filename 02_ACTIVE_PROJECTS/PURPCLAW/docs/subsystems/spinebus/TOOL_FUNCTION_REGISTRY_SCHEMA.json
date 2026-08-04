@@ -1,0 +1,149 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PURPCLAW Tool Function Registry Schema",
+  "type": "object",
+  "required": [
+    "generatedAt",
+    "source",
+    "callables"
+  ],
+  "properties": {
+    "generatedAt": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "counts": {
+      "type": "object",
+      "properties": {
+        "tools": {
+          "type": "number"
+        },
+        "skills": {
+          "type": "number"
+        },
+        "agents": {
+          "type": "number"
+        },
+        "apiRoutes": {
+          "type": "number"
+        },
+        "cliCommands": {
+          "type": "number"
+        },
+        "systemCommands": {
+          "type": "number"
+        }
+      }
+    },
+    "callables": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "type",
+          "status"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "native_tool",
+              "skill",
+              "agent",
+              "api_route",
+              "cli_command",
+              "system_command",
+              "mcp_tool",
+              "function_call",
+              "browser_action",
+              "pc_control"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "verified",
+              "unverified",
+              "deprecated",
+              "broken"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "handler": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "inputSchema": {
+            "type": "object"
+          },
+          "outputSchema": {
+            "type": "object"
+          },
+          "sideEffects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "permissions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "risk": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "dangerous"
+            ]
+          },
+          "examples": {
+            "type": "array"
+          },
+          "lastVerifiedAt": {
+            "type": "string"
+          },
+          "knownFailures": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "avgLatencyMs": {
+            "type": "number"
+          },
+          "avgTokenCost": {
+            "type": "number"
+          }
+        }
+      }
+    }
+  }
+}
+

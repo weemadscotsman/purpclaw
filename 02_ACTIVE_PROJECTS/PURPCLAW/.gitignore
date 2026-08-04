@@ -44,3 +44,9 @@ tools/*/package-lock.json
 /var/**
 !/var/**/
 !/var/**/.gitkeep
+
+# Vendored third-party reference material. Kept on disk for reference, kept out
+# of our history — 718 files of another project's docs is not our source. The
+# PROVENANCE.md beside it IS tracked, so the origin stays recorded.
+/research/references/everything-claude-code/*
+!/research/references/everything-claude-code/PROVENANCE.md

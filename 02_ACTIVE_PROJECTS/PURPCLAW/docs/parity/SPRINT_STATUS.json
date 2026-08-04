@@ -1,0 +1,286 @@
+{
+  "_deprecation_notice": "SUPERSEDED 2026-07-29. Authority is docs/gauntlet/P0_RUNTIME_STATE.json. Do not use for campaign decisions.",
+  "_superseded_by": "docs/gauntlet/P0_RUNTIME_STATE.json",
+  "schema_version": 2,
+  "campaign": "PURPCLAW Parity Sprint",
+  "master_goal": "docs/parity/WAVE1_MASTER_GOAL.md",
+  "comparator": "docs/PARITY_BLIND_CRITIC.md",
+  "manifest": "docs/PARITY_BLIND_CRITIC.md",
+  "updated_at": "2026-07-30T00:22:07.952Z",
+  "updated_by": "parity-sprint-cron",
+  "_authority_status": "SUPERSEDED — cron removed, do not update",
+  "allocations": [],
+  "escalations": [],
+  "sprint_priorities": [
+    {
+      "rank": 1,
+      "item": "purpclaw models --compare",
+      "owner": "PARITY-B",
+      "status": "done",
+      "tranche": "parity",
+      "parent": null,
+      "notes": "24-model catalog in bin/purpclaw.js cmdModel(). Table: PROVIDER|MODEL|CTX|VISION|COST|STRENGTHS."
+    },
+    {
+      "rank": 2,
+      "item": "multi-provider fan-out",
+      "owner": "PARITY-B",
+      "status": "done",
+      "tranche": "parity",
+      "parent": null,
+      "notes": "runFanOut() in lib/commands/ask.js — Promise.all up to 8 providers, scoring: length*(1+fences*0.1+headers*0.05+lists*0.05). Comparison table + best response."
+    },
+    {
+      "rank": 3,
+      "item": "purpclaw init + per-repo config",
+      "owner": "PARITY-B",
+      "status": "done",
+      "tranche": "parity",
+      "parent": null,
+      "notes": "PURPCLAW.yaml reading added to buildAgentPrompt() in agent_tower.js. cmdInit already exists — scaffolds system config."
+    },
+    {
+      "rank": 4,
+      "item": "purpclaw exec -- (non-interactive)",
+      "owner": "PARITY-A",
+      "status": "done",
+      "tranche": "parity",
+      "parent": "3",
+      "notes": "DECIDED: Full agent loop batch mode. Decision in docs/parity/EXEC_MODE_DECISION.md. Option B chosen — tool-capable coding agent workload requires full loop."
+    },
+    {
+      "rank": 5,
+      "item": "purpclaw ask --image",
+      "owner": "PARITY-A",
+      "status": "done",
+      "tranche": "parity",
+      "parent": null,
+      "notes": "Built: lib/commands/ask.js runImage(). base64 encode, vision provider detection. Vision-capable: gpt-4o, claude-3-5-sonnet, Gemini, Minimax."
+    },
+    {
+      "rank": 6,
+      "item": "purpclaw ask --search",
+      "owner": "PARITY-A",
+      "status": "done",
+      "tranche": "parity",
+      "parent": null,
+      "notes": "DuckDuckGo Instant Answer API via https.get in lib/commands/ask.js runSearch(). Returns: heading, abstract, related topics, source URLs."
+    },
+    {
+      "rank": 7,
+      "item": "purpclaw permissions",
+      "owner": "PARITY-A",
+      "status": "done",
+      "tranche": "parity",
+      "parent": null,
+      "notes": "Built lib/commands/permissions.js. 4 categories: file_write, shell_exec, network, agent_spawn. Persisted to ~/.purpclaw/permissions.json. Defaults: file_write=allowed, shell_exec=blocked, network=allowed, agent_spawn=blocked."
+    },
+    {
+      "rank": 8,
+      "item": "purpclaw mcp (user servers)",
+      "owner": "PARITY-C",
+      "status": "done",
+      "tranche": "parity",
+      "parent": null,
+      "notes": "OmniCode in RESERVED_SERVERS (read-only). User servers in ~/.purpclaw/mcp-servers.json. list/add/remove commands. Test: purpclaw mcp list passed."
+    },
+    {
+      "rank": 9,
+      "item": "cognitive spine surfacing",
+      "owner": "HARDEN-A",
+      "status": "done",
+      "tranche": "hardening",
+      "parent": null,
+      "notes": "Built cmdSpineStatus (bin/purpclaw.js), wrote docs/spine-self-healing.md, surfaced existing mem_guard + child-registry as visible feature."
+    },
+    {
+      "rank": 10,
+      "item": "purpclaw review audit",
+      "owner": "PARITY-C",
+      "status": "done",
+      "tranche": "hardening",
+      "parent": null,
+      "notes": "Enhanced cmdReview with LLM-powered severity analysis. Gap vs Codex /review CLOSED. Fallback to raw diff stats when LLM unavailable."
+    },
+    {
+      "rank": 11,
+      "item": "purpclaw watch",
+      "owner": "PARITY-C",
+      "status": "done",
+      "tranche": "hardening",
+      "parent": null,
+      "notes": "Built lib/commands/watch.js with fs.watch polling loop. SIGINT cleanup. File change → re-runs agent."
+    },
+    {
+      "rank": 12,
+      "item": "proof ledger UI",
+      "owner": "DIFF-A",
+      "status": "done",
+      "tranche": "differentiate",
+      "parent": null,
+      "notes": "Built app/proof-ledger/page.tsx — filterable table, timeline view, detail JSON panel. Wired into route-registry + MissionControl PanelContent."
+    },
+    {
+      "rank": 13,
+      "item": "abliterator panel",
+      "owner": "DIFF-A",
+      "status": "done",
+      "tranche": "differentiate",
+      "parent": null,
+      "notes": "Enhanced existing panel with Cohen's d Effect Size Lab: live measurement, SVG history chart, interpretation badges (0.2/0.5/0.8 thresholds)."
+    },
+    {
+      "rank": 14,
+      "item": "training buffer CLI",
+      "owner": "DIFF-B",
+      "status": "done",
+      "tranche": "differentiate",
+      "parent": null,
+      "notes": "purpclaw train --from-sessions --days=N + train --status. Built lib/commands/training.js. Test: bin/purpclaw.js train --status passed."
+    },
+    {
+      "rank": 15,
+      "item": "purpclaw schedule (native cron)",
+      "owner": "DIFF-B",
+      "status": "done",
+      "tranche": "differentiate",
+      "parent": null,
+      "notes": "Built lib/commands/schedule.js using lib/cron-manager.js (SQLite). cmds: list, add, remove, run, help. Interval shorthands: 30m-7d + raw cron."
+    },
+    {
+      "rank": 16,
+      "item": "code execution sandbox",
+      "owner": "DIFF-C",
+      "status": "done",
+      "tranche": "differentiate",
+      "parent": null,
+      "notes": "Built lib/sandbox-windows.js: restricted child_process isolation, safe env var allow-list, temp sandbox dir per run, auditCode() escape scanner. Docker/Hyper-V unavailable on this hardware."
+    },
+    {
+      "rank": 17,
+      "item": "Data Harvester E: drive",
+      "owner": "MOAT-A",
+      "status": "done",
+      "tranche": "moat",
+      "parent": null,
+      "notes": "Built: scripts/harvester/{crawl,extract,index}.js + bin/harvester.js. Incremental scan, manifest at ~/.purpclaw/harvester-manifest.json. CLI: purpclaw harvester scan|status|search|ledger"
+    },
+    {
+      "rank": 18,
+      "item": "skill marketplace",
+      "owner": "MOAT-B",
+      "status": "done",
+      "tranche": "moat",
+      "parent": null,
+      "notes": "Built lib/tools/skill-marketplace.js + bin/purpclaw.js skills list|search|install|uninstall|info. 379 built-in skills. Verified: purpclaw skills list + search working."
+    },
+    {
+      "rank": 19,
+      "item": "council mode CLI",
+      "owner": "MOAT-B",
+      "status": "done",
+      "tranche": "moat",
+      "parent": null,
+      "notes": "Built purpclaw ask --council: 3 personas in parallel, voting mechanism, all responses shown. council.js command created. Cost arbitrage: purpclaw cost-analyze + cost-report working, spend-log.json tracking."
+    },
+    {
+      "rank": 20,
+      "item": "multi-provider cost arbitrage",
+      "owner": "MOAT-C",
+      "status": "done",
+      "tranche": "moat",
+      "parent": null,
+      "notes": "purpclaw cost-analyze + cost-report working, spend-log.json tracking. Built by MOAT-B as part of council mode work (rank 19)."
+    }
+  ],
+  "subagent_lanes": [
+    {
+      "lane_id": "PARITY-A",
+      "focus": "exec --image --search --permissions",
+      "status": "pending",
+      "agent_id": null
+    },
+    {
+      "lane_id": "PARITY-B",
+      "focus": "models --compare + fan-out + init",
+      "status": "pending",
+      "agent_id": null
+    },
+    {
+      "lane_id": "PARITY-C",
+      "focus": "mcp + review audit + watch",
+      "status": "pending",
+      "agent_id": null
+    },
+    {
+      "lane_id": "HARDEN-A",
+      "focus": "cognitive spine surfacing",
+      "status": "done",
+      "agent_id": null
+    },
+    {
+      "lane_id": "DIFF-A",
+      "focus": "proof ledger UI + abliterator panel",
+      "status": "done",
+      "agent_id": null
+    },
+    {
+      "lane_id": "DIFF-B",
+      "focus": "training buffer CLI + schedule",
+      "status": "done",
+      "agent_id": null
+    },
+    {
+      "lane_id": "DIFF-C",
+      "focus": "code execution sandbox",
+      "status": "done",
+      "agent_id": null
+    },
+    {
+      "lane_id": "MOAT-A",
+      "focus": "Data Harvester",
+      "status": "done",
+      "agent_id": null
+    },
+    {
+      "lane_id": "MOAT-B",
+      "focus": "skill marketplace",
+      "status": "done",
+      "agent_id": null
+    },
+    {
+      "lane_id": "MOAT-C",
+      "focus": "council mode + cost arbitrage",
+      "status": "pending",
+      "agent_id": null
+    }
+  ],
+  "build_status": {
+    "services_online": 10,
+    "services_total": 12,
+    "smoke_passed": 0,
+    "smoke_total": 0,
+    "parity_items_complete": 20,
+    "parity_items_total": 20,
+    "open_critical_bugs": 0,
+    "last_successful_build": "2026-07-30T00:22:43.246Z"
+  },
+  "notes": [
+    "Sprint launched 2026-07-29. 10 lanes, 20 items.",
+    "EB-1 (exec mode architecture) MUST be resolved before PARITY-A starts ranks 4-5.",
+    "Multi-provider fan-out (rank 2) is the wow-moment — PARITY-B should build this FIRST.",
+    "Cognitive spine (rank 9) already built — HARDEN-A surfaces, not rebuilds.",
+    "bwrap = Linux-only. DIFF-C must use Windows-compatible isolation.",
+    "OpenClaude CLI Chunk 1: 6/7 capabilities WORKING. evidence doc at docs/parity/EVIDENCE_OPENCLAUDE_CLI_CHUNK1.md. 3 bugs open: logs collision (cmdLogs falls through to PM2), --provider-env-file banner swallowed, parity --json routing. NOT YET COMMITTED.",
+    "Chunk 1 bug fix: streaming path (streamChatOpenAI) MISSING SpendGate check — only chat() has it. PATCH NEEDED.",
+    "Sprint 1-3 CODEX PARITY: code committed. VERIFIED: tool alias _resolve ✅, Python code interpreter ✅, requirements.toml ✅, skills install ✅, provider config HONOURING ✅. VERIFIED MISSING: streaming SpendGate (only chat() covered, streamChatOpenAI NOT covered).",
+    "Secret vault (Sprint 3) committed at 97ae0d2 ✅. GitHub Models onboarding NOT IMPLEMENTED (no OAuth client id in repo).",
+    "AGENT_RESOURCE_POLICY.md adopted 2026-07-29 — binding Ultra/Max budget rules in effect.",
+    "Goal skill saved at skills/goal/GOALS.md + skills/registry.txt — governs model/reasoning budget for all 11 agents.",
+    "Git repo root is E:/god folder/. PURPCLAW is on branch canonical-parity-clean-v2."
+  ],
+  "resolved_blockers": [],
+  "canonical_authority": "docs/parity/CANONICAL_PARITY_PRIORITY.md",
+  "authority_scope": "NON_AUTHORITATIVE_WORKING_STATUS",
+  "acceptance_rule": "Done labels are provisional until canonical acceptance evidence passes."
+}
