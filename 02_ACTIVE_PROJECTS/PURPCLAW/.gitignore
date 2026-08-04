@@ -50,3 +50,9 @@ tools/*/package-lock.json
 # PROVENANCE.md beside it IS tracked, so the origin stays recorded.
 /research/references/everything-claude-code/*
 !/research/references/everything-claude-code/PROVENANCE.md
+
+# Secrets must never be tracked. keys.env was swept into a docs commit by a
+# broad "git add -- docs" during the archive move; untracked immediately.
+**/keys.env
+**/*.env
+!**/*.example.env
