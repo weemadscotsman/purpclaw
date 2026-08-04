@@ -1,9 +1,11 @@
-// packages/memory/adapters/memory-client-wrapper.js
-// Adapter: wraps lib/memory-client.js as a packages/ import
-// Keeps lib/memory-client.js as the live implementation
-// Wrapper removed only after zero callers remain in lib/
-
 'use strict';
+/**
+ * Adapter over lib/memory-client.js — the live cognitive spine client (:7880).
+ *
+ * lib/memory-client.js stays the implementation; this only gives packages/
+ * a stable surface to import. Remove the adapter once no lib/ caller talks to
+ * memory-client directly.
+ */
 
 const legacy = require('../../../lib/memory-client');
 
@@ -13,24 +15,29 @@ class MemoryClientAdapter {
   }
 
   async recall(query, options = {}) {
-    if (typeof legacy.recall === 'function') {
-      return legacy.recall(query, options);
-    }
-    return { items: [] };
+    return legacy.recall(query, options);
   }
 
   async ingest(content, options = {}) {
-    if (typeof legacy.ingest === 'function') {
-      return legacy.ingest(content, options);
-    }
-    return { ok: true };
+    return legacy.ingest(content, options);
   }
 
+  /**
+   * Real health, not a shrug. The previous version probed for a `health`
+   * method, did not find one — memory-client exposes isOnline/degraded/stats,
+   * not health — and returned {ok:true} on the fallback path. That reported a
+   * healthy spine whenever the spine was unreachable, which is the exact
+   * failure mode the proof ledger exists to catch.
+   */
   async health() {
-    if (typeof legacy.health === 'function') {
-      return legacy.health();
-    }
-    return { ok: true };
+    const online = await legacy.isOnline();
+    const degraded = typeof legacy.degraded === 'function' ? legacy.degraded() : null;
+    return {
+      ok: online === true && !degraded,
+      online: online === true,
+      degraded: degraded || null,
+      port: legacy.PORT,
+    };
   }
 }
 

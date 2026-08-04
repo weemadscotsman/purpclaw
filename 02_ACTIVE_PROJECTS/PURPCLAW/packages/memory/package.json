@@ -1,0 +1,10 @@
+{
+  "name": "@purpclaw/memory",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Governed seven-layer memory gateway — the only permitted memory interface",
+  "main": "index.js",
+  "scripts": {
+    "test": "node selfcheck.js"
+  }
+}

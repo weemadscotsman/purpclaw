@@ -11,6 +11,7 @@
 'use strict';
 
 const MemoryClient = require('../adapters/memory-client-wrapper');
+const CONTRACT = require('../contract');
 
 const LAYER_PATTERNS = {
   episodic:             /session|turn|event|action|tool-call/i,
@@ -70,57 +71,81 @@ class MemoryGateway {
   async record(memory, options = {}) {
     const layer = memory.layer || this.inferLayer(memory);
     if (!this.layers[layer]) return { ok: false, error: 'unknown layer: ' + layer };
-    const enriched = {
+    const now = new Date().toISOString();
+    // Envelope defaults come from contract/, not from a second copy of the
+    // field list inlined here. Two copies drift, and the one that drifts is
+    // always the one nobody is looking at.
+    const enriched = CONTRACT.enrich({
       ...memory,
       layer,
       memoryId: memory.memoryId || generateId('mem_'),
-      createdAt: memory.createdAt || new Date().toISOString(),
-      validFrom: memory.validFrom || new Date().toISOString(),
-      sensitivity: memory.sensitivity || 'internal',
-      retention: memory.retention || 'standard',
-    };
+      createdAt: memory.createdAt || now,
+      validFrom: memory.validFrom || now,
+    });
+    const checked = CONTRACT.validate(enriched);
+    if (!checked.ok) return { ok: false, code: 'CONTRACT_VIOLATION', missing: checked.missing };
     return this.layers[layer].record(enriched, options);
   }
 
+  // promote / supersede / forget are declared by the contract but cannot yet be
+  // performed: the live spine (lib/memory-client.js) exposes no operation that
+  // implements them. They report that honestly. They previously returned
+  // ok:true unconditionally, so a supersession that never happened — and a
+  // forget() that deleted nothing — both reported success. For a memory system
+  // whose whole job is knowing what is true, that is the worst possible lie.
+  // Implement these on the spine first, then let them through here.
+
   async promote(memoryId, targetLayer, options = {}) {
     if (!this.layers[targetLayer]) return { ok: false, error: 'unknown layer: ' + targetLayer };
-    for (const [name, layer] of Object.entries(this.layers)) {
-      const result = await layer.promote(memoryId, targetLayer, options);
-      if (result && result.ok) return result;
-    }
-    return { ok: false, error: 'memory not found in any layer' };
+    return this.layers[targetLayer].promote(memoryId, targetLayer, options);
   }
 
   async supersede(memoryId, newMemoryId, options = {}) {
-    const results = await Promise.allSettled(
+    const results = await Promise.all(
       Object.values(this.layers).map(l => l.supersede(memoryId, newMemoryId, options))
     );
-    return { ok: true, superseded: memoryId, by: newMemoryId, layersChecked: results.length };
+    const done = results.filter(r => r && r.ok);
+    return done.length
+      ? { ok: true, superseded: memoryId, by: newMemoryId, layers: done.map(r => r.layer) }
+      : { ...results[0], memoryId, newMemoryId, layersChecked: results.length };
   }
 
   async forget(memoryId, options = {}) {
-    const results = await Promise.allSettled(
-      Object.values(this.layers).map(l => l.forget && l.forget(memoryId, options))
+    const results = await Promise.all(
+      Object.values(this.layers).map(l => l.forget(memoryId, options))
     );
-    return { ok: true, forgotten: memoryId, layersChecked: results.length };
+    const done = results.filter(r => r && r.ok);
+    return done.length
+      ? { ok: true, forgotten: memoryId, layers: done.map(r => r.layer) }
+      : { ...results[0], memoryId, layersChecked: results.length };
   }
 
   async explain(memoryId, options = {}) {
-    return { memoryId, provenance: [], explanation: 'TODO: wire to provenance store' };
+    return {
+      ok: false,
+      code: 'NOT_IMPLEMENTED',
+      memoryId,
+      error: 'explain() needs a provenance store; none is wired yet. '
+        + 'Returning an empty provenance list would read as "this memory has no sources".',
+    };
   }
 
   async health(options = {}) {
-    const results = await Promise.allSettled(
-      Object.values(this.layers).map(l => l.health())
-    );
-    const layerHealth = {};
-    let allOk = true;
-    for (const [name, result] of Object.entries(results)) {
-      const key = Object.keys(this.layers)[name];
-      layerHealth[key] = result.status === 'fulfilled' ? result.value : { status: 'error', ok: false };
-      if (!layerHealth[key].ok) allOk = false;
-    }
-    return { ok: allOk, layers: layerHealth };
+    // Object.entries() over an array yields string indices, which the previous
+    // version then used to index Object.keys(this.layers) — it only worked by
+    // coercion and silently mislabelled layers the moment one was reordered.
+    const names = Object.keys(this.layers);
+    const results = await Promise.allSettled(names.map(n => this.layers[n].health()));
+    const layers = {};
+    let ok = true;
+    names.forEach((name, i) => {
+      const r = results[i];
+      layers[name] = r.status === 'fulfilled'
+        ? r.value
+        : { layer: name, ok: false, status: 'error', error: String(r.reason && r.reason.message || r.reason) };
+      if (!layers[name].ok) ok = false;
+    });
+    return { ok, layers };
   }
 }
 
