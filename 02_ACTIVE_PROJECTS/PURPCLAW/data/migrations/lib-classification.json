@@ -1,1061 +1,2628 @@
 {
-  "lib/a2a-runtime.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 6955,
-    "dir": "lib"
-  },
-  "lib/agent-component.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 8419,
-    "dir": "lib"
-  },
-  "lib/agent-gateway.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 50409,
-    "dir": "lib"
-  },
-  "lib/agent-loop.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 45444,
-    "dir": "lib"
-  },
-  "lib/agent-router.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 7443,
-    "dir": "lib"
-  },
-  "lib/api-harness-kernel.js": {
-    "classification": "MIGRATE",
-    "callers": [
-      "unified_api.js",
-      "unified_api.js"
+  "lib\\a2a-runtime.js": {
+    "source": "lib\\a2a-runtime.js",
+    "destination": "packages/core/lib\\a2a-runtime.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
     ],
-    "size": 25715,
-    "dir": "lib"
+    "status": "live"
   },
-  "lib/approval-prompt.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 3998,
-    "dir": "lib"
-  },
-  "lib/approval-queue.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 31923,
-    "dir": "lib"
-  },
-  "lib/artifact-manager.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 4633,
-    "dir": "lib"
-  },
-  "lib/attachment-manager.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 3193,
-    "dir": "lib"
-  },
-  "lib/chaos-campaign.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 10267,
-    "dir": "lib"
-  },
-  "lib/chat-agent.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 4098,
-    "dir": "lib"
-  },
-  "lib/code-interpreter.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 8683,
-    "dir": "lib"
-  },
-  "lib/context-engine.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 3981,
-    "dir": "lib"
-  },
-  "lib/cowork-overlay.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 18643,
-    "dir": "lib"
-  },
-  "lib/cron-manager.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 6148,
-    "dir": "lib"
-  },
-  "lib/desktop-launcher.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 7002,
-    "dir": "lib"
-  },
-  "lib/doctor.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 21949,
-    "dir": "lib"
-  },
-  "lib/donor-archaeology.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 15110,
-    "dir": "lib"
-  },
-  "lib/eval-manager.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 6549,
-    "dir": "lib"
-  },
-  "lib/event-bus.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 197,
-    "dir": "lib"
-  },
-  "lib/event-ledger.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 1890,
-    "dir": "lib"
-  },
-  "lib/event-workflow.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 7176,
-    "dir": "lib"
-  },
-  "lib/exec-policy.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 14667,
-    "dir": "lib"
-  },
-  "lib/feature-parity.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 18378,
-    "dir": "lib"
-  },
-  "lib/goal-manager.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 2527,
-    "dir": "lib"
-  },
-  "lib/graph-runtime.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 9886,
-    "dir": "lib"
-  },
-  "lib/index-manager.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 5174,
-    "dir": "lib"
-  },
-  "lib/instruction-resolver.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 1489,
-    "dir": "lib"
-  },
-  "lib/invocation-manager.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 5313,
-    "dir": "lib"
-  },
-  "lib/llm-provider.js": {
-    "classification": "MIGRATE",
-    "callers": [
-      "swarm_coordinator.js",
-      "unified_api.js",
-      "unified_api.js"
+  "lib\\agent-component.js": {
+    "source": "lib\\agent-component.js",
+    "destination": "packages/core/lib\\agent-component.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "./guardrail-manager",
+      "./retrieval-engine",
+      "./schema-validator",
+      "./session-state-service",
+      "crypto",
+      "events",
+      "fs",
+      "node:sqlite",
+      "path"
     ],
-    "size": 64212,
-    "dir": "lib"
+    "status": "live"
   },
-  "lib/mcp-server.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 11346,
-    "dir": "lib"
-  },
-  "lib/memory-client.js": {
-    "classification": "MIGRATE",
-    "callers": [
-      "swarm_coordinator.js"
+  "lib\\agent-gateway.js": {
+    "source": "lib\\agent-gateway.js",
+    "destination": "packages/core/lib\\agent-gateway.js",
+    "classification": "memory",
+    "batch": "C",
+    "risk": "critical",
+    "importedBy": [],
+    "imports": [
+      "../agent_tower",
+      "./agent-component",
+      "./agent-router",
+      "./artifact-manager",
+      "./attachment-manager",
+      "./checkpoint-manager",
+      "./component-pipeline",
+      "./context-engine",
+      "./cron-manager",
+      "./delegation-manager",
+      "./eval-manager",
+      "./event-ledger",
+      "./execution-runtime",
+      "./goal-controller",
+      "./goal-manager",
+      "./graph-runtime",
+      "./guardrail-manager",
+      "./index-manager",
+      "./instruction-resolver",
+      "./invocation-manager",
+      "./mcp",
+      "./messaging-registry",
+      "./messaging-runtime",
+      "./namespace-store",
+      "./output-contract",
+      "./permission-manager",
+      "./plugin-manager",
+      "./profile-manager",
+      "./program-optimizer",
+      "./provider-registry",
+      "./recipe-manager",
+      "./repo-map",
+      "./retrieval-engine",
+      "./run-context",
+      "./schema-validator",
+      "./session-repository",
+      "./session-state-service",
+      "./skill-registry",
+      "./task-manager",
+      "./team-manager",
+      "./telemetry-manager",
+      "./tool-runtime",
+      "./trace-manager",
+      "./usage-limits",
+      "./verification-runner",
+      "./workflow-manager",
+      "events"
     ],
-    "size": 13966,
-    "dir": "lib"
-  },
-  "lib/messaging-runtime.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 5214,
-    "dir": "lib"
-  },
-  "lib/model-router.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 1049,
-    "dir": "lib"
-  },
-  "lib/namespace-store.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 2351,
-    "dir": "lib"
-  },
-  "lib/path-security.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 9621,
-    "dir": "lib"
-  },
-  "lib/plugin-manager.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 14349,
-    "dir": "lib"
-  },
-  "lib/program-optimizer.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 4733,
-    "dir": "lib"
-  },
-  "lib/project-requirements.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 10023,
-    "dir": "lib"
-  },
-  "lib/repo-mapper.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 8586,
-    "dir": "lib"
-  },
-  "lib/routing-decisions.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 20351,
-    "dir": "lib"
-  },
-  "lib/scoped-memory.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 9567,
-    "dir": "lib"
-  },
-  "lib/screen-camera-tools.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 8541,
-    "dir": "lib"
-  },
-  "lib/screen-look.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 12077,
-    "dir": "lib"
-  },
-  "lib/secret-vault.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 10672,
-    "dir": "lib"
-  },
-  "lib/secrets.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 13209,
-    "dir": "lib"
-  },
-  "lib/self-evolution-loop.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 10407,
-    "dir": "lib"
-  },
-  "lib/session-repository.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 11831,
-    "dir": "lib"
-  },
-  "lib/session-state-service.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 2470,
-    "dir": "lib"
-  },
-  "lib/skill-registry.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 4945,
-    "dir": "lib"
-  },
-  "lib/smith-neo.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 7817,
-    "dir": "lib"
-  },
-  "lib/surface-capabilities.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 14028,
-    "dir": "lib"
-  },
-  "lib/task-manager.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 3523,
-    "dir": "lib"
-  },
-  "lib/team-manager.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 9307,
-    "dir": "lib"
-  },
-  "lib/telemetry-manager.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 4274,
-    "dir": "lib"
-  },
-  "lib/tool-gate.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 6485,
-    "dir": "lib"
-  },
-  "lib/tool-runtime.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 9481,
-    "dir": "lib"
-  },
-  "lib/tools-pc.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 27358,
-    "dir": "lib"
-  },
-  "lib/tower-agent-child.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 3241,
-    "dir": "lib"
-  },
-  "lib/trace-manager.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 5529,
-    "dir": "lib"
-  },
-  "lib/usage-governor.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 17069,
-    "dir": "lib"
-  },
-  "lib/workflow-manager.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 12561,
-    "dir": "lib"
-  },
-  "lib/workflow-registry.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 5870,
-    "dir": "lib"
-  },
-  "lib/awaken/awaken-preflight.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 7277,
-    "dir": "awaken"
-  },
-  "lib/commands/action.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 6572,
-    "dir": "commands"
-  },
-  "lib/commands/AGENT.md": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 1290,
-    "dir": "commands"
-  },
-  "lib/commands/app-cmd.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 316,
-    "dir": "commands"
-  },
-  "lib/commands/apply-diff.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 7245,
-    "dir": "commands"
-  },
-  "lib/commands/architecture.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 17726,
-    "dir": "commands"
-  },
-  "lib/commands/ask.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 63365,
-    "dir": "commands"
-  },
-  "lib/commands/autofix-pr.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 17462,
-    "dir": "commands"
-  },
-  "lib/commands/autoresearch.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 5168,
-    "dir": "commands"
-  },
-  "lib/commands/awaken.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 10510,
-    "dir": "commands"
-  },
-  "lib/commands/bigboss.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 14734,
-    "dir": "commands"
-  },
-  "lib/commands/browser.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 3297,
-    "dir": "commands"
-  },
-  "lib/commands/buddy.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 11363,
-    "dir": "commands"
-  },
-  "lib/commands/bughunt.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 11586,
-    "dir": "commands"
-  },
-  "lib/commands/business.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 5097,
-    "dir": "commands"
-  },
-  "lib/commands/capabilities.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 2160,
-    "dir": "commands"
-  },
-  "lib/commands/claudecode.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 7611,
-    "dir": "commands"
-  },
-  "lib/commands/code.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 35931,
-    "dir": "commands"
-  },
-  "lib/commands/cognition.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 3524,
-    "dir": "commands"
-  },
-  "lib/commands/commit.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 594,
-    "dir": "commands"
-  },
-  "lib/commands/council.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 22209,
-    "dir": "commands"
-  },
-  "lib/commands/crew.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 3392,
-    "dir": "commands"
-  },
-  "lib/commands/ctx-viz.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 10335,
-    "dir": "commands"
-  },
-  "lib/commands/deploy.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 6375,
-    "dir": "commands"
-  },
-  "lib/commands/desktop.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 7846,
-    "dir": "commands"
-  },
-  "lib/commands/drift.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 275,
-    "dir": "commands"
-  },
-  "lib/commands/eval-auto-fix.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 6503,
-    "dir": "commands"
-  },
-  "lib/commands/eval.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 600,
-    "dir": "commands"
-  },
-  "lib/commands/evolve.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 11706,
-    "dir": "commands"
-  },
-  "lib/commands/feature.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 370,
-    "dir": "commands"
-  },
-  "lib/commands/feedback.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 8240,
-    "dir": "commands"
-  },
-  "lib/commands/find.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 6745,
-    "dir": "commands"
-  },
-  "lib/commands/gc.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 9478,
-    "dir": "commands"
-  },
-  "lib/commands/grow.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 10594,
-    "dir": "commands"
-  },
-  "lib/commands/harness.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 18938,
-    "dir": "commands"
-  },
-  "lib/commands/harvest.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 7818,
-    "dir": "commands"
-  },
-  "lib/commands/heal.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 6895,
-    "dir": "commands"
-  },
-  "lib/commands/help.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 969,
-    "dir": "commands"
-  },
-  "lib/commands/hivemind.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 4070,
-    "dir": "commands"
-  },
-  "lib/commands/hooks.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 9659,
-    "dir": "commands"
-  },
-  "lib/commands/identity.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 6467,
-    "dir": "commands"
-  },
-  "lib/commands/init-project.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 7057,
-    "dir": "commands"
-  },
-  "lib/commands/init.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 1214,
-    "dir": "commands"
-  },
-  "lib/commands/intelligence.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 6006,
-    "dir": "commands"
-  },
-  "lib/commands/liveforge.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 5724,
-    "dir": "commands"
-  },
-  "lib/commands/llm.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 2054,
-    "dir": "commands"
-  },
-  "lib/commands/loop.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 763,
-    "dir": "commands"
-  },
-  "lib/commands/marketplace.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 10833,
-    "dir": "commands"
-  },
-  "lib/commands/mcp.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 18571,
-    "dir": "commands"
-  },
-  "lib/commands/memory.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 743,
-    "dir": "commands"
-  },
-  "lib/commands/model.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 497,
-    "dir": "commands"
-  },
-  "lib/commands/mycelium.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 2505,
-    "dir": "commands"
-  },
-  "lib/commands/next.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 1778,
-    "dir": "commands"
-  },
-  "lib/commands/onboard.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 9863,
-    "dir": "commands"
-  },
-  "lib/commands/open.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 7730,
-    "dir": "commands"
-  },
-  "lib/commands/oracle.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 813,
-    "dir": "commands"
-  },
-  "lib/commands/overview.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 2923,
-    "dir": "commands"
-  },
-  "lib/commands/parity.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 8248,
-    "dir": "commands"
-  },
-  "lib/commands/permissions.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 11321,
-    "dir": "commands"
-  },
-  "lib/commands/plan.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 21966,
-    "dir": "commands"
-  },
-  "lib/commands/plugin.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 9441,
-    "dir": "commands"
-  },
-  "lib/commands/pocket.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 23137,
-    "dir": "commands"
-  },
-  "lib/commands/ponytail.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 16207,
-    "dir": "commands"
-  },
-  "lib/commands/provider.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 15593,
-    "dir": "commands"
-  },
-  "lib/commands/registry-audit.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 30574,
-    "dir": "commands"
-  },
-  "lib/commands/remote.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 7170,
-    "dir": "commands"
-  },
-  "lib/commands/remotion.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 5984,
-    "dir": "commands"
-  },
-  "lib/commands/repomap.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 2515,
-    "dir": "commands"
-  },
-  "lib/commands/review-pr.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 7214,
-    "dir": "commands"
-  },
-  "lib/commands/roster.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 10124,
-    "dir": "commands"
-  },
-  "lib/commands/safe-start.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 13535,
-    "dir": "commands"
-  },
-  "lib/commands/safe-stop.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 4609,
-    "dir": "commands"
-  },
-  "lib/commands/sandbox.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 12735,
-    "dir": "commands"
-  },
-  "lib/commands/schedule.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 6798,
-    "dir": "commands"
-  },
-  "lib/commands/secrets.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 8569,
-    "dir": "commands"
-  },
-  "lib/commands/services.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 9450,
-    "dir": "commands"
-  },
-  "lib/commands/setup.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 15944,
-    "dir": "commands"
-  },
-  "lib/commands/skills.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 27862,
-    "dir": "commands"
-  },
-  "lib/commands/skills.js.debug": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 24196,
-    "dir": "commands"
-  },
-  "lib/commands/smoke.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 12865,
-    "dir": "commands"
-  },
-  "lib/commands/spinebus.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 1776,
-    "dir": "commands"
-  },
-  "lib/commands/stats.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 8499,
-    "dir": "commands"
-  },
-  "lib/commands/team.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 5597,
-    "dir": "commands"
-  },
-  "lib/commands/telemetry.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 1390,
-    "dir": "commands"
-  },
-  "lib/commands/teleport.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 14664,
-    "dir": "commands"
-  },
-  "lib/commands/thringlets.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 16537,
-    "dir": "commands"
-  },
-  "lib/commands/tour.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 20293,
-    "dir": "commands"
-  },
-  "lib/commands/training.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 18176,
-    "dir": "commands"
-  },
-  "lib/commands/vault.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 7065,
-    "dir": "commands"
-  },
-  "lib/commands/watch.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 4325,
-    "dir": "commands"
-  },
-  "lib/commands/weather.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 853,
-    "dir": "commands"
-  },
-  "lib/commands/workers.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 12354,
-    "dir": "commands"
-  },
-  "lib/commands/workflow.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 11120,
-    "dir": "commands"
-  },
-  "lib/commands/worktree.js": {
-    "classification": "COMPAT",
-    "callers": [],
-    "size": 4221,
-    "dir": "commands"
-  },
-  "lib/core/work-engine.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 10829,
-    "dir": "core"
-  },
-  "lib/evolution/mutator.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 15979,
-    "dir": "evolution"
-  },
-  "lib/harness/engine.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 50700,
-    "dir": "harness"
-  },
-  "lib/harness/result-schema.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 16475,
-    "dir": "harness"
-  },
-  "lib/harness/task-schema.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 9376,
-    "dir": "harness"
-  },
-  "lib/hooks/lifecycle-bus.js": {
-    "classification": "AGENT_INTERNAL",
-    "callers": [],
-    "size": 5369,
-    "dir": "hooks"
-  },
-  "lib/kanban/db-schema.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 7434,
-    "dir": "kanban"
-  },
-  "lib/omni/truth-scanner.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 18926,
-    "dir": "omni"
-  },
-  "lib/parity/hooks/engine.js": {
-    "classification": "UNKNOWN",
-    "callers": [],
-    "size": 224,
-    "dir": "hooks"
-  },
-  "lib/runtime/autonomy-runner.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 6347,
-    "dir": "runtime"
-  },
-  "lib/runtime/provider-config.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 2468,
-    "dir": "runtime"
-  },
-  "lib/tools/index.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 101023,
-    "dir": "tools"
-  },
-  "lib/tools/parity/hooks/engine.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 236,
-    "dir": "hooks"
-  },
-  "lib/tts/gateway.js": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 11383,
-    "dir": "tts"
-  },
-  "lib/tts/kokoro_worker.py": {
-    "classification": "KEEP_IN_LIB",
-    "callers": [],
-    "size": 5968,
-    "dir": "tts"
-  },
-  "lib/__tests__/provider-config-integration.test.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 4013,
-    "dir": "__tests__"
-  },
-  "lib/__tests__/routing-decisions.test.js": {
-    "classification": "MIGRATE",
-    "callers": [],
-    "size": 12094,
-    "dir": "__tests__"
+    "status": "live"
+  },
+  "lib\\agent-loop.js": {
+    "source": "lib\\agent-loop.js",
+    "destination": "packages/core/lib\\agent-loop.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "../agent_tower",
+      "../parity/hooks/engine",
+      "./cognitive-client",
+      "./context-compressor",
+      "./continuity",
+      "./events",
+      "./file-watcher",
+      "./hooks/lifecycle-bus",
+      "./idle-engine",
+      "./llm-provider",
+      "./memory-client",
+      "./phase-router",
+      "./priority-steer",
+      "./prompt-builder",
+      "./pulse",
+      "./repo-mapper",
+      "./runtime/privacy-policy",
+      "./scoped-memory",
+      "./session-repository",
+      "./session-store",
+      "./tool-runtime",
+      "./tools",
+      "./user-feedback",
+      "./verification-gate",
+      "./whoami",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\agent-router.js": {
+    "source": "lib\\agent-router.js",
+    "destination": "packages/core/lib\\agent-router.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "./agent-loop",
+      "./pipeline-registry",
+      "./routing-decisions",
+      "./usage-governor"
+    ],
+    "status": "live"
+  },
+  "lib\\api-harness-kernel.js": {
+    "source": "lib\\api-harness-kernel.js",
+    "destination": "packages/core/lib\\api-harness-kernel.js",
+    "classification": "harness",
+    "batch": "C",
+    "risk": "critical",
+    "importedBy": [],
+    "imports": [
+      "./deep-research-group",
+      "./governance",
+      "./harness/engine",
+      "./job-chain",
+      "./job-contract",
+      "./mcp",
+      "./omnicode-bridge",
+      "./tools",
+      "./training-buffer",
+      "events",
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\approval-prompt.js": {
+    "source": "lib\\approval-prompt.js",
+    "destination": "packages/core/lib\\approval-prompt.js",
+    "classification": "orchestration",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\approval-queue.js": {
+    "source": "lib\\approval-queue.js",
+    "destination": "packages/core/lib\\approval-queue.js",
+    "classification": "orchestration",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./event-ledger.js",
+      "async_hooks",
+      "crypto",
+      "events",
+      "fs",
+      "path",
+      "url"
+    ],
+    "status": "live"
+  },
+  "lib\\artifact-manager.js": {
+    "source": "lib\\artifact-manager.js",
+    "destination": "packages/core/lib\\artifact-manager.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\attachment-manager.js": {
+    "source": "lib\\attachment-manager.js",
+    "destination": "packages/core/lib\\attachment-manager.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\chaos-campaign.js": {
+    "source": "lib\\chaos-campaign.js",
+    "destination": "packages/core/lib\\chaos-campaign.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./smith-neo",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\chat-agent.js": {
+    "source": "lib\\chat-agent.js",
+    "destination": "packages/core/lib\\chat-agent.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./agent-loop",
+      "./llm-provider",
+      "./tool-runtime",
+      "./tools"
+    ],
+    "status": "live"
+  },
+  "lib\\code-interpreter.js": {
+    "source": "lib\\code-interpreter.js",
+    "destination": "packages/tools/lib\\code-interpreter.js",
+    "classification": "tool-implementation",
+    "batch": "B",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "crypto",
+      "fs",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\context-engine.js": {
+    "source": "lib\\context-engine.js",
+    "destination": "packages/core/lib\\context-engine.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [],
+    "status": "live"
+  },
+  "lib\\cowork-overlay.js": {
+    "source": "lib\\cowork-overlay.js",
+    "destination": "packages/shared/lib\\cowork-overlay.js",
+    "classification": "compatibility",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./screen-look",
+      "child_process",
+      "fs",
+      "http",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\cron-manager.js": {
+    "source": "lib\\cron-manager.js",
+    "destination": "packages/core/lib\\cron-manager.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./agent-gateway",
+      "./scheduler/nl-cron",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\desktop-launcher.js": {
+    "source": "lib\\desktop-launcher.js",
+    "destination": "packages/tools/lib\\desktop-launcher.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "net",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\doctor.js": {
+    "source": "lib\\doctor.js",
+    "destination": "packages/shared/lib\\doctor.js",
+    "classification": "compatibility",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../service_registry.js",
+      "./cognitive-client",
+      "./memory-client",
+      "./tools",
+      "./tools/index",
+      "crypto",
+      "express",
+      "fs",
+      "http",
+      "next",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\donor-archaeology.js": {
+    "source": "lib\\donor-archaeology.js",
+    "destination": "packages/shared/lib\\donor-archaeology.js",
+    "classification": "compatibility",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./evolution/mutator",
+      "./timeline",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\eval-manager.js": {
+    "source": "lib\\eval-manager.js",
+    "destination": "packages/core/lib\\eval-manager.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./event-ledger",
+      "./schema-validator",
+      "./trace-manager",
+      "crypto",
+      "fs",
+      "js-yaml",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\event-bus.js": {
+    "source": "lib\\event-bus.js",
+    "destination": "packages/core/lib\\event-bus.js",
+    "classification": "service-adapter",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\event-ledger.js": {
+    "source": "lib\\event-ledger.js",
+    "destination": "packages/core/lib\\event-ledger.js",
+    "classification": "orchestration",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\event-workflow.js": {
+    "source": "lib\\event-workflow.js",
+    "destination": "packages/core/lib\\event-workflow.js",
+    "classification": "orchestration",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./schema-validator",
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\exec-policy.js": {
+    "source": "lib\\exec-policy.js",
+    "destination": "packages/core/lib\\exec-policy.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "./approval-queue",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\feature-parity.js": {
+    "source": "lib\\feature-parity.js",
+    "destination": "packages/shared/lib\\feature-parity.js",
+    "classification": "compatibility",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\goal-manager.js": {
+    "source": "lib\\goal-manager.js",
+    "destination": "packages/core/lib\\goal-manager.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\graph-runtime.js": {
+    "source": "lib\\graph-runtime.js",
+    "destination": "packages/core/lib\\graph-runtime.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./workflow-state",
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\index-manager.js": {
+    "source": "lib\\index-manager.js",
+    "destination": "packages/core/lib\\index-manager.js",
+    "classification": "memory",
+    "batch": "C",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\instruction-resolver.js": {
+    "source": "lib\\instruction-resolver.js",
+    "destination": "packages/core/lib\\instruction-resolver.js",
+    "classification": "orchestration",
+    "batch": "B",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [],
+    "status": "live"
+  },
+  "lib\\invocation-manager.js": {
+    "source": "lib\\invocation-manager.js",
+    "destination": "packages/core/lib\\invocation-manager.js",
+    "classification": "orchestration",
+    "batch": "B",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\llm-provider.js": {
+    "source": "lib\\llm-provider.js",
+    "destination": "packages/core/lib\\llm-provider.js",
+    "classification": "provider",
+    "batch": "B",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "./lib/llm-provider",
+      "./spend-gate",
+      "./usage-governor",
+      "dotenv",
+      "fs",
+      "http",
+      "https",
+      "os",
+      "path",
+      "url"
+    ],
+    "status": "live"
+  },
+  "lib\\mcp-server.js": {
+    "source": "lib\\mcp-server.js",
+    "destination": "packages/core/lib\\mcp-server.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "../package.json",
+      "./mcp",
+      "./permission-manager",
+      "./tool-runtime",
+      "./tools"
+    ],
+    "status": "live"
+  },
+  "lib\\memory-client.js": {
+    "source": "lib\\memory-client.js",
+    "destination": "packages/core/lib\\memory-client.js",
+    "classification": "memory",
+    "batch": "C",
+    "risk": "critical",
+    "importedBy": [],
+    "imports": [
+      "./events",
+      "./lib/memory-client",
+      "http"
+    ],
+    "status": "live"
+  },
+  "lib\\messaging-runtime.js": {
+    "source": "lib\\messaging-runtime.js",
+    "destination": "packages/core/lib\\messaging-runtime.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./agent-gateway",
+      "./messaging-registry",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\model-router.js": {
+    "source": "lib\\model-router.js",
+    "destination": "packages/core/lib\\model-router.js",
+    "classification": "routing",
+    "batch": "B",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "./routing-decisions"
+    ],
+    "status": "live"
+  },
+  "lib\\namespace-store.js": {
+    "source": "lib\\namespace-store.js",
+    "destination": "packages/core/lib\\namespace-store.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./index-manager",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\path-security.js": {
+    "source": "lib\\path-security.js",
+    "destination": "packages/core/lib\\path-security.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\plugin-manager.js": {
+    "source": "lib\\plugin-manager.js",
+    "destination": "packages/core/lib\\plugin-manager.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./plugin-isolator",
+      "./provider-registry",
+      "./tool-runtime",
+      "./tools",
+      "fs",
+      "js-yaml",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\program-optimizer.js": {
+    "source": "lib\\program-optimizer.js",
+    "destination": "packages/shared/lib\\program-optimizer.js",
+    "classification": "compatibility",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./eval-manager",
+      "./signature-adapter",
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\project-requirements.js": {
+    "source": "lib\\project-requirements.js",
+    "destination": "packages/shared/lib\\project-requirements.js",
+    "classification": "compatibility",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./project-requirements",
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\repo-mapper.js": {
+    "source": "lib\\repo-mapper.js",
+    "destination": "packages/shared/lib\\repo-mapper.js",
+    "classification": "compatibility",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\routing-decisions.js": {
+    "source": "lib\\routing-decisions.js",
+    "destination": "packages/core/lib\\routing-decisions.js",
+    "classification": "routing",
+    "batch": "B",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "./llm-provider",
+      "./runtime/provider-config",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\scoped-memory.js": {
+    "source": "lib\\scoped-memory.js",
+    "destination": "packages/core/lib\\scoped-memory.js",
+    "classification": "memory",
+    "batch": "C",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "./memory-client",
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\screen-camera-tools.js": {
+    "source": "lib\\screen-camera-tools.js",
+    "destination": "packages/tools/lib\\screen-camera-tools.js",
+    "classification": "tool-implementation",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\screen-look.js": {
+    "source": "lib\\screen-look.js",
+    "destination": "packages/tools/lib\\screen-look.js",
+    "classification": "tool-implementation",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./lib/screen-look",
+      "./llm-provider.js",
+      "./workspace-awareness.js",
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\secret-vault.js": {
+    "source": "lib\\secret-vault.js",
+    "destination": "packages/core/lib\\secret-vault.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "crypto",
+      "fs",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\secrets.js": {
+    "source": "lib\\secrets.js",
+    "destination": "packages/core/lib\\secrets.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\self-evolution-loop.js": {
+    "source": "lib\\self-evolution-loop.js",
+    "destination": "packages/core/lib\\self-evolution-loop.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./memory-client",
+      "./user-feedback",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\session-repository.js": {
+    "source": "lib\\session-repository.js",
+    "destination": "packages/core/lib\\session-repository.js",
+    "classification": "session",
+    "batch": "C",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\session-state-service.js": {
+    "source": "lib\\session-state-service.js",
+    "destination": "packages/core/lib\\session-state-service.js",
+    "classification": "session",
+    "batch": "C",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "./event-ledger",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\skill-registry.js": {
+    "source": "lib\\skill-registry.js",
+    "destination": "packages/core/lib\\skill-registry.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./plugin-manager",
+      "fs",
+      "js-yaml",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\smith-neo.js": {
+    "source": "lib\\smith-neo.js",
+    "destination": "packages/core/lib\\smith-neo.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "./smith-neo"
+    ],
+    "status": "live"
+  },
+  "lib\\surface-capabilities.js": {
+    "source": "lib\\surface-capabilities.js",
+    "destination": "packages/tools/lib\\surface-capabilities.js",
+    "classification": "tool-runtime",
+    "batch": "B",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [],
+    "status": "live"
+  },
+  "lib\\task-manager.js": {
+    "source": "lib\\task-manager.js",
+    "destination": "packages/core/lib\\task-manager.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./agent-component",
+      "./schema-validator",
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\team-manager.js": {
+    "source": "lib\\team-manager.js",
+    "destination": "packages/core/lib\\team-manager.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\telemetry-manager.js": {
+    "source": "lib\\telemetry-manager.js",
+    "destination": "packages/tools/lib\\telemetry-manager.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\tool-gate.js": {
+    "source": "lib\\tool-gate.js",
+    "destination": "packages/tools/lib\\tool-gate.js",
+    "classification": "tool-runtime",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./governance",
+      "./tool-gate.js",
+      "assert",
+      "fs",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\tool-runtime.js": {
+    "source": "lib\\tool-runtime.js",
+    "destination": "packages/tools/lib\\tool-runtime.js",
+    "classification": "tool-runtime",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./checkpoint-manager",
+      "./governance",
+      "./guardrail-manager",
+      "./path-security",
+      "./permission-manager",
+      "./plugin-manager",
+      "./schema-validator",
+      "./tools",
+      "events",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\tools-pc.js": {
+    "source": "lib\\tools-pc.js",
+    "destination": "packages/tools/lib\\tools-pc.js",
+    "classification": "tool-implementation",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./child-registry",
+      "child_process",
+      "fs",
+      "http",
+      "https",
+      "os",
+      "path",
+      "playwright-core",
+      "url"
+    ],
+    "status": "live"
+  },
+  "lib\\tower-agent-child.js": {
+    "source": "lib\\tower-agent-child.js",
+    "destination": "packages/core/lib\\tower-agent-child.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./agent-gateway"
+    ],
+    "status": "live"
+  },
+  "lib\\trace-manager.js": {
+    "source": "lib\\trace-manager.js",
+    "destination": "packages/tools/lib\\trace-manager.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\usage-governor.js": {
+    "source": "lib\\usage-governor.js",
+    "destination": "packages/core/lib\\usage-governor.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./event-bus"
+    ],
+    "status": "live"
+  },
+  "lib\\workflow-manager.js": {
+    "source": "lib\\workflow-manager.js",
+    "destination": "packages/core/lib\\workflow-manager.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./approval-queue",
+      "./workflow-state",
+      "fs",
+      "js-yaml",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\workflow-registry.js": {
+    "source": "lib\\workflow-registry.js",
+    "destination": "packages/core/lib\\workflow-registry.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\awaken\\awaken-preflight.js": {
+    "source": "lib\\awaken\\awaken-preflight.js",
+    "destination": "packages/core/lib\\awaken\\awaken-preflight.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./awaken-state",
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\action.js": {
+    "source": "lib\\commands\\action.js",
+    "destination": "packages/tools/lib\\commands\\action.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\app-cmd.js": {
+    "source": "lib\\commands\\app-cmd.js",
+    "destination": "packages/tools/lib\\commands\\app-cmd.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [],
+    "status": "live"
+  },
+  "lib\\commands\\apply-diff.js": {
+    "source": "lib\\commands\\apply-diff.js",
+    "destination": "packages/tools/lib\\commands\\apply-diff.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\architecture.js": {
+    "source": "lib\\commands\\architecture.js",
+    "destination": "packages/tools/lib\\commands\\architecture.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\ask.js": {
+    "source": "lib\\commands\\ask.js",
+    "destination": "packages/tools/lib\\commands\\ask.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../agent-gateway",
+      "../checkpoint-manager",
+      "../commands/bigboss",
+      "../config-loader",
+      "../llm-provider",
+      "../mcp",
+      "../memory-client",
+      "../permission-manager",
+      "../provider-registry",
+      "../routing-decisions",
+      "../session-repository",
+      "../tools",
+      "../user-commands",
+      "../whoami",
+      "fs",
+      "https",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\autofix-pr.js": {
+    "source": "lib\\commands\\autofix-pr.js",
+    "destination": "packages/tools/lib\\commands\\autofix-pr.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\autoresearch.js": {
+    "source": "lib\\commands\\autoresearch.js",
+    "destination": "packages/tools/lib\\commands\\autoresearch.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\awaken.js": {
+    "source": "lib\\commands\\awaken.js",
+    "destination": "packages/tools/lib\\commands\\awaken.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../awaken/awaken-events",
+      "../awaken/awaken-loop",
+      "../awaken/awaken-permissions",
+      "../awaken/awaken-preflight",
+      "../awaken/awaken-state"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\bigboss.js": {
+    "source": "lib\\commands\\bigboss.js",
+    "destination": "packages/tools/lib\\commands\\bigboss.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../chaos-campaign",
+      "../child-registry",
+      "../memory-consistency",
+      "../smith-neo",
+      "../tools",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\browser.js": {
+    "source": "lib\\commands\\browser.js",
+    "destination": "packages/tools/lib\\commands\\browser.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [],
+    "status": "live"
+  },
+  "lib\\commands\\buddy.js": {
+    "source": "lib\\commands\\buddy.js",
+    "destination": "packages/tools/lib\\commands\\buddy.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../mochi",
+      "../mochi-sprites",
+      "fs",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\bughunt.js": {
+    "source": "lib\\commands\\bughunt.js",
+    "destination": "packages/tools/lib\\commands\\bughunt.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\business.js": {
+    "source": "lib\\commands\\business.js",
+    "destination": "packages/tools/lib\\commands\\business.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../business/operations",
+      "../business/store",
+      "../business/twilio"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\capabilities.js": {
+    "source": "lib\\commands\\capabilities.js",
+    "destination": "packages/tools/lib\\commands\\capabilities.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\claudecode.js": {
+    "source": "lib\\commands\\claudecode.js",
+    "destination": "packages/tools/lib\\commands\\claudecode.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../child-registry",
+      "../llm-provider",
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\code.js": {
+    "source": "lib\\commands\\code.js",
+    "destination": "packages/tools/lib\\commands\\code.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../vector",
+      "crypto",
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\cognition.js": {
+    "source": "lib\\commands\\cognition.js",
+    "destination": "packages/tools/lib\\commands\\cognition.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\commit.js": {
+    "source": "lib\\commands\\commit.js",
+    "destination": "packages/tools/lib\\commands\\commit.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\council.js": {
+    "source": "lib\\commands\\council.js",
+    "destination": "packages/tools/lib\\commands\\council.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\crew.js": {
+    "source": "lib\\commands\\crew.js",
+    "destination": "packages/tools/lib\\commands\\crew.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../crew"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\ctx-viz.js": {
+    "source": "lib\\commands\\ctx-viz.js",
+    "destination": "packages/tools/lib\\commands\\ctx-viz.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\deploy.js": {
+    "source": "lib\\commands\\deploy.js",
+    "destination": "packages/tools/lib\\commands\\deploy.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../child-registry",
+      "fs",
+      "os",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\desktop.js": {
+    "source": "lib\\commands\\desktop.js",
+    "destination": "packages/tools/lib\\commands\\desktop.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../desktop-launcher"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\drift.js": {
+    "source": "lib\\commands\\drift.js",
+    "destination": "packages/tools/lib\\commands\\drift.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../drift-watcher.js"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\eval-auto-fix.js": {
+    "source": "lib\\commands\\eval-auto-fix.js",
+    "destination": "packages/tools/lib\\commands\\eval-auto-fix.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../llm-provider",
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\eval.js": {
+    "source": "lib\\commands\\eval.js",
+    "destination": "packages/tools/lib\\commands\\eval.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../agent-gateway"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\evolve.js": {
+    "source": "lib\\commands\\evolve.js",
+    "destination": "packages/tools/lib\\commands\\evolve.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../evolution/mutator",
+      "../evolution/skill-forge",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\feature.js": {
+    "source": "lib\\commands\\feature.js",
+    "destination": "packages/tools/lib\\commands\\feature.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\feedback.js": {
+    "source": "lib\\commands\\feedback.js",
+    "destination": "packages/tools/lib\\commands\\feedback.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\find.js": {
+    "source": "lib\\commands\\find.js",
+    "destination": "packages/tools/lib\\commands\\find.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../file-index",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\gc.js": {
+    "source": "lib\\commands\\gc.js",
+    "destination": "packages/tools/lib\\commands\\gc.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\grow.js": {
+    "source": "lib\\commands\\grow.js",
+    "destination": "packages/tools/lib\\commands\\grow.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\harness.js": {
+    "source": "lib\\commands\\harness.js",
+    "destination": "packages/tools/lib\\commands\\harness.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../harness/benchmark",
+      "../harness/engine",
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\harvest.js": {
+    "source": "lib\\commands\\harvest.js",
+    "destination": "packages/tools/lib\\commands\\harvest.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../harvest/crawler",
+      "../harvest/extractors",
+      "../harvest/indexer",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\heal.js": {
+    "source": "lib\\commands\\heal.js",
+    "destination": "packages/tools/lib\\commands\\heal.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./safe-start.js",
+      "child_process",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\help.js": {
+    "source": "lib\\commands\\help.js",
+    "destination": "packages/tools/lib\\commands\\help.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../../parity/cli/router.js",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\hivemind.js": {
+    "source": "lib\\commands\\hivemind.js",
+    "destination": "packages/tools/lib\\commands\\hivemind.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\hooks.js": {
+    "source": "lib\\commands\\hooks.js",
+    "destination": "packages/tools/lib\\commands\\hooks.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\identity.js": {
+    "source": "lib\\commands\\identity.js",
+    "destination": "packages/tools/lib\\commands\\identity.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../identity",
+      "fs",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\init-project.js": {
+    "source": "lib\\commands\\init-project.js",
+    "destination": "packages/tools/lib\\commands\\init-project.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./App.jsx",
+      "@vitejs/plugin-react",
+      "fmt",
+      "fs",
+      "path",
+      "react",
+      "react-dom/client",
+      "vite"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\init.js": {
+    "source": "lib\\commands\\init.js",
+    "destination": "packages/tools/lib\\commands\\init.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\intelligence.js": {
+    "source": "lib\\commands\\intelligence.js",
+    "destination": "packages/tools/lib\\commands\\intelligence.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\liveforge.js": {
+    "source": "lib\\commands\\liveforge.js",
+    "destination": "packages/tools/lib\\commands\\liveforge.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../liveforge",
+      "fs"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\llm.js": {
+    "source": "lib\\commands\\llm.js",
+    "destination": "packages/tools/lib\\commands\\llm.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\loop.js": {
+    "source": "lib\\commands\\loop.js",
+    "destination": "packages/tools/lib\\commands\\loop.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\marketplace.js": {
+    "source": "lib\\commands\\marketplace.js",
+    "destination": "packages/tools/lib\\commands\\marketplace.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../marketplace"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\mcp.js": {
+    "source": "lib\\commands\\mcp.js",
+    "destination": "packages/tools/lib\\commands\\mcp.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../mcp",
+      "fs",
+      "os",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\memory.js": {
+    "source": "lib\\commands\\memory.js",
+    "destination": "packages/tools/lib\\commands\\memory.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../../parity/memory/scoped.js"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\model.js": {
+    "source": "lib\\commands\\model.js",
+    "destination": "packages/tools/lib\\commands\\model.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [],
+    "status": "live"
+  },
+  "lib\\commands\\mycelium.js": {
+    "source": "lib\\commands\\mycelium.js",
+    "destination": "packages/tools/lib\\commands\\mycelium.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../mycelium",
+      "fs"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\next.js": {
+    "source": "lib\\commands\\next.js",
+    "destination": "packages/tools/lib\\commands\\next.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\onboard.js": {
+    "source": "lib\\commands\\onboard.js",
+    "destination": "packages/tools/lib\\commands\\onboard.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\open.js": {
+    "source": "lib\\commands\\open.js",
+    "destination": "packages/tools/lib\\commands\\open.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../../lib/child-registry",
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\oracle.js": {
+    "source": "lib\\commands\\oracle.js",
+    "destination": "packages/tools/lib\\commands\\oracle.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../oracle.js"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\overview.js": {
+    "source": "lib\\commands\\overview.js",
+    "destination": "packages/tools/lib\\commands\\overview.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\parity.js": {
+    "source": "lib\\commands\\parity.js",
+    "destination": "packages/tools/lib\\commands\\parity.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\permissions.js": {
+    "source": "lib\\commands\\permissions.js",
+    "destination": "packages/tools/lib\\commands\\permissions.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "os",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\plan.js": {
+    "source": "lib\\commands\\plan.js",
+    "destination": "packages/tools/lib\\commands\\plan.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "http",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\plugin.js": {
+    "source": "lib\\commands\\plugin.js",
+    "destination": "packages/tools/lib\\commands\\plugin.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./marketplace",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\pocket.js": {
+    "source": "lib\\commands\\pocket.js",
+    "destination": "packages/tools/lib\\commands\\pocket.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../child-registry",
+      "../pocket-updater",
+      "../pocket-vault",
+      "../spend-gate",
+      "../telemetry",
+      "child_process",
+      "fs",
+      "http",
+      "os",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\ponytail.js": {
+    "source": "lib\\commands\\ponytail.js",
+    "destination": "packages/tools/lib\\commands\\ponytail.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\provider.js": {
+    "source": "lib\\commands\\provider.js",
+    "destination": "packages/tools/lib\\commands\\provider.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../runtime/provider-config",
+      "fs",
+      "http",
+      "https",
+      "os",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\registry-audit.js": {
+    "source": "lib\\commands\\registry-audit.js",
+    "destination": "packages/tools/lib\\commands\\registry-audit.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\remote.js": {
+    "source": "lib\\commands\\remote.js",
+    "destination": "packages/tools/lib\\commands\\remote.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\remotion.js": {
+    "source": "lib\\commands\\remotion.js",
+    "destination": "packages/tools/lib\\commands\\remotion.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../child-registry",
+      "../tools",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\repomap.js": {
+    "source": "lib\\commands\\repomap.js",
+    "destination": "packages/tools/lib\\commands\\repomap.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../repo-mapper",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\review-pr.js": {
+    "source": "lib\\commands\\review-pr.js",
+    "destination": "packages/tools/lib\\commands\\review-pr.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "http",
+      "https",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\roster.js": {
+    "source": "lib\\commands\\roster.js",
+    "destination": "packages/tools/lib\\commands\\roster.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../agent-registry",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\safe-start.js": {
+    "source": "lib\\commands\\safe-start.js",
+    "destination": "packages/tools/lib\\commands\\safe-start.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\safe-stop.js": {
+    "source": "lib\\commands\\safe-stop.js",
+    "destination": "packages/tools/lib\\commands\\safe-stop.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./safe-start.js",
+      "child_process",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\sandbox.js": {
+    "source": "lib\\commands\\sandbox.js",
+    "destination": "packages/tools/lib\\commands\\sandbox.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../exec-policy",
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\schedule.js": {
+    "source": "lib\\commands\\schedule.js",
+    "destination": "packages/tools/lib\\commands\\schedule.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../cron-manager",
+      "../scheduler/nl-cron"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\secrets.js": {
+    "source": "lib\\commands\\secrets.js",
+    "destination": "packages/tools/lib\\commands\\secrets.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\services.js": {
+    "source": "lib\\commands\\services.js",
+    "destination": "packages/tools/lib\\commands\\services.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\setup.js": {
+    "source": "lib\\commands\\setup.js",
+    "destination": "packages/tools/lib\\commands\\setup.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../core/provider-status",
+      "../llm-provider",
+      "child_process",
+      "fs",
+      "http",
+      "os",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\skills.js": {
+    "source": "lib\\commands\\skills.js",
+    "destination": "packages/tools/lib\\commands\\skills.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../skill-usage",
+      "../skills-deps",
+      "../skills-guard",
+      "../skills-hub",
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\smoke.js": {
+    "source": "lib\\commands\\smoke.js",
+    "destination": "packages/tools/lib\\commands\\smoke.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\spinebus.js": {
+    "source": "lib\\commands\\spinebus.js",
+    "destination": "packages/tools/lib\\commands\\spinebus.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../spinebus",
+      "fs"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\stats.js": {
+    "source": "lib\\commands\\stats.js",
+    "destination": "packages/tools/lib\\commands\\stats.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "node:fs",
+      "node:sqlite",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\team.js": {
+    "source": "lib\\commands\\team.js",
+    "destination": "packages/tools/lib\\commands\\team.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../team-router",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\telemetry.js": {
+    "source": "lib\\commands\\telemetry.js",
+    "destination": "packages/tools/lib\\commands\\telemetry.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../runtime/pipeline-telemetry"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\teleport.js": {
+    "source": "lib\\commands\\teleport.js",
+    "destination": "packages/tools/lib\\commands\\teleport.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\thringlets.js": {
+    "source": "lib\\commands\\thringlets.js",
+    "destination": "packages/tools/lib\\commands\\thringlets.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "http"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\tour.js": {
+    "source": "lib\\commands\\tour.js",
+    "destination": "packages/tools/lib\\commands\\tour.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../../agent_tower",
+      "../../lib/tools",
+      "../tools",
+      "../whoami",
+      "./setup",
+      "child_process",
+      "fs",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\training.js": {
+    "source": "lib\\commands\\training.js",
+    "destination": "packages/tools/lib\\commands\\training.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../training-buffer",
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\vault.js": {
+    "source": "lib\\commands\\vault.js",
+    "destination": "packages/tools/lib\\commands\\vault.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../secret-vault",
+      "fs",
+      "os",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\watch.js": {
+    "source": "lib\\commands\\watch.js",
+    "destination": "packages/tools/lib\\commands\\watch.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../file-watcher",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\weather.js": {
+    "source": "lib\\commands\\weather.js",
+    "destination": "packages/tools/lib\\commands\\weather.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../weatherman.js"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\workers.js": {
+    "source": "lib\\commands\\workers.js",
+    "destination": "packages/tools/lib\\commands\\workers.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\workflow.js": {
+    "source": "lib\\commands\\workflow.js",
+    "destination": "packages/tools/lib\\commands\\workflow.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\commands\\worktree.js": {
+    "source": "lib\\commands\\worktree.js",
+    "destination": "packages/tools/lib\\commands\\worktree.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\core\\work-engine.js": {
+    "source": "lib\\core\\work-engine.js",
+    "destination": "packages/core/lib\\core\\work-engine.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "../agent-loop.js",
+      "../model-router",
+      "../spine/session-store",
+      "./lib/core/work-engine",
+      "child_process",
+      "dotenv",
+      "fs",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\evolution\\mutator.js": {
+    "source": "lib\\evolution\\mutator.js",
+    "destination": "packages/core/lib\\evolution\\mutator.js",
+    "classification": "orchestration",
+    "batch": "C",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\harness\\engine.js": {
+    "source": "lib\\harness\\engine.js",
+    "destination": "packages/core/lib\\harness\\engine.js",
+    "classification": "harness",
+    "batch": "C",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [
+      "../../agent_score.js",
+      "../accuracy-fish",
+      "../canonical-memory-sync",
+      "../evolution/mutator",
+      "../job-contract",
+      "../llm-provider",
+      "../memory-client",
+      "./benchmark",
+      "./lib/harness/engine",
+      "events",
+      "fs",
+      "http",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\harness\\result-schema.js": {
+    "source": "lib\\harness\\result-schema.js",
+    "destination": "packages/core/lib\\harness\\result-schema.js",
+    "classification": "harness",
+    "batch": "C",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [],
+    "status": "live"
+  },
+  "lib\\harness\\task-schema.js": {
+    "source": "lib\\harness\\task-schema.js",
+    "destination": "packages/core/lib\\harness\\task-schema.js",
+    "classification": "harness",
+    "batch": "C",
+    "risk": "high",
+    "importedBy": [],
+    "imports": [],
+    "status": "live"
+  },
+  "lib\\hooks\\lifecycle-bus.js": {
+    "source": "lib\\hooks\\lifecycle-bus.js",
+    "destination": "packages/core/lib\\hooks\\lifecycle-bus.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "events"
+    ],
+    "status": "live"
+  },
+  "lib\\kanban\\db-schema.js": {
+    "source": "lib\\kanban\\db-schema.js",
+    "destination": "packages/core/lib\\kanban\\db-schema.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "./config",
+      "better-sqlite3",
+      "fs",
+      "path",
+      "sqlite3"
+    ],
+    "status": "live"
+  },
+  "lib\\omni\\truth-scanner.js": {
+    "source": "lib\\omni\\truth-scanner.js",
+    "destination": "packages/tools/lib\\omni\\truth-scanner.js",
+    "classification": "tool-implementation",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "./omnicode-adapter",
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\parity\\hooks\\engine.js": {
+    "source": "lib\\parity\\hooks\\engine.js",
+    "destination": "packages/shared/lib\\parity\\hooks\\engine.js",
+    "classification": "compatibility",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\runtime\\autonomy-runner.js": {
+    "source": "lib\\runtime\\autonomy-runner.js",
+    "destination": "packages/core/lib\\runtime\\autonomy-runner.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "../llm-provider",
+      "./computer-use",
+      "./lib/runtime/autonomy-runner"
+    ],
+    "status": "live"
+  },
+  "lib\\runtime\\provider-config.js": {
+    "source": "lib\\runtime\\provider-config.js",
+    "destination": "packages/core/lib\\runtime\\provider-config.js",
+    "classification": "core-runtime",
+    "batch": "B",
+    "risk": "medium",
+    "importedBy": [],
+    "imports": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\tools\\index.js": {
+    "source": "lib\\tools\\index.js",
+    "destination": "packages/tools/lib\\tools\\index.js",
+    "classification": "tool-implementation",
+    "batch": "B",
+    "risk": "critical",
+    "importedBy": [],
+    "imports": [
+      "../autotune",
+      "../chaos-campaign",
+      "../child-registry",
+      "../code-interpreter",
+      "../cost-ledger",
+      "../exec-policy",
+      "../governance",
+      "../imagegen/video_engine",
+      "../llm-provider",
+      "../memory-consistency",
+      "../parseltongue",
+      "../permission-manager",
+      "../pty",
+      "../pxpipe",
+      "../screen-camera-tools",
+      "../smith-neo",
+      "../stm",
+      "../system-manifest",
+      "../tool-cache",
+      "../tool-gate",
+      "../tools-gui",
+      "../tools-parity",
+      "../tools-pc",
+      "../tools-remotion",
+      "../user-agents",
+      "./parity/hooks/engine.js",
+      "./skills-registry",
+      "./web-search-rate-limit",
+      "@vscode/ripgrep",
+      "child_process",
+      "fs",
+      "fuzzaldrin-plus",
+      "http",
+      "https",
+      "os",
+      "path",
+      "readline"
+    ],
+    "status": "live"
+  },
+  "lib\\tools\\parity\\hooks\\engine.js": {
+    "source": "lib\\tools\\parity\\hooks\\engine.js",
+    "destination": "packages/shared/lib\\tools\\parity\\hooks\\engine.js",
+    "classification": "compatibility",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\tts\\gateway.js": {
+    "source": "lib\\tts\\gateway.js",
+    "destination": "packages/tools/lib\\tts\\gateway.js",
+    "classification": "tool-runtime",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "child_process",
+      "fs",
+      "http",
+      "os",
+      "path",
+      "url"
+    ],
+    "status": "live"
+  },
+  "lib\\__tests__\\provider-config-integration.test.js": {
+    "source": "lib\\__tests__\\provider-config-integration.test.js",
+    "destination": "tests/fixtures/lib\\__tests__\\provider-config-integration.test.js",
+    "classification": "test-helper",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../routing-decisions",
+      "fs",
+      "os",
+      "path"
+    ],
+    "status": "live"
+  },
+  "lib\\__tests__\\routing-decisions.test.js": {
+    "source": "lib\\__tests__\\routing-decisions.test.js",
+    "destination": "tests/fixtures/lib\\__tests__\\routing-decisions.test.js",
+    "classification": "test-helper",
+    "batch": "A",
+    "risk": "low",
+    "importedBy": [],
+    "imports": [
+      "../routing-decisions.js",
+      "node:assert",
+      "node:test"
+    ],
+    "status": "live"
   }
 }

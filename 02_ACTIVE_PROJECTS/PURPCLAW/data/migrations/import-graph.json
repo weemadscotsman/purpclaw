@@ -1,254 +1,2284 @@
 {
-  "lib/llm-provider": [
-    "agent_tower.js",
-    "agent_tower.js",
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js",
-    "lib/llm-provider.js"
-  ],
-  "lib/agent-gateway": [
-    "agent_tower.js",
-    "unified_api.js"
-  ],
-  "lib/memory-client": [
-    "agent_tower.js",
-    "unified_api.js",
-    "lib/memory-client.js"
-  ],
-  "lib/runtime/telemetry-console": [
-    "pool_service.js",
-    "unified_api.js"
-  ],
-  "lib/context-packet.js": [
-    "swarm_coordinator.js"
-  ],
-  "lib/llm-provider.js": [
-    "swarm_coordinator.js",
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/self-context.js": [
-    "swarm_coordinator.js"
-  ],
-  "lib/memory-client.js": [
-    "swarm_coordinator.js"
-  ],
-  "lib/cognitive-client.js": [
-    "swarm_coordinator.js"
-  ],
-  "lib/child-registry": [
-    "unified_api.js",
-    "docs/legacy/launch_detached.js",
-    "docs/legacy/ghostbusters-2026-06-06/purpclaw.js"
-  ],
-  "lib/session-repository": [
-    "unified_api.js"
-  ],
-  "lib/tool-runtime": [
-    "unified_api.js",
-    ".p0b_tests/test_bypass_closure.js"
-  ],
-  "lib/pulse": [
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/harvest/indexer": [
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/spine/envelope": [
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/spine/contract": [
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/spine/session-store": [
-    "unified_api.js"
-  ],
-  "lib/steering-router": [
-    "unified_api.js"
-  ],
-  "lib/commands/code": [
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/tools": [
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/narrator/eventbus-bridge": [
-    "unified_api.js"
-  ],
-  "lib/api-harness-kernel.js": [
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/whoami": [
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/harvest/crawler": [
-    "unified_api.js"
-  ],
-  "lib/harvest/extractors": [
-    "unified_api.js"
-  ],
-  "lib/spine-shim": [
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/proof-ledger": [
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/output-vault": [
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/pipeline-registry": [
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js",
-    "unified_api.js"
-  ],
-  "lib/system-manifest": [
-    "unified_api.js"
-  ],
-  "lib/events": [
-    "unified_api.js"
-  ],
-  "..lib/llm-provider": [
-    "apps/companion-chorus/src/minimax.js"
-  ],
-  ".lib/child-registry": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/doctor": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/deep-audit": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/embeddings": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/whoami": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/release-sign": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/profile-router": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/agents/archetypes": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/usage-pricing": [
-    "bin/purpclaw.js",
-    "bin/purpclaw.js",
-    "bin/purpclaw.js"
-  ],
-  ".lib/cost-ledger": [
-    "bin/purpclaw.js",
-    "bin/purpclaw.js"
-  ],
-  ".lib/trace-store": [
-    "bin/purpclaw.js",
-    "bin/purpclaw.js",
-    "bin/purpclaw.js"
-  ],
-  ".lib/steering-router": [
-    "bin/purpclaw.js",
-    "bin/purpclaw.js"
-  ],
-  ".lib/job-chain": [
-    "bin/purpclaw.js",
-    "bin/purpclaw.js"
-  ],
-  ".lib/insight": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/proof-ledger": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/purpflow": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/cloud-sync": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/studio": [
-    "bin/purpclaw.js",
-    "bin/purpclaw.js"
-  ],
-  ".lib/erosion": [
-    "bin/purpclaw.js",
-    "bin/purpclaw.js",
-    "bin/purpclaw.js"
-  ],
-  ".lib/cowork-overlay.js": [
-    "bin/purpclaw.js"
-  ],
-  ".lib/session-portability": [
-    "bin/purpclaw.js",
-    "bin/purpclaw.js",
-    "bin/purpclaw.js"
-  ],
-  ".lib/session-store": [
-    "bin/purpclaw.js"
-  ],
-  "lib/ast-dependency-graph.js": [
-    "docs/legacy/ghostbusters-2026-06-06/task_decomposer.js"
-  ],
-  "lib/screen-look": [
-    "lib/screen-look.js"
-  ],
-  "..lib/child-registry": [
-    "lib/commands/open.js",
-    "lib/commands/open.js"
-  ],
-  "..lib/tools": [
-    "lib/commands/tour.js",
-    "lib/commands/tour.js"
-  ],
-  "lib/core/work-engine": [
-    "lib/core/work-engine.js"
-  ],
-  "lib/harness/engine": [
-    "lib/harness/engine.js"
-  ],
-  "lib/runtime/autonomy-runner": [
-    "lib/runtime/autonomy-runner.js"
-  ],
-  "..lib/memory-client": [
-    "packages/context-spine/index.js"
-  ],
-  ".lib/approval-queue.js": [
-    "scripts/test-approval-resume-bridge.js"
-  ],
-  ".lib/workflow-manager": [
-    "scripts/test-workflow-approval.js"
-  ],
-  "..lib/hooks/execution-envelope": [
-    "tests/hooks/execution-envelope.probe.js"
-  ],
-  "..lib/hooks/lifecycle-bus": [
-    "tests/hooks/lifecycle-bus.probe.js"
-  ]
+  "lib\\a2a-runtime.js": {
+    "size": 6955,
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\agent-component.js": {
+    "size": 8419,
+    "imports": [
+      "./guardrail-manager",
+      "./retrieval-engine",
+      "./schema-validator",
+      "./session-state-service",
+      "crypto",
+      "events",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 9
+  },
+  "lib\\agent-gateway.js": {
+    "size": 50409,
+    "imports": [
+      "../agent_tower",
+      "./agent-component",
+      "./agent-router",
+      "./artifact-manager",
+      "./attachment-manager",
+      "./checkpoint-manager",
+      "./component-pipeline",
+      "./context-engine",
+      "./cron-manager",
+      "./delegation-manager",
+      "./eval-manager",
+      "./event-ledger",
+      "./execution-runtime",
+      "./goal-controller",
+      "./goal-manager",
+      "./graph-runtime",
+      "./guardrail-manager",
+      "./index-manager",
+      "./instruction-resolver",
+      "./invocation-manager",
+      "./mcp",
+      "./messaging-registry",
+      "./messaging-runtime",
+      "./namespace-store",
+      "./output-contract",
+      "./permission-manager",
+      "./plugin-manager",
+      "./profile-manager",
+      "./program-optimizer",
+      "./provider-registry",
+      "./recipe-manager",
+      "./repo-map",
+      "./retrieval-engine",
+      "./run-context",
+      "./schema-validator",
+      "./session-repository",
+      "./session-state-service",
+      "./skill-registry",
+      "./task-manager",
+      "./team-manager",
+      "./telemetry-manager",
+      "./tool-runtime",
+      "./trace-manager",
+      "./usage-limits",
+      "./verification-runner",
+      "./workflow-manager",
+      "events"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 47
+  },
+  "lib\\agent-loop.js": {
+    "size": 45444,
+    "imports": [
+      "../agent_tower",
+      "../parity/hooks/engine",
+      "./cognitive-client",
+      "./context-compressor",
+      "./continuity",
+      "./events",
+      "./file-watcher",
+      "./hooks/lifecycle-bus",
+      "./idle-engine",
+      "./llm-provider",
+      "./memory-client",
+      "./phase-router",
+      "./priority-steer",
+      "./prompt-builder",
+      "./pulse",
+      "./repo-mapper",
+      "./runtime/privacy-policy",
+      "./scoped-memory",
+      "./session-repository",
+      "./session-store",
+      "./tool-runtime",
+      "./tools",
+      "./user-feedback",
+      "./verification-gate",
+      "./whoami",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 27
+  },
+  "lib\\agent-router.js": {
+    "size": 7443,
+    "imports": [
+      "./agent-loop",
+      "./pipeline-registry",
+      "./routing-decisions",
+      "./usage-governor"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\api-harness-kernel.js": {
+    "size": 25715,
+    "imports": [
+      "./deep-research-group",
+      "./governance",
+      "./harness/engine",
+      "./job-chain",
+      "./job-contract",
+      "./mcp",
+      "./omnicode-bridge",
+      "./tools",
+      "./training-buffer",
+      "events",
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 13
+  },
+  "lib\\approval-prompt.js": {
+    "size": 3998,
+    "imports": [
+      "fs",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\approval-queue.js": {
+    "size": 31923,
+    "imports": [
+      "./event-ledger.js",
+      "async_hooks",
+      "crypto",
+      "events",
+      "fs",
+      "path",
+      "url"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 7
+  },
+  "lib\\artifact-manager.js": {
+    "size": 4633,
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\attachment-manager.js": {
+    "size": 3193,
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\chaos-campaign.js": {
+    "size": 10267,
+    "imports": [
+      "./smith-neo",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\chat-agent.js": {
+    "size": 4098,
+    "imports": [
+      "./agent-loop",
+      "./llm-provider",
+      "./tool-runtime",
+      "./tools"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\code-interpreter.js": {
+    "size": 8683,
+    "imports": [
+      "child_process",
+      "crypto",
+      "fs",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\context-engine.js": {
+    "size": 3981,
+    "imports": [],
+    "imported_by": [],
+    "has_require": false,
+    "has_import": false,
+    "dep_count": 0
+  },
+  "lib\\cowork-overlay.js": {
+    "size": 18643,
+    "imports": [
+      "./screen-look",
+      "child_process",
+      "fs",
+      "http",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 6
+  },
+  "lib\\cron-manager.js": {
+    "size": 6148,
+    "imports": [
+      "./agent-gateway",
+      "./scheduler/nl-cron",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\desktop-launcher.js": {
+    "size": 7002,
+    "imports": [
+      "child_process",
+      "fs",
+      "net",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\doctor.js": {
+    "size": 21949,
+    "imports": [
+      "../service_registry.js",
+      "./cognitive-client",
+      "./memory-client",
+      "./tools",
+      "./tools/index",
+      "crypto",
+      "express",
+      "fs",
+      "http",
+      "next",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 12
+  },
+  "lib\\donor-archaeology.js": {
+    "size": 15110,
+    "imports": [
+      "./evolution/mutator",
+      "./timeline",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\eval-manager.js": {
+    "size": 6549,
+    "imports": [
+      "./event-ledger",
+      "./schema-validator",
+      "./trace-manager",
+      "crypto",
+      "fs",
+      "js-yaml",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 8
+  },
+  "lib\\event-bus.js": {
+    "size": 197,
+    "imports": [
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\event-ledger.js": {
+    "size": 1890,
+    "imports": [
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\event-workflow.js": {
+    "size": 7176,
+    "imports": [
+      "./schema-validator",
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\exec-policy.js": {
+    "size": 14667,
+    "imports": [
+      "./approval-queue",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\feature-parity.js": {
+    "size": 18378,
+    "imports": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\goal-manager.js": {
+    "size": 2527,
+    "imports": [
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\graph-runtime.js": {
+    "size": 9886,
+    "imports": [
+      "./workflow-state",
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\index-manager.js": {
+    "size": 5174,
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\instruction-resolver.js": {
+    "size": 1489,
+    "imports": [],
+    "imported_by": [],
+    "has_require": false,
+    "has_import": false,
+    "dep_count": 0
+  },
+  "lib\\invocation-manager.js": {
+    "size": 5313,
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\llm-provider.js": {
+    "size": 64212,
+    "imports": [
+      "./lib/llm-provider",
+      "./spend-gate",
+      "./usage-governor",
+      "dotenv",
+      "fs",
+      "http",
+      "https",
+      "os",
+      "path",
+      "url"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 10
+  },
+  "lib\\mcp-server.js": {
+    "size": 11346,
+    "imports": [
+      "../package.json",
+      "./mcp",
+      "./permission-manager",
+      "./tool-runtime",
+      "./tools"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\memory-client.js": {
+    "size": 13966,
+    "imports": [
+      "./events",
+      "./lib/memory-client",
+      "http"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\messaging-runtime.js": {
+    "size": 5214,
+    "imports": [
+      "./agent-gateway",
+      "./messaging-registry",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\model-router.js": {
+    "size": 1049,
+    "imports": [
+      "./routing-decisions"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\namespace-store.js": {
+    "size": 2351,
+    "imports": [
+      "./index-manager",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\path-security.js": {
+    "size": 9621,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\plugin-manager.js": {
+    "size": 14349,
+    "imports": [
+      "./plugin-isolator",
+      "./provider-registry",
+      "./tool-runtime",
+      "./tools",
+      "fs",
+      "js-yaml",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 7
+  },
+  "lib\\program-optimizer.js": {
+    "size": 4733,
+    "imports": [
+      "./eval-manager",
+      "./signature-adapter",
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 6
+  },
+  "lib\\project-requirements.js": {
+    "size": 10023,
+    "imports": [
+      "./project-requirements",
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\repo-mapper.js": {
+    "size": 8586,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": true,
+    "dep_count": 2
+  },
+  "lib\\routing-decisions.js": {
+    "size": 20351,
+    "imports": [
+      "./llm-provider",
+      "./runtime/provider-config",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\scoped-memory.js": {
+    "size": 9567,
+    "imports": [
+      "./memory-client",
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\screen-camera-tools.js": {
+    "size": 8541,
+    "imports": [
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\screen-look.js": {
+    "size": 12077,
+    "imports": [
+      "./lib/screen-look",
+      "./llm-provider.js",
+      "./workspace-awareness.js",
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 7
+  },
+  "lib\\secret-vault.js": {
+    "size": 10672,
+    "imports": [
+      "crypto",
+      "fs",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\secrets.js": {
+    "size": 13209,
+    "imports": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\self-evolution-loop.js": {
+    "size": 10407,
+    "imports": [
+      "./memory-client",
+      "./user-feedback",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\session-repository.js": {
+    "size": 11831,
+    "imports": [
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\session-state-service.js": {
+    "size": 2470,
+    "imports": [
+      "./event-ledger",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\skill-registry.js": {
+    "size": 4945,
+    "imports": [
+      "./plugin-manager",
+      "fs",
+      "js-yaml",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\smith-neo.js": {
+    "size": 7817,
+    "imports": [
+      "./smith-neo"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\surface-capabilities.js": {
+    "size": 14028,
+    "imports": [],
+    "imported_by": [],
+    "has_require": false,
+    "has_import": false,
+    "dep_count": 0
+  },
+  "lib\\task-manager.js": {
+    "size": 3523,
+    "imports": [
+      "./agent-component",
+      "./schema-validator",
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 6
+  },
+  "lib\\team-manager.js": {
+    "size": 9307,
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\telemetry-manager.js": {
+    "size": 4274,
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\tool-gate.js": {
+    "size": 6485,
+    "imports": [
+      "./governance",
+      "./tool-gate.js",
+      "assert",
+      "fs",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 6
+  },
+  "lib\\tool-runtime.js": {
+    "size": 9481,
+    "imports": [
+      "./checkpoint-manager",
+      "./governance",
+      "./guardrail-manager",
+      "./path-security",
+      "./permission-manager",
+      "./plugin-manager",
+      "./schema-validator",
+      "./tools",
+      "events",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 10
+  },
+  "lib\\tools-pc.js": {
+    "size": 27358,
+    "imports": [
+      "./child-registry",
+      "child_process",
+      "fs",
+      "http",
+      "https",
+      "os",
+      "path",
+      "playwright-core",
+      "url"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 9
+  },
+  "lib\\tower-agent-child.js": {
+    "size": 3241,
+    "imports": [
+      "./agent-gateway"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\trace-manager.js": {
+    "size": 5529,
+    "imports": [
+      "crypto",
+      "fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\usage-governor.js": {
+    "size": 17069,
+    "imports": [
+      "./event-bus"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\workflow-manager.js": {
+    "size": 12561,
+    "imports": [
+      "./approval-queue",
+      "./workflow-state",
+      "fs",
+      "js-yaml",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 6
+  },
+  "lib\\workflow-registry.js": {
+    "size": 5870,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\awaken\\awaken-preflight.js": {
+    "size": 7277,
+    "imports": [
+      "./awaken-state",
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\commands\\action.js": {
+    "size": 6572,
+    "imports": [
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\app-cmd.js": {
+    "size": 316,
+    "imports": [],
+    "imported_by": [],
+    "has_require": false,
+    "has_import": false,
+    "dep_count": 0
+  },
+  "lib\\commands\\apply-diff.js": {
+    "size": 7245,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\architecture.js": {
+    "size": 17726,
+    "imports": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\ask.js": {
+    "size": 63365,
+    "imports": [
+      "../agent-gateway",
+      "../checkpoint-manager",
+      "../commands/bigboss",
+      "../config-loader",
+      "../llm-provider",
+      "../mcp",
+      "../memory-client",
+      "../permission-manager",
+      "../provider-registry",
+      "../routing-decisions",
+      "../session-repository",
+      "../tools",
+      "../user-commands",
+      "../whoami",
+      "fs",
+      "https",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 18
+  },
+  "lib\\commands\\autofix-pr.js": {
+    "size": 17462,
+    "imports": [
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\autoresearch.js": {
+    "size": 5168,
+    "imports": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\awaken.js": {
+    "size": 10510,
+    "imports": [
+      "../awaken/awaken-events",
+      "../awaken/awaken-loop",
+      "../awaken/awaken-permissions",
+      "../awaken/awaken-preflight",
+      "../awaken/awaken-state"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\commands\\bigboss.js": {
+    "size": 14734,
+    "imports": [
+      "../chaos-campaign",
+      "../child-registry",
+      "../memory-consistency",
+      "../smith-neo",
+      "../tools",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 7
+  },
+  "lib\\commands\\browser.js": {
+    "size": 3297,
+    "imports": [],
+    "imported_by": [],
+    "has_require": false,
+    "has_import": false,
+    "dep_count": 0
+  },
+  "lib\\commands\\buddy.js": {
+    "size": 11363,
+    "imports": [
+      "../mochi",
+      "../mochi-sprites",
+      "fs",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\commands\\bughunt.js": {
+    "size": 11586,
+    "imports": [
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\business.js": {
+    "size": 5097,
+    "imports": [
+      "../business/operations",
+      "../business/store",
+      "../business/twilio"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\capabilities.js": {
+    "size": 2160,
+    "imports": [
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\claudecode.js": {
+    "size": 7611,
+    "imports": [
+      "../child-registry",
+      "../llm-provider",
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 6
+  },
+  "lib\\commands\\code.js": {
+    "size": 35931,
+    "imports": [
+      "../vector",
+      "crypto",
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\commands\\cognition.js": {
+    "size": 3524,
+    "imports": [
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\commit.js": {
+    "size": 594,
+    "imports": [
+      "child_process"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\council.js": {
+    "size": 22209,
+    "imports": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\crew.js": {
+    "size": 3392,
+    "imports": [
+      "../crew"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\ctx-viz.js": {
+    "size": 10335,
+    "imports": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\deploy.js": {
+    "size": 6375,
+    "imports": [
+      "../child-registry",
+      "fs",
+      "os",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\commands\\desktop.js": {
+    "size": 7846,
+    "imports": [
+      "../desktop-launcher"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\drift.js": {
+    "size": 275,
+    "imports": [
+      "../drift-watcher.js"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\eval-auto-fix.js": {
+    "size": 6503,
+    "imports": [
+      "../llm-provider",
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\eval.js": {
+    "size": 600,
+    "imports": [
+      "../agent-gateway"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\evolve.js": {
+    "size": 11706,
+    "imports": [
+      "../evolution/mutator",
+      "../evolution/skill-forge",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\feature.js": {
+    "size": 370,
+    "imports": [
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\feedback.js": {
+    "size": 8240,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\find.js": {
+    "size": 6745,
+    "imports": [
+      "../file-index",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\gc.js": {
+    "size": 9478,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\grow.js": {
+    "size": 10594,
+    "imports": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\harness.js": {
+    "size": 18938,
+    "imports": [
+      "../harness/benchmark",
+      "../harness/engine",
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\commands\\harvest.js": {
+    "size": 7818,
+    "imports": [
+      "../harvest/crawler",
+      "../harvest/extractors",
+      "../harvest/indexer",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\commands\\heal.js": {
+    "size": 6895,
+    "imports": [
+      "./safe-start.js",
+      "child_process",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\help.js": {
+    "size": 969,
+    "imports": [
+      "../../parity/cli/router.js",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\hivemind.js": {
+    "size": 4070,
+    "imports": [
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\hooks.js": {
+    "size": 9659,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\identity.js": {
+    "size": 6467,
+    "imports": [
+      "../identity",
+      "fs",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\init-project.js": {
+    "size": 7057,
+    "imports": [
+      "./App.jsx",
+      "@vitejs/plugin-react",
+      "fmt",
+      "fs",
+      "path",
+      "react",
+      "react-dom/client",
+      "vite"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": true,
+    "dep_count": 8
+  },
+  "lib\\commands\\init.js": {
+    "size": 1214,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\intelligence.js": {
+    "size": 6006,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\liveforge.js": {
+    "size": 5724,
+    "imports": [
+      "../liveforge",
+      "fs"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\llm.js": {
+    "size": 2054,
+    "imports": [
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\loop.js": {
+    "size": 763,
+    "imports": [
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\marketplace.js": {
+    "size": 10833,
+    "imports": [
+      "../marketplace"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\mcp.js": {
+    "size": 18571,
+    "imports": [
+      "../mcp",
+      "fs",
+      "os",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\commands\\memory.js": {
+    "size": 743,
+    "imports": [
+      "../../parity/memory/scoped.js"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\model.js": {
+    "size": 497,
+    "imports": [],
+    "imported_by": [],
+    "has_require": false,
+    "has_import": false,
+    "dep_count": 0
+  },
+  "lib\\commands\\mycelium.js": {
+    "size": 2505,
+    "imports": [
+      "../mycelium",
+      "fs"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\next.js": {
+    "size": 1778,
+    "imports": [
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\onboard.js": {
+    "size": 9863,
+    "imports": [
+      "child_process",
+      "fs",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\open.js": {
+    "size": 7730,
+    "imports": [
+      "../../lib/child-registry",
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\commands\\oracle.js": {
+    "size": 813,
+    "imports": [
+      "../oracle.js"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\overview.js": {
+    "size": 2923,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\parity.js": {
+    "size": 8248,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\permissions.js": {
+    "size": 11321,
+    "imports": [
+      "fs",
+      "os",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\plan.js": {
+    "size": 21966,
+    "imports": [
+      "fs",
+      "http",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\plugin.js": {
+    "size": 9441,
+    "imports": [
+      "./marketplace",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\pocket.js": {
+    "size": 23137,
+    "imports": [
+      "../child-registry",
+      "../pocket-updater",
+      "../pocket-vault",
+      "../spend-gate",
+      "../telemetry",
+      "child_process",
+      "fs",
+      "http",
+      "os",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 11
+  },
+  "lib\\commands\\ponytail.js": {
+    "size": 16207,
+    "imports": [
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\provider.js": {
+    "size": 15593,
+    "imports": [
+      "../runtime/provider-config",
+      "fs",
+      "http",
+      "https",
+      "os",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 7
+  },
+  "lib\\commands\\registry-audit.js": {
+    "size": 30574,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\remote.js": {
+    "size": 7170,
+    "imports": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\remotion.js": {
+    "size": 5984,
+    "imports": [
+      "../child-registry",
+      "../tools",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\repomap.js": {
+    "size": 2515,
+    "imports": [
+      "../repo-mapper",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\review-pr.js": {
+    "size": 7214,
+    "imports": [
+      "fs",
+      "http",
+      "https",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\roster.js": {
+    "size": 10124,
+    "imports": [
+      "../agent-registry",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\safe-start.js": {
+    "size": 13535,
+    "imports": [
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\safe-stop.js": {
+    "size": 4609,
+    "imports": [
+      "./safe-start.js",
+      "child_process",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\sandbox.js": {
+    "size": 12735,
+    "imports": [
+      "../exec-policy",
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\schedule.js": {
+    "size": 6798,
+    "imports": [
+      "../cron-manager",
+      "../scheduler/nl-cron"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\secrets.js": {
+    "size": 8569,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\services.js": {
+    "size": 9450,
+    "imports": [
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\setup.js": {
+    "size": 15944,
+    "imports": [
+      "../core/provider-status",
+      "../llm-provider",
+      "child_process",
+      "fs",
+      "http",
+      "os",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 8
+  },
+  "lib\\commands\\skills.js": {
+    "size": 27862,
+    "imports": [
+      "../skill-usage",
+      "../skills-deps",
+      "../skills-guard",
+      "../skills-hub",
+      "child_process",
+      "fs",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 8
+  },
+  "lib\\commands\\smoke.js": {
+    "size": 12865,
+    "imports": [
+      "child_process",
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\spinebus.js": {
+    "size": 1776,
+    "imports": [
+      "../spinebus",
+      "fs"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\stats.js": {
+    "size": 8499,
+    "imports": [
+      "node:fs",
+      "node:sqlite",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\team.js": {
+    "size": 5597,
+    "imports": [
+      "../team-router",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\telemetry.js": {
+    "size": 1390,
+    "imports": [
+      "../runtime/pipeline-telemetry"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\teleport.js": {
+    "size": 14664,
+    "imports": [
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\thringlets.js": {
+    "size": 16537,
+    "imports": [
+      "http"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\tour.js": {
+    "size": 20293,
+    "imports": [
+      "../../agent_tower",
+      "../../lib/tools",
+      "../tools",
+      "../whoami",
+      "./setup",
+      "child_process",
+      "fs",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 9
+  },
+  "lib\\commands\\training.js": {
+    "size": 18176,
+    "imports": [
+      "../training-buffer",
+      "child_process",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\commands\\vault.js": {
+    "size": 7065,
+    "imports": [
+      "../secret-vault",
+      "fs",
+      "os",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\commands\\watch.js": {
+    "size": 4325,
+    "imports": [
+      "../file-watcher",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\commands\\weather.js": {
+    "size": 853,
+    "imports": [
+      "../weatherman.js"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\workers.js": {
+    "size": 12354,
+    "imports": [
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\commands\\workflow.js": {
+    "size": 11120,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\commands\\worktree.js": {
+    "size": 4221,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\core\\work-engine.js": {
+    "size": 10829,
+    "imports": [
+      "../agent-loop.js",
+      "../model-router",
+      "../spine/session-store",
+      "./lib/core/work-engine",
+      "child_process",
+      "dotenv",
+      "fs",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 9
+  },
+  "lib\\evolution\\mutator.js": {
+    "size": 15979,
+    "imports": [
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 2
+  },
+  "lib\\harness\\engine.js": {
+    "size": 50700,
+    "imports": [
+      "../../agent_score.js",
+      "../accuracy-fish",
+      "../canonical-memory-sync",
+      "../evolution/mutator",
+      "../job-contract",
+      "../llm-provider",
+      "../memory-client",
+      "./benchmark",
+      "./lib/harness/engine",
+      "events",
+      "fs",
+      "http",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 13
+  },
+  "lib\\harness\\result-schema.js": {
+    "size": 16475,
+    "imports": [],
+    "imported_by": [],
+    "has_require": false,
+    "has_import": false,
+    "dep_count": 0
+  },
+  "lib\\harness\\task-schema.js": {
+    "size": 9376,
+    "imports": [],
+    "imported_by": [],
+    "has_require": false,
+    "has_import": false,
+    "dep_count": 0
+  },
+  "lib\\hooks\\lifecycle-bus.js": {
+    "size": 5369,
+    "imports": [
+      "events"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\kanban\\db-schema.js": {
+    "size": 7434,
+    "imports": [
+      "./config",
+      "better-sqlite3",
+      "fs",
+      "path",
+      "sqlite3"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 5
+  },
+  "lib\\omni\\truth-scanner.js": {
+    "size": 18926,
+    "imports": [
+      "./omnicode-adapter",
+      "crypto",
+      "fs",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\parity\\hooks\\engine.js": {
+    "size": 224,
+    "imports": [
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\runtime\\autonomy-runner.js": {
+    "size": 6347,
+    "imports": [
+      "../llm-provider",
+      "./computer-use",
+      "./lib/runtime/autonomy-runner"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\runtime\\provider-config.js": {
+    "size": 2468,
+    "imports": [
+      "fs",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  },
+  "lib\\tools\\index.js": {
+    "size": 101023,
+    "imports": [
+      "../autotune",
+      "../chaos-campaign",
+      "../child-registry",
+      "../code-interpreter",
+      "../cost-ledger",
+      "../exec-policy",
+      "../governance",
+      "../imagegen/video_engine",
+      "../llm-provider",
+      "../memory-consistency",
+      "../parseltongue",
+      "../permission-manager",
+      "../pty",
+      "../pxpipe",
+      "../screen-camera-tools",
+      "../smith-neo",
+      "../stm",
+      "../system-manifest",
+      "../tool-cache",
+      "../tool-gate",
+      "../tools-gui",
+      "../tools-parity",
+      "../tools-pc",
+      "../tools-remotion",
+      "../user-agents",
+      "./parity/hooks/engine.js",
+      "./skills-registry",
+      "./web-search-rate-limit",
+      "@vscode/ripgrep",
+      "child_process",
+      "fs",
+      "fuzzaldrin-plus",
+      "http",
+      "https",
+      "os",
+      "path",
+      "readline"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 37
+  },
+  "lib\\tools\\parity\\hooks\\engine.js": {
+    "size": 236,
+    "imports": [
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 1
+  },
+  "lib\\tts\\gateway.js": {
+    "size": 11383,
+    "imports": [
+      "child_process",
+      "fs",
+      "http",
+      "os",
+      "path",
+      "url"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 6
+  },
+  "lib\\__tests__\\provider-config-integration.test.js": {
+    "size": 4013,
+    "imports": [
+      "../routing-decisions",
+      "fs",
+      "os",
+      "path"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 4
+  },
+  "lib\\__tests__\\routing-decisions.test.js": {
+    "size": 12094,
+    "imports": [
+      "../routing-decisions.js",
+      "node:assert",
+      "node:test"
+    ],
+    "imported_by": [],
+    "has_require": true,
+    "has_import": false,
+    "dep_count": 3
+  }
 }
