@@ -1,0 +1,254 @@
+{
+  "lib/llm-provider": [
+    "agent_tower.js",
+    "agent_tower.js",
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js",
+    "lib/llm-provider.js"
+  ],
+  "lib/agent-gateway": [
+    "agent_tower.js",
+    "unified_api.js"
+  ],
+  "lib/memory-client": [
+    "agent_tower.js",
+    "unified_api.js",
+    "lib/memory-client.js"
+  ],
+  "lib/runtime/telemetry-console": [
+    "pool_service.js",
+    "unified_api.js"
+  ],
+  "lib/context-packet.js": [
+    "swarm_coordinator.js"
+  ],
+  "lib/llm-provider.js": [
+    "swarm_coordinator.js",
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/self-context.js": [
+    "swarm_coordinator.js"
+  ],
+  "lib/memory-client.js": [
+    "swarm_coordinator.js"
+  ],
+  "lib/cognitive-client.js": [
+    "swarm_coordinator.js"
+  ],
+  "lib/child-registry": [
+    "unified_api.js",
+    "docs/legacy/launch_detached.js",
+    "docs/legacy/ghostbusters-2026-06-06/purpclaw.js"
+  ],
+  "lib/session-repository": [
+    "unified_api.js"
+  ],
+  "lib/tool-runtime": [
+    "unified_api.js",
+    ".p0b_tests/test_bypass_closure.js"
+  ],
+  "lib/pulse": [
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/harvest/indexer": [
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/spine/envelope": [
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/spine/contract": [
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/spine/session-store": [
+    "unified_api.js"
+  ],
+  "lib/steering-router": [
+    "unified_api.js"
+  ],
+  "lib/commands/code": [
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/tools": [
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/narrator/eventbus-bridge": [
+    "unified_api.js"
+  ],
+  "lib/api-harness-kernel.js": [
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/whoami": [
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/harvest/crawler": [
+    "unified_api.js"
+  ],
+  "lib/harvest/extractors": [
+    "unified_api.js"
+  ],
+  "lib/spine-shim": [
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/proof-ledger": [
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/output-vault": [
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/pipeline-registry": [
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js",
+    "unified_api.js"
+  ],
+  "lib/system-manifest": [
+    "unified_api.js"
+  ],
+  "lib/events": [
+    "unified_api.js"
+  ],
+  "..lib/llm-provider": [
+    "apps/companion-chorus/src/minimax.js"
+  ],
+  ".lib/child-registry": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/doctor": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/deep-audit": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/embeddings": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/whoami": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/release-sign": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/profile-router": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/agents/archetypes": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/usage-pricing": [
+    "bin/purpclaw.js",
+    "bin/purpclaw.js",
+    "bin/purpclaw.js"
+  ],
+  ".lib/cost-ledger": [
+    "bin/purpclaw.js",
+    "bin/purpclaw.js"
+  ],
+  ".lib/trace-store": [
+    "bin/purpclaw.js",
+    "bin/purpclaw.js",
+    "bin/purpclaw.js"
+  ],
+  ".lib/steering-router": [
+    "bin/purpclaw.js",
+    "bin/purpclaw.js"
+  ],
+  ".lib/job-chain": [
+    "bin/purpclaw.js",
+    "bin/purpclaw.js"
+  ],
+  ".lib/insight": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/proof-ledger": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/purpflow": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/cloud-sync": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/studio": [
+    "bin/purpclaw.js",
+    "bin/purpclaw.js"
+  ],
+  ".lib/erosion": [
+    "bin/purpclaw.js",
+    "bin/purpclaw.js",
+    "bin/purpclaw.js"
+  ],
+  ".lib/cowork-overlay.js": [
+    "bin/purpclaw.js"
+  ],
+  ".lib/session-portability": [
+    "bin/purpclaw.js",
+    "bin/purpclaw.js",
+    "bin/purpclaw.js"
+  ],
+  ".lib/session-store": [
+    "bin/purpclaw.js"
+  ],
+  "lib/ast-dependency-graph.js": [
+    "docs/legacy/ghostbusters-2026-06-06/task_decomposer.js"
+  ],
+  "lib/screen-look": [
+    "lib/screen-look.js"
+  ],
+  "..lib/child-registry": [
+    "lib/commands/open.js",
+    "lib/commands/open.js"
+  ],
+  "..lib/tools": [
+    "lib/commands/tour.js",
+    "lib/commands/tour.js"
+  ],
+  "lib/core/work-engine": [
+    "lib/core/work-engine.js"
+  ],
+  "lib/harness/engine": [
+    "lib/harness/engine.js"
+  ],
+  "lib/runtime/autonomy-runner": [
+    "lib/runtime/autonomy-runner.js"
+  ],
+  "..lib/memory-client": [
+    "packages/context-spine/index.js"
+  ],
+  ".lib/approval-queue.js": [
+    "scripts/test-approval-resume-bridge.js"
+  ],
+  ".lib/workflow-manager": [
+    "scripts/test-workflow-approval.js"
+  ],
+  "..lib/hooks/execution-envelope": [
+    "tests/hooks/execution-envelope.probe.js"
+  ],
+  "..lib/hooks/lifecycle-bus": [
+    "tests/hooks/lifecycle-bus.probe.js"
+  ]
+}

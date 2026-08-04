@@ -1,0 +1,1070 @@
+{
+  "total": 175,
+  "files": [
+    {
+      "path": "lib/a2a-runtime.js",
+      "size": 6955,
+      "name": "a2a-runtime.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/agent-component.js",
+      "size": 8419,
+      "name": "agent-component.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/agent-gateway.js",
+      "size": 50409,
+      "name": "agent-gateway.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/agent-loop.js",
+      "size": 45444,
+      "name": "agent-loop.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/agent-router.js",
+      "size": 7443,
+      "name": "agent-router.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/api-harness-kernel.js",
+      "size": 25715,
+      "name": "api-harness-kernel.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/approval-prompt.js",
+      "size": 3998,
+      "name": "approval-prompt.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/approval-queue.js",
+      "size": 31923,
+      "name": "approval-queue.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/artifact-manager.js",
+      "size": 4633,
+      "name": "artifact-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/attachment-manager.js",
+      "size": 3193,
+      "name": "attachment-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/chaos-campaign.js",
+      "size": 10267,
+      "name": "chaos-campaign.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/chat-agent.js",
+      "size": 4098,
+      "name": "chat-agent.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/code-interpreter.js",
+      "size": 8683,
+      "name": "code-interpreter.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/context-engine.js",
+      "size": 3981,
+      "name": "context-engine.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/cowork-overlay.js",
+      "size": 18643,
+      "name": "cowork-overlay.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/cron-manager.js",
+      "size": 6148,
+      "name": "cron-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/desktop-launcher.js",
+      "size": 7002,
+      "name": "desktop-launcher.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/doctor.js",
+      "size": 21949,
+      "name": "doctor.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/donor-archaeology.js",
+      "size": 15110,
+      "name": "donor-archaeology.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/eval-manager.js",
+      "size": 6549,
+      "name": "eval-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/event-bus.js",
+      "size": 197,
+      "name": "event-bus.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/event-ledger.js",
+      "size": 1890,
+      "name": "event-ledger.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/event-workflow.js",
+      "size": 7176,
+      "name": "event-workflow.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/exec-policy.js",
+      "size": 14667,
+      "name": "exec-policy.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/feature-parity.js",
+      "size": 18378,
+      "name": "feature-parity.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/goal-manager.js",
+      "size": 2527,
+      "name": "goal-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/graph-runtime.js",
+      "size": 9886,
+      "name": "graph-runtime.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/index-manager.js",
+      "size": 5174,
+      "name": "index-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/instruction-resolver.js",
+      "size": 1489,
+      "name": "instruction-resolver.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/invocation-manager.js",
+      "size": 5313,
+      "name": "invocation-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/llm-provider.js",
+      "size": 64212,
+      "name": "llm-provider.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/mcp-server.js",
+      "size": 11346,
+      "name": "mcp-server.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/memory-client.js",
+      "size": 13966,
+      "name": "memory-client.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/messaging-runtime.js",
+      "size": 5214,
+      "name": "messaging-runtime.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/model-router.js",
+      "size": 1049,
+      "name": "model-router.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/namespace-store.js",
+      "size": 2351,
+      "name": "namespace-store.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/path-security.js",
+      "size": 9621,
+      "name": "path-security.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/plugin-manager.js",
+      "size": 14349,
+      "name": "plugin-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/program-optimizer.js",
+      "size": 4733,
+      "name": "program-optimizer.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/project-requirements.js",
+      "size": 10023,
+      "name": "project-requirements.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/repo-mapper.js",
+      "size": 8586,
+      "name": "repo-mapper.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/routing-decisions.js",
+      "size": 20351,
+      "name": "routing-decisions.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/scoped-memory.js",
+      "size": 9567,
+      "name": "scoped-memory.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/screen-camera-tools.js",
+      "size": 8541,
+      "name": "screen-camera-tools.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/screen-look.js",
+      "size": 12077,
+      "name": "screen-look.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/secret-vault.js",
+      "size": 10672,
+      "name": "secret-vault.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/secrets.js",
+      "size": 13209,
+      "name": "secrets.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/self-evolution-loop.js",
+      "size": 10407,
+      "name": "self-evolution-loop.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/session-repository.js",
+      "size": 11831,
+      "name": "session-repository.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/session-state-service.js",
+      "size": 2470,
+      "name": "session-state-service.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/skill-registry.js",
+      "size": 4945,
+      "name": "skill-registry.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/smith-neo.js",
+      "size": 7817,
+      "name": "smith-neo.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/surface-capabilities.js",
+      "size": 14028,
+      "name": "surface-capabilities.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/task-manager.js",
+      "size": 3523,
+      "name": "task-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/team-manager.js",
+      "size": 9307,
+      "name": "team-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/telemetry-manager.js",
+      "size": 4274,
+      "name": "telemetry-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/tool-gate.js",
+      "size": 6485,
+      "name": "tool-gate.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/tool-runtime.js",
+      "size": 9481,
+      "name": "tool-runtime.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/tools-pc.js",
+      "size": 27358,
+      "name": "tools-pc.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/tower-agent-child.js",
+      "size": 3241,
+      "name": "tower-agent-child.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/trace-manager.js",
+      "size": 5529,
+      "name": "trace-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/usage-governor.js",
+      "size": 17069,
+      "name": "usage-governor.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/workflow-manager.js",
+      "size": 12561,
+      "name": "workflow-manager.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/workflow-registry.js",
+      "size": 5870,
+      "name": "workflow-registry.js",
+      "dir": "lib"
+    },
+    {
+      "path": "lib/awaken/awaken-preflight.js",
+      "size": 7277,
+      "name": "awaken-preflight.js",
+      "dir": "awaken"
+    },
+    {
+      "path": "lib/commands/action.js",
+      "size": 6572,
+      "name": "action.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/AGENT.md",
+      "size": 1290,
+      "name": "AGENT.md",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/app-cmd.js",
+      "size": 316,
+      "name": "app-cmd.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/apply-diff.js",
+      "size": 7245,
+      "name": "apply-diff.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/architecture.js",
+      "size": 17726,
+      "name": "architecture.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/ask.js",
+      "size": 63365,
+      "name": "ask.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/autofix-pr.js",
+      "size": 17462,
+      "name": "autofix-pr.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/autoresearch.js",
+      "size": 5168,
+      "name": "autoresearch.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/awaken.js",
+      "size": 10510,
+      "name": "awaken.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/bigboss.js",
+      "size": 14734,
+      "name": "bigboss.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/browser.js",
+      "size": 3297,
+      "name": "browser.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/buddy.js",
+      "size": 11363,
+      "name": "buddy.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/bughunt.js",
+      "size": 11586,
+      "name": "bughunt.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/business.js",
+      "size": 5097,
+      "name": "business.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/capabilities.js",
+      "size": 2160,
+      "name": "capabilities.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/claudecode.js",
+      "size": 7611,
+      "name": "claudecode.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/code.js",
+      "size": 35931,
+      "name": "code.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/cognition.js",
+      "size": 3524,
+      "name": "cognition.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/commit.js",
+      "size": 594,
+      "name": "commit.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/council.js",
+      "size": 22209,
+      "name": "council.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/crew.js",
+      "size": 3392,
+      "name": "crew.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/ctx-viz.js",
+      "size": 10335,
+      "name": "ctx-viz.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/deploy.js",
+      "size": 6375,
+      "name": "deploy.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/desktop.js",
+      "size": 7846,
+      "name": "desktop.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/drift.js",
+      "size": 275,
+      "name": "drift.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/eval-auto-fix.js",
+      "size": 6503,
+      "name": "eval-auto-fix.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/eval.js",
+      "size": 600,
+      "name": "eval.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/evolve.js",
+      "size": 11706,
+      "name": "evolve.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/feature.js",
+      "size": 370,
+      "name": "feature.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/feedback.js",
+      "size": 8240,
+      "name": "feedback.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/find.js",
+      "size": 6745,
+      "name": "find.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/gc.js",
+      "size": 9478,
+      "name": "gc.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/grow.js",
+      "size": 10594,
+      "name": "grow.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/harness.js",
+      "size": 18938,
+      "name": "harness.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/harvest.js",
+      "size": 7818,
+      "name": "harvest.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/heal.js",
+      "size": 6895,
+      "name": "heal.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/help.js",
+      "size": 969,
+      "name": "help.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/hivemind.js",
+      "size": 4070,
+      "name": "hivemind.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/hooks.js",
+      "size": 9659,
+      "name": "hooks.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/identity.js",
+      "size": 6467,
+      "name": "identity.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/init-project.js",
+      "size": 7057,
+      "name": "init-project.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/init.js",
+      "size": 1214,
+      "name": "init.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/intelligence.js",
+      "size": 6006,
+      "name": "intelligence.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/liveforge.js",
+      "size": 5724,
+      "name": "liveforge.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/llm.js",
+      "size": 2054,
+      "name": "llm.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/loop.js",
+      "size": 763,
+      "name": "loop.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/marketplace.js",
+      "size": 10833,
+      "name": "marketplace.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/mcp.js",
+      "size": 18571,
+      "name": "mcp.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/memory.js",
+      "size": 743,
+      "name": "memory.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/model.js",
+      "size": 497,
+      "name": "model.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/mycelium.js",
+      "size": 2505,
+      "name": "mycelium.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/next.js",
+      "size": 1778,
+      "name": "next.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/onboard.js",
+      "size": 9863,
+      "name": "onboard.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/open.js",
+      "size": 7730,
+      "name": "open.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/oracle.js",
+      "size": 813,
+      "name": "oracle.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/overview.js",
+      "size": 2923,
+      "name": "overview.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/parity.js",
+      "size": 8248,
+      "name": "parity.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/permissions.js",
+      "size": 11321,
+      "name": "permissions.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/plan.js",
+      "size": 21966,
+      "name": "plan.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/plugin.js",
+      "size": 9441,
+      "name": "plugin.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/pocket.js",
+      "size": 23137,
+      "name": "pocket.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/ponytail.js",
+      "size": 16207,
+      "name": "ponytail.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/provider.js",
+      "size": 15593,
+      "name": "provider.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/registry-audit.js",
+      "size": 30574,
+      "name": "registry-audit.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/remote.js",
+      "size": 7170,
+      "name": "remote.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/remotion.js",
+      "size": 5984,
+      "name": "remotion.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/repomap.js",
+      "size": 2515,
+      "name": "repomap.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/review-pr.js",
+      "size": 7214,
+      "name": "review-pr.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/roster.js",
+      "size": 10124,
+      "name": "roster.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/safe-start.js",
+      "size": 13535,
+      "name": "safe-start.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/safe-stop.js",
+      "size": 4609,
+      "name": "safe-stop.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/sandbox.js",
+      "size": 12735,
+      "name": "sandbox.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/schedule.js",
+      "size": 6798,
+      "name": "schedule.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/secrets.js",
+      "size": 8569,
+      "name": "secrets.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/services.js",
+      "size": 9450,
+      "name": "services.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/setup.js",
+      "size": 15944,
+      "name": "setup.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/skills.js",
+      "size": 27862,
+      "name": "skills.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/skills.js.debug",
+      "size": 24196,
+      "name": "skills.js.debug",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/smoke.js",
+      "size": 12865,
+      "name": "smoke.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/spinebus.js",
+      "size": 1776,
+      "name": "spinebus.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/stats.js",
+      "size": 8499,
+      "name": "stats.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/team.js",
+      "size": 5597,
+      "name": "team.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/telemetry.js",
+      "size": 1390,
+      "name": "telemetry.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/teleport.js",
+      "size": 14664,
+      "name": "teleport.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/thringlets.js",
+      "size": 16537,
+      "name": "thringlets.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/tour.js",
+      "size": 20293,
+      "name": "tour.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/training.js",
+      "size": 18176,
+      "name": "training.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/vault.js",
+      "size": 7065,
+      "name": "vault.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/watch.js",
+      "size": 4325,
+      "name": "watch.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/weather.js",
+      "size": 853,
+      "name": "weather.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/workers.js",
+      "size": 12354,
+      "name": "workers.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/workflow.js",
+      "size": 11120,
+      "name": "workflow.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/commands/worktree.js",
+      "size": 4221,
+      "name": "worktree.js",
+      "dir": "commands"
+    },
+    {
+      "path": "lib/core/work-engine.js",
+      "size": 10829,
+      "name": "work-engine.js",
+      "dir": "core"
+    },
+    {
+      "path": "lib/evolution/mutator.js",
+      "size": 15979,
+      "name": "mutator.js",
+      "dir": "evolution"
+    },
+    {
+      "path": "lib/harness/engine.js",
+      "size": 50700,
+      "name": "engine.js",
+      "dir": "harness"
+    },
+    {
+      "path": "lib/harness/result-schema.js",
+      "size": 16475,
+      "name": "result-schema.js",
+      "dir": "harness"
+    },
+    {
+      "path": "lib/harness/task-schema.js",
+      "size": 9376,
+      "name": "task-schema.js",
+      "dir": "harness"
+    },
+    {
+      "path": "lib/hooks/lifecycle-bus.js",
+      "size": 5369,
+      "name": "lifecycle-bus.js",
+      "dir": "hooks"
+    },
+    {
+      "path": "lib/kanban/db-schema.js",
+      "size": 7434,
+      "name": "db-schema.js",
+      "dir": "kanban"
+    },
+    {
+      "path": "lib/omni/truth-scanner.js",
+      "size": 18926,
+      "name": "truth-scanner.js",
+      "dir": "omni"
+    },
+    {
+      "path": "lib/parity/hooks/engine.js",
+      "size": 224,
+      "name": "engine.js",
+      "dir": "hooks"
+    },
+    {
+      "path": "lib/runtime/autonomy-runner.js",
+      "size": 6347,
+      "name": "autonomy-runner.js",
+      "dir": "runtime"
+    },
+    {
+      "path": "lib/runtime/provider-config.js",
+      "size": 2468,
+      "name": "provider-config.js",
+      "dir": "runtime"
+    },
+    {
+      "path": "lib/tools/index.js",
+      "size": 101023,
+      "name": "index.js",
+      "dir": "tools"
+    },
+    {
+      "path": "lib/tools/parity/hooks/engine.js",
+      "size": 236,
+      "name": "engine.js",
+      "dir": "hooks"
+    },
+    {
+      "path": "lib/tts/gateway.js",
+      "size": 11383,
+      "name": "gateway.js",
+      "dir": "tts"
+    },
+    {
+      "path": "lib/tts/kokoro_worker.py",
+      "size": 5968,
+      "name": "kokoro_worker.py",
+      "dir": "tts"
+    },
+    {
+      "path": "lib/__tests__/provider-config-integration.test.js",
+      "size": 4013,
+      "name": "provider-config-integration.test.js",
+      "dir": "__tests__"
+    },
+    {
+      "path": "lib/__tests__/routing-decisions.test.js",
+      "size": 12094,
+      "name": "routing-decisions.test.js",
+      "dir": "__tests__"
+    }
+  ],
+  "by_dir": {
+    "lib": 64,
+    "awaken": 1,
+    "commands": 93,
+    "core": 1,
+    "evolution": 1,
+    "harness": 3,
+    "hooks": 3,
+    "kanban": 1,
+    "omni": 1,
+    "runtime": 2,
+    "tools": 1,
+    "tts": 2,
+    "__tests__": 2
+  }
+}

@@ -1,0 +1,1046 @@
+{
+  "lib/a2a-runtime.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/a2a-runtime.js"
+  },
+  "lib/agent-component.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/agent-component.js"
+  },
+  "lib/agent-gateway.js": {
+    "dest": "packages/core/agent-runtime",
+    "status": "pending",
+    "wrapper": "lib/agent-gateway.js",
+    "compat": "lib/agent-gateway.js"
+  },
+  "lib/agent-loop.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/agent-loop.js"
+  },
+  "lib/agent-router.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/agent-router.js"
+  },
+  "lib/api-harness-kernel.js": {
+    "dest": "services/kernel",
+    "status": "pending",
+    "wrapper": "lib/api-harness-kernel.js",
+    "compat": "lib/api-harness-kernel.js"
+  },
+  "lib/approval-prompt.js": {
+    "dest": "packages/core/approval-prompt",
+    "status": "pending",
+    "wrapper": "lib/approval-prompt.js",
+    "compat": "lib/approval-prompt.js"
+  },
+  "lib/approval-queue.js": {
+    "dest": "packages/core/approval-queue",
+    "status": "pending",
+    "wrapper": "lib/approval-queue.js",
+    "compat": "lib/approval-queue.js"
+  },
+  "lib/artifact-manager.js": {
+    "dest": "packages/core/artifact-manager",
+    "status": "pending",
+    "wrapper": "lib/artifact-manager.js",
+    "compat": "lib/artifact-manager.js"
+  },
+  "lib/attachment-manager.js": {
+    "dest": "packages/core/attachment-manager",
+    "status": "pending",
+    "wrapper": "lib/attachment-manager.js",
+    "compat": "lib/attachment-manager.js"
+  },
+  "lib/chaos-campaign.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/chaos-campaign.js"
+  },
+  "lib/chat-agent.js": {
+    "dest": "packages/core/chat-agent",
+    "status": "pending",
+    "wrapper": "lib/chat-agent.js",
+    "compat": "lib/chat-agent.js"
+  },
+  "lib/code-interpreter.js": {
+    "dest": "packages/core/code-interpreter",
+    "status": "pending",
+    "wrapper": "lib/code-interpreter.js",
+    "compat": "lib/code-interpreter.js"
+  },
+  "lib/context-engine.js": {
+    "dest": "packages/memory/cognitive-spine",
+    "status": "pending",
+    "wrapper": "lib/context-engine.js",
+    "compat": "lib/context-engine.js"
+  },
+  "lib/cowork-overlay.js": {
+    "dest": "packages/core/cowork-overlay",
+    "status": "pending",
+    "wrapper": "lib/cowork-overlay.js",
+    "compat": "lib/cowork-overlay.js"
+  },
+  "lib/cron-manager.js": {
+    "dest": "packages/core/cron-manager",
+    "status": "pending",
+    "wrapper": "lib/cron-manager.js",
+    "compat": "lib/cron-manager.js"
+  },
+  "lib/desktop-launcher.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/desktop-launcher.js"
+  },
+  "lib/doctor.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/doctor.js"
+  },
+  "lib/donor-archaeology.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/donor-archaeology.js"
+  },
+  "lib/eval-manager.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/eval-manager.js"
+  },
+  "lib/event-bus.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/event-bus.js"
+  },
+  "lib/event-ledger.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/event-ledger.js"
+  },
+  "lib/event-workflow.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/event-workflow.js"
+  },
+  "lib/exec-policy.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/exec-policy.js"
+  },
+  "lib/feature-parity.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/feature-parity.js"
+  },
+  "lib/goal-manager.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/goal-manager.js"
+  },
+  "lib/graph-runtime.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/graph-runtime.js"
+  },
+  "lib/index-manager.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/index-manager.js"
+  },
+  "lib/instruction-resolver.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/instruction-resolver.js"
+  },
+  "lib/invocation-manager.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/invocation-manager.js"
+  },
+  "lib/llm-provider.js": {
+    "dest": "packages/core/providers",
+    "status": "pending",
+    "wrapper": "lib/llm-provider.js",
+    "compat": "lib/llm-provider.js"
+  },
+  "lib/mcp-server.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/mcp-server.js"
+  },
+  "lib/memory-client.js": {
+    "dest": "packages/memory/context",
+    "status": "pending",
+    "wrapper": "lib/memory-client.js",
+    "compat": "lib/memory-client.js"
+  },
+  "lib/messaging-runtime.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/messaging-runtime.js"
+  },
+  "lib/model-router.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/model-router.js"
+  },
+  "lib/namespace-store.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/namespace-store.js"
+  },
+  "lib/path-security.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/path-security.js"
+  },
+  "lib/plugin-manager.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/plugin-manager.js"
+  },
+  "lib/program-optimizer.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/program-optimizer.js"
+  },
+  "lib/project-requirements.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/project-requirements.js"
+  },
+  "lib/repo-mapper.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/repo-mapper.js"
+  },
+  "lib/routing-decisions.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/routing-decisions.js"
+  },
+  "lib/scoped-memory.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/scoped-memory.js"
+  },
+  "lib/screen-camera-tools.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/screen-camera-tools.js"
+  },
+  "lib/screen-look.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/screen-look.js"
+  },
+  "lib/secret-vault.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/secret-vault.js"
+  },
+  "lib/secrets.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/secrets.js"
+  },
+  "lib/self-evolution-loop.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/self-evolution-loop.js"
+  },
+  "lib/session-repository.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/session-repository.js"
+  },
+  "lib/session-state-service.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/session-state-service.js"
+  },
+  "lib/skill-registry.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/skill-registry.js"
+  },
+  "lib/smith-neo.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/smith-neo.js"
+  },
+  "lib/surface-capabilities.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/surface-capabilities.js"
+  },
+  "lib/task-manager.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/task-manager.js"
+  },
+  "lib/team-manager.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/team-manager.js"
+  },
+  "lib/telemetry-manager.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/telemetry-manager.js"
+  },
+  "lib/tool-gate.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/tool-gate.js"
+  },
+  "lib/tool-runtime.js": {
+    "dest": "packages/tools/runtime",
+    "status": "pending",
+    "wrapper": "lib/tool-runtime.js",
+    "compat": "lib/tool-runtime.js"
+  },
+  "lib/tools-pc.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/tools-pc.js"
+  },
+  "lib/tower-agent-child.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/tower-agent-child.js"
+  },
+  "lib/trace-manager.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/trace-manager.js"
+  },
+  "lib/usage-governor.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/usage-governor.js"
+  },
+  "lib/workflow-manager.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/workflow-manager.js"
+  },
+  "lib/workflow-registry.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/workflow-registry.js"
+  },
+  "lib/awaken/awaken-preflight.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/awaken/awaken-preflight.js"
+  },
+  "lib/commands/action.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/action.js"
+  },
+  "lib/commands/AGENT.md": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/AGENT.md"
+  },
+  "lib/commands/app-cmd.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/app-cmd.js"
+  },
+  "lib/commands/apply-diff.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/apply-diff.js"
+  },
+  "lib/commands/architecture.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/architecture.js"
+  },
+  "lib/commands/ask.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/ask.js"
+  },
+  "lib/commands/autofix-pr.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/autofix-pr.js"
+  },
+  "lib/commands/autoresearch.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/autoresearch.js"
+  },
+  "lib/commands/awaken.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/awaken.js"
+  },
+  "lib/commands/bigboss.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/bigboss.js"
+  },
+  "lib/commands/browser.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/browser.js"
+  },
+  "lib/commands/buddy.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/buddy.js"
+  },
+  "lib/commands/bughunt.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/bughunt.js"
+  },
+  "lib/commands/business.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/business.js"
+  },
+  "lib/commands/capabilities.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/capabilities.js"
+  },
+  "lib/commands/claudecode.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/claudecode.js"
+  },
+  "lib/commands/code.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/code.js"
+  },
+  "lib/commands/cognition.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/cognition.js"
+  },
+  "lib/commands/commit.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/commit.js"
+  },
+  "lib/commands/council.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/council.js"
+  },
+  "lib/commands/crew.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/crew.js"
+  },
+  "lib/commands/ctx-viz.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/ctx-viz.js"
+  },
+  "lib/commands/deploy.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/deploy.js"
+  },
+  "lib/commands/desktop.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/desktop.js"
+  },
+  "lib/commands/drift.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/drift.js"
+  },
+  "lib/commands/eval-auto-fix.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/eval-auto-fix.js"
+  },
+  "lib/commands/eval.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/eval.js"
+  },
+  "lib/commands/evolve.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/evolve.js"
+  },
+  "lib/commands/feature.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/feature.js"
+  },
+  "lib/commands/feedback.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/feedback.js"
+  },
+  "lib/commands/find.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/find.js"
+  },
+  "lib/commands/gc.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/gc.js"
+  },
+  "lib/commands/grow.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/grow.js"
+  },
+  "lib/commands/harness.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/harness.js"
+  },
+  "lib/commands/harvest.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/harvest.js"
+  },
+  "lib/commands/heal.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/heal.js"
+  },
+  "lib/commands/help.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/help.js"
+  },
+  "lib/commands/hivemind.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/hivemind.js"
+  },
+  "lib/commands/hooks.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/hooks.js"
+  },
+  "lib/commands/identity.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/identity.js"
+  },
+  "lib/commands/init-project.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/init-project.js"
+  },
+  "lib/commands/init.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/init.js"
+  },
+  "lib/commands/intelligence.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/intelligence.js"
+  },
+  "lib/commands/liveforge.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/liveforge.js"
+  },
+  "lib/commands/llm.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/llm.js"
+  },
+  "lib/commands/loop.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/loop.js"
+  },
+  "lib/commands/marketplace.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/marketplace.js"
+  },
+  "lib/commands/mcp.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/mcp.js"
+  },
+  "lib/commands/memory.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/memory.js"
+  },
+  "lib/commands/model.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/model.js"
+  },
+  "lib/commands/mycelium.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/mycelium.js"
+  },
+  "lib/commands/next.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/next.js"
+  },
+  "lib/commands/onboard.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/onboard.js"
+  },
+  "lib/commands/open.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/open.js"
+  },
+  "lib/commands/oracle.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/oracle.js"
+  },
+  "lib/commands/overview.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/overview.js"
+  },
+  "lib/commands/parity.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/parity.js"
+  },
+  "lib/commands/permissions.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/permissions.js"
+  },
+  "lib/commands/plan.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/plan.js"
+  },
+  "lib/commands/plugin.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/plugin.js"
+  },
+  "lib/commands/pocket.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/pocket.js"
+  },
+  "lib/commands/ponytail.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/ponytail.js"
+  },
+  "lib/commands/provider.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/provider.js"
+  },
+  "lib/commands/registry-audit.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/registry-audit.js"
+  },
+  "lib/commands/remote.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/remote.js"
+  },
+  "lib/commands/remotion.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/remotion.js"
+  },
+  "lib/commands/repomap.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/repomap.js"
+  },
+  "lib/commands/review-pr.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/review-pr.js"
+  },
+  "lib/commands/roster.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/roster.js"
+  },
+  "lib/commands/safe-start.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/safe-start.js"
+  },
+  "lib/commands/safe-stop.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/safe-stop.js"
+  },
+  "lib/commands/sandbox.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/sandbox.js"
+  },
+  "lib/commands/schedule.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/schedule.js"
+  },
+  "lib/commands/secrets.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/secrets.js"
+  },
+  "lib/commands/services.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/services.js"
+  },
+  "lib/commands/setup.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/setup.js"
+  },
+  "lib/commands/skills.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/skills.js"
+  },
+  "lib/commands/skills.js.debug": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/skills.js.debug"
+  },
+  "lib/commands/smoke.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/smoke.js"
+  },
+  "lib/commands/spinebus.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/spinebus.js"
+  },
+  "lib/commands/stats.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/stats.js"
+  },
+  "lib/commands/team.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/team.js"
+  },
+  "lib/commands/telemetry.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/telemetry.js"
+  },
+  "lib/commands/teleport.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/teleport.js"
+  },
+  "lib/commands/thringlets.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/thringlets.js"
+  },
+  "lib/commands/tour.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/tour.js"
+  },
+  "lib/commands/training.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/training.js"
+  },
+  "lib/commands/vault.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/vault.js"
+  },
+  "lib/commands/watch.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/watch.js"
+  },
+  "lib/commands/weather.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/weather.js"
+  },
+  "lib/commands/workers.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/workers.js"
+  },
+  "lib/commands/workflow.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/workflow.js"
+  },
+  "lib/commands/worktree.js": {
+    "dest": "lib/commands/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/commands/worktree.js"
+  },
+  "lib/core/work-engine.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/core/work-engine.js"
+  },
+  "lib/evolution/mutator.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/evolution/mutator.js"
+  },
+  "lib/harness/engine.js": {
+    "dest": "packages/harnesses/core",
+    "status": "pending",
+    "wrapper": "lib/engine.js",
+    "compat": "lib/engine.js"
+  },
+  "lib/harness/result-schema.js": {
+    "dest": "packages/harnesses/core",
+    "status": "pending",
+    "wrapper": "lib/result-schema.js",
+    "compat": "lib/result-schema.js"
+  },
+  "lib/harness/task-schema.js": {
+    "dest": "packages/harnesses/core",
+    "status": "pending",
+    "wrapper": "lib/task-schema.js",
+    "compat": "lib/task-schema.js"
+  },
+  "lib/hooks/lifecycle-bus.js": {
+    "dest": "packages/organisation/agents",
+    "status": "pending",
+    "wrapper": "lib/hooks/lifecycle-bus.js",
+    "compat": "lib/hooks/lifecycle-bus.js"
+  },
+  "lib/kanban/db-schema.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/kanban/db-schema.js"
+  },
+  "lib/omni/truth-scanner.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/omni/truth-scanner.js"
+  },
+  "lib/runtime/autonomy-runner.js": {
+    "dest": "packages/core/runtime",
+    "status": "pending",
+    "wrapper": "lib/autonomy-runner.js",
+    "compat": "lib/autonomy-runner.js"
+  },
+  "lib/runtime/provider-config.js": {
+    "dest": "packages/core/runtime",
+    "status": "pending",
+    "wrapper": "lib/provider-config.js",
+    "compat": "lib/provider-config.js"
+  },
+  "lib/tools/index.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/tools/index.js"
+  },
+  "lib/tools/parity/hooks/engine.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/tools/parity/hooks/engine.js"
+  },
+  "lib/tts/gateway.js": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/tts/gateway.js"
+  },
+  "lib/tts/kokoro_worker.py": {
+    "dest": "lib/",
+    "status": "keep",
+    "wrapper": null,
+    "compat": "lib/tts/kokoro_worker.py"
+  },
+  "lib/__tests__/provider-config-integration.test.js": {
+    "dest": "packages/core/provider-config-integration.test",
+    "status": "pending",
+    "wrapper": "lib/provider-config-integration.test.js",
+    "compat": "lib/provider-config-integration.test.js"
+  },
+  "lib/__tests__/routing-decisions.test.js": {
+    "dest": "packages/core/routing-decisions.test",
+    "status": "pending",
+    "wrapper": "lib/routing-decisions.test.js",
+    "compat": "lib/routing-decisions.test.js"
+  }
+}

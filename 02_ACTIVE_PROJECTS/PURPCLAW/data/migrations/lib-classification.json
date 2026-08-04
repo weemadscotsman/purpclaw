@@ -1,0 +1,1061 @@
+{
+  "lib/a2a-runtime.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 6955,
+    "dir": "lib"
+  },
+  "lib/agent-component.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 8419,
+    "dir": "lib"
+  },
+  "lib/agent-gateway.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 50409,
+    "dir": "lib"
+  },
+  "lib/agent-loop.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 45444,
+    "dir": "lib"
+  },
+  "lib/agent-router.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 7443,
+    "dir": "lib"
+  },
+  "lib/api-harness-kernel.js": {
+    "classification": "MIGRATE",
+    "callers": [
+      "unified_api.js",
+      "unified_api.js"
+    ],
+    "size": 25715,
+    "dir": "lib"
+  },
+  "lib/approval-prompt.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 3998,
+    "dir": "lib"
+  },
+  "lib/approval-queue.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 31923,
+    "dir": "lib"
+  },
+  "lib/artifact-manager.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 4633,
+    "dir": "lib"
+  },
+  "lib/attachment-manager.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 3193,
+    "dir": "lib"
+  },
+  "lib/chaos-campaign.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 10267,
+    "dir": "lib"
+  },
+  "lib/chat-agent.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 4098,
+    "dir": "lib"
+  },
+  "lib/code-interpreter.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 8683,
+    "dir": "lib"
+  },
+  "lib/context-engine.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 3981,
+    "dir": "lib"
+  },
+  "lib/cowork-overlay.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 18643,
+    "dir": "lib"
+  },
+  "lib/cron-manager.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 6148,
+    "dir": "lib"
+  },
+  "lib/desktop-launcher.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 7002,
+    "dir": "lib"
+  },
+  "lib/doctor.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 21949,
+    "dir": "lib"
+  },
+  "lib/donor-archaeology.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 15110,
+    "dir": "lib"
+  },
+  "lib/eval-manager.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 6549,
+    "dir": "lib"
+  },
+  "lib/event-bus.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 197,
+    "dir": "lib"
+  },
+  "lib/event-ledger.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 1890,
+    "dir": "lib"
+  },
+  "lib/event-workflow.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 7176,
+    "dir": "lib"
+  },
+  "lib/exec-policy.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 14667,
+    "dir": "lib"
+  },
+  "lib/feature-parity.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 18378,
+    "dir": "lib"
+  },
+  "lib/goal-manager.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 2527,
+    "dir": "lib"
+  },
+  "lib/graph-runtime.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 9886,
+    "dir": "lib"
+  },
+  "lib/index-manager.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 5174,
+    "dir": "lib"
+  },
+  "lib/instruction-resolver.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 1489,
+    "dir": "lib"
+  },
+  "lib/invocation-manager.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 5313,
+    "dir": "lib"
+  },
+  "lib/llm-provider.js": {
+    "classification": "MIGRATE",
+    "callers": [
+      "swarm_coordinator.js",
+      "unified_api.js",
+      "unified_api.js"
+    ],
+    "size": 64212,
+    "dir": "lib"
+  },
+  "lib/mcp-server.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 11346,
+    "dir": "lib"
+  },
+  "lib/memory-client.js": {
+    "classification": "MIGRATE",
+    "callers": [
+      "swarm_coordinator.js"
+    ],
+    "size": 13966,
+    "dir": "lib"
+  },
+  "lib/messaging-runtime.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 5214,
+    "dir": "lib"
+  },
+  "lib/model-router.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 1049,
+    "dir": "lib"
+  },
+  "lib/namespace-store.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 2351,
+    "dir": "lib"
+  },
+  "lib/path-security.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 9621,
+    "dir": "lib"
+  },
+  "lib/plugin-manager.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 14349,
+    "dir": "lib"
+  },
+  "lib/program-optimizer.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 4733,
+    "dir": "lib"
+  },
+  "lib/project-requirements.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 10023,
+    "dir": "lib"
+  },
+  "lib/repo-mapper.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 8586,
+    "dir": "lib"
+  },
+  "lib/routing-decisions.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 20351,
+    "dir": "lib"
+  },
+  "lib/scoped-memory.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 9567,
+    "dir": "lib"
+  },
+  "lib/screen-camera-tools.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 8541,
+    "dir": "lib"
+  },
+  "lib/screen-look.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 12077,
+    "dir": "lib"
+  },
+  "lib/secret-vault.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 10672,
+    "dir": "lib"
+  },
+  "lib/secrets.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 13209,
+    "dir": "lib"
+  },
+  "lib/self-evolution-loop.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 10407,
+    "dir": "lib"
+  },
+  "lib/session-repository.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 11831,
+    "dir": "lib"
+  },
+  "lib/session-state-service.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 2470,
+    "dir": "lib"
+  },
+  "lib/skill-registry.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 4945,
+    "dir": "lib"
+  },
+  "lib/smith-neo.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 7817,
+    "dir": "lib"
+  },
+  "lib/surface-capabilities.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 14028,
+    "dir": "lib"
+  },
+  "lib/task-manager.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 3523,
+    "dir": "lib"
+  },
+  "lib/team-manager.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 9307,
+    "dir": "lib"
+  },
+  "lib/telemetry-manager.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 4274,
+    "dir": "lib"
+  },
+  "lib/tool-gate.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 6485,
+    "dir": "lib"
+  },
+  "lib/tool-runtime.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 9481,
+    "dir": "lib"
+  },
+  "lib/tools-pc.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 27358,
+    "dir": "lib"
+  },
+  "lib/tower-agent-child.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 3241,
+    "dir": "lib"
+  },
+  "lib/trace-manager.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 5529,
+    "dir": "lib"
+  },
+  "lib/usage-governor.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 17069,
+    "dir": "lib"
+  },
+  "lib/workflow-manager.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 12561,
+    "dir": "lib"
+  },
+  "lib/workflow-registry.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 5870,
+    "dir": "lib"
+  },
+  "lib/awaken/awaken-preflight.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 7277,
+    "dir": "awaken"
+  },
+  "lib/commands/action.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 6572,
+    "dir": "commands"
+  },
+  "lib/commands/AGENT.md": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 1290,
+    "dir": "commands"
+  },
+  "lib/commands/app-cmd.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 316,
+    "dir": "commands"
+  },
+  "lib/commands/apply-diff.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 7245,
+    "dir": "commands"
+  },
+  "lib/commands/architecture.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 17726,
+    "dir": "commands"
+  },
+  "lib/commands/ask.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 63365,
+    "dir": "commands"
+  },
+  "lib/commands/autofix-pr.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 17462,
+    "dir": "commands"
+  },
+  "lib/commands/autoresearch.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 5168,
+    "dir": "commands"
+  },
+  "lib/commands/awaken.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 10510,
+    "dir": "commands"
+  },
+  "lib/commands/bigboss.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 14734,
+    "dir": "commands"
+  },
+  "lib/commands/browser.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 3297,
+    "dir": "commands"
+  },
+  "lib/commands/buddy.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 11363,
+    "dir": "commands"
+  },
+  "lib/commands/bughunt.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 11586,
+    "dir": "commands"
+  },
+  "lib/commands/business.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 5097,
+    "dir": "commands"
+  },
+  "lib/commands/capabilities.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 2160,
+    "dir": "commands"
+  },
+  "lib/commands/claudecode.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 7611,
+    "dir": "commands"
+  },
+  "lib/commands/code.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 35931,
+    "dir": "commands"
+  },
+  "lib/commands/cognition.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 3524,
+    "dir": "commands"
+  },
+  "lib/commands/commit.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 594,
+    "dir": "commands"
+  },
+  "lib/commands/council.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 22209,
+    "dir": "commands"
+  },
+  "lib/commands/crew.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 3392,
+    "dir": "commands"
+  },
+  "lib/commands/ctx-viz.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 10335,
+    "dir": "commands"
+  },
+  "lib/commands/deploy.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 6375,
+    "dir": "commands"
+  },
+  "lib/commands/desktop.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 7846,
+    "dir": "commands"
+  },
+  "lib/commands/drift.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 275,
+    "dir": "commands"
+  },
+  "lib/commands/eval-auto-fix.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 6503,
+    "dir": "commands"
+  },
+  "lib/commands/eval.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 600,
+    "dir": "commands"
+  },
+  "lib/commands/evolve.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 11706,
+    "dir": "commands"
+  },
+  "lib/commands/feature.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 370,
+    "dir": "commands"
+  },
+  "lib/commands/feedback.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 8240,
+    "dir": "commands"
+  },
+  "lib/commands/find.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 6745,
+    "dir": "commands"
+  },
+  "lib/commands/gc.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 9478,
+    "dir": "commands"
+  },
+  "lib/commands/grow.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 10594,
+    "dir": "commands"
+  },
+  "lib/commands/harness.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 18938,
+    "dir": "commands"
+  },
+  "lib/commands/harvest.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 7818,
+    "dir": "commands"
+  },
+  "lib/commands/heal.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 6895,
+    "dir": "commands"
+  },
+  "lib/commands/help.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 969,
+    "dir": "commands"
+  },
+  "lib/commands/hivemind.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 4070,
+    "dir": "commands"
+  },
+  "lib/commands/hooks.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 9659,
+    "dir": "commands"
+  },
+  "lib/commands/identity.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 6467,
+    "dir": "commands"
+  },
+  "lib/commands/init-project.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 7057,
+    "dir": "commands"
+  },
+  "lib/commands/init.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 1214,
+    "dir": "commands"
+  },
+  "lib/commands/intelligence.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 6006,
+    "dir": "commands"
+  },
+  "lib/commands/liveforge.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 5724,
+    "dir": "commands"
+  },
+  "lib/commands/llm.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 2054,
+    "dir": "commands"
+  },
+  "lib/commands/loop.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 763,
+    "dir": "commands"
+  },
+  "lib/commands/marketplace.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 10833,
+    "dir": "commands"
+  },
+  "lib/commands/mcp.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 18571,
+    "dir": "commands"
+  },
+  "lib/commands/memory.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 743,
+    "dir": "commands"
+  },
+  "lib/commands/model.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 497,
+    "dir": "commands"
+  },
+  "lib/commands/mycelium.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 2505,
+    "dir": "commands"
+  },
+  "lib/commands/next.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 1778,
+    "dir": "commands"
+  },
+  "lib/commands/onboard.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 9863,
+    "dir": "commands"
+  },
+  "lib/commands/open.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 7730,
+    "dir": "commands"
+  },
+  "lib/commands/oracle.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 813,
+    "dir": "commands"
+  },
+  "lib/commands/overview.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 2923,
+    "dir": "commands"
+  },
+  "lib/commands/parity.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 8248,
+    "dir": "commands"
+  },
+  "lib/commands/permissions.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 11321,
+    "dir": "commands"
+  },
+  "lib/commands/plan.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 21966,
+    "dir": "commands"
+  },
+  "lib/commands/plugin.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 9441,
+    "dir": "commands"
+  },
+  "lib/commands/pocket.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 23137,
+    "dir": "commands"
+  },
+  "lib/commands/ponytail.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 16207,
+    "dir": "commands"
+  },
+  "lib/commands/provider.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 15593,
+    "dir": "commands"
+  },
+  "lib/commands/registry-audit.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 30574,
+    "dir": "commands"
+  },
+  "lib/commands/remote.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 7170,
+    "dir": "commands"
+  },
+  "lib/commands/remotion.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 5984,
+    "dir": "commands"
+  },
+  "lib/commands/repomap.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 2515,
+    "dir": "commands"
+  },
+  "lib/commands/review-pr.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 7214,
+    "dir": "commands"
+  },
+  "lib/commands/roster.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 10124,
+    "dir": "commands"
+  },
+  "lib/commands/safe-start.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 13535,
+    "dir": "commands"
+  },
+  "lib/commands/safe-stop.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 4609,
+    "dir": "commands"
+  },
+  "lib/commands/sandbox.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 12735,
+    "dir": "commands"
+  },
+  "lib/commands/schedule.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 6798,
+    "dir": "commands"
+  },
+  "lib/commands/secrets.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 8569,
+    "dir": "commands"
+  },
+  "lib/commands/services.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 9450,
+    "dir": "commands"
+  },
+  "lib/commands/setup.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 15944,
+    "dir": "commands"
+  },
+  "lib/commands/skills.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 27862,
+    "dir": "commands"
+  },
+  "lib/commands/skills.js.debug": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 24196,
+    "dir": "commands"
+  },
+  "lib/commands/smoke.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 12865,
+    "dir": "commands"
+  },
+  "lib/commands/spinebus.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 1776,
+    "dir": "commands"
+  },
+  "lib/commands/stats.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 8499,
+    "dir": "commands"
+  },
+  "lib/commands/team.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 5597,
+    "dir": "commands"
+  },
+  "lib/commands/telemetry.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 1390,
+    "dir": "commands"
+  },
+  "lib/commands/teleport.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 14664,
+    "dir": "commands"
+  },
+  "lib/commands/thringlets.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 16537,
+    "dir": "commands"
+  },
+  "lib/commands/tour.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 20293,
+    "dir": "commands"
+  },
+  "lib/commands/training.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 18176,
+    "dir": "commands"
+  },
+  "lib/commands/vault.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 7065,
+    "dir": "commands"
+  },
+  "lib/commands/watch.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 4325,
+    "dir": "commands"
+  },
+  "lib/commands/weather.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 853,
+    "dir": "commands"
+  },
+  "lib/commands/workers.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 12354,
+    "dir": "commands"
+  },
+  "lib/commands/workflow.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 11120,
+    "dir": "commands"
+  },
+  "lib/commands/worktree.js": {
+    "classification": "COMPAT",
+    "callers": [],
+    "size": 4221,
+    "dir": "commands"
+  },
+  "lib/core/work-engine.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 10829,
+    "dir": "core"
+  },
+  "lib/evolution/mutator.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 15979,
+    "dir": "evolution"
+  },
+  "lib/harness/engine.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 50700,
+    "dir": "harness"
+  },
+  "lib/harness/result-schema.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 16475,
+    "dir": "harness"
+  },
+  "lib/harness/task-schema.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 9376,
+    "dir": "harness"
+  },
+  "lib/hooks/lifecycle-bus.js": {
+    "classification": "AGENT_INTERNAL",
+    "callers": [],
+    "size": 5369,
+    "dir": "hooks"
+  },
+  "lib/kanban/db-schema.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 7434,
+    "dir": "kanban"
+  },
+  "lib/omni/truth-scanner.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 18926,
+    "dir": "omni"
+  },
+  "lib/parity/hooks/engine.js": {
+    "classification": "UNKNOWN",
+    "callers": [],
+    "size": 224,
+    "dir": "hooks"
+  },
+  "lib/runtime/autonomy-runner.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 6347,
+    "dir": "runtime"
+  },
+  "lib/runtime/provider-config.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 2468,
+    "dir": "runtime"
+  },
+  "lib/tools/index.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 101023,
+    "dir": "tools"
+  },
+  "lib/tools/parity/hooks/engine.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 236,
+    "dir": "hooks"
+  },
+  "lib/tts/gateway.js": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 11383,
+    "dir": "tts"
+  },
+  "lib/tts/kokoro_worker.py": {
+    "classification": "KEEP_IN_LIB",
+    "callers": [],
+    "size": 5968,
+    "dir": "tts"
+  },
+  "lib/__tests__/provider-config-integration.test.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 4013,
+    "dir": "__tests__"
+  },
+  "lib/__tests__/routing-decisions.test.js": {
+    "classification": "MIGRATE",
+    "callers": [],
+    "size": 12094,
+    "dir": "__tests__"
+  }
+}
