@@ -1,0 +1,9 @@
+{
+  "name": "@purpclaw/harness-hermes",
+  "version": "1.0.0",
+  "description": "PURPCLAW harness-hermes harness adapter",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test index.test.js"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "@purpclaw/harness-core",
+  "version": "1.0.0",
+  "description": "Shared harness base class \u2014 all 4 adapters inherit from this",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test index.test.js"
+  }
+}

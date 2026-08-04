@@ -1,0 +1,9 @@
+{
+  "name": "@purpclaw/harness-minimax",
+  "version": "1.0.0",
+  "description": "PURPCLAW harness-minimax harness adapter",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test index.test.js"
+  }
+}

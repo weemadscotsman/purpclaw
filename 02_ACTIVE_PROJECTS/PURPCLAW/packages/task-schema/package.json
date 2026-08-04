@@ -1,0 +1,9 @@
+{
+  "name": "@purpclaw/task-schema",
+  "version": "1.0.0",
+  "description": "Shared task input schema for PURPCLAW harness parity",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test index.test.js"
+  }
+}

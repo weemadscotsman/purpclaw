@@ -1,0 +1,9 @@
+{
+  "name": "@purpclaw/harness-codex",
+  "version": "1.0.0",
+  "description": "PURPCLAW harness-codex harness adapter",
+  "main": "index.js",
+  "scripts": {
+    "test": "node --test index.test.js"
+  }
+}
