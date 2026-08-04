@@ -601,13 +601,37 @@ class HarnessEngine extends EventEmitter {
     return ['planning', 'executing', 'reviewing', 'synthesizing'].includes(this.job.state);
   }
 
-  async run(goal) {
+  async run(goalOrTask) {
     if (this.isActive()) throw new Error('Engine already running -  --    call stop() first');
+
+    // ── Accept both legacy string goal and new PurpClawTask object ──────────────
+    // Legacy: run('fix the bug')
+    // Stage 1:  run(taskObject) — from normaliseTask() at harness entry
+    let task;
+    let goal;
+    if (typeof goalOrTask === 'object' && goalOrTask !== null && goalOrTask.goal) {
+      task = goalOrTask;            // new path: already validated at entry
+      goal = task.goal;
+    } else {
+      task = { goal: String(goalOrTask || '').trim() }; // legacy fallback
+      goal = task.goal;
+    }
+
+    // Build classification from the task's harnessMode + routeIntent
+    // This replaces the keyword-scraping classifyJob() call for normalised tasks.
+    const classification = {
+      type: task.harnessMode || classifyJob(goal).type,
+      confidence: task.harnessMode ? 'schema-driven' : 'keyword-fallback',
+      routeIntent: task.routeIntent || classifyJob(goal).routeIntent,
+      fromSchema: Boolean(task.harnessMode),
+    };
 
     this.stopRequested = false;
     this.job = {
       id: mkId('harness'),
-      goal: String(goal || '').trim(),
+      taskId:    task.taskId || null,
+      goal,
+      harnessMode: task.harnessMode || null,
       state: 'planning',
       plan: [],
       log: [],
@@ -617,13 +641,25 @@ class HarnessEngine extends EventEmitter {
       maxIterations: this.options.maxIterations,
       toolsUsed: 0,
       startedAt: now(),
-      classification: classifyJob(String(goal || ''))
+      classification,
+      // Carry full task context through the job so every stage can read it
+      taskContext: {
+        project:          task.project          || null,
+        targetPath:       task.targetPath       || null,
+        knownFiles:       task.knownFiles       || null,
+        constraints:      task.constraints      || null,
+        requiredOutput:   task.requiredOutput  || null,
+        verificationRules: task.verificationRules || null,
+        priority:         task.priority        || null,
+        preferredAgents:  task.preferredAgents || null,
+        context:          task.context         || null,
+      },
     };
 
-    this.log('info', `Harness goal received: $this.job.goal.slice(0, 120)}`);
+    this.log('info', `Harness goal received: $this.job.goal.slice(0, 120)} [mode=$this.job.harnessMode || 'auto']`);
     this.emitTrace('operator', 'goal.received', this.job.goal.slice(0, 96));
     this.emit('start', this.job);
-    publishEvent('harness.job.started', { jobId: this.job.id, goal: this.job.goal });
+    publishEvent('harness.job.started', { jobId: this.job.id, goal: this.job.goal, harnessMode: this.job.harnessMode });
 
     try {
       // 1. PLAN
