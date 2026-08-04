@@ -110,6 +110,19 @@ function saveSession(id, messages, opts = {}) {
 
 function loadSession(id) {
   if (!id) return null;
+  // node:sqlite refuses to bind anything that is not a string, number, bigint,
+  // Buffer or null, and reports it as a bare ERR_INVALID_STATE naming neither
+  // the parameter nor the caller. Callers pass a whole session object here by
+  // mistake often enough — saveSession(session, …) instead of
+  // saveSession(session.id, …) — that the opaque driver error is worth
+  // replacing with one that says what went wrong.
+  if (typeof id !== 'string') {
+    throw new TypeError(
+      `session id must be a string, got ${id === null ? 'null' : Array.isArray(id) ? 'array' : typeof id}`
+      + (id && typeof id === 'object' && typeof id.id === 'string'
+        ? ` — did you mean to pass the .id property ("${id.id}")?` : ''),
+    );
+  }
   const row = db.prepare('SELECT * FROM sessions WHERE id=?').get(id);
   if (!row) return null;
   const messages = db.prepare('SELECT * FROM messages WHERE session_id=? ORDER BY ordinal').all(id).map(row => {

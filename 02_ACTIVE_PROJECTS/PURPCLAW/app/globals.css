@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+/* Tailwind v4 auto-detects content by scanning outward from the git root when
+   no sources are declared. This repository's git root is `E:\god folder`, which
+   holds 60+ unrelated projects, and the oxide scanner walked out of it into the
+   user profile — dying on `C:\Users\Admin\Application Data`, a legacy Windows
+   junction that loops and denies access:
+
+     Error: EPERM: operation not permitted, scandir 'C:\Users\Admin\Application Data'
+
+   Declaring sources explicitly turns auto-detection off. Add a line here when a
+   new surface starts using Tailwind classes; do not widen these globs to a
+   parent directory. */
+@source "../app";
+@source "../packages/ui-core";
+@source "../apps/web";
+
 /* ─── PURPCLAW Dark Theme Variables ─── */
 :root {
   --bg-void: #060409;          /* deepest background — the cockpit shell base (was undefined → no bg) */

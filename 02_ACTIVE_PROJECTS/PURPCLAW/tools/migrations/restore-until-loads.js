@@ -63,11 +63,24 @@ for (let round = 1; round <= MAX_ROUNDS; round++) {
     break;
   }
 
-  const spec = m[1];
+  let spec = m[1];
   if (!path.isAbsolute(spec)) {
-    // Bare specifier — an npm package, not something this tool restores.
-    console.log(`\nStopped: missing npm package '${spec}' — run npm install, not this tool.`);
-    break;
+    if (spec.startsWith('.')) {
+      // Node reports a relative specifier verbatim when the requiring module is
+      // known only from the "Require stack". Resolve it against that stack's
+      // first entry rather than declaring it an npm package — treating
+      // '../lib/lifecycle-actions' as a package stopped this tool dead.
+      const stack = /Require stack:\s*\n-\s*(.+)/.exec(output);
+      if (!stack) {
+        console.log(`\nStopped: relative specifier '${spec}' with no require stack to resolve it against.`);
+        break;
+      }
+      spec = path.resolve(path.dirname(stack[1].trim()), spec);
+    } else {
+      // Genuinely bare — an npm package, not something this tool restores.
+      console.log(`\nStopped: missing npm package '${spec}' — run npm install, not this tool.`);
+      break;
+    }
   }
 
   const cand = findInSource(spec);
