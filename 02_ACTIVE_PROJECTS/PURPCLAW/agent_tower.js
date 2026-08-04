@@ -47,7 +47,8 @@ async function* runAgentThroughGateway({ prompt, provider, model, role, opts = {
     permission_profile: opts.permissionProfile || 'autonomous',
     operator_initiated: false,
     cwd: PURP_DIR,
-    no_spine: true,
+    // no_spine removed: Tower runs governed autonomous agent work, which is
+    // exactly the work that must participate in the memory lifecycle.
   });
   for (const event of events) yield event;
   yield { type: 'token', content: result.message };

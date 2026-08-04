@@ -1060,7 +1060,9 @@ async function runOneShot(prompt, ctx, opts = {}) {
       prompt,
       session_id: ctx._sessionId,
       max_turns: ctx.maxTurns,
-      no_spine: true,
+      // no_spine removed: this is the interactive chat path. It was opting the
+      // user's own conversation out of memory recall, so the assistant started
+      // every turn with no idea what it had already been told.
     };
     // /model and /provider update ctx, but the gateway resolves
     // `params.model || state.model || this.model` — and the gateway is built

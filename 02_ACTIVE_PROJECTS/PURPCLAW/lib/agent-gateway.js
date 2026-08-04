@@ -233,7 +233,7 @@ class AgentGateway extends EventEmitter {
         try{for await (const event of this.runner({
           prompt: agentPrompt, history: runnerHistory, provider: selectedProvider, model: selectedModel,
           lane: params.lane, autoRoute: params.auto_route === true,
-          opts: { maxTurns: params.max_turns || 10, maxTokens: params.max_tokens, temperature: params.temperature, cwd: params.cwd || this.cwd, platform: params.platform || 'cli', sessionId: state.id, noSpine: params.no_spine !== false, signal: abort.signal, toolRuntime, goal: activeGoal, nativeTools: params.native_tools !== false, permissionProfile, dependencies, operatorInitiated: params.operator_initiated === true || (params.platform || 'cli') === 'cli' },
+          opts: { maxTurns: params.max_turns || 10, maxTokens: params.max_tokens, temperature: params.temperature, cwd: params.cwd || this.cwd, platform: params.platform || 'cli', sessionId: state.id, noSpine: params.no_spine === true, signal: abort.signal, toolRuntime, goal: activeGoal, nativeTools: params.native_tools !== false, permissionProfile, dependencies, operatorInitiated: params.operator_initiated === true || (params.platform || 'cli') === 'cli' },
         })) {
           if (abort.signal.aborted) throw this.rpcError(-32800, 'request interrupted');
           if (event.type === 'route') this.emit('route.selected', { session_id: state.id, ...event });

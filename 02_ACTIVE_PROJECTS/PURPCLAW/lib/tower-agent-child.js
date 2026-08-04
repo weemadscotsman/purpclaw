@@ -89,7 +89,8 @@ process.on('message', async (msg) => {
         permission_profile: opts.permissionProfile || opts.permission_profile || 'autonomous',
         operator_initiated: false,
         cwd: PURP_DIR,
-        no_spine: true,
+        // no_spine removed: see agent_tower.js — child agents do governed work
+        // and must participate in the memory lifecycle too.
       });
 
       currentJob = null;

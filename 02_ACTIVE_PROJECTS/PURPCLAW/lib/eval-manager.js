@@ -1,4 +1,10 @@
 'use strict';
+// The `no_spine: true` on the gateway.submit() calls below is DELIBERATE and
+// must stay. Evaluation has to be reproducible: an eval whose score depends on
+// whatever the spine happened to recall is not measuring the thing it claims
+// to measure, and a judge influenced by memory of earlier runs is not
+// independent. This is the explicitly-stateless route the memory audit allows.
+// Everywhere else, no_spine is a bug — see lib/agent-gateway.js.
 const fs=require('fs'),path=require('path'),crypto=require('crypto'),yaml=require('js-yaml');const{DatabaseSync}=require('node:sqlite'),SCHEMA=require('./schema-validator'),LEDGER=require('./event-ledger'),TRACE=require('./trace-manager');
 const DB=process.env.PURPCLAW_SESSION_DB||path.join(path.resolve(__dirname,'..'),'.purpclaw','state.db'),db=(require('fs').mkdirSync(path.dirname(DB),{recursive:true}),new DatabaseSync(DB)),customScorers=new Map();
 db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;CREATE TABLE IF NOT EXISTS eval_runs(id TEXT PRIMARY KEY,name TEXT,status TEXT NOT NULL,report TEXT NOT NULL,created_at TEXT NOT NULL,updated_at TEXT NOT NULL);`);
