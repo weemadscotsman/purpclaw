@@ -37,3 +37,10 @@ tools/*/package-lock.json
 *.tsbuildinfo
 .next/
 .cache/
+
+# var/ is generated and transient runtime state — logs, caches, session data,
+# incident artifacts, scratch. The directory skeleton is tracked via .gitkeep so
+# the layout is reproducible; the contents never are.
+/var/**
+!/var/**/
+!/var/**/.gitkeep
