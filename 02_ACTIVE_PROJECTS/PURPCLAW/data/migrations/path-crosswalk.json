@@ -1,1034 +1,190 @@
 {
-  "lib\\a2a-runtime.js": {
-    "destination": "packages/core/lib\\a2a-runtime.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "C"
-  },
-  "lib\\agent-component.js": {
-    "destination": "packages/core/lib\\agent-component.js",
-    "classification": "orchestration",
-    "risk": "high",
-    "batch": "C"
-  },
-  "lib\\agent-gateway.js": {
-    "destination": "packages/core/lib\\agent-gateway.js",
-    "classification": "memory",
-    "risk": "critical",
-    "batch": "C"
-  },
-  "lib\\agent-loop.js": {
-    "destination": "packages/core/lib\\agent-loop.js",
-    "classification": "orchestration",
-    "risk": "high",
-    "batch": "C"
-  },
-  "lib\\agent-router.js": {
-    "destination": "packages/core/lib\\agent-router.js",
-    "classification": "orchestration",
-    "risk": "high",
-    "batch": "C"
-  },
-  "lib\\api-harness-kernel.js": {
-    "destination": "packages/core/lib\\api-harness-kernel.js",
-    "classification": "harness",
-    "risk": "critical",
-    "batch": "C"
-  },
-  "lib\\approval-prompt.js": {
-    "destination": "packages/core/lib\\approval-prompt.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\approval-queue.js": {
-    "destination": "packages/core/lib\\approval-queue.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\artifact-manager.js": {
-    "destination": "packages/core/lib\\artifact-manager.js",
-    "classification": "core-runtime",
-    "risk": "low",
-    "batch": "B"
-  },
-  "lib\\attachment-manager.js": {
-    "destination": "packages/core/lib\\attachment-manager.js",
-    "classification": "core-runtime",
-    "risk": "low",
-    "batch": "B"
-  },
-  "lib\\chaos-campaign.js": {
-    "destination": "packages/core/lib\\chaos-campaign.js",
-    "classification": "orchestration",
-    "risk": "low",
-    "batch": "C"
-  },
-  "lib\\chat-agent.js": {
-    "destination": "packages/core/lib\\chat-agent.js",
-    "classification": "orchestration",
-    "risk": "low",
-    "batch": "C"
-  },
-  "lib\\code-interpreter.js": {
-    "destination": "packages/tools/lib\\code-interpreter.js",
-    "classification": "tool-implementation",
-    "risk": "high",
-    "batch": "B"
-  },
-  "lib\\context-engine.js": {
-    "destination": "packages/core/lib\\context-engine.js",
-    "classification": "core-runtime",
-    "risk": "high",
-    "batch": "B"
-  },
-  "lib\\cowork-overlay.js": {
-    "destination": "packages/shared/lib\\cowork-overlay.js",
-    "classification": "compatibility",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\cron-manager.js": {
-    "destination": "packages/core/lib\\cron-manager.js",
-    "classification": "core-runtime",
-    "risk": "low",
-    "batch": "B"
-  },
-  "lib\\desktop-launcher.js": {
-    "destination": "packages/tools/lib\\desktop-launcher.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\doctor.js": {
-    "destination": "packages/shared/lib\\doctor.js",
-    "classification": "compatibility",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\donor-archaeology.js": {
-    "destination": "packages/shared/lib\\donor-archaeology.js",
-    "classification": "compatibility",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\eval-manager.js": {
-    "destination": "packages/core/lib\\eval-manager.js",
-    "classification": "orchestration",
-    "risk": "low",
-    "batch": "C"
-  },
-  "lib\\event-bus.js": {
-    "destination": "packages/core/lib\\event-bus.js",
-    "classification": "service-adapter",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\event-ledger.js": {
-    "destination": "packages/core/lib\\event-ledger.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\event-workflow.js": {
-    "destination": "packages/core/lib\\event-workflow.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\exec-policy.js": {
-    "destination": "packages/core/lib\\exec-policy.js",
-    "classification": "core-runtime",
-    "risk": "high",
-    "batch": "B"
-  },
-  "lib\\feature-parity.js": {
-    "destination": "packages/shared/lib\\feature-parity.js",
-    "classification": "compatibility",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\goal-manager.js": {
-    "destination": "packages/core/lib\\goal-manager.js",
-    "classification": "orchestration",
-    "risk": "low",
-    "batch": "C"
-  },
-  "lib\\graph-runtime.js": {
-    "destination": "packages/core/lib\\graph-runtime.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "C"
-  },
-  "lib\\index-manager.js": {
-    "destination": "packages/core/lib\\index-manager.js",
-    "classification": "memory",
-    "risk": "medium",
-    "batch": "C"
-  },
-  "lib\\instruction-resolver.js": {
-    "destination": "packages/core/lib\\instruction-resolver.js",
-    "classification": "orchestration",
-    "risk": "low",
-    "batch": "B"
-  },
-  "lib\\invocation-manager.js": {
-    "destination": "packages/core/lib\\invocation-manager.js",
-    "classification": "orchestration",
-    "risk": "low",
-    "batch": "B"
-  },
-  "lib\\llm-provider.js": {
-    "destination": "packages/core/lib\\llm-provider.js",
-    "classification": "provider",
-    "risk": "high",
-    "batch": "B"
-  },
-  "lib\\mcp-server.js": {
-    "destination": "packages/core/lib\\mcp-server.js",
-    "classification": "core-runtime",
-    "risk": "high",
-    "batch": "B"
-  },
-  "lib\\memory-client.js": {
-    "destination": "packages/core/lib\\memory-client.js",
-    "classification": "memory",
-    "risk": "critical",
-    "batch": "C"
-  },
-  "lib\\messaging-runtime.js": {
-    "destination": "packages/core/lib\\messaging-runtime.js",
-    "classification": "core-runtime",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\model-router.js": {
-    "destination": "packages/core/lib\\model-router.js",
-    "classification": "routing",
-    "risk": "high",
-    "batch": "B"
-  },
-  "lib\\namespace-store.js": {
-    "destination": "packages/core/lib\\namespace-store.js",
-    "classification": "core-runtime",
-    "risk": "low",
-    "batch": "B"
-  },
-  "lib\\path-security.js": {
-    "destination": "packages/core/lib\\path-security.js",
-    "classification": "core-runtime",
-    "risk": "high",
-    "batch": "B"
-  },
-  "lib\\plugin-manager.js": {
-    "destination": "packages/core/lib\\plugin-manager.js",
-    "classification": "core-runtime",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\program-optimizer.js": {
-    "destination": "packages/shared/lib\\program-optimizer.js",
-    "classification": "compatibility",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\project-requirements.js": {
-    "destination": "packages/shared/lib\\project-requirements.js",
-    "classification": "compatibility",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\repo-mapper.js": {
-    "destination": "packages/shared/lib\\repo-mapper.js",
-    "classification": "compatibility",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\routing-decisions.js": {
-    "destination": "packages/core/lib\\routing-decisions.js",
-    "classification": "routing",
-    "risk": "high",
-    "batch": "B"
-  },
-  "lib\\scoped-memory.js": {
-    "destination": "packages/core/lib\\scoped-memory.js",
-    "classification": "memory",
-    "risk": "high",
-    "batch": "C"
-  },
-  "lib\\screen-camera-tools.js": {
-    "destination": "packages/tools/lib\\screen-camera-tools.js",
-    "classification": "tool-implementation",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\screen-look.js": {
-    "destination": "packages/tools/lib\\screen-look.js",
-    "classification": "tool-implementation",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\secret-vault.js": {
-    "destination": "packages/core/lib\\secret-vault.js",
-    "classification": "core-runtime",
-    "risk": "high",
-    "batch": "B"
-  },
-  "lib\\secrets.js": {
-    "destination": "packages/core/lib\\secrets.js",
-    "classification": "core-runtime",
-    "risk": "high",
-    "batch": "B"
-  },
-  "lib\\self-evolution-loop.js": {
-    "destination": "packages/core/lib\\self-evolution-loop.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "C"
-  },
-  "lib\\session-repository.js": {
-    "destination": "packages/core/lib\\session-repository.js",
-    "classification": "session",
-    "risk": "high",
-    "batch": "C"
-  },
-  "lib\\session-state-service.js": {
-    "destination": "packages/core/lib\\session-state-service.js",
-    "classification": "session",
-    "risk": "high",
-    "batch": "C"
-  },
-  "lib\\skill-registry.js": {
-    "destination": "packages/core/lib\\skill-registry.js",
-    "classification": "core-runtime",
-    "risk": "low",
-    "batch": "B"
-  },
-  "lib\\smith-neo.js": {
-    "destination": "packages/core/lib\\smith-neo.js",
-    "classification": "orchestration",
-    "risk": "high",
-    "batch": "C"
-  },
-  "lib\\surface-capabilities.js": {
-    "destination": "packages/tools/lib\\surface-capabilities.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "B"
-  },
-  "lib\\task-manager.js": {
-    "destination": "packages/core/lib\\task-manager.js",
-    "classification": "orchestration",
-    "risk": "low",
-    "batch": "C"
-  },
-  "lib\\team-manager.js": {
-    "destination": "packages/core/lib\\team-manager.js",
-    "classification": "orchestration",
-    "risk": "low",
-    "batch": "C"
-  },
-  "lib\\telemetry-manager.js": {
-    "destination": "packages/tools/lib\\telemetry-manager.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\tool-gate.js": {
-    "destination": "packages/tools/lib\\tool-gate.js",
-    "classification": "tool-runtime",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\tool-runtime.js": {
-    "destination": "packages/tools/lib\\tool-runtime.js",
-    "classification": "tool-runtime",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\tools-pc.js": {
-    "destination": "packages/tools/lib\\tools-pc.js",
-    "classification": "tool-implementation",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\tower-agent-child.js": {
-    "destination": "packages/core/lib\\tower-agent-child.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "C"
-  },
-  "lib\\trace-manager.js": {
-    "destination": "packages/tools/lib\\trace-manager.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\usage-governor.js": {
-    "destination": "packages/core/lib\\usage-governor.js",
-    "classification": "core-runtime",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\workflow-manager.js": {
-    "destination": "packages/core/lib\\workflow-manager.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "C"
-  },
-  "lib\\workflow-registry.js": {
-    "destination": "packages/core/lib\\workflow-registry.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "C"
-  },
-  "lib\\awaken\\awaken-preflight.js": {
-    "destination": "packages/core/lib\\awaken\\awaken-preflight.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "C"
-  },
-  "lib\\commands\\action.js": {
-    "destination": "packages/tools/lib\\commands\\action.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\app-cmd.js": {
-    "destination": "packages/tools/lib\\commands\\app-cmd.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\apply-diff.js": {
-    "destination": "packages/tools/lib\\commands\\apply-diff.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\architecture.js": {
-    "destination": "packages/tools/lib\\commands\\architecture.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\ask.js": {
-    "destination": "packages/tools/lib\\commands\\ask.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\autofix-pr.js": {
-    "destination": "packages/tools/lib\\commands\\autofix-pr.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\autoresearch.js": {
-    "destination": "packages/tools/lib\\commands\\autoresearch.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\awaken.js": {
-    "destination": "packages/tools/lib\\commands\\awaken.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\bigboss.js": {
-    "destination": "packages/tools/lib\\commands\\bigboss.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\browser.js": {
-    "destination": "packages/tools/lib\\commands\\browser.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\buddy.js": {
-    "destination": "packages/tools/lib\\commands\\buddy.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\bughunt.js": {
-    "destination": "packages/tools/lib\\commands\\bughunt.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\business.js": {
-    "destination": "packages/tools/lib\\commands\\business.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\capabilities.js": {
-    "destination": "packages/tools/lib\\commands\\capabilities.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\claudecode.js": {
-    "destination": "packages/tools/lib\\commands\\claudecode.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\code.js": {
-    "destination": "packages/tools/lib\\commands\\code.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\cognition.js": {
-    "destination": "packages/tools/lib\\commands\\cognition.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\commit.js": {
-    "destination": "packages/tools/lib\\commands\\commit.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\council.js": {
-    "destination": "packages/tools/lib\\commands\\council.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\crew.js": {
-    "destination": "packages/tools/lib\\commands\\crew.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\ctx-viz.js": {
-    "destination": "packages/tools/lib\\commands\\ctx-viz.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\deploy.js": {
-    "destination": "packages/tools/lib\\commands\\deploy.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\desktop.js": {
-    "destination": "packages/tools/lib\\commands\\desktop.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\drift.js": {
-    "destination": "packages/tools/lib\\commands\\drift.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\eval-auto-fix.js": {
-    "destination": "packages/tools/lib\\commands\\eval-auto-fix.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\eval.js": {
-    "destination": "packages/tools/lib\\commands\\eval.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\evolve.js": {
-    "destination": "packages/tools/lib\\commands\\evolve.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\feature.js": {
-    "destination": "packages/tools/lib\\commands\\feature.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\feedback.js": {
-    "destination": "packages/tools/lib\\commands\\feedback.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\find.js": {
-    "destination": "packages/tools/lib\\commands\\find.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\gc.js": {
-    "destination": "packages/tools/lib\\commands\\gc.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\grow.js": {
-    "destination": "packages/tools/lib\\commands\\grow.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\harness.js": {
-    "destination": "packages/tools/lib\\commands\\harness.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\harvest.js": {
-    "destination": "packages/tools/lib\\commands\\harvest.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\heal.js": {
-    "destination": "packages/tools/lib\\commands\\heal.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\help.js": {
-    "destination": "packages/tools/lib\\commands\\help.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\hivemind.js": {
-    "destination": "packages/tools/lib\\commands\\hivemind.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\hooks.js": {
-    "destination": "packages/tools/lib\\commands\\hooks.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\identity.js": {
-    "destination": "packages/tools/lib\\commands\\identity.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\init-project.js": {
-    "destination": "packages/tools/lib\\commands\\init-project.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\init.js": {
-    "destination": "packages/tools/lib\\commands\\init.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\intelligence.js": {
-    "destination": "packages/tools/lib\\commands\\intelligence.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\liveforge.js": {
-    "destination": "packages/tools/lib\\commands\\liveforge.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\llm.js": {
-    "destination": "packages/tools/lib\\commands\\llm.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\loop.js": {
-    "destination": "packages/tools/lib\\commands\\loop.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\marketplace.js": {
-    "destination": "packages/tools/lib\\commands\\marketplace.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\mcp.js": {
-    "destination": "packages/tools/lib\\commands\\mcp.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\memory.js": {
-    "destination": "packages/tools/lib\\commands\\memory.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\model.js": {
-    "destination": "packages/tools/lib\\commands\\model.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\mycelium.js": {
-    "destination": "packages/tools/lib\\commands\\mycelium.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\next.js": {
-    "destination": "packages/tools/lib\\commands\\next.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\onboard.js": {
-    "destination": "packages/tools/lib\\commands\\onboard.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\open.js": {
-    "destination": "packages/tools/lib\\commands\\open.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\oracle.js": {
-    "destination": "packages/tools/lib\\commands\\oracle.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\overview.js": {
-    "destination": "packages/tools/lib\\commands\\overview.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\parity.js": {
-    "destination": "packages/tools/lib\\commands\\parity.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\permissions.js": {
-    "destination": "packages/tools/lib\\commands\\permissions.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\plan.js": {
-    "destination": "packages/tools/lib\\commands\\plan.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\plugin.js": {
-    "destination": "packages/tools/lib\\commands\\plugin.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\pocket.js": {
-    "destination": "packages/tools/lib\\commands\\pocket.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\ponytail.js": {
-    "destination": "packages/tools/lib\\commands\\ponytail.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\provider.js": {
-    "destination": "packages/tools/lib\\commands\\provider.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\registry-audit.js": {
-    "destination": "packages/tools/lib\\commands\\registry-audit.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\remote.js": {
-    "destination": "packages/tools/lib\\commands\\remote.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\remotion.js": {
-    "destination": "packages/tools/lib\\commands\\remotion.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\repomap.js": {
-    "destination": "packages/tools/lib\\commands\\repomap.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\review-pr.js": {
-    "destination": "packages/tools/lib\\commands\\review-pr.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\roster.js": {
-    "destination": "packages/tools/lib\\commands\\roster.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\safe-start.js": {
-    "destination": "packages/tools/lib\\commands\\safe-start.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\safe-stop.js": {
-    "destination": "packages/tools/lib\\commands\\safe-stop.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\sandbox.js": {
-    "destination": "packages/tools/lib\\commands\\sandbox.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\schedule.js": {
-    "destination": "packages/tools/lib\\commands\\schedule.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\secrets.js": {
-    "destination": "packages/tools/lib\\commands\\secrets.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\services.js": {
-    "destination": "packages/tools/lib\\commands\\services.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\setup.js": {
-    "destination": "packages/tools/lib\\commands\\setup.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\skills.js": {
-    "destination": "packages/tools/lib\\commands\\skills.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\smoke.js": {
-    "destination": "packages/tools/lib\\commands\\smoke.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\spinebus.js": {
-    "destination": "packages/tools/lib\\commands\\spinebus.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\stats.js": {
-    "destination": "packages/tools/lib\\commands\\stats.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\team.js": {
-    "destination": "packages/tools/lib\\commands\\team.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\telemetry.js": {
-    "destination": "packages/tools/lib\\commands\\telemetry.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\teleport.js": {
-    "destination": "packages/tools/lib\\commands\\teleport.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\thringlets.js": {
-    "destination": "packages/tools/lib\\commands\\thringlets.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\tour.js": {
-    "destination": "packages/tools/lib\\commands\\tour.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\training.js": {
-    "destination": "packages/tools/lib\\commands\\training.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\vault.js": {
-    "destination": "packages/tools/lib\\commands\\vault.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\watch.js": {
-    "destination": "packages/tools/lib\\commands\\watch.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\weather.js": {
-    "destination": "packages/tools/lib\\commands\\weather.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\workers.js": {
-    "destination": "packages/tools/lib\\commands\\workers.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\workflow.js": {
-    "destination": "packages/tools/lib\\commands\\workflow.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\commands\\worktree.js": {
-    "destination": "packages/tools/lib\\commands\\worktree.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\core\\work-engine.js": {
-    "destination": "packages/core/lib\\core\\work-engine.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "C"
-  },
-  "lib\\evolution\\mutator.js": {
-    "destination": "packages/core/lib\\evolution\\mutator.js",
-    "classification": "orchestration",
-    "risk": "medium",
-    "batch": "C"
-  },
-  "lib\\harness\\engine.js": {
-    "destination": "packages/core/lib\\harness\\engine.js",
-    "classification": "harness",
-    "risk": "high",
-    "batch": "C"
-  },
-  "lib\\harness\\result-schema.js": {
-    "destination": "packages/core/lib\\harness\\result-schema.js",
-    "classification": "harness",
-    "risk": "high",
-    "batch": "C"
-  },
-  "lib\\harness\\task-schema.js": {
-    "destination": "packages/core/lib\\harness\\task-schema.js",
-    "classification": "harness",
-    "risk": "high",
-    "batch": "C"
-  },
-  "lib\\hooks\\lifecycle-bus.js": {
-    "destination": "packages/core/lib\\hooks\\lifecycle-bus.js",
-    "classification": "core-runtime",
-    "risk": "low",
-    "batch": "B"
-  },
-  "lib\\kanban\\db-schema.js": {
-    "destination": "packages/core/lib\\kanban\\db-schema.js",
-    "classification": "core-runtime",
-    "risk": "low",
-    "batch": "B"
-  },
-  "lib\\omni\\truth-scanner.js": {
-    "destination": "packages/tools/lib\\omni\\truth-scanner.js",
-    "classification": "tool-implementation",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\parity\\hooks\\engine.js": {
-    "destination": "packages/shared/lib\\parity\\hooks\\engine.js",
-    "classification": "compatibility",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\runtime\\autonomy-runner.js": {
-    "destination": "packages/core/lib\\runtime\\autonomy-runner.js",
-    "classification": "core-runtime",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\runtime\\provider-config.js": {
-    "destination": "packages/core/lib\\runtime\\provider-config.js",
-    "classification": "core-runtime",
-    "risk": "medium",
-    "batch": "B"
-  },
-  "lib\\tools\\index.js": {
-    "destination": "packages/tools/lib\\tools\\index.js",
-    "classification": "tool-implementation",
-    "risk": "critical",
-    "batch": "B"
-  },
-  "lib\\tools\\parity\\hooks\\engine.js": {
-    "destination": "packages/shared/lib\\tools\\parity\\hooks\\engine.js",
-    "classification": "compatibility",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\tts\\gateway.js": {
-    "destination": "packages/tools/lib\\tts\\gateway.js",
-    "classification": "tool-runtime",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\__tests__\\provider-config-integration.test.js": {
-    "destination": "tests/fixtures/lib\\__tests__\\provider-config-integration.test.js",
-    "classification": "test-helper",
-    "risk": "low",
-    "batch": "A"
-  },
-  "lib\\__tests__\\routing-decisions.test.js": {
-    "destination": "tests/fixtures/lib\\__tests__\\routing-decisions.test.js",
-    "classification": "test-helper",
-    "risk": "low",
-    "batch": "A"
-  }
+  "lib/__tests__/provider-config-integration.test.js": "tests/fixtures/provider-config-integration.test.js",
+  "lib/__tests__/routing-decisions.test.js": "tests/fixtures/routing-decisions.test.js",
+  "lib/a2a-runtime.js": "var/quarantine/a2a-runtime.js",
+  "lib/agent-component.js": "var/quarantine/agent-component.js",
+  "lib/agent-gateway.js": "packages/core/adapters/agent-gateway.js",
+  "lib/agent-loop.js": "packages/core/runtime/agent-loop.js",
+  "lib/agent-router.js": "packages/core/routing/agent-router.js",
+  "lib/api-harness-kernel.js": "packages/harness-core/api-harness-kernel.js",
+  "lib/approval-prompt.js": "packages/tools/runtime/approval-prompt.js",
+  "lib/approval-queue.js": "packages/tools/runtime/approval-queue.js",
+  "lib/artifact-manager.js": "var/quarantine/artifact-manager.js",
+  "lib/attachment-manager.js": "var/quarantine/attachment-manager.js",
+  "lib/awaken/awaken-preflight.js": "var/quarantine/awaken-preflight.js",
+  "lib/chaos-campaign.js": "var/quarantine/chaos-campaign.js",
+  "lib/chat-agent.js": "var/quarantine/chat-agent.js",
+  "lib/checkpoint-manager.js": "var/quarantine/checkpoint-manager.js",
+  "lib/child-registry.js": "var/quarantine/child-registry.js",
+  "lib/code-interpreter.js": "var/quarantine/code-interpreter.js",
+  "lib/commands/action.js": "packages/core/adapters/action.js",
+  "lib/commands/app-cmd.js": "packages/core/adapters/app-cmd.js",
+  "lib/commands/apply-diff.js": "packages/core/adapters/apply-diff.js",
+  "lib/commands/architecture.js": "packages/core/adapters/architecture.js",
+  "lib/commands/ask.js": "packages/core/adapters/ask.js",
+  "lib/commands/autofix-pr.js": "packages/core/adapters/autofix-pr.js",
+  "lib/commands/autoresearch.js": "packages/core/adapters/autoresearch.js",
+  "lib/commands/awaken.js": "packages/core/adapters/awaken.js",
+  "lib/commands/bigboss.js": "packages/core/adapters/bigboss.js",
+  "lib/commands/browser.js": "packages/core/adapters/browser.js",
+  "lib/commands/buddy.js": "packages/studio/buddy.js",
+  "lib/commands/bughunt.js": "packages/core/adapters/bughunt.js",
+  "lib/commands/business.js": "packages/core/adapters/business.js",
+  "lib/commands/capabilities.js": "packages/core/adapters/capabilities.js",
+  "lib/commands/claudecode.js": "packages/core/adapters/claudecode.js",
+  "lib/commands/code.js": "packages/core/adapters/code.js",
+  "lib/commands/cognition.js": "packages/core/adapters/cognition.js",
+  "lib/commands/commit.js": "packages/core/adapters/commit.js",
+  "lib/commands/council.js": "packages/core/organisation/council.js",
+  "lib/commands/crew.js": "packages/core/organisation/crew.js",
+  "lib/commands/ctx-viz.js": "packages/core/adapters/ctx-viz.js",
+  "lib/commands/deploy.js": "packages/core/adapters/deploy.js",
+  "lib/commands/desktop.js": "packages/core/adapters/desktop.js",
+  "lib/commands/drift.js": "packages/core/adapters/drift.js",
+  "lib/commands/eval-auto-fix.js": "packages/core/adapters/eval-auto-fix.js",
+  "lib/commands/eval.js": "packages/core/adapters/eval.js",
+  "lib/commands/evolve.js": "packages/core/adapters/evolve.js",
+  "lib/commands/feature.js": "packages/core/adapters/feature.js",
+  "lib/commands/feedback.js": "packages/core/adapters/feedback.js",
+  "lib/commands/find.js": "packages/core/adapters/find.js",
+  "lib/commands/gc.js": "packages/core/adapters/gc.js",
+  "lib/commands/grow.js": "packages/core/adapters/grow.js",
+  "lib/commands/harness.js": "packages/core/adapters/harness.js",
+  "lib/commands/harvest.js": "packages/core/adapters/harvest.js",
+  "lib/commands/heal.js": "packages/core/adapters/heal.js",
+  "lib/commands/help.js": "packages/core/adapters/help.js",
+  "lib/commands/hivemind.js": "packages/core/adapters/hivemind.js",
+  "lib/commands/hooks.js": "packages/core/adapters/hooks.js",
+  "lib/commands/identity.js": "packages/core/adapters/identity.js",
+  "lib/commands/init-project.js": "packages/core/adapters/init-project.js",
+  "lib/commands/init.js": "packages/core/adapters/init.js",
+  "lib/commands/intelligence.js": "packages/core/adapters/intelligence.js",
+  "lib/commands/liveforge.js": "packages/core/adapters/liveforge.js",
+  "lib/commands/llm.js": "packages/core/adapters/llm.js",
+  "lib/commands/loop.js": "packages/core/adapters/loop.js",
+  "lib/commands/marketplace.js": "packages/core/adapters/marketplace.js",
+  "lib/commands/mcp.js": "packages/core/adapters/mcp.js",
+  "lib/commands/memory.js": "packages/core/adapters/memory.js",
+  "lib/commands/model.js": "packages/core/adapters/model.js",
+  "lib/commands/mycelium.js": "packages/core/adapters/mycelium.js",
+  "lib/commands/next.js": "packages/core/adapters/next.js",
+  "lib/commands/onboard.js": "packages/core/adapters/onboard.js",
+  "lib/commands/open.js": "packages/core/adapters/open.js",
+  "lib/commands/oracle.js": "packages/core/adapters/oracle.js",
+  "lib/commands/overview.js": "packages/core/adapters/overview.js",
+  "lib/commands/parity.js": "packages/core/adapters/parity.js",
+  "lib/commands/permissions.js": "packages/tools/runtime/permissions.js",
+  "lib/commands/plan.js": "packages/core/adapters/plan.js",
+  "lib/commands/plugin.js": "packages/core/adapters/plugin.js",
+  "lib/commands/pocket.js": "packages/core/adapters/pocket.js",
+  "lib/commands/ponytail.js": "packages/core/adapters/ponytail.js",
+  "lib/commands/provider.js": "packages/core/providers/provider.js",
+  "lib/commands/registry-audit.js": "packages/core/adapters/registry-audit.js",
+  "lib/commands/remote.js": "packages/core/adapters/remote.js",
+  "lib/commands/remotion.js": "packages/studio/remotion.js",
+  "lib/commands/repomap.js": "packages/core/adapters/repomap.js",
+  "lib/commands/review-pr.js": "packages/core/adapters/review-pr.js",
+  "lib/commands/roster.js": "packages/core/adapters/roster.js",
+  "lib/commands/safe-start.js": "packages/core/adapters/safe-start.js",
+  "lib/commands/safe-stop.js": "packages/core/adapters/safe-stop.js",
+  "lib/commands/sandbox.js": "packages/core/adapters/sandbox.js",
+  "lib/commands/schedule.js": "packages/core/adapters/schedule.js",
+  "lib/commands/secrets.js": "packages/core/adapters/secrets.js",
+  "lib/commands/services.js": "packages/core/adapters/services.js",
+  "lib/commands/setup.js": "packages/core/adapters/setup.js",
+  "lib/commands/skills.js": "packages/core/adapters/skills.js",
+  "lib/commands/smoke.js": "packages/core/adapters/smoke.js",
+  "lib/commands/spinebus.js": "packages/core/adapters/spinebus.js",
+  "lib/commands/stats.js": "packages/core/adapters/stats.js",
+  "lib/commands/team.js": "packages/core/organisation/team.js",
+  "lib/commands/telemetry.js": "packages/core/adapters/telemetry.js",
+  "lib/commands/teleport.js": "packages/core/adapters/teleport.js",
+  "lib/commands/thringlets.js": "packages/core/adapters/thringlets.js",
+  "lib/commands/tour.js": "packages/core/adapters/tour.js",
+  "lib/commands/training.js": "packages/core/adapters/training.js",
+  "lib/commands/vault.js": "packages/core/adapters/vault.js",
+  "lib/commands/watch.js": "packages/core/adapters/watch.js",
+  "lib/commands/weather.js": "packages/core/adapters/weather.js",
+  "lib/commands/workers.js": "packages/core/adapters/workers.js",
+  "lib/commands/workflow.js": "packages/core/orchestration/workflow.js",
+  "lib/commands/worktree.js": "packages/core/adapters/worktree.js",
+  "lib/context-bus.js": "var/quarantine/context-bus.js",
+  "lib/context-engine.js": "var/quarantine/context-engine.js",
+  "lib/core/work-engine.js": "var/quarantine/work-engine.js",
+  "lib/cowork-overlay.js": "var/quarantine/cowork-overlay.js",
+  "lib/cron-manager.js": "var/quarantine/cron-manager.js",
+  "lib/desktop-launcher.js": "var/quarantine/desktop-launcher.js",
+  "lib/doctor.js": "var/quarantine/doctor.js",
+  "lib/donor-archaeology.js": "var/quarantine/donor-archaeology.js",
+  "lib/eval-manager.js": "var/quarantine/eval-manager.js",
+  "lib/event-bus.js": "var/quarantine/event-bus.js",
+  "lib/event-ledger.js": "var/quarantine/event-ledger.js",
+  "lib/event-workflow.js": "packages/core/orchestration/event-workflow.js",
+  "lib/evolution/mutator.js": "var/quarantine/mutator.js",
+  "lib/exec-policy.js": "var/quarantine/exec-policy.js",
+  "lib/feature-parity.js": "var/quarantine/feature-parity.js",
+  "lib/goal-manager.js": "var/quarantine/goal-manager.js",
+  "lib/governance.js": "packages/tools/runtime/governance.js",
+  "lib/graph-runtime.js": "var/quarantine/graph-runtime.js",
+  "lib/guardrail-manager.js": "packages/tools/runtime/guardrail-manager.js",
+  "lib/harness/engine.js": "packages/harness-core/engine.js",
+  "lib/harness/result-schema.js": "packages/harness-core/result-schema.js",
+  "lib/harness/task-schema.js": "packages/harness-core/task-schema.js",
+  "lib/hooks/lifecycle-bus.js": "var/quarantine/lifecycle-bus.js",
+  "lib/index-manager.js": "var/quarantine/index-manager.js",
+  "lib/instruction-resolver.js": "var/quarantine/instruction-resolver.js",
+  "lib/invocation-manager.js": "var/quarantine/invocation-manager.js",
+  "lib/kanban/db-schema.js": "var/quarantine/db-schema.js",
+  "lib/llm-provider.js": "packages/core/providers/llm-provider.js",
+  "lib/mcp-server.js": "var/quarantine/mcp-server.js",
+  "lib/mcp.js": "var/quarantine/mcp.js",
+  "lib/memory-client.js": "packages/memory/memory-client.js",
+  "lib/messaging-runtime.js": "var/quarantine/messaging-runtime.js",
+  "lib/model-router.js": "packages/core/routing/model-router.js",
+  "lib/namespace-store.js": "var/quarantine/namespace-store.js",
+  "lib/omni/truth-scanner.js": "var/quarantine/truth-scanner.js",
+  "lib/parity/hooks/engine.js": "var/quarantine/engine.js",
+  "lib/path-security.js": "packages/tools/runtime/path-security.js",
+  "lib/permission-manager.js": "packages/tools/runtime/permission-manager.js",
+  "lib/persona-forge.js": "var/quarantine/persona-forge.js",
+  "lib/personality.js": "var/quarantine/personality.js",
+  "lib/plugin-manager.js": "var/quarantine/plugin-manager.js",
+  "lib/program-optimizer.js": "var/quarantine/program-optimizer.js",
+  "lib/project-requirements.js": "var/quarantine/project-requirements.js",
+  "lib/pty.js": "var/quarantine/pty.js",
+  "lib/repo-mapper.js": "var/quarantine/repo-mapper.js",
+  "lib/routing-decisions.js": "packages/core/routing/routing-decisions.js",
+  "lib/runtime/autonomy-runner.js": "packages/core/runtime/autonomy-runner.js",
+  "lib/runtime/provider-config.js": "packages/core/providers/provider-config.js",
+  "lib/schema-validator.js": "var/quarantine/schema-validator.js",
+  "lib/scoped-memory.js": "var/quarantine/scoped-memory.js",
+  "lib/screen-camera-tools.js": "var/quarantine/screen-camera-tools.js",
+  "lib/screen-look.js": "var/quarantine/screen-look.js",
+  "lib/secret-vault.js": "var/quarantine/secret-vault.js",
+  "lib/secrets.js": "var/quarantine/secrets.js",
+  "lib/self-evolution-loop.js": "var/quarantine/self-evolution-loop.js",
+  "lib/session-repository.js": "packages/core/session/session-repository.js",
+  "lib/session-state-service.js": "packages/core/session/session-state-service.js",
+  "lib/skill-registry.js": "var/quarantine/skill-registry.js",
+  "lib/smith-neo.js": "var/quarantine/smith-neo.js",
+  "lib/soul-registry.js": "var/quarantine/soul-registry.js",
+  "lib/surface-capabilities.js": "var/quarantine/surface-capabilities.js",
+  "lib/task-manager.js": "var/quarantine/task-manager.js",
+  "lib/team-manager.js": "packages/core/organisation/team-manager.js",
+  "lib/telemetry-manager.js": "var/quarantine/telemetry-manager.js",
+  "lib/tool-gate.js": "var/quarantine/tool-gate.js",
+  "lib/tool-runtime.js": "packages/tools/tool-runtime.js",
+  "lib/tools-gui.js": "packages/tools/tools-gui.js",
+  "lib/tools-parity.js": "packages/tools/tools-parity.js",
+  "lib/tools-pc.js": "packages/tools/tools-pc.js",
+  "lib/tools-remotion.js": "packages/tools/tools-remotion.js",
+  "lib/tools/index.js": "packages/tools/index.js",
+  "lib/tools/parity/hooks/engine.js": "packages/tools/engine.js",
+  "lib/tower-agent-child.js": "var/quarantine/tower-agent-child.js",
+  "lib/trace-manager.js": "var/quarantine/trace-manager.js",
+  "lib/tts/gateway.js": "packages/core/adapters/gateway.js",
+  "lib/usage-governor.js": "var/quarantine/usage-governor.js",
+  "lib/whoami.js": "var/quarantine/whoami.js",
+  "lib/workflow-manager.js": "packages/core/orchestration/workflow-manager.js",
+  "lib/workflow-registry.js": "packages/core/orchestration/workflow-registry.js"
 }
