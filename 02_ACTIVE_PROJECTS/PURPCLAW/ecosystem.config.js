@@ -308,10 +308,18 @@ module.exports = {
     // Thringlet colony runs as Next.js API route (app/api/thringlets/) via Bridge service.
     {
       name: 'purpclaw-nextjs',
-      script: './node_modules/next/dist/bin/next',
+      // Supervised, not launched directly. `next` forks a child, and that child
+      // is what binds the port; PM2 on Windows kills only the process it
+      // started. So every restart orphaned a live port-holder, the replacement
+      // hit EADDRINUSE, PM2 read that as a crash and restarted again — 2,309
+      // times, leaking another server each round.
+      // scripts/start-web.js probes the port first (exits 0 if something is
+      // already serving, non-zero once if the port is held by something sick)
+      // and kills the whole tree on shutdown.
+      script: './scripts/start-web.js',
       // DEV mode (2026-07-30): production build broken — switched to dev mode
       // until BUILD_ID issue is resolved.
-      args: 'dev -p 3030 -H 127.0.0.1',
+      args: '--port 3030 --host 127.0.0.1',
       env: { NODE_ENV: 'development' },
       cwd: './',
       exec_mode: 'fork',
