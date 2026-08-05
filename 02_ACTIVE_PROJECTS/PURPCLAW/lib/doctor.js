@@ -1,4 +1,5 @@
 "use strict";
+const PURP_PATHS = require('./paths');
 /**
  * lib/doctor.js — PurpClaw Doctor
  *
@@ -32,7 +33,7 @@ const crypto = require("crypto");
 
 const PURP_DIR = path.resolve(__dirname, "..");
 const POCKET_DIR = process.env.POCKET_DIR
-  || path.join(os.homedir(), ".purpclaw", "pocket");
+  || path.join(PURP_PATHS.DATA_ROOT, "pocket");
 
 // Build the service port map from service_registry for the given profile.
 // profile='core'     — only core group from registry

@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('../paths');
 /**
  * lib/runtime/provider-config.js — user-editable per-lane provider/model config.
  *
@@ -28,7 +29,7 @@ function configPath() {
   return process.env.PROVIDER_CONFIG_PATH
     || (process.env.OPENCLAUDE_CONFIG_DIR
       ? path.join(process.env.OPENCLAUDE_CONFIG_DIR, 'provider-config.json')
-      : path.join(os.homedir(), '.purpclaw', 'provider-config.json'));
+      : path.join(PURP_PATHS.DATA_ROOT, 'provider-config.json'));
 }
 
 function load() {

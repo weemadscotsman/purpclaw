@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('./paths');
 /**
  * lib/secret-vault.js — Secret Vault for PURPCLAW
  * 
@@ -49,7 +50,7 @@ function vaultStore(vaultDir) {
   return path.join(vaultDir, STORE_FILE);
 }
 function vaultDir(opts) {
-  return path.resolve(path.join(opts.vaultPath || path.join(os.homedir(), '.purpclaw', 'vault')));
+  return path.resolve(path.join(opts.vaultPath || path.join(PURP_PATHS.DATA_ROOT, 'vault')));
 }
 
 // ── Key derivation ──────────────────────────────────────────────────────────────

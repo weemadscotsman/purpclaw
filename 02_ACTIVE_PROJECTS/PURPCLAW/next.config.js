@@ -51,6 +51,27 @@ const nextConfig = {
     // Belt and braces: keep webpack's own resolution inside the project too.
     config.resolve = config.resolve || {};
     config.resolve.symlinks = false;
+    // Block Windows Store executable stubs from being treated as modules.
+    // bash.exe, python.exe, node.exe, git.exe in WindowsApps are all aliases
+    // that fail with EACCES on stat(). Treat these shim executables as absent
+    // rather than letting webpack attempt to bundle them.
+    config.resolve.fallback = {
+      ...(config.resolve.fallback || {}),
+      fs: false,
+      net: false,
+      tls: false,
+      ssl: false,
+      child_process: false,
+      readline: false,
+    };
+    // Prevent webpack from resolving any module that originates from the WindowsApps
+    // alias directory.  Bash.exe, python.exe, node.exe and git.exe there are
+    // Windows Store launcher stubs that always return EACCES on stat().
+    // Pointing the resolver at null causes a clean "module not found" instead.
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      'C:\\Users\\Admin\\AppData\\Local\\Microsoft\\WindowsApps': false,
+    };
     config.watchOptions = {
       ...(config.watchOptions || {}),
       ignored: [

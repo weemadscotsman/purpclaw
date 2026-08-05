@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('./paths');
 /**
  * proof-ledger — PURPCLAW's black-box recorder.
  *
@@ -31,7 +32,7 @@ const path = require('path');
 const os = require('os');
 const { EventEmitter } = require('events');
 
-const LEDGER_DIR = path.join(os.homedir(), '.purpclaw', 'proof');
+const LEDGER_DIR = path.join(PURP_PATHS.DATA_ROOT, 'proof');
 const LEDGER_FILE = path.join(LEDGER_DIR, 'ledger.jsonl');
 const BACKUP_FILE = `${LEDGER_FILE}.bak`;
 const MAX_MEMORY = 1000;

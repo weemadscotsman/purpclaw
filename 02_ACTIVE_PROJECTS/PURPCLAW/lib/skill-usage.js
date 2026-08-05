@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('./paths');
 /**
  * lib/skill-usage.js — PURPCLAW Skill Telemetry System
  *
@@ -36,7 +37,7 @@ const PROTECTED_BUILTINS = new Set(['plan', 'coding', 'research']);
 // ── Paths ─────────────────────────────────────────────────────────────────────
 
 function _purpclawDir() {
-  return path.join(os.homedir(), '.purpclaw');
+  return path.join(PURP_PATHS.DATA_ROOT);
 }
 
 function _skillsBaseDir() {

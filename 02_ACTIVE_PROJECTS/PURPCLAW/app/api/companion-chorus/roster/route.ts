@@ -1,17 +1,21 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
 
 export const dynamic = 'force-dynamic';
 
-// Companion Chorus roster — reads from ~/.companion-chorus/companions.json
-// This is a terminal Node.js app, not a web service. This route exposes its
-// state as a web-visible panel in /mochi.
+// Companion Chorus roster — reads <project>/.companion-chorus/companions.json.
+//
+// This used path.join(os.homedir(), '.companion-chorus'). Two problems: PURPCLAW
+// state belongs inside the project, and that homedir literal is statically
+// resolvable, so @vercel/nft followed it during `next build`, walked the user
+// profile and died on `C:\Users\Admin\Application Data` — a legacy junction
+// that loops and denies access. Resolving from the project root fixes the
+// storage location and the build together.
 
 export async function GET() {
   try {
-    const configDir = path.join(os.homedir(), '.companion-chorus');
+    const configDir = path.join(process.cwd(), '.companion-chorus');
     const companionsFile = path.join(configDir, 'companions.json');
 
     if (!fs.existsSync(companionsFile)) {

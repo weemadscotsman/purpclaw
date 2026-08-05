@@ -22,10 +22,14 @@ function discoverDefaultPlatformPath() {
   const purpclawRoot = path.resolve(__dirname, '..');
   const siblingPath = path.join(purpclawRoot, '..', 'omnicode-platform');
   if (exists(path.join(siblingPath, 'package.json'))) return siblingPath;
-  // 3. Home directory
-  const homePath = path.join(os.homedir(), 'omnicode-platform');
-  if (exists(path.join(homePath, 'package.json'))) return homePath;
-  // 4. Not found
+  // 3. Not found.
+  //
+  // There was a `~/omnicode-platform` fallback here. It is gone: PURPCLAW and
+  // its siblings live under the project tree, never in the user profile, and
+  // that homedir literal was one of the paths @vercel/nft resolved statically
+  // during `next build` — walking the user profile and dying on
+  // `C:\Users\Admin\Application Data`, a legacy junction that loops.
+  // Set OMNICODE_PLATFORM_PATH if the platform lives somewhere unusual.
   return null;
 }
 

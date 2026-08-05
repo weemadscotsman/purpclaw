@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('../paths');
 /**
  * lib/commands/setup.js — Interactive Onboarding Wizard
  * ======================================================
@@ -33,7 +34,7 @@ try {
   };
   getProviderStatus = async () => ({ state: PROVIDER_STATES.MISSING, details: 'unknown' });
 }
-const CONFIG_DIR = path.join(os.homedir(), '.purpclaw');
+const CONFIG_DIR = path.join(PURP_PATHS.DATA_ROOT);
 const CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
 const ENV_FILE = path.join(PURP_DIR, '.env');
 

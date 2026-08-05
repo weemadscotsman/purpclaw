@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('../paths');
 /**
  * lib/agents/archetypes.js — Agent Archetype Loader
  *
@@ -16,7 +17,7 @@ const path = require('path');
 const os   = require('os');
 
 const ARCHETYPES_FILE = path.join(__dirname, '..', '..', 'agents', 'archetypes.toml');
-const PURP_DIR = process.env.PURP_DIR || path.join(os.homedir(), '.purpclaw');
+const PURP_DIR = process.env.PURP_DIR || path.join(PURP_PATHS.DATA_ROOT);
 const ARCHETYPES_CACHE = path.join(PURP_DIR, 'archetypes-cache.json');
 
 let _cache = null;

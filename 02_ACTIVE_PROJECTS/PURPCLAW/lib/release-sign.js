@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('./paths');
 /**
  * lib/release-sign.js — PurpClaw release signing infrastructure
  *
@@ -15,7 +16,7 @@ const path = require('path');
 const os = require('os');
 const crypto = require('crypto');
 
-const KEYS_DIR = path.join(os.homedir(), '.purpclaw', 'keys');
+const KEYS_DIR = path.join(PURP_PATHS.DATA_ROOT, 'keys');
 
 function ensureKeysDir() {
   if (!fs.existsSync(KEYS_DIR)) fs.mkdirSync(KEYS_DIR, { recursive: true });

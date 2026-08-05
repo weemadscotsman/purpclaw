@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('../paths');
 /**
  * lib/commands/vault.js — Native Secret Vault CLI command
  * 
@@ -17,7 +18,7 @@ const fs   = require('fs');
 const readline = require('readline');
 const { SecretVault } = require('../secret-vault');
 
-const VAULT_DIR = path.join(os.homedir(), '.purpclaw', 'vault');
+const VAULT_DIR = path.join(PURP_PATHS.DATA_ROOT, 'vault');
 
 function ask(prompt) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });

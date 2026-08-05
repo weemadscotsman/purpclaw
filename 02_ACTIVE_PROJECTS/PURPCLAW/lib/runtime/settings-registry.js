@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('../paths');
 /**
  * lib/runtime/settings-registry.js — the PURPCLAW Settings OS core.
  *
@@ -29,14 +30,14 @@ const path = require('path');
 const os = require('os');
 
 const ENV_PATH = path.join(process.cwd(), '.env');
-const USER_SETTINGS_PATH = path.join(os.homedir(), '.purpclaw', 'settings.json');
+const USER_SETTINGS_PATH = path.join(PURP_PATHS.DATA_ROOT, 'settings.json');
 
 let spendGate = null;
 function spendPaths() {
   try {
     if (!spendGate) spendGate = require('../spend-gate');
     return { configPath: spendGate.configPath() };
-  } catch { return { configPath: path.join(os.homedir(), '.purpclaw', 'pocket', 'spend-config.json') }; }
+  } catch { return { configPath: path.join(PURP_PATHS.DATA_ROOT, 'pocket', 'spend-config.json') }; }
 }
 
 // ── The catalog ───────────────────────────────────────────────────────────────

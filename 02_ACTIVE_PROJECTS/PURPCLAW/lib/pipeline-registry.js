@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('./paths');
 /**
  * pipeline-registry — the unified PURPCLAW pipeline spine.
  *
@@ -35,7 +36,7 @@ const { EventEmitter } = require('events');
 let proofLedger = null;
 try { proofLedger = require('./proof-ledger'); } catch (_) { proofLedger = null; }
 
-const DIR = path.join(os.homedir(), '.purpclaw', 'pipelines');
+const DIR = path.join(PURP_PATHS.DATA_ROOT, 'pipelines');
 const FILE = path.join(DIR, 'jobs.jsonl');
 const BAK = `${FILE}.bak`;
 const MAX_MEMORY = 2000;

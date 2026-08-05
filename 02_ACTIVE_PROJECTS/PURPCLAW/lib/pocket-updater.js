@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('./paths');
 /**
  * lib/pocket-updater.js — PurpClaw Pocket OS updater
  *
@@ -21,7 +22,7 @@ const crypto = require('crypto');
 const { execSafe } = require('./child-registry');
 
 const POCKET_DIR = process.env.POCKET_DIR
-  || path.join(os.homedir(), '.purpclaw', 'pocket');
+  || path.join(PURP_PATHS.DATA_ROOT, 'pocket');
 const UPDATES_DIR = path.join(POCKET_DIR, 'updates');
 const BACKUP_DIR = path.join(POCKET_DIR, 'backups');
 

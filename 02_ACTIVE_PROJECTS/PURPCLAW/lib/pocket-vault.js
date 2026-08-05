@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('./paths');
 /**
  * lib/pocket-vault.js — Encrypted secrets storage for Pocket OS
  *
@@ -38,7 +39,7 @@ const AUDIT_ACTIONS = {
 
 class PocketVault {
   constructor(vaultPath) {
-    this.vaultPath = vaultPath || path.join(os.homedir(), '.purpclaw', 'vault.enc');
+    this.vaultPath = vaultPath || path.join(PURP_PATHS.DATA_ROOT, 'vault.enc');
     this.backupPath = this.vaultPath + '.bak';
     this.lockPath = this.vaultPath + '.lock';
     this.auditPath = this.vaultPath + '.log';

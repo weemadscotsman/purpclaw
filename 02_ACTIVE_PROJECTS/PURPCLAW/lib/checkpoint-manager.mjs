@@ -24,6 +24,11 @@ import crypto from 'crypto';
 import { spawn, spawnSync } from 'child_process';
 import os from 'os';
 import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+
+// lib/paths.js is CommonJS; this module is ESM. createRequire is the supported
+// bridge and keeps one canonical state-root resolver for the whole runtime.
+const PURP_PATHS = createRequire(import.meta.url)('./paths.js');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -74,9 +79,14 @@ function projectHash(workingDir) {
 }
 
 function checkpointBase() {
-  // path.resolve('~/.purpclaw/checkpoints') on Linux/macOS, C:\Users\Admin\.purpclaw\checkpoints on Windows
+  // PURPCLAW state lives inside the project, never in the user profile.
+  // This used os.homedir(), which put checkpoints in C:\Users\<user>\.purpclaw
+  // while sessions lived in <project>/.purpclaw — two state roots, and the
+  // homedir literal is one of the paths @vercel/nft followed out of the project
+  // during `next build`, walking into the looping `Application Data` junction.
+  // lib/paths.js resolves the single correct root.
   const base = process.env.PURPCLAW_CHECKPOINT_BASE
-    || path.join(os.homedir(), '.purpclaw', 'checkpoints');
+    || path.join(PURP_PATHS.DATA_ROOT, 'checkpoints');
   return base;
 }
 

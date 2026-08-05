@@ -1,3 +1,4 @@
+const PURP_PATHS = require('../paths');
 // lib/commands/mcp.js — MCP server management CLI
 // Codex parity: `codex mcp` subcommand (list/get/add/remove/login/logout)
 // 'use strict' already enforced by parent
@@ -9,7 +10,7 @@ const os   = require('os');
 
 // ── Config helpers ─────────────────────────────────────────────────────────────
 
-const CONFIG_DIR  = () => path.join(os.homedir(), '.purpclaw');
+const CONFIG_DIR  = () => path.join(PURP_PATHS.DATA_ROOT);
 const CONFIG_FILE = () => path.join(CONFIG_DIR(), 'mcp.json');
 
 function readConfig() {
@@ -47,7 +48,7 @@ function writeAuth(auth) {
   fs.writeFileSync(AUTH_FILE(), JSON.stringify(auth, null, 2), 'utf-8');
 }
 
-const AUTH_DIR = () => path.join(os.homedir(), '.purpclaw');
+const AUTH_DIR = () => path.join(PURP_PATHS.DATA_ROOT);
 
 // ── Usage ──────────────────────────────────────────────────────────────────────
 

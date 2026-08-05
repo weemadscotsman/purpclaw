@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('./paths');
 /**
  * lib/profile-router.js — Profile Routing
  * Port of Hermes gateway/profile_routing.py
@@ -15,7 +16,7 @@ const fs   = require('fs');
 const path = require('path');
 const os   = require('os');
 
-const PURP_DIR  = process.env.PURP_DIR || path.join(os.homedir(), '.purpclaw');
+const PURP_DIR  = process.env.PURP_DIR || path.join(PURP_PATHS.DATA_ROOT);
 const PROFILES_DIR = path.join(PURP_DIR, 'profiles');
 const ROUTES_FILE  = path.join(PURP_DIR, 'profiles', 'profiles.json');
 

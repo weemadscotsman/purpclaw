@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('./paths');
 const fs   = require('fs');
 const path = require('path');
 const os   = require('os');
@@ -7,7 +8,7 @@ const os   = require('os');
 // ── configurable base dir ──────────────────────────────────────────────────────
 // Defaults to ~/.purpclaw.  When used from bin/purpclaw.js pass PURP_DIR.
 function mkSync(baseDir) {
-  const PURP = baseDir || process.env.PURPCLAW_DIR || path.join(os.homedir(), '.purpclaw');
+  const PURP = baseDir || process.env.PURPCLAW_DIR || path.join(PURP_PATHS.DATA_ROOT);
   const WORK = path.join(PURP, 'agent_work');
 
   function wdir(sub) { return path.join(WORK, sub); }

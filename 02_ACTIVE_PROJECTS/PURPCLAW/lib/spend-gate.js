@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('./paths');
 /**
  * lib/spend-gate.js — PurpClaw Pocket OS SpendGate
  * Tracks token spend, enforces daily/monthly budgets, rate limits per agent.
@@ -29,7 +30,7 @@ function billingLifecycle() {
 // Lazy-resolved so tests can set POCKET_DIR before the first call.
 function pocketDir() {
   return process.env.POCKET_DIR
-    || path.join(os.homedir(), '.purpclaw', 'pocket');
+    || path.join(PURP_PATHS.DATA_ROOT, 'pocket');
 }
 function configPath() { return path.join(pocketDir(), 'spend-config.json'); }
 function logPath() { return path.join(pocketDir(), 'spend-log.jsonl'); }

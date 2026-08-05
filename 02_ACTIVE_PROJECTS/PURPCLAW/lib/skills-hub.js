@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('./paths');
 const https = require('https');
 const http = require('http');
 const fs = require('fs');
@@ -22,7 +23,7 @@ const INDEX_CACHE_TTL_MS = 3600 * 1000; // 1 hour
 // ── Path resolvers (dynamic, profile-aware) ─────────────────────────────────
 function _resolve(name) {
   const resolvers = {
-    HERMES_HOME: () => process.env.PURPCLAW_HOME || path.join(os.homedir(), '.purpclaw'),
+    HERMES_HOME: () => process.env.PURPCLAW_HOME || path.join(PURP_PATHS.DATA_ROOT),
     SKILLS_DIR: () => path.join(_resolve('HERMES_HOME'), 'skills'),
     HUB_DIR: () => path.join(_resolve('SKILLS_DIR'), '.hub'),
     LOCK_FILE: () => path.join(_resolve('HUB_DIR'), 'lock.json'),

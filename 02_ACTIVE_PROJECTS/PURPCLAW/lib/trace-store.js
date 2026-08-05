@@ -1,12 +1,13 @@
 'use strict';
 
+const PURP_PATHS = require('./paths');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const { EventEmitter } = require('events');
 const retention = require('./memory-retention');
 
-const TRACE_DIR = path.join(os.homedir(), '.purpclaw', 'trace');
+const TRACE_DIR = path.join(PURP_PATHS.DATA_ROOT, 'trace');
 const TRACE_FILE = path.join(TRACE_DIR, 'recent.jsonl');
 const MAX_MEMORY = 500;
 const MAX_FILE_BYTES = 2 * 1024 * 1024;

@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('./paths');
 /**
  * lib/session-portability.js — Session Export / Import
  *
@@ -21,7 +22,7 @@ const zlib  = require('zlib');
 
 // ── Paths ────────────────────────────────────────────────────────────────────
 
-const PURP_DIR     = process.env.PURP_DIR || path.join(os.homedir(), '.purpclaw');
+const PURP_DIR     = process.env.PURP_DIR || path.join(PURP_PATHS.DATA_ROOT);
 const SESSION_DIR  = path.join(PURP_DIR, 'sessions');
 const EXPORT_DIR   = path.join(PURP_DIR, 'exports');
 

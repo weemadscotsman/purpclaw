@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const PURP_PATHS = require('../lib/paths');
 /**
  * PURPCLAW CLI — bin/purpclaw.js
  * ================================
@@ -1571,7 +1572,7 @@ async function cmdApprovals(args) {
     case '':
     case 'list': {
       const { getQueueDir } = AQ;
-      const queueDir = getQueueDir ? getQueueDir() : path.join(require('os').homedir(), '.purpclaw', 'approvals');
+      const queueDir = getQueueDir ? getQueueDir() : path.join(PURP_PATHS.DATA_ROOT, 'approvals');
       if (!fs.existsSync(queueDir)) {
         jsonOut({ action: 'list', pending: [], success: true, note: 'no queue dir' });
         if (!wantJson) console.log(col(C.gray, '  No approvals yet.\n'));

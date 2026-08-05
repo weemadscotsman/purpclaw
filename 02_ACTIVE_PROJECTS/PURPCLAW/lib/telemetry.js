@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('./paths');
 /**
  * lib/telemetry.js — PurpClaw private telemetry loop
  *
@@ -10,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const POCKET_DIR = process.env.POCKET_DIR || path.join(os.homedir(), '.purpclaw', 'pocket');
+const POCKET_DIR = process.env.POCKET_DIR || path.join(PURP_PATHS.DATA_ROOT, 'pocket');
 const LOG_PATH = path.join(POCKET_DIR, 'telemetry.jsonl');
 const EXPORT_PATH = path.join(POCKET_DIR, 'telemetry-export.json');
 

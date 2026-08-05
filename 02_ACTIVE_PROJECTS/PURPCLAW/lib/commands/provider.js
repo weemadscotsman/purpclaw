@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('../paths');
 /**
  * lib/commands/provider.js
  * ─────────────────────────────────────────────────────────────────────────────
@@ -36,7 +37,7 @@ function configDir() {
   // OPENCLAUDE_CONFIG_DIR mirrors the upstream env-var convention from Gitlawb/openclaude.
   // If set, use it as the base for all PurpClaw config (not just profiles).
   return process.env.OPENCLAUDE_CONFIG_DIR
-    || path.join(os.homedir(), '.purpclaw');
+    || path.join(PURP_PATHS.DATA_ROOT);
 }
 
 function profilesDir() {

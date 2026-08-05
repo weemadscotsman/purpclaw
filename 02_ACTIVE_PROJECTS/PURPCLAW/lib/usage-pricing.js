@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('./paths');
 /**
  * lib/usage-pricing.js — Usage tracking and pricing database
  *
@@ -13,7 +14,7 @@ const path = require('path');
 const os   = require('os');
 const fs   = require('fs');
 
-const PURP_DIR     = process.env.PURP_DIR || path.join(os.homedir(), '.purpclaw');
+const PURP_DIR     = process.env.PURP_DIR || path.join(PURP_PATHS.DATA_ROOT);
 const PRICING_CACHE = path.join(PURP_DIR, 'pricing-cache.json');
 
 // ── Canonical Usage ────────────────────────────────────────────────────────────

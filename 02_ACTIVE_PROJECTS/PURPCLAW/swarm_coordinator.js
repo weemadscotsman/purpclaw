@@ -133,7 +133,12 @@ function finalizeMissionSandbox(sandbox, missionId, success) {
 function getBlastRadiusFiles(repoPath, targetPatterns) {
   if (!targetPatterns || targetPatterns.length === 0) return [];
   try {
-    const nodeBin = 'C:\\Users\\Admin\\AppData\\Local\\nvm\\v22.11.0\\node.exe';
+    // The node binary already running this process. This was hardcoded to
+    // C:\Users\Admin\AppData\Local\nvm\v22.11.0\node.exe, which pinned both a
+    // specific machine account and a specific nvm version — it breaks on any
+    // node upgrade and on any other user. It was also a literal path into the
+    // user profile that @vercel/nft followed during `next build`.
+    const nodeBin = process.execPath;
     const helperPath = path.join(PURP_DIR, 'agent_work', 'blast_radius_helper.js');
     if (!fs.existsSync(helperPath)) {
       return [];

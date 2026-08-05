@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('./paths');
 /**
  * lib/session-store.js — Session Lifecycle + Recovery
  * Port of Hermes gateway/session.py + gateway/run.py restart recovery
@@ -25,7 +26,7 @@ const os     = require('os');
 const crypto = require('crypto');
 
 const PURP_DIR = process.env.PURP_DIR
-  || path.join(os.homedir(), '.purpclaw');
+  || path.join(PURP_PATHS.DATA_ROOT);
 const SESSIONS_DIR = path.join(PURP_DIR, 'sessions');
 const CLEAN_SHUTDOWN_FILE = path.join(SESSIONS_DIR, '.clean_shutdown');
 const RESTART_COUNTS_FILE = path.join(SESSIONS_DIR, 'restart_counts.json');

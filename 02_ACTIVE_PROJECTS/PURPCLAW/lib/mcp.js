@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('./paths');
 /**
  * lib/mcp.js — Model Context Protocol (MCP) client integration.
  *
@@ -54,7 +55,7 @@ function configPaths() {
   if (process.env.PURPCLAW_MCP_CONFIG) paths.push(process.env.PURPCLAW_MCP_CONFIG);
   paths.push(path.resolve(process.cwd(), '.purpclaw', 'mcp.json'));
   paths.push(path.join(os.homedir(), '.config', 'purpclaw', 'mcp.json'));
-  paths.push(path.join(os.homedir(), '.purpclaw', 'mcp.json'));
+  paths.push(path.join(PURP_PATHS.DATA_ROOT, 'mcp.json'));
   return paths.filter(p => { try { return fs.existsSync(p); } catch { return false; } });
 }
 

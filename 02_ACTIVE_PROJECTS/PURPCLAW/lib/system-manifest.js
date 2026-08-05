@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('./paths');
 /**
  * system-manifest.js — THE SINGLE SOURCE OF TRUTH.
  *
@@ -49,7 +50,7 @@ function getTools() {
 const LANE_NAMES = ['PRIMARY_CHAT', 'PRIMARY_TOOL', 'PRIMARY_DELEGATION', 'CODE', 'SWARM', 'DIVISION', 'REASONING', 'FALLBACK', 'LOCAL', 'PRIVATE_MODE'];
 function getLanes() {
   const os = require('os'), fs = require('fs');
-  const cfgPath = path.join(os.homedir(), '.purpclaw', 'provider-config.json');
+  const cfgPath = path.join(PURP_PATHS.DATA_ROOT, 'provider-config.json');
   const cfg = safe(() => JSON.parse(fs.readFileSync(cfgPath, 'utf8')), null);
   const lanes = (cfg && cfg.lanes) || {};
   const out = {};

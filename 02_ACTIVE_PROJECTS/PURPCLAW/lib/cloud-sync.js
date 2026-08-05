@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('./paths');
 /**
  * lib/cloud-sync.js — Session cloud sync for PURPCLAW
  *
@@ -21,7 +22,7 @@ const path = require('path');
 const os   = require('os');
 const crypto = require('crypto');
 
-const PURP_DIR      = process.env.PURP_DIR || path.join(os.homedir(), '.purpclaw');
+const PURP_DIR      = process.env.PURP_DIR || path.join(PURP_PATHS.DATA_ROOT);
 const SYNC_DIR      = path.join(PURP_DIR, 'cloud-sync');
 const CONFIG_FILE   = path.join(SYNC_DIR, 'config.json');
 const MANIFEST_FILE = path.join(SYNC_DIR, 'manifest.json');

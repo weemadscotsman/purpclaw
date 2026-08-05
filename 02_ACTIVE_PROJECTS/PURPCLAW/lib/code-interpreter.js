@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('./paths');
 /**
  * lib/code-interpreter.js — Python Code Interpreter Tool
  * 
@@ -16,7 +17,7 @@ const path = require('path');
 const os   = require('os');
 const crypto = require('crypto');
 
-const PURP_DIR = process.env.PURP_DIR || path.join(os.homedir(), '.purpclaw');
+const PURP_DIR = process.env.PURP_DIR || path.join(PURP_PATHS.DATA_ROOT);
 const RUN_DIR  = path.join(PURP_DIR, 'code-runner');
 const MAX_STDOUT = 100_000;
 const MAX_STDERR = 20_000;

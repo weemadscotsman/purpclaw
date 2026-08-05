@@ -1,5 +1,6 @@
 'use strict';
 
+const PURP_PATHS = require('./paths');
 /**
  * PURPFlow — controlled recursion with receipts.
  *
@@ -31,7 +32,7 @@ let steering = null; try { steering = require('./steering-router'); } catch { /*
 let insight = null; try { insight = require('./insight'); } catch { /* optional */ }
 const { execSafe } = require('./child-registry');
 
-const FLOW_DIR = path.join(os.homedir(), '.purpclaw', 'purpflow');
+const FLOW_DIR = path.join(PURP_PATHS.DATA_ROOT, 'purpflow');
 const MODES = ['goal', 'plan', 'validate', 'execute', 'review', 'repair', 'prove'];
 const STOP_CONDITIONS = ['success_criteria_met', 'max_iterations_hit', 'hard_blocker_found', 'cost_budget_used', 'user_cancelled', 'tool_failure_blocked'];
 

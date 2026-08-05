@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('../paths');
 /**
  * lib/core/work-engine.js — Unified PURPCLAW Session & Work Engine
  * ==============================================================
@@ -53,7 +54,7 @@ function agentLoop() {
 }
 
 // ── Current session tracking ────────────────────────────────────────────
-const CURRENT_FILE = path.join(os.homedir(), '.purpclaw', 'sessions', '_current.json');
+const CURRENT_FILE = path.join(PURP_PATHS.DATA_ROOT, 'sessions', '_current.json');
 
 function ensureDir() {
   const dir = path.dirname(CURRENT_FILE);

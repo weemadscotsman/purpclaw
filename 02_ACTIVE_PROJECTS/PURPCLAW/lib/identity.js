@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('./paths');
 /**
  * lib/identity.js — PurpClaw Portable Identity
  *
@@ -32,7 +33,7 @@ const PURP_DIR = path.resolve(__dirname, '..');
 // Lazy-resolved so tests can set POCKET_DIR before first call.
 function pocketDir() {
   return process.env.POCKET_DIR
-    || path.join(os.homedir(), '.purpclaw', 'pocket');
+    || path.join(PURP_PATHS.DATA_ROOT, 'pocket');
 }
 function identityPath() { return path.join(pocketDir(), 'identity.json'); }
 function identityBak() { return identityPath() + '.bak'; }

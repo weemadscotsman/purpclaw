@@ -1,4 +1,5 @@
 'use strict';
+const PURP_PATHS = require('./paths');
 /**
  * lib/billing-lifecycle.js — PurpClaw Billing Lifecycle Display System
  *
@@ -770,7 +771,7 @@ const fs     = require('fs');
 function pocketDir() {
   return process.env.PURP_DIR
     || process.env.POCKET_DIR
-    || path.join(os.homedir(), '.purpclaw', 'pocket');
+    || path.join(PURP_PATHS.DATA_ROOT, 'pocket');
 }
 
 function billingConfigPath() {
