@@ -555,6 +555,20 @@ async function spawnAgent(agentName, task, options = {}) {
 
     return { success: true, agent: activeAgent, output, toolCalls: activeAgent.toolCalls, provider: providerName, model: modelName };
   }
+}
+// ^ spawnAgent's closing brace. It was missing, and because the file still
+// parsed, spawnAgent silently swallowed the entire rest of the module —
+// lines 195 to 1225, confirmed with acorn: one top-level FunctionDeclaration
+// containing 67 statements including every other function, the SSE server,
+// the `require.main === module` guard and `module.exports`.
+//
+// The consequences all looked like unrelated bugs:
+//   - `node agent_tower.js` exited 0 without listening, because the main guard
+//     was inside a function nobody called. PM2 restarted it forever.
+//   - `require('./agent_tower.js')` returned {} — module.exports never ran —
+//     so every consumer got an empty object instead of the tower.
+// Neither surfaced as an error, because a missing brace before a run of
+// function declarations is still valid JavaScript.
 
 function sanitizeForCli(text) {
   // Remove supplementary-plane characters (most emojis) that crash Windows console
@@ -1221,5 +1235,3 @@ if (require.main === module) {
 }
 
 module.exports = AGENT_TOWER;
-
-}
