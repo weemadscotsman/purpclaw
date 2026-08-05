@@ -319,6 +319,50 @@ function firstEnv(keys = []) {
 
 // ── Config resolution ─────────────────────────────────────────────────────────
 
+// Env prefix → config lane. Declared once: it was previously an inline ternary
+// chain inside resolveConfig(), so adding a lane meant editing an expression
+// that read like a ransom note and was invisible to anything wanting to
+// enumerate the lanes.
+const LANE_BY_PREFIX = {
+  LLM: 'PRIMARY_CHAT',
+  SWARM: 'SWARM',
+  CODE: 'CODE',
+  DIVISION: 'DIVISION',
+  REASONING: 'REASONING',
+  FALLBACK: 'FALLBACK',
+};
+
+/**
+ * What a real call will actually use, and why. This is the function status
+ * surfaces must report from — reporting a lane's configured value while the
+ * call resolves something else is the whole P0-C defect.
+ */
+function explainConfig(envPrefix = 'LLM') {
+  const lane = LANE_BY_PREFIX[envPrefix] || 'PRIMARY_CHAT';
+  const cfg = resolveConfig(envPrefix);
+  const envProvider = process.env[`${envPrefix}_PROVIDER`] || null;
+  const envModel = (process.env[`${envPrefix}_MODEL`] || '').trim() || null;
+  let userLane = {};
+  try { userLane = require('./runtime/provider-config').getLane(lane); } catch { /* absent */ }
+  return {
+    lane,
+    // providerName, not provider: resolveConfig returns the provider *object*
+    // under .provider (baseUrl, authHeader, format…). Reporting that as "the
+    // provider" would put a config blob where a name belongs — and any status
+    // surface rendering it would show [object Object].
+    provider: cfg.providerName,
+    model: cfg.model,
+    hasKey: Boolean(cfg.apiKey),
+    source: {
+      provider: envProvider ? 'env' : (userLane.provider ? 'provider-config' : 'default'),
+      model: envModel ? 'env' : (userLane.model ? 'provider-config' : 'default'),
+    },
+    configPath: (() => {
+      try { return require('./runtime/provider-config').configPath(); } catch { return null; }
+    })(),
+  };
+}
+
 function resolveConfig(envPrefix = 'LLM') {
   // P0-C: Check provider-config.json for user settings (from WebUI settings page).
   // Precedence: env vars > provider-config.json > hardcoded defaults.
@@ -326,25 +370,21 @@ function resolveConfig(envPrefix = 'LLM') {
   // If env vars are not set, resolveConfig now reads that file so the WebUI
   // settings actually steer the runtime instead of being ignored.
   let configProvider = null, configModel = null;
+  const laneName = LANE_BY_PREFIX[envPrefix] || 'PRIMARY_CHAT';
   try {
-    const os = require('os');
-    const path = require('path');
-    const cfgPath = process.env.PROVIDER_CONFIG_PATH
-      || path.join(os.homedir(), '.purpclaw', 'provider-config.json');
-    const fs = require('fs');
-    const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
-    // Map LLM env prefix to a lane name. Default 'LLM' → PRIMARY_CHAT.
-    const laneName = envPrefix === 'LLM' ? 'PRIMARY_CHAT'
-      : envPrefix === 'SWARM' ? 'SWARM'
-      : envPrefix === 'CODE' ? 'CODE'
-      : envPrefix === 'DIVISION' ? 'DIVISION'
-      : envPrefix === 'REASONING' ? 'REASONING'
-      : envPrefix === 'FALLBACK' ? 'FALLBACK'
-      : 'PRIMARY_CHAT';
-    const lane = (cfg.lanes || {})[laneName] || {};
+    // P0-C: read through provider-config, never by re-deriving the path here.
+    // This block used to compute its own config path as
+    //   PROVIDER_CONFIG_PATH || ~/.purpclaw/provider-config.json
+    // which silently dropped OPENCLAUDE_CONFIG_DIR — a variable
+    // provider-config.configPath() does honour. With that set, `purpclaw
+    // provider load` and the settings page wrote one file while real LLM calls
+    // read a different one, so the UI reported a provider the runtime was not
+    // using and every request quietly fell through to env/hardcoded defaults.
+    // That is the exact P0-C failure: config steers status, env steers reality.
+    const lane = require('./runtime/provider-config').getLane(laneName);
     if (lane.provider) configProvider = lane.provider;
     if (lane.model) configModel = lane.model;
-  } catch (e) { /* config file absent or unreadable — fall through */ }
+  } catch (e) { /* config absent or unreadable — env and defaults still apply */ }
 
   const providerName = (process.env[`${envPrefix}_PROVIDER`] || configProvider || 'openai').toLowerCase();
   const provider     = PROVIDERS[providerName];
@@ -1562,6 +1602,10 @@ module.exports = {
   getProviderInfo,
   listProviders,
   PROVIDERS,
+  // P0-C: the one function status surfaces must report from, so "what the UI
+  // shows" and "what the call uses" cannot drift apart again.
+  explainConfig,
+  LANE_BY_PREFIX,
   // Low-level — exposed for testing and custom integrations
   chatOpenAI,
   sanitizeToolHistory,
