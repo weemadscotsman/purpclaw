@@ -266,9 +266,14 @@ async function run(task, ctx, steps, meta) {
     const claudeCtx = ctx && ctx.items ? ctx : assembleClaudeContext(normalised, {});
     const items = claudeCtx.items || [];
 
-    // Tag items with priority and type
+    // Tag items with priority and type, and record what was actually read.
+    // result.filesRead was never populated: the harness read a dozen files and
+    // then reported "Files read: 0", which is the difference between a tool you
+    // can trust and a tool that prints a green tick.
     for (const item of items) {
       memoryAudit.logFileRead && memoryAudit.logFileRead(record && record.id, item.path || item.label);
+      const label = item.label || item.path;
+      if (label && !result.filesRead.includes(label)) result.filesRead.push(label);
     }
 
     // Run analysis
@@ -313,7 +318,19 @@ async function run(task, ctx, steps, meta) {
     result.contradictions = contradictions.findings;
     result.architecture = archMap.layers;
     result.assumptions = assumptions;
-    resultSchema.pass(result, 'Claude harness analysis complete');
+
+    // No evidence, no pass. This called pass() unconditionally, so a run that
+    // loaded zero files still reported PASSED — "analysis complete" having
+    // analysed nothing. An analysis harness with no context did not succeed at
+    // its job; it failed to find anything to do it on, and the operator needs
+    // to see that difference.
+    if (items.length === 0) {
+      resultSchema.block(result,
+        'No context could be loaded from ' + repoRoot + '. Nothing was analysed. '
+        + 'Pass --repo, or --files with paths that exist, or run from the repository root.');
+    } else {
+      resultSchema.pass(result, 'Claude harness analysis complete');
+    }
   } catch (err) {
     resultSchema.fail(result, err.message);
     result.errors.push({ type: 'harness-error', message: err.message, stack: err.stack });

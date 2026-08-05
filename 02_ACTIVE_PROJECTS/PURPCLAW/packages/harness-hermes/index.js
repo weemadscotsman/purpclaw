@@ -19,6 +19,7 @@ const { execSync } = require('child_process');
 const {
   createResult, addFileRead, addFileChanged,
   addCommand, addArtifact, addVerification, addError,
+  finalize,
 } = require('../../packages/result-schema');
 
 // ── Tool registry ─────────────────────────────────────────────────────────────
@@ -143,16 +144,29 @@ function planToolSequence(goal) {
     plan.push({ tool: 'shell', args: ['npm run lint'], description: 'Run linter' });
   }
   if (/(commit|git push)/.test(goalLower)) {
-    plan.push({ tool: 'git', args: ['status'], description: 'Git status' });
-    plan.push({ tool: 'git', args: ['add -A'], description: 'Stage all changes' });
+    // `git add -A` was here. It stages every change in the repository — and
+    // this repository's git root is the parent of 60+ unrelated projects, so a
+    // single "commit the fix" goal would sweep other people's work and any
+    // stray secret into the index. That is not a hypothetical: it is exactly
+    // how a keys.env ended up in a commit earlier in this project's history.
+    // Staging is the operator's decision, made against explicit paths.
+    plan.push({ tool: 'git', args: ['status --short'], description: 'Show what changed (staging is the operator\'s call)' });
+    plan.push({ tool: 'git', args: ['diff --stat'], description: 'Summarise the diff' });
   }
   if (/(deploy|start|serve)/.test(goalLower)) {
-    plan.push({ tool: 'shell', args: ['npm start'], description: 'Start server' });
+    // `npm start` was here. A dev server never exits, so the step blocked until
+    // the 60s execSync timeout and the whole plan stalled behind it. A harness
+    // must not launch long-running processes as an automated step.
+    plan.push({ tool: 'shell', args: ['npm run build --if-present'], description: 'Build for deploy (server start is left to the operator)' });
   }
 
-  // Default: read package.json and run build
+  // Default plan. This used to be `npm run build`, so ANY goal that matched
+  // none of the patterns above — "list the tools in this repo", say — triggered
+  // a full production build. On this project that is minutes, and it made the
+  // harness look hung. An unrecognised goal should inspect, not compile.
   if (plan.length === 0) {
-    plan.push({ tool: 'shell', args: ['npm run build'], description: 'Run build (default)' });
+    plan.push({ tool: 'file_read', args: ['package.json'], description: 'Read package manifest' });
+    plan.push({ tool: 'git', args: ['status --short'], description: 'Inspect working tree' });
   }
 
   return plan;
@@ -197,6 +211,11 @@ function runStep(step, state, result) {
         state.steps[state.steps.length - 1].status = STEP_STATUS.OK;
         state.steps[state.steps.length - 1].output = (lastResult.output || '').slice(0, 2000);
         addCommand(result, `${tool} ${execArgs.join(' ')}`);
+        // Record file access as file evidence, not just as a command. A
+        // file_read step reported "Files read: 0" because every step, whatever
+        // it touched, was only ever counted as a command.
+        if (tool === 'file_read') addFileRead(result, String(execArgs[0]));
+        if (tool === 'file_write' || tool === 'file_edit') addFileChanged(result, String(execArgs[0]));
         addVerification(result, {
           criterion: description,
           passed: true,
@@ -313,6 +332,12 @@ async function run(task, ctx, steps, meta) {
   }
 
   result.durationMs = Date.now() - startedAt;
+  // Status is derived from the evidence actually collected, not set by
+  // hand. Without this the harness kept createResult's 'blocked'
+  // default forever and could never report success, however much work
+  // it did. See result-schema.finalize().
+  finalize(result);
+
   return result;
 }
 

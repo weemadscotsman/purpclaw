@@ -22,6 +22,7 @@ const { execSync } = require('child_process');
 const {
   createResult, addFileRead, addFileChanged,
   addCommand, addVerification, addError,
+  finalize,
 } = require('../../packages/result-schema');
 const { searchFiles, readFile: ctxReadFile } = require('../../packages/context-spine');
 
@@ -191,6 +192,12 @@ async function run(task, ctx, steps, meta) {
   }
 
   result.durationMs = Date.now() - startedAt;
+  // Status is derived from the evidence actually collected, not set by
+  // hand. Without this the harness kept createResult's 'blocked'
+  // default forever and could never report success, however much work
+  // it did. See result-schema.finalize().
+  finalize(result);
+
   return result;
 }
 

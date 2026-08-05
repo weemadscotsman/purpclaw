@@ -103,6 +103,70 @@ function fail(result, reason, nextAction) {
 }
 
 /**
+ * Derive status from the evidence the harness actually collected.
+ *
+ * Every harness got this wrong, in one of two directions:
+ *
+ *   harness-claude          called pass() unconditionally, so a run that loaded
+ *                           zero files still reported PASSED — "analysis
+ *                           complete" having analysed nothing.
+ *   codex/hermes/minimax    never set a status at all, so they kept
+ *                           createResult's 'blocked' default and could never
+ *                           report success no matter how much work they did.
+ *
+ * Fake green on one, fake red on three. Both come from status being set by hand
+ * somewhere far from the evidence. This derives it from the receipts instead,
+ * so the two cannot drift:
+ *
+ *   fatal error recorded                       -> failed
+ *   nothing read, changed, or run              -> blocked   (did no work)
+ *   a verification criterion failed            -> partial   (work done, unproven)
+ *   work done, no verification at all          -> partial   (unverified is not passed)
+ *   work done and every verification passed    -> passed
+ *
+ * A harness may still call pass/partial/block/fail directly when it knows
+ * better; finalize() only fills in a status nobody set.
+ */
+function finalize(result, opts = {}) {
+  if (opts.force !== true && result.completedAt) return result;   // already decided
+
+  const read = result.filesRead.length;
+  const changed = result.filesChanged.length;
+  const ran = result.commandsRun.length;
+  const didWork = read + changed + ran > 0;
+
+  const checks = result.verification || [];
+  // passed === null means "skipped", which is neither proof nor failure.
+  const attempted = checks.filter(v => v.passed === true || v.passed === false);
+  const failedChecks = attempted.filter(v => v.passed === false);
+
+  const fatal = (result.errors || []).some(e => e.fatal === true || e.severity === 'fatal');
+
+  if (fatal) {
+    return fail(result, result.summary || 'Harness reported a fatal error.',
+      'Review result.errors.');
+  }
+  if (!didWork) {
+    return block(result,
+      result.summary || 'No files were read or changed and no commands were run — nothing was done.',
+      'Check the repository path and that the goal names something that exists.');
+  }
+  if (failedChecks.length) {
+    return partial(result,
+      `${changed} file(s) changed, ${ran} command(s) run, `
+      + `${failedChecks.length} of ${attempted.length} verification checks failed.`);
+  }
+  if (attempted.length === 0) {
+    return partial(result,
+      `${read} file(s) read, ${changed} changed, ${ran} command(s) run — no verification ran, `
+      + 'so the change is unproven.');
+  }
+  return pass(result,
+    `${read} file(s) read, ${changed} changed, ${ran} command(s) run, `
+    + `${attempted.length} verification check(s) passed.`);
+}
+
+/**
  * Record a file read.
  */
 function addFileRead(result, filePath) {
@@ -201,6 +265,7 @@ module.exports = {
   partial,
   block,
   fail,
+  finalize,
   addFileRead,
   addFileChanged,
   addCommand,

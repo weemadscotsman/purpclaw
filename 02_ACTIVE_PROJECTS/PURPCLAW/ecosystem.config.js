@@ -44,9 +44,12 @@ const PURPCLAW_GATEWAY_TOKEN = env.PURPCLAW_GATEWAY_TOKEN || '';
 const PURPCLAW_GATEWAY_URL = env.PURPCLAW_GATEWAY_URL || 'ws://127.0.0.1:18789';
 const PYTHON_BIN = 'C:/Users/Admin/AppData/Local/Programs/Python/Python311/python.exe';
 
+// purpclaw-metrics is deliberately removed: metrics_aggregator.js was retired
+// and its registry entry tombstoned. It stayed in this set, so every default
+// `pm2 start` tried to launch a script that does not exist and crash-looped.
 const CORE = new Set([
   'purpclaw-api', 'purpclaw-eventbus', 'purpclaw-state', 'purpclaw-orchestrator',
-  'purpclaw-tower', 'purpclaw-gatekeeper', 'purpclaw-metrics', 'purpclaw-pool',
+  'purpclaw-tower', 'purpclaw-gatekeeper', 'purpclaw-pool',
   'purpclaw-context', 'purpclaw-workers', 'purpclaw-nextjs', 'purpclaw-cognitive'
 ]);
 const SERVICES = (process.env.PURPCLAW_SERVICES || 'core').split(',').map(s => s.trim());
@@ -391,19 +394,9 @@ module.exports = {
       autorestart: true,
       windowsHide: true
     },
-    {
-      name: 'purpclaw-metrics',
-      script: './metrics_aggregator.js',
-      args: '--port 7890',
-      exec_mode: 'fork',
-      wait_ready: false,
-      kill_timeout: 5000,
-      max_restarts: 50,
-      restart_delay: 10000,
-      max_memory_restart: '256M',
-      autorestart: true,
-      windowsHide: true
-    },
+    // purpclaw-metrics removed. metrics_aggregator.js was retired; the app block
+    // outlived the script, so PM2 launched a nonexistent file 50 times over.
+    // Its registry tombstone stays — this is history, not an oversight.
     {
       // Drift watcher daemon — monitors registry/version/capability/doc drift,
       // auto-fixes the mechanically-regenerable surfaces (registry, build stamps),
@@ -661,5 +654,31 @@ module.exports = {
       autorestart: true,
       windowsHide: true
     },
-  ].filter(a => !isDark(a.name))
+  ].filter(a => !isDark(a.name)).filter(missingScriptFilter)
 };
+
+/**
+ * Never hand PM2 a script that does not exist.
+ *
+ * PM2 accepts the entry, fails to spawn, retries up to max_restarts (50 here,
+ * with a 10s delay), and reports the app as "errored" alongside the healthy
+ * ones. Three entries were in this state — orchestrator, metrics and workers —
+ * so every `pm2 start ecosystem.config.js` produced a wall of restart noise
+ * that made real failures impossible to see.
+ *
+ * A missing script is a config error, not a runtime condition. It is reported
+ * once, loudly, and the entry is dropped rather than launched.
+ */
+function missingScriptFilter(app) {
+  if (!app.script) return true;                     // interpreter-only entries
+  const fs = require('fs');
+  const path = require('path');
+  const abs = path.resolve(__dirname, app.script);
+  if (fs.existsSync(abs)) return true;
+  console.error(
+    `[ecosystem] SKIPPING ${app.name}: script not found at ${app.script}\n`
+    + '            PM2 would retry this until max_restarts and report it as errored.\n'
+    + '            Restore the file, or remove the app block if the service was retired.',
+  );
+  return false;
+}

@@ -56,3 +56,15 @@ tools/*/package-lock.json
 **/keys.env
 **/*.env
 !**/*.example.env
+
+# .purpclaw/ is runtime state: sessions, credentials, databases, caches.
+# It is NOT gitignored by default and six docs under it are deliberately
+# tracked, so state confinement moved credentials into a directory git was
+# watching. Ignore the contents, keep the tracked briefs.
+/.purpclaw/*
+!/.purpclaw/CAMPAIGN_STATE.md
+!/.purpclaw/COWORK_TODO.md
+!/.purpclaw/P0A_BUILDER_BRIEF.md
+!/.purpclaw/P0B_BUILDER_BRIEF.md
+!/.purpclaw/P0C_BUILDER_BRIEF.md
+!/.purpclaw/workspaces.json
