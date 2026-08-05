@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
 
 /* Tailwind v4 auto-detects content by scanning outward from the git root when
    no sources are declared. This repository's git root is `E:\god folder`, which
@@ -8,9 +8,13 @@
 
      Error: EPERM: operation not permitted, scandir 'C:\Users\Admin\Application Data'
 
-   Declaring sources explicitly turns auto-detection off. Add a line here when a
-   new surface starts using Tailwind classes; do not widen these globs to a
-   parent directory. */
+   `source(none)` on the import is the load-bearing part. Adding @source lines
+   alone does NOT switch auto-detection off — it only adds to it, which is why
+   the first attempt at this fix changed nothing. Only source(none) disables the
+   scan, after which the @source lines below are the complete content set.
+
+   Add a line here when a new surface starts using Tailwind classes. Never widen
+   these to a parent directory; that reintroduces the walk. */
 @source "../app";
 @source "../packages/ui-core";
 @source "../apps/web";

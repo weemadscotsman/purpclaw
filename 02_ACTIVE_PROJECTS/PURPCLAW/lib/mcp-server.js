@@ -241,10 +241,18 @@ const handlers = {
     }
 
     try {
-      // P0-B: route through ToolRuntime — permission profile + governance + approval + guardrails
+      // P0-B: route through ToolRuntime — permission profile + governance + approval + guardrails.
+      //
+      // operatorInitiated stays FALSE. It was true here, and tool-runtime.js
+      // hands that straight to GOVERNANCE.checkWorkflow where it auto-approves.
+      // An MCP caller is a remote program, not a human at this console — the
+      // whole reason MCP is gated is that we cannot see who is on the other end.
+      // Claiming operator authority on its behalf removed the gate for every
+      // MCP client at once.
       const result = await TOOL_RUNTIME.invoke(canonicalName, args, {
         permissionProfile: SESSION_PROFILE,
-        operatorInitiated: true,
+        operatorInitiated: false,
+        source: 'mcp',
       });
       if (result.ok) {
         response(id, {
@@ -252,8 +260,23 @@ const handlers = {
           isError: false,
         });
       } else {
+        // Denials are auditable, not just returned. Best-effort: a down ledger
+        // must not convert a clean denial into an exception.
+        try {
+          const ledger = require('./proof-ledger');
+          ledger.record({
+            kind: 'tool.denied',
+            tool: canonicalName,
+            code: result.code || 'PERMISSION_DENIED',
+            reason: String(result.error || '').substring(0, 500),
+            source: 'mcp',
+            at: new Date().toISOString(),
+          });
+        } catch (auditError) {
+          console.error(`[AUDIT] failed to persist MCP denial for ${canonicalName}: ${auditError.message}`);
+        }
         response(id, {
-          content: [{ type: 'text', text: `[error] ${result.error}` }],
+          content: [{ type: 'text', text: `DENIED (${result.code || 'PERMISSION_DENIED'}): ${result.error}` }],
           isError: true,
         });
       }

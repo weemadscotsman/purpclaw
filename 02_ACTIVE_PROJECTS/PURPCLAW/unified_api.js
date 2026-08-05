@@ -929,6 +929,48 @@ function san(s) { return typeof s !== 'string' ? '' : s.replace(/[`$;|><&{}\[\]'
 function coord(v) { const n = Number(v); return (isNaN(n) || n < 0 || n > 10000) ? 0 : Math.floor(n); }
 function ok(text) { return { content: [{ type: 'text', text: String(text).substring(0, 8000) }] }; }
 
+/**
+ * P0-B: a refused tool call must not be representable as a success.
+ * Carries isError so MCP clients surface it as a failure, plus the machine
+ * code so callers can branch on PERMISSION_DENIED vs PATH_SECURITY_BLOCKED vs
+ * TOOL_ARGUMENT_VALIDATION rather than string-matching prose.
+ */
+function denied(toolName, trResult = {}) {
+  const code = trResult.code || 'PERMISSION_DENIED';
+  return {
+    isError: true,
+    ok: false,
+    code,
+    tool: toolName,
+    content: [{ type: 'text', text: `DENIED (${code}): ${String(trResult.error || 'refused by permission engine').substring(0, 4000)}` }],
+  };
+}
+
+/**
+ * P0-B: denials must be auditable, not just logged to a console nobody reads.
+ * Best-effort — an audit sink that is down must never turn a clean denial into
+ * a crash, but it also must not silently swallow, so failures go to stderr.
+ */
+function auditDenial(toolName, args, trResult = {}) {
+  try {
+    const ledger = require('./lib/proof-ledger');
+    const record = {
+      kind: 'tool.denied',
+      tool: toolName,
+      code: trResult.code || 'PERMISSION_DENIED',
+      reason: String(trResult.error || '').substring(0, 500),
+      source: 'http',
+      args: JSON.stringify(args || {}).substring(0, 500),
+      at: new Date().toISOString(),
+    };
+    if (typeof ledger.record === 'function') ledger.record(record);
+    else if (typeof ledger.append === 'function') ledger.append(record);
+    else console.error('[AUDIT] proof-ledger exposes no record/append; denial not persisted:', record.tool, record.code);
+  } catch (e) {
+    console.error(`[AUDIT] failed to persist denial for ${toolName}: ${e.message}`);
+  }
+}
+
 async function ps(cmd, timeout = 15000) {
   try {
     const { stdout, stderr } = await execAsync(`${PS_PREFIX} "${cmd}"`, { timeout, maxBuffer: 5 * 1024 * 1024 });
@@ -1124,15 +1166,40 @@ async function executeTool(name, args) {
 
   let result = null;
   try {
+    // P0-B. Three defects lived in this call and all three defeated the
+    // permission engine while appearing to use it:
+    //
+    //  1. operatorInitiated: true was hardcoded. tool-runtime.js passes that
+    //     straight to GOVERNANCE.checkWorkflow, where it auto-approves. An HTTP
+    //     request is by definition NOT operator-initiated — there is no console,
+    //     no human at the keyboard, and the caller is remote. Every API tool call
+    //     was therefore claiming console authority and walking through the
+    //     self-modification gate unchallenged.
+    //  2. permissionProfile: 'standard' was hardcoded, overriding the profile the
+    //     constructor was carefully given from PURPCLAW_WEB_PERMISSION_PROFILE.
+    //     The operator's configured profile was read, then ignored.
+    //  3. Denials and errors were returned through ok(). A refused tool call came
+    //     back as a SUCCESS envelope whose text happened to begin "ToolRuntime
+    //     denied". No caller could distinguish a denial from a result, so the
+    //     permission engine could refuse everything and every surface would
+    //     still render success.
     const trResult = await getToolRuntime().invoke(name, args, {
-      operatorInitiated: true,
-      permissionProfile: 'standard',
+      // Let the runtime use its configured profile; do not override per call.
+      operatorInitiated: false,
+      source: 'http',
     });
-    result = trResult.ok
-      ? ok(trResult.content || trResult.stdout || trResult)
-      : ok(`ToolRuntime denied: ${trResult.error}`);
-    console.log(`[TOOL] ${trResult.ok ? 'OK' : 'DENIED'} ${name} via ToolRuntime (${Date.now() - t0}ms)`);
-  } catch (e) { result = ok(`Error: ${e.message}`); }
+    if (trResult.ok) {
+      result = ok(trResult.content || trResult.stdout || trResult);
+      console.log(`[TOOL] OK ${name} via ToolRuntime (${Date.now() - t0}ms)`);
+    } else {
+      result = denied(name, trResult);
+      console.error(`[TOOL] DENIED ${name} (${trResult.code || 'DENIED'}): ${trResult.error}`);
+      auditDenial(name, args, trResult);
+    }
+  } catch (e) {
+    result = denied(name, { error: e.message, code: 'TOOL_EXECUTION_ERROR' });
+    console.error(`[TOOL] ERROR ${name}: ${e.message}`);
+  }
 
   const ebResultPayload = JSON.stringify({ topic: 'tool.result', toolName: name, duration: Date.now() - t0 });
   const ebResultReq = http.request({ hostname: 'localhost', port: 7782, path: '/publish', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(ebResultPayload) } }, () => {});
