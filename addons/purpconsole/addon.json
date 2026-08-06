@@ -1,0 +1,15 @@
+{
+  "name": "purpconsole",
+  "type": "native side app",
+  "startup": "lazy",
+  "idleTimeoutMs": 300000,
+  "status": "PRESENT UNVERIFIED",
+  "entry": null,
+  "port": null,
+  "health": null,
+  "tools": [],
+  "permissions": [],
+  "state": [],
+  "description": "PurpConsole — standalone operator console surface.",
+  "note": "Migrated from the donor build. Wrapped, not rewritten (V3 §21)."
+}

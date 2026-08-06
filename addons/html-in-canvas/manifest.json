@@ -1,0 +1,54 @@
+{
+  "format": "arrival.space-export",
+  "version": 2,
+  "exportedAt": "2026-04-17T13:43:17.466Z",
+  "sourceSpaceId": "42485456_5879",
+  "sourceRoom": "custom.travel.center.42485456_5879",
+  "entities": [
+    {
+      "id": "1aef8fd4-6447-4e04-969a-4669c11dd52e",
+      "type": "Gate",
+      "file": "entities/1aef8fd4-6447-4e04-969a-4669c11dd52e.json"
+    },
+    {
+      "id": "9769e4b4-e5d9-4286-9353-c2c66b158347",
+      "type": "Gate",
+      "file": "entities/9769e4b4-e5d9-4286-9353-c2c66b158347.json"
+    },
+    {
+      "id": "RoomInfo",
+      "type": "Simple",
+      "file": "entities/RoomInfo.json"
+    },
+    {
+      "id": "404c7fe3-26f1-4fb6-bac7-a50bf1f3cb1a",
+      "type": "Gate",
+      "file": "entities/404c7fe3-26f1-4fb6-bac7-a50bf1f3cb1a.json"
+    },
+    {
+      "id": "608f2483-802b-4fa7-95bb-920bed1431ad",
+      "type": "Gate",
+      "file": "entities/608f2483-802b-4fa7-95bb-920bed1431ad.json"
+    },
+    {
+      "id": "75f16b87-5314-4cdf-a8d5-bb2a8292b687",
+      "type": "Gate",
+      "file": "entities/75f16b87-5314-4cdf-a8d5-bb2a8292b687.json"
+    },
+    {
+      "id": "b9a67fa0-00ce-401d-94c2-4045c4aaec35",
+      "type": "Gate",
+      "file": "entities/b9a67fa0-00ce-401d-94c2-4045c4aaec35.json"
+    },
+    {
+      "id": "fcc35518-309c-47e1-8d93-d939d6bca475",
+      "type": "Gate",
+      "file": "entities/fcc35518-309c-47e1-8d93-d939d6bca475.json"
+    },
+    {
+      "id": "user-model-nx8ohk",
+      "type": "UserModelEntity",
+      "file": "entities/user-model-nx8ohk.json"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "user-model-nx8ohk",
+  "type": "UserModelEntity",
+  "data": {
+    "glbUrl": "plugins/html-cloth.mjs",
+    "position": {
+      "x": 0.09119614958763123,
+      "y": 2.6983907222747803,
+      "z": -3.1119892597198486
+    },
+    "rotation": {
+      "x": 180,
+      "y": 7.0167096047110005e-15,
+      "z": 180
+    },
+    "scale": 1,
+    "scriptName": "HtmlCloth",
+    "params": {
+      "segmentsX": 24,
+      "segmentsY": 30
+    },
+    "state": {}
+  },
+  "state": {}
+}

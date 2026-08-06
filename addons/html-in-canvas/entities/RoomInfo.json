@@ -1,0 +1,43 @@
+{
+  "id": "RoomInfo",
+  "type": "Simple",
+  "data": {
+    "roomTitle": "HTML in Canvas",
+    "roomDescription": "",
+    "roomPrivacy": "Open",
+    "allowVisitorPropertyView": false,
+    "hideArchitecture": true,
+    "hideRoomTitle": true,
+    "hideBackPortal": false,
+    "hideFeaturedPortal": false,
+    "hideHomePortal": false,
+    "spaceDomain": "arrival.space",
+    "unifiedSplats": false,
+    "stageLightRotation": 14.693877551020439,
+    "stageLightType": "directional",
+    "stageLightShadowIntensity": 1,
+    "skyboxRotation": 134.08163265306084,
+    "skyboxIntensity": 1.1734693877551017,
+    "envLightFinal": 1.1734693877551017,
+    "stageLightIntensity": 1.109693877551021,
+    "defaultAvatar": "https://ugc.arrival.space/42485456/avatar-1775753927192.glb",
+    "allowRemix": true,
+    "stageLightDirectionalShadowRange": 8.323979591836732,
+    "stageLightDirectionalShadowQuality": 2048,
+    "gitRepoName": "html-in-canvas",
+    "gitUser": "fimbox",
+    "gitLastCommit": "3caf53b762d35dbc58e2cb176287819847baf469"
+  },
+  "state": {
+    "files": 2,
+    "memory": 110805,
+    "updated": 1776433383809,
+    "entities": 10,
+    "entitySizes": {
+      "user-model-juiqvi": 45106,
+      "user-model-nx8ohk": 65699
+    },
+    "screenshotTime": 1776420086085,
+    "screenshotDataHash": "03e971620e65eaa5a25e13025396d578a8a9afdc76155a6077c22dee7dd64a77"
+  }
+}

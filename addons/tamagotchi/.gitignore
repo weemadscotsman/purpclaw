@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+.pnp.*
+.yarn/*
+bun.lock
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist/
+build/
+*.log
+
+# Environment and config
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Claude-specific
+.claude/
+
+# Data directory
+data/
+
+# Testing
+coverage/
+*.test.js
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Pet state files (local to each user)
+/tmp/claude-pet-*.json
+/tmp/pet-*.json
+/tmp/pet-*.log
+
+# Debug logs
+debug.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-error.log
+
+# OS files
+Thumbs.db
+Desktop.ini
