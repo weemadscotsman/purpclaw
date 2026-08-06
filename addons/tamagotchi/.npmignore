@@ -1,0 +1,38 @@
+# Development files
+.idea/
+.vscode/
+.env
+.env.*
+*.log
+
+# Source control
+.git/
+.gitignore
+
+# Documentation sources
+CONTRIBUTING.md
+CODE_OF_CONDUCT.md
+CHANGELOG.md
+
+# Build and test
+node_modules/
+bun.lock
+package-lock.json
+yarn.lock
+
+# Demo files
+demo.gif
+scripts/demo.ts
+
+# Claude-specific
+.claude/
+claude-commands/
+setup.sh
+
+# Data
+data/
+
+# Temporary files
+tmp/
+*.tmp
+.DS_Store

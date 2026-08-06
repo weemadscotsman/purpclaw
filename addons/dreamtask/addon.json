@@ -1,0 +1,15 @@
+{
+  "name": "dreamtask",
+  "type": "native module",
+  "startup": "lazy",
+  "idleTimeoutMs": 300000,
+  "status": "PRESENT UNVERIFIED",
+  "entry": null,
+  "port": null,
+  "health": null,
+  "tools": [],
+  "permissions": [],
+  "state": [],
+  "description": "DreamTask — background consolidation task definition.",
+  "note": "Runtime implementation lives in app/core/idle/dream-task.js with the real task registry."
+}

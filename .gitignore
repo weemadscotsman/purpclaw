@@ -1,39 +1,49 @@
-# Dependencies — only root is managed
+# Dependencies
 node_modules/
 
-# pnpm workspace store
-.pnpm-store/
-
-# Build outputs
-.next/
+# Build output
 dist/
-build/
+.next/
 out/
+build/
 
-# Environment
-.env
-.env.local
-.env.*.local
-.env.production
-
-# Logs
+# Logs and caches
 *.log
 npm-debug.log*
-pnpm-debug.log*
 yarn-debug.log*
-yarn-error.log*
+.pnpm-debug.log*
+.cache/
+.temp/
+tmp/
 
-# OS
+# OS noise
 .DS_Store
 Thumbs.db
 
-# Lockfiles (only root lockfile is canonical)
-# Child package lockfiles are NOT committed for workspace packages
-apps/*/package-lock.json
-packages/*/package-lock.json
-tools/*/package-lock.json
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
 
-# Build artifacts
-*.tsbuildinfo
-.next/
-.cache/
+# Runtime state — local to each machine
+workspace/
+vault/
+evidence/
+var/
+agent_work/
+*.sqlite
+*.db
+*.wal
+*.shm
+
+# Embedded git repos (not ours)
+.git_bak/
+
+# Test snapshots (runtime artifacts)
+snapshots/
+
+# Runtime memory and learning data
+memory/
+

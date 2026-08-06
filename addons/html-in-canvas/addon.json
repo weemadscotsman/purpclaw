@@ -1,0 +1,15 @@
+{
+  "name": "html-in-canvas",
+  "type": "research experiment",
+  "startup": "lazy",
+  "idleTimeoutMs": 300000,
+  "status": "PRESENT UNVERIFIED",
+  "entry": null,
+  "port": null,
+  "health": null,
+  "tools": [],
+  "permissions": [],
+  "state": [],
+  "description": "HTML-in-canvas rendering experiment.",
+  "note": "Migrated from the donor build. Wrapped, not rewritten (V3 §21). Needs a verification run before it can claim LIVE VERIFIED."
+}
