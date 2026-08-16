@@ -128,12 +128,12 @@ export function TraceTerminal({ compact = false }: { compact?: boolean }) {
           <option value="all">all</option>
           {sources.map(source => <option key={source} value={source}>{source}</option>)}
         </select>
-        <button onClick={() => setPaused(v => !v)} title={paused ? 'resume' : 'pause'} className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/65">{paused ? '▶' : '❙❙'}</button>
-        <button onClick={() => setAutoScroll(v => !v)} title={autoScroll ? 'auto-scroll on' : 'auto-scroll off'} className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/65">{autoScroll ? '⤓' : '⇅'}</button>
-        <button onClick={copyAll} title="copy all visible" className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/65">⧉</button>
-        <button onClick={() => setEvents([])} title="clear" className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/45">✕</button>
-        <button onClick={() => setExpanded(v => !v)} title={expanded ? 'shrink' : 'fullscreen'} className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/45">{expanded ? '⊟' : '⛶'}</button>
-        <button onClick={() => setOpen(false)} title="minimize to pill" className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/45">—</button>
+        <button onClick={() => setPaused(v => !v)} title={paused ? 'resume' : 'pause'} aria-label={paused ? 'resume' : 'pause'} className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/65">{paused ? '▶' : '❙❙'}</button>
+        <button onClick={() => setAutoScroll(v => !v)} title={autoScroll ? 'auto-scroll on' : 'auto-scroll off'} aria-label={autoScroll ? 'auto-scroll on' : 'auto-scroll off'} className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/65">{autoScroll ? '⤓' : '⇅'}</button>
+        <button onClick={copyAll} title="copy all visible" aria-label="copy all visible" className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/65">⧉</button>
+        <button onClick={() => setEvents([])} title="clear" aria-label="clear" className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/45">✕</button>
+        <button onClick={() => setExpanded(v => !v)} title={expanded ? 'shrink' : 'fullscreen'} aria-label={expanded ? 'shrink' : 'fullscreen'} className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/45">{expanded ? '⊟' : '⛶'}</button>
+        <button onClick={() => setOpen(false)} title="minimize to pill" aria-label="minimize to pill" className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/45">—</button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-2.5 py-1.5 font-mono text-[11px] leading-5">
         {visible.length === 0 && <div className="text-white/25">No trace events yet. Actions appear here as they route. Click any line to copy.</div>}
