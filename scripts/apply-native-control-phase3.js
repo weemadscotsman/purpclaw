@@ -3,7 +3,7 @@
 /**
  * Idempotent Phase-3 patcher for the live PurpClaw checkout.
  *
- * It deliberately edits only the two integration seams required to put the
+ * It deliberately edits only the integration seams required to put the
  * deterministic native-first router into the existing agent loop:
  *   - lib/agent-loop.js
  *   - package.json scripts
@@ -49,15 +49,30 @@ function patchAgentLoop() {
 
   s = replaceOnce(
     s,
-    "    '  Search symbols: {\\\"tool\\\": \\\"mcp__omnicode__search_symbols\\\", \\\"args\\\": {\\\"path\\\": \\\".\\\", \\\"query\\\": \\\"User\\\"}}',\n    '  Check MCP health: {\\\"tool\\\": \\\"mcp__omnicode__health_check\\\", \\\"args\\\": {}}',\n    '  Do NOT call MCP tools via the shell tool — call them directly.',",
-    "    '  Search code: {\\\"tool\\\": \\\"code-search\\\", \\\"args\\\": {\\\"query\\\": \\\"User\\\"}}',\n    '  MCP is fallback. If an MCP-only capability is needed, call that MCP tool directly rather than tunnelling it through shell.',",
-    'system-prompt examples'
+    "    '  Search symbols: {\"tool\": \"mcp__omnicode__search_symbols\", \"args\": {\"path\": \".\", \"query\": \"User\"}}',",
+    "    '  Search code: {\"tool\": \"code-search\", \"args\": {\"query\": \"User\"}}',",
+    'system-prompt native search example'
   );
+
+  const routedBlock = [
+    '      const routed = await CONTROL.invokeTool(call.tool, call.args, TOOLS, {',
+    "        operationId: 'agent-' + (opts.sessionId || 'session') + '-turn-' + turn + '-' + call.tool,",
+    '        goalId: opts.goalId,',
+    '        workflowId: opts.workflowId,',
+    '        nodeId: opts.nodeId,',
+    "        soulId: opts.soulId || 'quill',",
+    "        providerId: provider || model || 'default',",
+    '      });',
+    '      const result = routed.result;',
+    '      if (routed.executedTool !== call.tool) {',
+    "        yield { type: 'control-route', requestedTool: call.tool, executedTool: routed.executedTool, surface: routed.surface, fallbackUsed: routed.fallbackUsed, operationId: routed.operationId };",
+    '      }',
+  ].join('\n');
 
   s = replaceOnce(
     s,
     '      const result = await TOOLS.invoke(call.tool, call.args);',
-    `      const routed = await CONTROL.invokeTool(call.tool, call.args, TOOLS, {\n        operationId: \\`agent-\\${opts.sessionId || 'session'}-turn-\\${turn}-\\${call.tool}\\`,\n        goalId: opts.goalId,\n        workflowId: opts.workflowId,\n        nodeId: opts.nodeId,\n        soulId: opts.soulId || 'quill',\n        providerId: provider || model || 'default',\n      });\n      const result = routed.result;\n      if (routed.executedTool !== call.tool) {\n        yield { type: 'control-route', requestedTool: call.tool, executedTool: routed.executedTool, surface: routed.surface, fallbackUsed: routed.fallbackUsed, operationId: routed.operationId };\n      }`,
+    routedBlock,
     'tool invocation seam'
   );
 
