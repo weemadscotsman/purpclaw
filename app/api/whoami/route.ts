@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkOperator } from '../_lib/operator-auth';
+import { checkRateLimit } from '../_lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,6 +17,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = checkOperator(request);
+  if (!auth.ok) return auth.response;
+
+  const limited = checkRateLimit(request, 'whoami-post', 10);
+  if (limited) return limited;
+
   let body: any = {};
   try { body = await request.json(); } catch {}
   
