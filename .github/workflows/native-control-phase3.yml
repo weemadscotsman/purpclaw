@@ -1,0 +1,63 @@
+name: Native Control Phase 3
+
+on:
+  pull_request:
+    paths:
+      - "lib/control/**"
+      - "lib/agent-loop.js"
+      - "lib/mcp.js"
+      - "lib/tools/**"
+      - "tests/control-router-*.test.js"
+      - "scripts/apply-native-control-phase3.js"
+      - "scripts/certify-control-plane-live.js"
+      - ".github/workflows/native-control-phase3.yml"
+  workflow_dispatch:
+
+jobs:
+  native-control:
+    name: Native-first control / MCP fallback
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+        node: [22, 24]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - name: Install repository dependencies
+        run: npm install --ignore-scripts
+
+      - name: Apply idempotent Phase-3 integration patch
+        run: node scripts/apply-native-control-phase3.js
+
+      - name: Prove patcher is idempotent
+        run: node scripts/apply-native-control-phase3.js
+
+      - name: Native-over-MCP tests
+        run: node --test tests/control-router-native-priority.test.js tests/control-router-agent-integration.test.js
+
+      - name: Live control-plane certification
+        run: node scripts/certify-control-plane-live.js
+
+      - name: Existing workflow syntax regression
+        run: |
+          node --check lib/workflow-registry.js
+          node --check lib/commands/next.js
+          node --check lib/commands/workflow.js
+          node --check lib/mcp.js
+          node --check lib/agent-loop.js
+
+      - name: Upload certification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-control-cert-${{ matrix.os }}-node-${{ matrix.node }}
+          path: artifacts/control-certification-live.json
+          if-no-files-found: warn
