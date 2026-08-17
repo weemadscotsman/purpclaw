@@ -1,0 +1,17 @@
+{
+  "schema": "purpclaw.cert-gate.coordinator-lib-wire.v1",
+  "cert_id": "agent_work/cert_gates/coordinator_lib_wire/",
+  "verdict": "PASS",
+  "date": "2026-08-17T13:30:26.294662+00:00",
+  "reason": "all 10/10 tests green",
+  "tests_total": 10,
+  "tests_pass": 10,
+  "tests_fail": 0,
+  "pattern_fixed": "5 lib/ require paths + 1 task_decomposer inner require path + 1 agent_score copy",
+  "remaining_to_tesco_testable": [
+    "EventBus service on port 7782 must be started",
+    "LLM provider needs API keys for actual chat (loads offline)",
+    "Tower service on port 7790 must be started"
+  ],
+  "honest_label": "all 7 dependencies load clean; full /api/coordinate round-trip not yet certified (EventBus + Tower still down)"
+}

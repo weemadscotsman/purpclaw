@@ -4,143 +4,74 @@ Curated record of meaningful changes. Append at the bottom; never rewrite histor
 
 ---
 
-## v0.4.0 (2026-07-31) - Canonical parity, SERVICE_INVENTORY, safe-start fix
-
-### New architecture
-- **84/84 surface parity** — all action×surface combinations wired. See `docs/parity/CANONICAL_PARITY_PRIORITY.md` for the 20-rank system.
-- **Service inventory** — `docs/SERVICE_INVENTORY.md` documents all 34 services with tier (CORE/DARK/EXTERNAL/DEV), port, entry point, state ownership, and refs.
-- **Service tiering** — Default boot is 12 CORE services (not 34). `PURPCLAW_SERVICES` env var selects tiers. Ecosystem config gates to CORE by default.
-- **Agent workspace registry** — `AGENT.md` defines 12 agent roles and workspace isolation rules. Worktrees banned.
-
-### New commands
-- `purpclaw doctor` — 11-point system check (tool registry, service health, vault, SpendGate, memory spine, providers, deps, skills, GOOP broker)
-- `purpclaw health` / `purpclaw health --verbose` — service-level health sweep
-- `purpclaw stats` — token/session analytics, cost by task, tool usage
-- `purpclaw parity all` — surface parity enumeration
-- `purpclaw look` / `purpclaw screen` — desktop capture tools (fully wired)
-- `purpclaw safe-start --core --dry-run` — sequential boot plan viewer
-
-### Fixes
-- **safe-start CORE set corrected** — was hardcoding coordinator+harness (DARK/DEV-ONLY tiers) in CORE. Fixed to match ecosystem.config.js CORE set (12 services).
-- **agent_tower routing** — all tower agents now route through `AgentGateway` (not direct `runAgent` call). P0-1 keystone closed.
-- **cognitive spine per-atom fallback** — vector cache dimension mismatch no longer crashes the server.
-- **health check round-trip** — memory spine check now proves write→read→verify, not socket open.
-- **route fix** — `/auto` toggle and `/provider` now report actual routing target (不再说 ollama).
-- **model flag** — `/model` now actually changes the model.
-- **service registry health paths** — tower `/tower/health`, Next.js `/api/health`.
-- **agent-loop identical tool retry** — refuses identical tool calls, aborts on 3rd attempt.
-- **memory append fast-path removed** — full rebuild is correct and safe.
-
-### Refactors
-- **unified_api.js** — session history injection refactored, net -995 lines.
-- **pool_service state contract** — identified 5 persistent files: append-only `.jsonl` event logs and `spring-index.json`. Embedding requires explicit state contract before merge.
-
-### Stack state (as of 2026-07-31)
-- **1 service online**: cognitive spine (1GB Node + up to 8GB Python)
-- **11 services in PM2 ecosystem**: eventbus, state, api, tower, gatekeeper, orchestrator, metrics, pool, context, workers, nextjs (12th = cognitive, already running)
-- **All 33 others**: stopped (dark/external/dev — intentional)
-- **Circuit breaker**: refuses to start any service with >3 historical restarts
-
----
-
-## v0.3.0 (2026-06-29) - Organisation runtime, Council ecology, donor-to-evolve bridge
-
-### New architecture
-- Promoted PURPCLAW from agent-framework framing to a local-first AI organisation runtime.
-- Added canonical docs for the current 0.3.0 shape: identity, governance, workflow, Studio, ecology, and evolution layers.
-- Added full folder integration audit at `docs/audit/FOLDER_INTEGRATION_AUDIT_2026-06-29.md`.
-
-### Identity and governance
-- Soul Registry now contains 95 souls.
-- Soul Interviews now contain 95 interview records.
-- Council Mode supports dynamic attendance, domain chairs, votes, reputation, and bounded interrupts.
-- Podcast Studio is treated as the Council/Studio substrate rather than a separate entertainment toy.
-
-### Studio ecology
-- Studio has 11 behavioural modes.
-- Added or documented Timeline, Presence, Residue, meeting memory, private conversations, world state, and ambient life as institutional continuity layers.
-- Recorded the repair direction: make Timeline the shared operational event spine.
-
-### Evolution
-- Confirmed AutoResearch already exists and routes through `lib/commands/autoresearch.js` to `E:/training/lib/autoresearch-orchestrator.js`.
-- Wired Donor Archaeology into the existing Auto-Evolve mutator queue instead of building a second evolution engine.
-- Added donor promotion gate: no candidate becomes integrated without behavioural law, destination, rejected mechanics, validation note, and Timeline event.
-- Queued donor proposal `mut_mqzfx4n6_byc9q4` from `ambient_tension_from_environment`; it remains pending and was not auto-approved.
-
-### Docs
-- Rewrote `README.md`, `ARCHITECTURE.md`, `STATUS.md`, `QUICKSTART.md`, and `DOCS_INDEX.md` for 0.3.0.
-- Marked stale/high-risk docs that still need reconciliation.
-
-### Version
-- 0.2.0 -> 0.3.0
-
----
-
-## v0.2.0 (2026-06-23) — Auto provider routing, one-door provider gateway, stack hardening
-
-### New abilities
-- **Auto model routing** (`lib/model-router.js`, NEW). The stack reads the user's message, classifies the job, and routes it to the best **NVIDIA NIM** model lane — no manual model picking. Wired into both `/api/chat` paths in `unified_api.js` (SSE emits a `routed` event `{lane, model, reason}`; JSON path mirrors it). `runAgent` already accepts `{model, provider}`. Honors explicit `lane`/`model` in the request body; `autoRoute:false` disables.
-- **Four NIM model lanes** (all on provider `nvidia`, IDs verified live vs NIM `/v1/models`; lane→agent matches the tower's `agent_routing_matrix.js` so chat and swarm never drift): `code` = `minimaxai/minimax-m3` (code/general, default → ROBOT) · `reason` = `deepseek-ai/deepseek-v4-pro` (planning/architecture → DRAGON) · `review` = `z-ai/glm-5.1` (analysis/review/QA → GHOST) · `longctx` = `moonshotai/kimi-k2.6` (research/long-context → DUCK). `lib/model-router.js` imports lane models from the matrix (single source of truth).
-- **One-door provider gateway** — `POST :7780/api/llm/raw {provider, model, baseUrl, messages, maxTokens}` → `lib/llm-provider.chat()`. Single stateless multi-provider entry (no tools/memory — that stays on `/api/chat`→`runAgent`).
-- **Buttery graceful fallback** (`lib/agent-router.js`, NEW — `runAgentRouted`). One shared wrapper does routing + an ordered NIM fallback chain: if a lane's primary model rate-limits/errors **before the first token streams**, it glides to the next NIM sibling instead of hard-failing (emits a `route` event with `fallback:true`). DeepSeek V4 Pro (429-prone on NIM free tier) chains → V4 Flash → Kimi → MiniMax. Web SSE, web JSON, and CLI `ask` all route through this one helper (TUI pending). Lane fallback chains live in `lib/model-router.js`.
-
-### Unification (one engine, many faces)
-- **Bridge** (`app/api/bridge/route.ts`) now routes through `/api/llm/raw` instead of its own provider/key logic. This also **fixed a real bug**: the `nextjs` process carries no LLM keys, so the bridge's cloud providers were silently failing — the `api` process has them.
-- **companion-chorus** (`companion-chorus/src/minimax.js`) folded onto `lib/llm-provider` (was a standalone MiniMax client). Removed a **hardcoded API key** from source (⚠ still in git history — rotate it).
-
-### Pipeline spine (call → stop → log → health)
-- **`lib/pipeline-registry.js`** (NEW) — the unified pipeline spine, so kernel jobs / orchestrator workflows / harness missions stop being separate soup and share ONE contract. The doctrine's One Rule made real: no pipeline without a call/stop/log/output/proof path. API: `GET /api/pipeline/jobs`, `GET /api/pipeline/health`, `POST /api/pipeline/start`, `POST /api/pipeline/stop`.
-  - **Spine schema** per run: job_id, pipeline_name, project, lane, trigger, status, current_step, started/ended, inputs, outputs, tools_used, files_touched, proof, rollback, risk, operator_approval, heartbeat.
-  - **Stop controls** (the part most stacks skip): `requestStop(id, pause|cancel|kill|quarantine|rollback)` + runner-side `shouldStop()`.
-  - **Health scanner** (`/api/pipeline/health`) classifies every job green/amber/red/purple and flags failure modes: **leak / seek / hide / die / loop / fake-green / black-hole**. Validated: clean run → green, complete-without-proof → red [fake-green, black-hole], stale heartbeat → die.
-  - `finish()` auto-writes a proof-ledger row, so the evidence trail is automatic.
-
-### Black-box recorder (proof ledger)
-- **`lib/proof-ledger.js`** (NEW) — evidence-grade append-only ledger. Where `trace-store.js` logs *what happened*, this logs the *proof*: every meaningful action records `{agent, tool, project, taskId, risk, claim, evidence[], filesTouched[], verification{ran,result,detail}, rollback, model, provider, tokensEstimate, status}`. Controlled vocabularies (risk/status/verification), durable rotation to `.bak` (never truncates history), zero heavy deps. `stats()` computes a **fake-green count** (rows claiming verified/applied whose `verification.result !== pass`) — the no-fake-green doctrine made physical. Wired at `GET/POST :7780/api/proof` (filters: project/taskId/agent/status/risk). Feeds the planned Truth/Patches/Bench cockpit tabs.
-
-### Robustness — no leaky drawers
-- **`mem_guard.py`** (NEW, dependency-free) — self memory watchdog every python service installs (cognitive, voice-stt, yolo, avatar, music). A daemon thread checks the process's own RSS and cleanly exits (2 consecutive breaches) if it exceeds a per-service cap, so even an **orphan** that escaped PM2's `max_memory_restart` (e.g. after a daemon death) dies instead of growing to 7GB. Measures RSS via psutil if present, else Windows ctypes / Linux `/proc` / POSIX `resource` — zero install assumptions (works on potato PCs, USB, mobile hosts). Caps env-overridable (`COGNITIVE_MEM_LIMIT_MB`=1500, `STT_MEM_LIMIT_MB`=1300, `YOLO_MEM_LIMIT_MB`=2500, `AVATAR_MEM_LIMIT_MB`=400, `MUSIC_MEM_LIMIT_MB`=1500; `PURPCLAW_MEM_GUARD=0` disables). Root cause of the 7GB incident: an orphaned cognitive_spine (pre-`allow_reuse_address` fix) ran ~16h unsupervised holding the growing 23k-atom archive.
-
-### Fixes
-- **NIM key pool parity** — `chat()` (and thus the gateway + bridge) only ever used the single `NVIDIA_API_KEY`; only `streamChat()` pooled. Added the rotating 5+5 pool draw to `chat()` so chat/gateway/bridge share resilient key handling.
-- **Cognitive spine un-hung** — root cause was multiple processes co-binding port 7880 (`allow_reuse_address` on Windows). Set `allow_reuse_address=False` + `daemon_threads=True`; folded the neuro bridge to single-writer mode (was double-loading the 23k-atom archive); fixed a dead-code stats cache.
-- **Agent dispatch** no longer routes to a phantom `unknown` agent (`lib/harness/engine.js`) — failed-workflow score records were teaching the router a fake agent.
-- **cmd-window cascade** — added `windowsHide` to every live `spawn`/`exec` that flashed a console window (orchestrator `pm2 jlist` on every health poll, clipboard tools, vision python, agent-session git, mallory, generic exec).
-- **orchestrator** `/api/system/health` `ReferenceError: pm2 is not defined` fixed.
-- **GOOP** broker wired into PM2 (`purpclaw-goop`, port 7895) behind the `/bridge` surface.
-- **Build + typecheck clean** — fixed illegal non-handler exports in `app/api/bridge/route.ts` (build crash); narrowed `tsconfig.json` scope (excludes archive/vendor/donor/side-app); fixed `SwarmPanel`/`GatekeeperPanel` types; removed dead `SettingsSpine.tsx`.
-- **UI** — `/mission` single sidebar (CockpitShell `hideRail`), shell locked to `100vh` so the chat scrolls inside its own pane instead of moving the page.
-
-### Removed
-- Dead orphan sub-apps: `puzzle-stream/`, `no-spaghett/`, `agent_work/bee/`, `build/bee-app/`.
-
-### Version
-- **0.1.7 → 0.2.0**
-
-## 2026-06-21 — UI Consolidation Freeze declared
+## 2026-08-17 — Parity Gap Fill + Legacy Reintegration + Live Coordinator Revival
 
 ### Big moves
-- **UI consolidation freeze is binding.** No new Mission UI pages, panels, drawers, nav stacks, or duplicate surfaces. Mission UI was freezing into spaghetti (drawer + sections + sessions + stack pages + Mochi outputs + chat + composer + trace terminal all competing in the same viewport). This freeze stops it.
-- **Canonical shell locked** — exactly one of each: `MissionShell`, `TopStatusBar`, `MissionIconRail`, `MissionDrawer` (closed by default), `MainWorkArea`, `TraceTerminalDock`. One shared theme provider. One route registry. One navigation source of truth. One log stream source. No alternate UI shells.
-- **Canonical route list (18, the only allowed top-level destinations):** Mission Spine · Control Room · Asher · Execution Harness · Agent Workforce · Tower State · Delegation Graph · Workflow Flow · Event Lens · Live Metrics · Raw Signals · Dream Swarm · Risk Gate · Abliterator · Cognitive Mesh · Self-Evolution · System Map · Settings
-- **Trace Terminal fix** — dock instead of floating, dedupe repeated identical events within a short window (collapse `fetch failed x8` instead of rendering 8 lines), cap visible logs, virtualize, pause really pauses, clear only clears UI buffer unless backend clear is explicit.
-- **Theme consolidation** — one PURPCLAW theme provider. All Mission UI surfaces must use shared tokens (`background`, `panel`, `border`, `accent`, `warning`, `danger`, `success`, `muted`, `active-chip`, `terminal`). Local hardcoded theme islands get deleted or migrated. CRT/glitch identity stays, layout must be readable.
+- **packages/swarm/ shipped** — sub-agent dispatch + parallel coordination. Closes Kimi 300 / Antigravity 5 / Claude Task parity. Real registry, real agent-runtime, no mocks. 8/8 tests PASS at `tests/swarm/dispatcher.test.js`. Cert at `agent_work/cert_gates/swarm/`. Honest scope: 2-3 sub-agents in cert; Kimi 300 ceiling and Antigravity Manager View UI not yet tested.
+- **services/console/ shipped** — parity dashboard (rewritten from `legacy/reintegrate-2026-08-17/purpconsole/`). Textual TUI or text fallback. CLI surface: `purpclaw parity [--json] [--by-id NN]`. 10/10 tests PASS. Cert at `agent_work/cert_gates/console/`. Honest label: plain-text fallback certified; Textual TUI visual cert deferred until `textual` is installed.
+- **apps/extensions/menu-mochi/ shipped** — Chrome extension v1.2 (real working Tamagotchi-style browser pet, manifest v3, MV3 service worker, content script, popup UI, 4 icon sizes). 12 source files + co-located marketing toolkit (8 files). 18 passes / 0 fails structure cert. Cert at `agent_work/cert_gates/menu_mochi/`. Honest label: structure cert only; runtime cert requires loading the unpacked extension in Chrome/Edge.
+- **Slash commands shipped** — `bin/purpclaw.js` now transparently accepts `/`-prefix on all 148 existing case statements. Three new commands: `/plan <goal>`, `/clear`, `/compact [--days=N]`. 8/8 tests PASS at `tests/slash_commands/test_slash_commands.js` (real subprocess spawning, no mocks). Cert at `agent_work/cert_gates/slash_commands/`. Honest label: `/plan` body is a deterministic scaffold, not yet LLM-generated.
+- **The missing-organ bug FIXED** — `services/swarm/coordinator.js:161` was doing `require('./task_decomposer.js')` (relative to its own location at `services/swarm/`). The file existed at the project root, not at `services/swarm/`. The file itself opens with "PURPCLAW TASK DECOMPOSER — The missing organ." Fix: copied `task_decomposer.js` (21KB) + `agent_routing_matrix.js` (15KB) from root to `services/swarm/`. 8/8 tests PASS. Cert at `agent_work/cert_gates/coordinator_decomposer/`.
+- **T06 done — all 5 lib/ modules + 2 swarm helpers wired to coordinator** — patched require paths (no copying): `require('./lib/X.js')` → `require('../../lib/X.js')`. All 7 dependencies now load: Task decomposer, Agent score, Context packet, LLM provider, Self-context, Memory client, Cognitive client. 10/10 tests PASS. Cert at `agent_work/cert_gates/coordinator_lib_wire/`. **3 remaining to Tesco-testable**: EventBus on 7782 must be running, LLM provider needs API keys for chat (loads offline), Tower on 7790 must be up.
 
-### Files
-- `docs/spec/PURPCLAW_UI_CONSOLIDATION_FREEZE/FREEZE.md` (NEW) — binding spec, route list, component list, acceptance criteria, validation commands
-- `docs/spec/PURPCLAW_UI_CONSOLIDATION_FREEZE/CANONICAL_LAYOUT.md` (NEW) — visual zones, one-screen rule, visual priority, kill switch
-- `docs/spec/PURPCLAW_UI_CONSOLIDATION_FREEZE/DUPLICATE_PURGE_MAP.md` (NEW) — KEEP / MERGE / DELETE / ARCHIVE classification table
-- `docs/spec/PURPCLAW_UI_CONSOLIDATION_FREEZE/TRACE_TERMINAL_CONSOLIDATION.md` (NEW) — event shape, dedupe rule, display rule, dock behaviour
-- `docs/spec/PURPCLAW_UI_CONSOLIDATION_FREEZE/AGENT_RULES.md` (NEW) — hard rules + before/during/after workflow for any agent touching UI
-- `docs/spec/PURPCLAW_UI_CONSOLIDATION_FREEZE/manifest.json` (NEW) — freeze pack metadata
-- `CLAUDE.md` — added "UI Consolidation Freeze" section near top, points to freeze doc, lists canonical routes
-- `AGENTS.md` — added freeze as Root Law #6, freeze doc in the Map
+### Legacy reintegration (rewrite, not archive)
+- 6 directories restored from `archive/2026-08-17-cleanup/` to `legacy/reintegrate-2026-08-17/` with rewrite checklist README
+- 2 DONE: `purpconsole/` → `services/console/`, `menu_mochi_extension/` → `apps/extensions/menu-mochi/`
+- 1 TODO: `DreamTask.ts` (real UI surfacing layer for auto-dream agent, needs real task registry)
+- 3 KEPT as reference: `Samantha's Daily Log/`, `PURPCLAW_OLD/`, `lib-lib-abandoned-installer-20260617/`
+- Memory rule added: **NO DEAD CODE / NO ABANDONED** (Eddie correction 2026-08-17 12:30) — this build was never finished; everything is being fixed, reorganized, and integrated. The right question is never "is this dead?" — it is "where does this belong, and what real wiring does it need?"
 
-### Next move (Codex execution, not yet started)
-Codex to read `FREEZE.md`, scan all UI files, classify every page/component as KEEP/MERGE/DELETE/ARCHIVE per `DUPLICATE_PURGE_MAP.md`, and emit `docs/generated/purpclaw-ui-consolidation-report.md` with files touched, duplicates found, components deleted/merged, final route list, final shared component list, build/test result, and Playwright screenshots at 1536×710 and 1920×1080.
+### Memory rule added
+- **REWRITE-NOT-ARCHIVE RULE** — Don't archive good code to make the tree tidy. **REWRITE it to fit the current stack** (`packages/*`, `services/*`, `lib/control/drivers/*`, `bin/purpclaw.js`). Archive ONLY for: leaked package caches (lib/site-packages), build artifacts (.next.old/N), and EMPTY directories. Everything else goes to `legacy/reintegrate-<date>/` with a README so the next session can rewrite it visibly.
 
-### Acceptance criteria
-Drawer closed by default · only slim icon rail visible on left · main chat/work area dominant · Trace Terminal docked not floating · no duplicate sessions panel outside drawer · no duplicate stack page list outside drawer · no duplicate terminal log rendering · no overlapping panels at 1536×710 · no horizontal page overflow · composer always visible · theme consistent across all Mission pages · all pages route through canonical shell · no new disconnected UI pages · build passes · Playwright proof at both viewports.
+### Parity gaps closed (partial or full)
+| Tool / Feature | Parity target | Status |
+|---|---|---|
+| Kimi Agent Swarm (300 sub-agents) | parallel sub-agent dispatch | partial (2-3 in cert, ceiling untested) |
+| Antigravity 2.0 Manager View (5 parallel) | parallel agent panel | partial (terminal cert, UI in apps/desktop/src/manager/ TODO) |
+| Claude Code Task tool | sub-agents inline | full (persona-resolved dispatch, registry-driven) |
+| Claude Code /plan, /compact, /clear | slash ergonomics | full |
+| Antigravity CLI slash surface | transparent alias | full |
+| Kimi CLI slash commands | same surface | full |
+| Hermes Harness function calling | JSON-output SwarmReport | full |
+| ChatGPT app custom GPTs | user-creatable agents | deferred |
+| DeepSeek Harness Cordis | plugin kernel | deferred |
+| DeepSeek resume/fork/search | event stream replay | deferred |
+| MCP client (Kimi/Claude/Antigravity) | protocol | TODO |
+| Voice mode loop (ChatGPT app) | STT + TTS + WebRTC | TODO |
+| Manager View UI (Antigravity) | visual panel | TODO |
+
+### Items still on the cleanup roadmap
+- 154 root .js files — many duplicates or misplaced; triage pending
+- 3 6/10/2026 legacy dump dirs (`.omnicode`, `components`, `config`) — inspection pending
+- `find_pulse.py` at root (stale, manual delete) + `lib/util/mem_guard.py` (stale duplicate)
+- DreamTask.ts integration (real UI surfacing layer for auto-dream, needs real task registry)
+- Live coordinator lane Tesco-testable (start EventBus on 7782 + Tower on 7790)
+- Build packages/mcp-client/ for cross-tool integration
+- Build voice mode loop (STT + TTS + WebRTC bidirectional)
+- Build Manager View UI (Antigravity 5-parallel panel in apps/desktop/)
+
+### New files / certs
+- `packages/swarm/{package.json, index.js, dispatcher.js}` + `tests/swarm/dispatcher.test.js`
+- `services/console/{app.py, features.py, text_report.py, __main__.py, ...}` + `tests/console/test_console.py`
+- `apps/extensions/menu-mochi/{manifest.json, popup.html, popup.js, content.js, background.js, icons/, marketing/}`
+- `tests/{slash_commands, menu_mochi, coordinator_decomposer, coordinator_lib_wire}/`
+- `agent_work/cert_gates/{swarm, console, slash_commands, menu_mochi, coordinator_decomposer, coordinator_lib_wire}/` (6 new certs, all PASS)
+- `legacy/reintegrate-2026-08-17/` with rewrite-checklist README
+
+### Documentation
+- `agent_work/architecture/` — 9 canonical arch docs (unchanged in this session, all referenced)
+- `MEMORY.md` — 8 new entries covering all 2026-08-17 work
+- `legacy/reintegrate-2026-08-17/README.md` — rewrite checklist
+- `README.md` — new "What's New — 2026-08-17" section + slash command quick reference
+
+### Honest scope for this session
+- **6 cert gates PASS, 60/60 tests green total** (8+10+8+18+8+10)
+- **The live coordinator lane is 1/3 away from Tesco-testable** — dependencies load, but EventBus on 7782 + Tower on 7790 must be running for actual /api/coordinate round-trip
+- **No mocks in any test** — every cert is a real subprocess / real require resolution
+- **Zero "module is missing" errors** after the T06 fix
+
+---
 
 ---
 

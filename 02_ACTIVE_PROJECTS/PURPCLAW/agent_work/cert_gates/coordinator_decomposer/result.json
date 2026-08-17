@@ -1,0 +1,20 @@
+{
+  "schema": "purpclaw.cert-gate.coordinator-decomposer.v1",
+  "cert_id": "agent_work/cert_gates/coordinator_decomposer/",
+  "verdict": "PASS",
+  "date": "2026-08-17T12:17:12.131152+00:00",
+  "reason": "all 8/8 tests green",
+  "tests_total": 8,
+  "tests_pass": 8,
+  "tests_fail": 0,
+  "bug_class": "require-path mismatch",
+  "fix": "copied task_decomposer.js + agent_routing_matrix.js from project root to services/swarm/",
+  "remaining_in_same_pattern": [
+    "lib/context-packet.js (referenced as ./lib/context-packet.js by coordinator)",
+    "lib/llm-provider.js (referenced as ./lib/llm-provider.js by coordinator)",
+    "lib/self-context.js (referenced as ./lib/self-context.js by coordinator)",
+    "lib/memory-client.js (referenced as ./lib/memory-client.js by coordinator)",
+    "lib/cognitive-client.js (referenced as ./lib/cognitive-client.js by coordinator)"
+  ],
+  "honest_label": "decomposer wired; 5 sibling lib/ modules still need the same fix; live coordinator lane still not Tesco-testable (also needs EventBus on 7782)"
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "purpclaw.cert-gate.console.v1",
+  "cert_id": "agent_work/cert_gates/console/",
+  "verdict": "PASS",
+  "date": "2026-08-17T11:08:18.924254+00:00",
+  "reason": "all 10/10 tests green",
+  "tests_total": 10,
+  "tests_pass": 10,
+  "tests_fail": 0,
+  "rewrite_origin": "legacy/reintegrate-2026-08-17/purpconsole",
+  "rewrite_target": "services/console",
+  "cli_surface": "node bin/purpclaw.js parity [--json] [--by-id NN]",
+  "honest_label": "plain-text fallback certified; Textual TUI code intact but visual cert deferred until `pip install textual` lands on the runtime"
+}

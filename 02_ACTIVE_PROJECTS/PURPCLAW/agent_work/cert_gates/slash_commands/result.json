@@ -1,0 +1,21 @@
+{
+  "schema": "purpclaw.cert-gate.slash-commands.v1",
+  "cert_id": "agent_work/cert_gates/slash_commands/",
+  "verdict": "PASS",
+  "date": "2026-08-17T11:35:56.310957+00:00",
+  "reason": "all 8/8 tests green",
+  "tests_total": 8,
+  "tests_pass": 8,
+  "tests_fail": 0,
+  "parity_gaps_closed": [
+    "Claude Code slash commands (/plan, /compact, /clear)",
+    "Antigravity CLI slash ergonomics",
+    "Kimi CLI slash surface"
+  ],
+  "new_commands": [
+    "/plan",
+    "/clear",
+    "/compact"
+  ],
+  "honest_label": "slash prefix transparent + 3 new commands; /plan is a deterministic scaffold, not yet LLM-generated"
+}

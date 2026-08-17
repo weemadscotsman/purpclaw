@@ -62,6 +62,14 @@ function makeLayer(name) {
         source: enriched.source || options.source,
         importance: enriched.confidence,
       });
+      // ingest() returns a memoryId string or null — not a result object.
+      // Handle both: raw string (spine v2) and {ok, memoryId} (future contract).
+      if (typeof result === 'string') {
+        return { ok: true, layer: name, memoryId: result, persisted: result != null };
+      }
+      if (result == null) {
+        return { ok: false, layer: name, memoryId: enriched.memoryId, persisted: false };
+      }
       return { ...result, layer: name, memoryId: enriched.memoryId, persisted: result.ok !== false };
     }
 

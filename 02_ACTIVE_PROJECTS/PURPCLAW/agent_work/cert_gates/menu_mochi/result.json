@@ -1,0 +1,13 @@
+{
+  "schema": "purpclaw.cert-gate.menu-mochi.v1",
+  "cert_id": "agent_work/cert_gates/menu_mochi/",
+  "verdict": "PASS",
+  "date": "2026-08-17T11:46:40.050700+00:00",
+  "reason": "all checks green (18 passes, 0 fails)",
+  "tests_pass": 18,
+  "tests_fail": 0,
+  "rewrite_origin": "legacy/reintegrate-2026-08-17/mochi/menu_mochi_extension",
+  "rewrite_target": "apps/extensions/menu-mochi",
+  "parity_impact": "Chrome/Edge browser-extension product now lives in apps/ alongside cli/desktop/web",
+  "honest_label": "structure cert only; runtime behaviour requires loading the unpacked extension in a real browser"
+}

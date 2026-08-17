@@ -1,0 +1,27 @@
+{
+  "name": "@purpclaw/swarm",
+  "version": "0.1.0",
+  "description": "Sub-agent dispatch + parallel coordination. Closes the multi-agent parity gap with Kimi Agent Swarm (300), Antigravity 2.0 Manager View (5), Claude Code Task tool, DeepSeek Harness, Hermes, ChatGPT app, Kimi CLI.",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test dispatcher.test.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@purpclaw/agent-runtime": "file:../core/runtime"
+  },
+  "keywords": [
+    "purpclaw",
+    "swarm",
+    "multi-agent",
+    "parity",
+    "kimi",
+    "antigravity",
+    "claude-code",
+    "deepseek"
+  ],
+  "license": "UNLICENSED"
+}

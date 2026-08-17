@@ -1,0 +1,28 @@
+{
+  "schema": "purpclaw.cert-gate.swarm.v1",
+  "cert_id": "agent_work/cert_gates/swarm/",
+  "verdict": "PASS",
+  "date": "2026-08-17T11:00:44.678630+00:00",
+  "reason": "all 8/8 tests green",
+  "tests_total": 8,
+  "tests_pass": 8,
+  "tests_fail": 0,
+  "duration_ms": 5482.5669,
+  "parity_gaps_closed_partial": [
+    "Kimi Agent Swarm (300 sub-agents) \u2014 2-3 in cert, lane open",
+    "Antigravity 2.0 Manager View (5 parallel) \u2014 terminal cert",
+    "Claude Code Task tool \u2014 persona-resolved dispatch, registry-driven",
+    "Hermes Harness \u2014 JSON-output SwarmReport first-class",
+    "DeepSeek Harness team coordination \u2014 sub-agent factory seam"
+  ],
+  "parity_gaps_remaining": [
+    "MCP client (Kimi CLI, Claude, Antigravity)",
+    "Slash commands (/plan, /compact, /clear, /status)",
+    "Resume/fork/search on event stream (DeepSeek)",
+    "Built-in Chrome browser (Antigravity)",
+    "Voice mode loop (ChatGPT app)",
+    "Custom GPTs (ChatGPT app)",
+    "Antigravity Manager View UI (apps/desktop/src/manager/)"
+  ],
+  "honest_label": "partial parity \u2014 substrate for multi-agent is real; ceiling (Kimi 300) and UI surface (Manager View) not yet tested"
+}

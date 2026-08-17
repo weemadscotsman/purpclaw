@@ -1,72 +1,48 @@
 #!/usr/bin/env node
-const PURP_PATHS = require('../lib/paths');
 /**
- * PURPCLAW CLI — bin/purpclaw.js
+ * PURPCLAW CLI â€” bin/purpclaw.js
  * ================================
  * The front door. Run from anywhere after `npm link` or `npm install -g`.
  *
  * Usage:
- *   purpclaw start              — boot the full PM2 stack
- *   purpclaw stop               — stop everything
- *   purpclaw restart [service]  — restart all or one service
- *   purpclaw chat               — open NanoClaw REPL (swarm-aware)
- *   purpclaw ask "<question>"   — direct LLM conversation (stack-aware, session-persistent)
- *   purpclaw ask                — drop into LLM REPL mode
- *   purpclaw run "<task>"       — one-shot task, streams agent progress
- *   purpclaw code status        — repo/GitHub operator tools
- *   purpclaw status             — live dashboard of all services + agents
- *   purpclaw agents             — list agents, scores, and division info
- *   purpclaw workflows          — list active and recent workflows
- *   purpclaw queue              — show task queue depth and items
- *   purpclaw memory [query]     — query the memory matrix
- *   purpclaw dream              — trigger AutoDream consolidation manually
- *   purpclaw forge [name]       — draw a gacha soul + create a new lobster agent
- *   purpclaw logs [service]     — tail PM2 logs
- *   purpclaw help               — show this help
+ *   purpclaw start              â€” boot the full PM2 stack
+ *   purpclaw stop               â€” stop everything
+ *   purpclaw restart [service]  â€” restart all or one service
+ *   purpclaw chat               â€” open NanoClaw REPL (swarm-aware)
+ *   purpclaw ask "<question>"   â€” direct LLM conversation (stack-aware, session-persistent)
+ *   purpclaw ask                â€” drop into LLM REPL mode
+ *   purpclaw run "<task>"       â€” one-shot task, streams agent progress
+ *   purpclaw code status        â€” repo/GitHub operator tools
+ *   purpclaw status             â€” live dashboard of all services + agents
+ *   purpclaw agents             â€” list agents, scores, and division info
+ *   purpclaw workflows          â€” list active and recent workflows
+ *   purpclaw queue              â€” show task queue depth and items
+ *   purpclaw memory [query]     â€” query the memory matrix
+ *   purpclaw parity [--json]    â€” 6-tile capability dashboard (live/partial/gap)
+ *   purpclaw dream              â€” trigger AutoDream consolidation manually
+ *   purpclaw forge [name]       â€” draw a gacha soul + create a new lobster agent
+ *   purpclaw skill-forge ...    â€” self-improving skills (attach/record/evaluate)
+ *   purpclaw cross-review ...   â€” run the cross-provider review gate (check/pick/run)
+ *   purpclaw soul-memory ...    â€” view/validate USER.md + MEMORY.md contracts
+ *   purpclaw constitution ...   â€” validate the canonical law chain
+ *   purpclaw logs [service]     â€” tail PM2 logs
+ *   purpclaw help               â€” show this help
  */
 
 'use strict';
 
-const path    = require('path');
-const fs      = require('fs');
-const http    = require('http');
-const { URL, pathToFileURL } = require('url');
-const Secrets = require(path.join(__dirname, '..', 'lib', 'secrets'));
-
-// ── Project root resolver ─────────────────────────────────────────────────────────
-// The npm global shim lives in AppData on C:. We walk up looking for the real project.
-// But the real PURPCLAW lives on E: — the walker can't cross drives. So we also
-// check the known absolute path of the real project directly. One .env to rule them all.
-function resolveProjectRoot() {
-  const marker = 'docs' + path.sep + 'COMPANION_EVENT_MAP.md';
-
-  // Check the known real project path first (E: / gDrive project)
-  const KNOWN_PROJECTS = [
-    'E:' + path.sep + 'god folder' + path.sep + '02_ACTIVE_PROJECTS' + path.sep + 'PURPCLAW',
-  ];
-  for (const p of KNOWN_PROJECTS) {
-    if (fs.existsSync(path.join(p, marker))) return p;
-  }
-
-  // Fallback: walk up from npm package dir
-  const original = path.resolve(__dirname, '..');
-  let dir = original;
-  let prev = '';
-  while (dir !== prev) {
-    if (fs.existsSync(path.join(dir, marker))) return dir;
-    prev = dir;
-    dir = path.dirname(dir);
-  }
-  return original;
-}
-
-const PURP_DIR      = resolveProjectRoot();
-const { recordLesson, recordEvolution, recordMemory } = require(path.join(PURP_DIR, 'lib', 'agent-sync'))(PURP_DIR);
+const path  = require('path');
+const fs    = require('fs');
+const http  = require('http');
+const https = require('https');
+const { spawn: rawSpawn, execSync } = require('child_process');
+const readline = require('readline');
 const { trackedSpawn, execSafe, installCleanup, list: listChildren } = require('../lib/child-registry');
 
-// ── Root and config ───────────────────────────────────────────────────────────
+// â”€â”€ Root and config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const PURP_DIR      = path.resolve(__dirname, '..');
 
-// Lightweight .env loader
+// Lightweight .env loader â€” populates process.env without adding a dependency.
 // Existing shell env vars win over .env (shell-set values are explicit).
 (function loadEnv() {
   try {
@@ -92,14 +68,11 @@ const { trackedSpawn, execSafe, installCleanup, list: listChildren } = require('
 const ECOSYSTEM     = path.join(PURP_DIR, 'ecosystem.config.js');
 const NANOCLAW      = path.join(PURP_DIR, 'scripts', 'nanoclaw.js');
 const AGENT_SCORE   = path.join(PURP_DIR, 'agent_score.json');
-const PURP_SKILLS_DIR = path.join(PURP_DIR, 'skills');
 const SERVICE_REGISTRY = require(path.join(PURP_DIR, 'service_registry.js'));
 const GOVERNANCE = require(path.join(PURP_DIR, 'lib', 'governance.js'));
 const JOB_CONTRACT = require(path.join(PURP_DIR, 'lib', 'job-contract.js'));
 const PROACTIVE = require(path.join(PURP_DIR, 'lib', 'proactive-maintenance.js'));
 const SPAGHETTI = require(path.join(PURP_DIR, 'lib', 'spaghetti-audit.js'));
-const { loadProjectRequirements, mergeWithEnv, checkCommandAllowed, requiresConfirmation } =
-  require(path.join(PURP_DIR, 'lib', 'project-requirements.js'));
 
 const CTX_PORT = parseInt(process.env.CONTEXT_PORT || '7881', 10);
 
@@ -120,12 +93,12 @@ const PORTS = {
   state        : parseInt(process.env.STATE_PORT         || '7783', 10),
   memory       : parseInt(process.env.MEMORY_PORT        || '7880', 10),
   pool         : parseInt(process.env.POOL_PORT          || '7885', 10),
-  metrics      : parseInt(process.env.METRICS_PORT       || '7890', 10), // NOTE: metrics daemon removed — embed counters inline
+  metrics      : parseInt(process.env.METRICS_PORT       || '7890', 10),
   voice        : parseInt(process.env.VOICE_PORT         || '7781', 10),
   dream        : parseInt(process.env.DREAM_PORT         || '7895', 10),
 };
 
-// ── ANSI colours (no deps) ────────────────────────────────────────────────────
+// â”€â”€ ANSI colours (no deps) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const C = {
   reset  : '\x1b[0m',
   bold   : '\x1b[1m',
@@ -143,7 +116,7 @@ const C = {
 const isTTY  = process.stdout.isTTY;
 const col    = (c, s) => isTTY ? `${c}${s}${C.reset}` : s;
 
-// ── TAINT MODE ────────────────────────────────────────────────────────────────
+// â”€â”€ TAINT MODE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // The final art movement. Enable with: purpclaw --taint <command>
 // Or permanently: PURPCLAW_TAINT=1 in .env
 const TAINT_MODE = process.argv.includes('--taint') || process.env.PURPCLAW_TAINT === '1';
@@ -206,8 +179,8 @@ function taintFlavor() {
   return TAINT_FLAVOR[Math.floor(Date.now() / 2000) % TAINT_FLAVOR.length];
 }
 
-// ── Spinner ───────────────────────────────────────────────────────────────────
-// Rotating flavor text — goose-approved
+// â”€â”€ Spinner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Rotating flavor text â€” goose-approved
 const SPINNER_FLAVOR = [
   'pondering...',
   'consulting the pool...',
@@ -233,7 +206,7 @@ const SPINNER_FLAVOR = [
 
 class Spinner {
   constructor(label = '') {
-    this._frames  = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
+    this._frames  = ['â ‹','â ™','â ¹','â ¸','â ¼','â ´','â ¦','â §','â ‡','â '];
     this._label   = label;
     this._flavor  = '';
     this._idx     = 0;
@@ -266,10 +239,10 @@ class Spinner {
     return this;
   }
 
-  succeed(msg) { return this._stop(col(C.green, '✔'), msg); }
-  fail(msg)    { return this._stop(col(C.red,   '✖'), msg); }
-  warn(msg)    { return this._stop(col(C.yellow,'[!]'), msg); }
-  info(msg)    { return this._stop(col(C.cyan,  'ℹ'), msg); }
+  succeed(msg) { return this._stop(col(C.green, 'âœ”'), msg); }
+  fail(msg)    { return this._stop(col(C.red,   'âœ–'), msg); }
+  warn(msg)    { return this._stop(col(C.yellow,'âš '), msg); }
+  info(msg)    { return this._stop(col(C.cyan,  'â„¹'), msg); }
 
   _stop(icon, msg) {
     if (this._timer) { clearInterval(this._timer); this._timer = null; }
@@ -286,7 +259,7 @@ class Spinner {
 
 function spinner(label) { return new Spinner(label); }
 
-// ── Tiny HTTP helpers ─────────────────────────────────────────────────────────
+// â”€â”€ Tiny HTTP helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function httpGet(port, pathname, timeoutMs = 3000) {
   return new Promise((resolve, reject) => {
     const req = http.request(
@@ -331,34 +304,20 @@ function httpPost(port, pathname, body, timeoutMs = 30000) {
 }
 
 async function ping(port, path_ = '/health') {
-  return new Promise(resolve => {
-    let redirects = 0;
-    const doRequest = (path) => {
-      const req = http.request(
-        { hostname: '127.0.0.1', port, path, method: 'GET' },
-        res => {
-          res.resume();
-          if (res.statusCode >= 300 && res.statusCode < 400 && redirects < 4) {
-            const location = res.headers.location;
-            if (location) {
-              redirects++;
-              const next = location.startsWith('/') ? location : path.split('/').slice(0, -1).join('/') + '/' + location;
-              doRequest(next);
-              return;
-            }
-          }
-          resolve(res.statusCode >= 200 && res.statusCode < 400);
-        }
-      );
-      req.setTimeout(2000, () => { req.destroy(); resolve(false); });
-      req.on('error', () => resolve(false));
-      req.end();
-    };
-    doRequest(path_);
-  });
+  try {
+    const r = await httpGet(port, path_, 2000);
+    // Any non-null response means the port answered â€” covers JSON health objects AND
+    // plain-HTML pages (e.g. Next.js UI at /) whose parse falls back to a string.
+    if (r === null || r === undefined) return false;
+    if (typeof r === 'object') return true; // JSON health payload
+    if (typeof r === 'string') return r.length > 0; // HTML / text response
+    return false;
+  } catch {
+    return false;
+  }
 }
 
-// ── SSE stream consumer ───────────────────────────────────────────────────────
+// â”€â”€ SSE stream consumer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function subscribeSSE(port, pathname, onEvent, onError) {
   const req = http.request(
     { hostname: '127.0.0.1', port, path: pathname, headers: { Accept: 'text/event-stream' } },
@@ -382,7 +341,7 @@ function subscribeSSE(port, pathname, onEvent, onError) {
   return req; // caller can req.destroy() to unsubscribe
 }
 
-// ── PM2 wrapper ───────────────────────────────────────────────────────────────
+// â”€â”€ PM2 wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function pm2(args, opts = {}) {
   return new Promise((resolve, reject) => {
     let command = null, finalArgs = null;
@@ -440,94 +399,74 @@ function printPm2Plan(action, names) {
   }
 }
 
-// ── Division colour map ───────────────────────────────────────────────────────
+// â”€â”€ Division colour map â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const DIV_COLOUR = {
   ENGINEERING   : C.cyan,
   SECURITY      : C.red,
   INTELLIGENCE  : C.blue,
   OPERATIONS    : C.yellow,
   MANAGEMENT    : C.magenta,
-  MEDIA_OPERATIONS     : C.green,
+  MEDIA_OPS     : C.green,
   SCIENCE       : C.white,
   CREATIVE      : C.magenta,
   INFRASTRUCTURE: C.gray,
 };
 
-// ── Print helpers ─────────────────────────────────────────────────────────────
+// â”€â”€ Print helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function banner() {
-  const W     = isTTY ? (process.stdout.columns || 80) : 80;
-    const inner = W - 2;
-    const bTop  = col(C.magenta, '╔' + '═'.repeat(inner) + '╗');
-    const bBot  = col(C.magenta, '╚' + '═'.repeat(inner) + '╝');
-    const bRow  = (content) => {
-      const raw = content.replace(/\x1b\[[0-9;]*m/g, '');
-      const pad = Math.max(0, inner - raw.length);
-      return col(C.magenta, '║') + content + ' '.repeat(pad) + col(C.magenta, '║');
-    };
+  const W = isTTY ? (process.stdout.columns || 80) : 80;
+  const inner = W - 2; // inside the border
 
-    const now     = new Date();
-    const ts      = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}  ${now.toLocaleTimeString('en-GB')}`;
+  // box helpers (no deps)
+  const bTop = col(C.magenta, 'â•”' + 'â•'.repeat(inner) + 'â•—');
+  const bBot = col(C.magenta, 'â•š' + 'â•'.repeat(inner) + 'â•');
+  const bMid = col(C.magenta, 'â• ' + 'â•'.repeat(inner) + 'â•£');
+  const bRow = (content) => {
+    const raw = content.replace(/\x1b\[[0-9;]*m/g, '');
+    const pad = Math.max(0, inner - raw.length);
+    return col(C.magenta, 'â•‘') + content + ' '.repeat(pad) + col(C.magenta, 'â•‘');
+  };
 
-    // Runtime counts — fully self-contained, no closure dependency
-    let bToolCount = '?';
-    let bAgentCount = '?';
-    let bVersion = '?';
-    try { const T = require(path.join(PURP_DIR, 'lib', 'tools')); bToolCount = T.list().length; } catch (_) {}
-    try {
-      const pkgF = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'package.json'), 'utf8'));
-      bVersion = pkgF.version || '?';
-      try {
-        const tw = require(path.join(PURP_DIR, 'agent_tower.js'));
-        bAgentCount = (tw.registry && tw.registry.size) ? tw.registry.size : '?';
-      } catch (_2) {
-        const ad = path.join(PURP_DIR, 'workspace', 'agents');
-        if (fs.existsSync(ad)) {
-          bAgentCount = fs.readdirSync(ad).filter(f => f.endsWith('.md')).length;
-        }
-      }
-    } catch (_) {}
+  const ART = [
+    '  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ•—   â–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•—      â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ•—    â–ˆâ–ˆâ•—',
+    '  â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•”â•â•â•â•â•â–ˆâ–ˆâ•‘     â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘    â–ˆâ–ˆâ•‘',
+    '  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•”â•â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•‘     â–ˆâ–ˆâ•‘     â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘ â–ˆâ•— â–ˆâ–ˆâ•‘',
+    '  â–ˆâ–ˆâ•”â•â•â•â• â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•”â•â•â•â• â–ˆâ–ˆâ•‘     â–ˆâ–ˆâ•‘     â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘',
+    '  â–ˆâ–ˆâ•‘     â•šâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•‘  â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘     â•šâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘  â–ˆâ–ˆâ•‘â•šâ–ˆâ–ˆâ–ˆâ•”â–ˆâ–ˆâ–ˆâ•”â•',
+    '  â•šâ•â•      â•šâ•â•â•â•â•â• â•šâ•â•  â•šâ•â•â•šâ•â•      â•šâ•â•â•â•â•â•â•šâ•â•â•â•â•â•â•â•šâ•â•  â•šâ•â• â•šâ•â•â•â•šâ•â•â•',
+  ];
 
-    // Row 1: PURPCLAW brand
-    console.log('\n' + bTop);
-    console.log(bRow(
-      '  ' + col(C.magenta + C.bold, 'PURPCLAW') + '  ' +
-      '  ' + col(C.green, 'ONLINE') + '     ' +
-      col(C.gray, '12/12 UP') + '  ' +
-      col(C.gray, '|  ') +
-      col(C.cyan, String(bAgentCount) + ' AGENTS') + '  ' +
-      col(C.gray, '|  ') +
-      col(C.white, String(bToolCount) + ' TOOLS') + '  ' +
-      col(C.gray, '|  ') +
-      col(C.gray, 'v' + bVersion) + '  ' +
-      ' '.repeat(Math.max(0, inner - 110)) +
-      '  ' + col(C.gray, ts)
-    ));
+  const now = new Date();
+  const ts  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}  ${now.toLocaleTimeString('en-GB')}`;
+  const tagline  = '  ðŸ¦ž  PURPCLAW  â€”  TINY HAUNTED WORKSHOP  ðŸ¦ž';
+  const subtitle = `  Agent Orchestration Runtime  Â·  ${ts}`;
 
-    // Row 2: subtitle + mode
-    console.log(bRow(
-      '  ' + col(C.gray, 'PURPCLAW TUI  ·  One Mission / Many Lenses') +
-      ' '.repeat(Math.max(0, inner - 60)) +
-      '  ' + col(C.green + C.bold, '[*] SYSTEM OPERATIONAL')
-    ));
-
-    console.log(bBot + '\n');
+  console.log('\n' + bTop);
+  console.log(bRow(''));
+  for (const line of ART) console.log(bRow(col(C.magenta + C.bold, line)));
+  console.log(bRow(''));
+  console.log(bMid);
+  console.log(bRow(col(C.magenta + C.bold, tagline)));
+  console.log(bMid);
+  console.log(bRow(col(C.gray, subtitle)));
+  console.log(bBot + '\n');
 }
 
 function sectionHead(title) {
   const W    = isTTY ? Math.min(process.stdout.columns || 80, 80) : 80;
   const bare = title.replace(/\x1b\[[0-9;]*m/g, '');
   const fill = Math.max(0, W - bare.length - 2);
-  console.log(`\n${col(C.cyan + C.bold, title)}  ${col(C.gray, '─'.repeat(fill))}`);
+  console.log(`\n${col(C.cyan + C.bold, title)}  ${col(C.gray, 'â”€'.repeat(fill))}`);
 }
 
-function tick(ok) { return ok ? col(C.green, '[*]') : col(C.red, '[o]'); }
+function tick(ok) { return ok ? col(C.green, 'â—') : col(C.red, 'â—‹'); }
 
-// ═════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  COMMANDS
-// ═════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-// ── Boot helpers ──────────────────────────────────────────────────────────────
-const BOOT_SPIN    = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'];
+// â”€â”€ Boot helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const BOOT_SPIN    = ['â ‹','â ™','â ¹','â ¸','â ¼','â ´','â ¦','â §','â ‡','â '];
 const BOOT_TIMEOUT = 40000;
 
 const BOOT_NAMES = {
@@ -550,10 +489,10 @@ function renderBootRow(row, spinIdx) {
   const portStr = row.port ? `:${row.port}`.padEnd(6) : '      ';
   if (row.state === 'online') {
     const timing = row.ms > 0 ? col(C.gray, `${row.ms}ms`) : '';
-    return `  ${col(C.green, '✔')}  ${col(C.white, name)}  ${col(C.gray, portStr)}   ${col(C.green, 'online')}   ${timing}`;
+    return `  ${col(C.green, 'âœ”')}  ${col(C.white, name)}  ${col(C.gray, portStr)}   ${col(C.green, 'online')}   ${timing}`;
   }
   if (row.state === 'timeout') {
-    return `  ${col(C.red,  '✖')}  ${col(C.red,   name)}  ${col(C.gray, portStr)}   ${col(C.red,   'timeout')}`;
+    return `  ${col(C.red,  'âœ–')}  ${col(C.red,   name)}  ${col(C.gray, portStr)}   ${col(C.red,   'timeout')}`;
   }
   const elapsed   = Date.now() - row.startedAt;
   const stateMsg  = elapsed > 10000 ? col(C.yellow, 'slow start') : col(C.gray, 'initialising');
@@ -561,23 +500,23 @@ function renderBootRow(row, spinIdx) {
   return `  ${frame}  ${col(C.gray, name)}  ${col(C.gray, portStr)}   ${stateMsg}`;
 }
 
-// ── start ─────────────────────────────────────────────────────────────────────
+// â”€â”€ start â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdStart(args) {
   banner();
   const target = resolveLaunchTarget(args);
   const names  = target.names;
 
   if (!fs.existsSync(ECOSYSTEM)) {
-    console.error(col(C.red, `  [X] ecosystem.config.js not found`));
+    console.error(col(C.red, `  âœ— ecosystem.config.js not found`));
     process.exit(1);
   }
   if (!names.length) {
-    console.error(col(C.red, `  [X] No services in profile "${target.label}"`));
+    console.error(col(C.red, `  âœ— No services in profile "${target.label}"`));
     process.exit(1);
   }
 
   if (target.dryRun) {
-    console.log(col(C.yellow, '  DRY RUN — no processes will start\n'));
+    console.log(col(C.yellow, '  DRY RUN â€” no processes will start\n'));
     printPm2Plan('start', names);
     console.log('');
     return;
@@ -586,17 +525,17 @@ async function cmdStart(args) {
   // Header
   const profileLabel = target.label.toUpperCase();
   console.log(
-    `  ${col(C.magenta + C.bold, 'LAUNCHING')}  ${col(C.gray, '·')}  ` +
-    `${col(C.white + C.bold, profileLabel)}  ${col(C.gray, '·')}  ` +
+    `  ${col(C.magenta + C.bold, 'LAUNCHING')}  ${col(C.gray, 'Â·')}  ` +
+    `${col(C.white + C.bold, profileLabel)}  ${col(C.gray, 'Â·')}  ` +
     `${col(C.cyan, names.length + ' services')}\n`
   );
-  console.log(col(C.gray, '  ' + '─'.repeat(60)) + '\n');
+  console.log(col(C.gray, '  ' + 'â”€'.repeat(60)) + '\n');
 
-  // Fire PM2 silently (use basename — cwd is PURP_DIR, avoids path-with-spaces issues on Windows)
+  // Fire PM2 silently (use basename â€” cwd is PURP_DIR, avoids path-with-spaces issues on Windows)
   try {
     await pm2(['start', 'ecosystem.config.js', '--only', names.join(',')], { silent: true });
   } catch (e) {
-    console.error(col(C.red, `  [X] PM2 failed: ${e.message}`));
+    console.error(col(C.red, `  âœ— PM2 failed: ${e.message}`));
     console.log(col(C.gray, '  Check: npm install -g pm2'));
     process.exit(1);
   }
@@ -634,7 +573,7 @@ async function cmdStart(args) {
     row.state = 'timeout';
   });
 
-  // Animate at 100ms — rewrite the table in place
+  // Animate at 100ms â€” rewrite the table in place
   const refresher = setInterval(() => {
     spinIdx++;
     if (!isTTY) return;
@@ -652,7 +591,7 @@ async function cmdStart(args) {
     rows.forEach(r => process.stdout.write(`\x1b[2K${renderBootRow(r, spinIdx)}\n`));
   }
 
-  // ── Summary ────────────────────────────────────────────────────────────────
+  // â”€â”€ Summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const online     = rows.filter(r => r.state === 'online');
   const failed     = rows.filter(r => r.state !== 'online');
   const coreFailed = failed.filter(r => r.required);
@@ -661,22 +600,22 @@ async function cmdStart(args) {
   console.log('');
   if (coreFailed.length === 0) {
     if (TAINT_MODE) {
-      console.log(`  ${col(C.magenta + C.bold, '✔  PURPCLAW IS THROBBING ONLINE')}  ${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length + ' services')}  ${col(C.gray, '·')}  ${col(C.gray, totalSec + 's')}`);
+      console.log(`  ${col(C.magenta + C.bold, 'âœ”  PURPCLAW IS THROBBING ONLINE')}  ${col(C.gray, 'Â·')}  ${col(C.green, online.length + '/' + rows.length + ' services')}  ${col(C.gray, 'Â·')}  ${col(C.gray, totalSec + 's')}`);
       console.log(`  ${col(C.gray, taintSuccess('all services online'))}`);
     } else {
       console.log(
-        `  ${col(C.green + C.bold, '✔  PURPCLAW ONLINE')}  ` +
-        `${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length + ' services')}  ` +
-        `${col(C.gray, '·')}  ${col(C.gray, totalSec + 's')}`
+        `  ${col(C.green + C.bold, 'âœ”  PURPCLAW ONLINE')}  ` +
+        `${col(C.gray, 'Â·')}  ${col(C.green, online.length + '/' + rows.length + ' services')}  ` +
+        `${col(C.gray, 'Â·')}  ${col(C.gray, totalSec + 's')}`
       );
     }
   } else {
     if (TAINT_MODE) {
-      console.log(`  ${col(C.yellow + C.bold, '[!]  uh oh bestie')}  ${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length)}  ${col(C.red, coreFailed.length + ' services did a fucky wucky')}`);
+      console.log(`  ${col(C.yellow + C.bold, 'âš   uh oh bestie')}  ${col(C.gray, 'Â·')}  ${col(C.green, online.length + '/' + rows.length)}  ${col(C.red, coreFailed.length + ' services did a fucky wucky')}`);
     } else {
       console.log(
-        `  ${col(C.yellow + C.bold, '[!]  PARTIAL START')}  ` +
-        `${col(C.gray, '·')}  ${col(C.green, online.length + '/' + rows.length)}  ` +
+        `  ${col(C.yellow + C.bold, 'âš   PARTIAL START')}  ` +
+        `${col(C.gray, 'Â·')}  ${col(C.green, online.length + '/' + rows.length)}  ` +
         `${col(C.red, coreFailed.length + ' required service(s) failed')}`
       );
     }
@@ -684,40 +623,40 @@ async function cmdStart(args) {
   console.log('');
 
   if (online.some(r => r.pm2 === 'purpclaw-nextjs')) {
-    console.log(`  ${col(C.gray, 'Mission Control')}  ${col(C.gray, '→')}  ${col(C.cyan + C.bold, 'http://localhost:3030')}`);
+    console.log(`  ${col(C.gray, 'Mission Control')}  ${col(C.gray, 'â†’')}  ${col(C.cyan + C.bold, 'http://localhost:3000')}`);
   }
-  console.log(`  ${col(C.gray, 'API Gateway    ')}  ${col(C.gray, '→')}  ${col(C.cyan, 'http://localhost:7780')}`);
-  console.log(`  ${col(C.gray, 'Agent Tower    ')}  ${col(C.gray, '→')}  ${col(C.cyan, 'http://localhost:7790')}`);
+  console.log(`  ${col(C.gray, 'API Gateway    ')}  ${col(C.gray, 'â†’')}  ${col(C.cyan, 'http://localhost:7780')}`);
+  console.log(`  ${col(C.gray, 'Agent Tower    ')}  ${col(C.gray, 'â†’')}  ${col(C.cyan, 'http://localhost:7790')}`);
   console.log('');
 
   if (coreFailed.length > 0) {
     console.log(col(C.yellow, TAINT_MODE ? '  the following services need a hug: ' + coreFailed.map(r => r.display).join(', ') : '  Failed: ' + coreFailed.map(r => r.display).join(', ')));
     console.log(col(C.gray,   TAINT_MODE ? '  try: purpclaw doctor (gently)\n' : '  Run `purpclaw doctor` to diagnose.\n'));
   } else {
-    console.log(col(C.gray, '  purpclaw status        →  live metrics + agent leaderboard'));
-    console.log(col(C.gray, '  purpclaw run "<task>"  →  dispatch an agent task\n'));
+    console.log(col(C.gray, '  purpclaw status        â†’  live metrics + agent leaderboard'));
+    console.log(col(C.gray, '  purpclaw run "<task>"  â†’  dispatch an agent task\n'));
   }
 }
 
-// ── stop ──────────────────────────────────────────────────────────────────────
+// â”€â”€ stop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdStop(args) {
   const target = resolveLaunchTarget(args);
   const names  = target.names;
 
   if (!names.length) {
-    console.error(col(C.red, `\n  [X] No services in profile "${target.label}"\n`));
+    console.error(col(C.red, `\n  âœ— No services in profile "${target.label}"\n`));
     process.exit(1);
   }
 
   if (target.dryRun) {
-    console.log(col(C.yellow, '  DRY RUN — no processes will stop\n'));
+    console.log(col(C.yellow, '  DRY RUN â€” no processes will stop\n'));
     printPm2Plan('stop', names);
     console.log('');
     return;
   }
 
-  console.log(`\n  ${col(C.yellow + C.bold, 'SHUTTING DOWN')}  ${col(C.gray, '·')}  ${col(C.white, target.label.toUpperCase())}  ${col(C.gray, '·')}  ${col(C.cyan, names.length + ' services')}\n`);
-  console.log(col(C.gray, '  ' + '─'.repeat(60)) + '\n');
+  console.log(`\n  ${col(C.yellow + C.bold, 'SHUTTING DOWN')}  ${col(C.gray, 'Â·')}  ${col(C.white, target.label.toUpperCase())}  ${col(C.gray, 'Â·')}  ${col(C.cyan, names.length + ' services')}\n`);
+  console.log(col(C.gray, '  ' + 'â”€'.repeat(60)) + '\n');
 
   // Show what's being stopped
   const svcMap = new Map(SERVICE_REGISTRY.getServices().map(s => [s.pm2, s]));
@@ -725,7 +664,7 @@ async function cmdStop(args) {
     const disp = bootDisplayName(n).padEnd(14);
     const reg  = svcMap.get(n) || {};
     const port = reg.port ? col(C.gray, `:${reg.port}`) : '';
-    console.log(`  ${col(C.yellow, '[o]')}  ${col(C.gray, disp)}  ${port}`);
+    console.log(`  ${col(C.yellow, 'â—‹')}  ${col(C.gray, disp)}  ${port}`);
   });
 
   const spin = spinner('stopping services').start();
@@ -740,16 +679,16 @@ async function cmdStop(args) {
   }
 }
 
-// ── restart ───────────────────────────────────────────────────────────────────
+// â”€â”€ restart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdRestart(args) {
   const service = args.find(a => !a.startsWith('--'));
   if (service) {
     console.log(col(C.cyan, `\n  Restarting ${service}...\n`));
     try {
       await pm2(['restart', service]);
-      console.log(col(C.green, '  [OK] Done.\n'));
+      console.log(col(C.green, '  âœ“ Done.\n'));
     } catch (e) {
-      console.error(col(C.red, `  [X] ${e.message}`));
+      console.error(col(C.red, `  âœ— ${e.message}`));
       process.exit(1);
     }
     return;
@@ -759,7 +698,7 @@ async function cmdRestart(args) {
   const names = target.names;
 
   if (!names.length) {
-    console.error(col(C.red, `\n  [X] No PM2 services found for ${target.label}\n`));
+    console.error(col(C.red, `\n  âœ— No PM2 services found for ${target.label}\n`));
     process.exit(1);
   }
 
@@ -774,14 +713,237 @@ async function cmdRestart(args) {
 
   try {
     await pm2(['restart', ...names]);
-    console.log(col(C.green, `  [OK] Restarted ${names.length} service${names.length === 1 ? '' : 's'}.\n`));
+    console.log(col(C.green, `  âœ“ Restarted ${names.length} service${names.length === 1 ? '' : 's'}.\n`));
   } catch (e) {
-    console.error(col(C.red, `  [X] ${e.message}`));
+    console.error(col(C.red, `  âœ— ${e.message}`));
     process.exit(1);
   }
 }
 
-// ── status ────────────────────────────────────────────────────────────────────
+// â”€â”€ parity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 2026-08-17: rewrote from legacy/reintegrate-2026-08-17/purpconsole into
+// services/console/. Plain-text fallback always works; the Textual TUI
+// (services/console/app.py) is loaded if `textual` is installed.
+async function cmdParity(args) {
+  const wantJson = (args || []).includes('--json');
+  const wantById = (args || []).find(a => a.startsWith('--by-id'));
+  const subArgs = [];
+  if (wantJson) subArgs.push('--json');
+  if (wantById) {
+    subArgs.push('--by-id', wantById.split('=')[1] || (args || [])[(args || []).indexOf('--by-id') + 1]);
+  }
+  const pyArgs = ['-m', 'services.console', ...(subArgs.length ? subArgs : ['--text'])];
+  const { spawnSync } = require('child_process');
+  const result = spawnSync('python', pyArgs, { cwd: PURP_DIR, stdio: 'inherit' });
+  if (result.error) {
+    console.error(`[parity] failed to spawn python: ${result.error.message}`);
+    process.exit(1);
+  }
+  process.exit(result.status || 0);
+}
+
+// â”€â”€ /plan â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 2026-08-17: parity with Claude Code /plan and Antigravity plan mode.
+// Takes a one-line goal, returns a structured plan. No LLM call yet —
+// the plan is a deterministic scaffolding: probe for relevant skills/agents,
+// then suggest a sequence. Future: wire to the cognitive spine for
+// LLM-generated plans.
+async function cmdPlan(args) {
+  const goal = args.join(' ').trim();
+  banner();
+  if (!goal) {
+    console.log(col(C.yellow, '\n  /plan needs a goal. e.g. /plan add MCP client to the parity surface\n'));
+    process.exit(2);
+  }
+  sectionHead('  /plan — STRUCTURED PLAN');
+  console.log('');
+  console.log(`  ${col(C.cyan, 'goal')}      ${goal}`);
+  console.log(`  ${col(C.cyan, 'session')}   ${process.pid} @ ${new Date().toISOString()}`);
+  console.log('');
+
+  // 1. Probe the agent registry for relevant personas
+  let personas = [];
+  try {
+    const reg = require(path.join(PURP_DIR, 'packages', 'core', 'runtime', 'agent-registry'));
+    personas = reg.listAgents().filter(a => a.name).slice(0, 6);
+  } catch (e) {
+    // registry not reachable — that's fine, the plan is still useful
+  }
+  if (personas.length) {
+    console.log(`  ${col(C.bold, 'available personas (first 6):')}`);
+    for (const p of personas) {
+      const tag = `${p.division || '-'} / ${p.role || '-'}`;
+      console.log(`    ${col(C.green, '\u2022')} ${p.name.padEnd(28)} ${col(C.gray, tag)}`);
+    }
+    console.log('');
+  }
+
+  // 2. Probe the parity dashboard for relevant capability status
+  console.log(`  ${col(C.bold, 'parity snapshot:')}`);
+  try {
+    const { spawnSync } = require('child_process');
+    const r = spawnSync('node', [path.join(PURP_DIR, 'bin', 'purpclaw.js'), 'parity', '--json'],
+      { cwd: PURP_DIR, encoding: 'utf8', timeout: 10000 });
+    if (r.status === 0 && r.stdout) {
+      const data = JSON.parse(r.stdout);
+      console.log(`    ${col(C.green, '\u25CF')} live:     ${data.counts.live}`);
+      console.log(`    ${col(C.yellow, '\u25CF')} partial:  ${data.counts.partial}`);
+      console.log(`    ${col(C.red, '\u25CF')} gap:      ${data.counts.gap}`);
+    }
+  } catch (e) { /* parity not available, skip */ }
+  console.log('');
+
+  // 3. Suggested plan structure (deterministic scaffolding)
+  console.log(`  ${col(C.bold, 'suggested plan structure:')}`);
+  const steps = [
+    `1. ${col(C.cyan, 'Inspect')} existing systems for "${goal}" \u2014 use the wrap-don't-rebuild rule`,
+    `2. ${col(C.cyan, 'Wire')}  the smallest cert that proves the lane end-to-end`,
+    `3. ${col(C.cyan, 'Cert')}  at agent_work/cert_gates/ (CONTRACT + verify script)`,
+    `4. ${col(C.cyan, 'Voice')}  a one-note update to Eddie on Telegram when green`,
+  ];
+  for (const s of steps) console.log(`    ${s}`);
+  console.log('');
+  console.log(`  ${col(C.gray, 'to execute, run:')}  purpclaw run "${goal}"`);
+  console.log('');
+  return 0;
+}
+
+// â”€â”€ /clear â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 2026-08-17: parity with Claude Code /clear. Clears transient session state
+// (in-memory queues, history caches, scratch JSONL). Does NOT touch durable
+// state (memory, skills, agent registry).
+async function cmdClear(args) {
+  banner();
+  const what = args.includes('--all') ? 'all' : 'session';
+  sectionHead('  /clear — RESET ' + what.toUpperCase() + ' STATE');
+  console.log('');
+
+  const cleared = [];
+  const skipped = [];
+
+  // 1. Clear the JSONL journals in .purpclaw/ (transient session logs only)
+  const journalsDir = path.join(PURP_DIR, 'agent_work');
+  if (fs.existsSync(journalsDir)) {
+    for (const f of fs.readdirSync(journalsDir)) {
+      if (f.endsWith('.jsonl') || f.endsWith('.json')) {
+        // Match transient session-state files, leave durable artifacts alone
+        if (/_journal|_log|state/i.test(f) && !/memory|skill|registry|agent|ledger|receipt/i.test(f)) {
+          try {
+            const full = path.join(journalsDir, f);
+            fs.unlinkSync(full);
+            cleared.push(f);
+          } catch (e) { skipped.push(`${f}: ${e.message}`); }
+        }
+      }
+    }
+  }
+
+  // 2. Clear .next build cache (regenerable)
+  const nextDir = path.join(PURP_DIR, 'apps', 'desktop', '.next');
+  if (fs.existsSync(nextDir)) {
+    try {
+      fs.rmSync(nextDir, { recursive: true, force: true });
+      cleared.push('apps/desktop/.next');
+    } catch (e) { skipped.push(`.next: ${e.message}`); }
+  }
+
+  // 3. Note durable state preserved
+  const preserved = [
+    'agent_work/agents/         (39 personas — durable)',
+    'agent_work/architecture/   (canonical docs — durable)',
+    'agent_work/cert_gates/     (cert results — durable)',
+    'packages/                  (source code — durable)',
+  ];
+
+  console.log(`  ${col(C.green, '\u2713')} cleared ${cleared.length} transient file(s):`);
+  for (const f of cleared.slice(0, 10)) console.log(`    \u2022 ${f}`);
+  if (cleared.length > 10) console.log(`    \u2022 \u2026 and ${cleared.length - 10} more`);
+  console.log('');
+  console.log(`  ${col(C.cyan, '\u2630')} preserved (durable):`);
+  for (const p of preserved) console.log(`    \u2022 ${p}`);
+  if (skipped.length) {
+    console.log('');
+    console.log(`  ${col(C.yellow, '\u26A0')}  ${skipped.length} skipped:`);
+    for (const s of skipped.slice(0, 5)) console.log(`    \u2022 ${s}`);
+  }
+  console.log('');
+  console.log(`  ${col(C.gray, 'next:')}  run \`purpclaw status\` to confirm clean state.`);
+  console.log('');
+  return 0;
+}
+
+// â”€â”€ /compact â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// 2026-08-17: parity with Claude Code /compact. Compresses agent_work/ JSONL
+// journals by removing completed entries older than 7 days. Does NOT touch
+// memory, skills, agent personas, cert results, or receipts.
+async function cmdCompact(args) {
+  banner();
+  const days = (() => {
+    const m = args.find(a => a.startsWith('--days='));
+    return m ? parseInt(m.split('=')[1], 10) : 7;
+  })();
+  sectionHead(`  /compact — PRUNE >${days}d OLD FROM JSONL JOURNALS`);
+  console.log('');
+
+  const journalsDir = path.join(PURP_DIR, 'agent_work');
+  if (!fs.existsSync(journalsDir)) {
+    console.log(`  ${col(C.yellow, '\u26A0')} no agent_work/ directory; nothing to compact.`);
+    return 0;
+  }
+
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  const reports = [];
+
+  for (const f of fs.readdirSync(journalsDir)) {
+    if (!f.endsWith('.jsonl')) continue;
+    // Skip durable categories (memory, skill, registry, agent, ledger, receipt)
+    if (/memory|skill|registry|agent|ledger|receipt|audio_walker|harness_lessons/i.test(f)) continue;
+    const full = path.join(journalsDir, f);
+    let before = 0, after = 0;
+    let kept = '';
+    try {
+      const content = fs.readFileSync(full, 'utf8');
+      for (const line of content.split('\n')) {
+        if (!line.trim()) continue;
+        before++;
+        let entry;
+        try { entry = JSON.parse(line); } catch { kept += line + '\n'; continue; }
+        const ts = Date.parse(entry.ts || entry.timestamp || entry.date || '');
+        if (Number.isFinite(ts) && ts < cutoff) continue; // prune
+        kept += line + '\n';
+        after++;
+      }
+      fs.writeFileSync(full, kept, 'utf8');
+      reports.push({ file: f, before, after, pruned: before - after });
+    } catch (e) {
+      reports.push({ file: f, error: e.message });
+    }
+  }
+
+  if (!reports.length) {
+    console.log(`  ${col(C.gray, '(no eligible JSONL journals)')}`);
+  } else {
+    let totalBefore = 0, totalAfter = 0;
+    for (const r of reports) {
+      if (r.error) {
+        console.log(`  ${col(C.yellow, '\u26A0')}  ${r.file}: ${r.error}`);
+      } else {
+        totalBefore += r.before;
+        totalAfter  += r.after;
+        const pct = r.before > 0 ? Math.round(100 * r.pruned / r.before) : 0;
+        console.log(`  ${col(C.green, '\u2713')} ${r.file.padEnd(36)} ${String(r.before).padStart(5)} \u2192 ${String(r.after).padStart(5)}  (${pct}% pruned)`);
+      }
+    }
+    console.log('');
+    console.log(`  ${col(C.bold, 'total:')} ${totalBefore} \u2192 ${totalAfter} (${totalBefore - totalAfter} pruned)`);
+  }
+  console.log('');
+  console.log(`  ${col(C.gray, 'preserved (durable):')} memory, skills, personas, cert results, receipts.`);
+  console.log('');
+  return 0;
+}
+
+// â”€â”€ status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdStatus() {
   banner();
 
@@ -810,7 +972,7 @@ async function cmdStatus() {
     sectionHead('  OPTIONAL SERVICES (online)');
     for (const r of onlineOpt) {
       const s = r.value;
-      console.log(`  ${tick(true)}  ${col(C.green, s.name).padEnd(34)}${col(C.gray, ':' + s.port)}  ${col(C.gray, '· ' + s.group)}`);
+      console.log(`  ${tick(true)}  ${col(C.green, s.name).padEnd(34)}${col(C.gray, ':' + s.port)}  ${col(C.gray, 'Â· ' + s.group)}`);
     }
   }
 
@@ -818,12 +980,12 @@ async function cmdStatus() {
   try {
     const metrics = await httpGet(PORTS.orchestrator, '/api/status', 3000);
     sectionHead('  ORCHESTRATOR METRICS');
-    console.log(`  Total tasks    : ${col(C.cyan,   String(metrics.session?.totalTasks     ?? metrics.totalTasks     ?? '—'))}`);
-    console.log(`  Completed      : ${col(C.green,  String(metrics.session?.completedTasks ?? metrics.completedTasks ?? '—'))}`);
-    console.log(`  Failed         : ${col(C.red,    String(metrics.session?.failedTasks    ?? metrics.failedTasks    ?? '—'))}`);
-    console.log(`  Avg resp time  : ${col(C.yellow, String(metrics.metrics?.avgResponseTime ?? metrics.avgResponseTime ?? '—'))}ms`);
-    console.log(`  Active wf      : ${col(C.cyan,   String(metrics.active ?? metrics.activeWorkflows ?? '—'))}`);
-    console.log(`  Queue depth    : ${col(C.yellow, String(metrics.queue  ?? metrics.queueDepth      ?? '—'))}`);
+    console.log(`  Total tasks    : ${col(C.cyan,   String(metrics.session?.totalTasks     ?? metrics.totalTasks     ?? 'â€”'))}`);
+    console.log(`  Completed      : ${col(C.green,  String(metrics.session?.completedTasks ?? metrics.completedTasks ?? 'â€”'))}`);
+    console.log(`  Failed         : ${col(C.red,    String(metrics.session?.failedTasks    ?? metrics.failedTasks    ?? 'â€”'))}`);
+    console.log(`  Avg resp time  : ${col(C.yellow, String(metrics.metrics?.avgResponseTime ?? metrics.avgResponseTime ?? 'â€”'))}ms`);
+    console.log(`  Active wf      : ${col(C.cyan,   String(metrics.active ?? metrics.activeWorkflows ?? 'â€”'))}`);
+    console.log(`  Queue depth    : ${col(C.yellow, String(metrics.queue  ?? metrics.queueDepth      ?? 'â€”'))}`);
     if (metrics.uptime !== undefined) {
       const up = Math.round(metrics.uptime);
       console.log(`  Uptime         : ${col(C.gray, `${Math.floor(up/3600)}h ${Math.floor((up%3600)/60)}m`)}`);
@@ -840,7 +1002,7 @@ async function cmdStatus() {
       sectionHead('  ACTIVE WORKFLOWS');
       for (const wf of workflows.slice(0, 8)) {
         const statusColour = wf.status === 'running' ? C.cyan : wf.status === 'completed' ? C.green : C.yellow;
-        console.log(`  ${col(statusColour, '▶')}  ${col(C.bold, wf.workflowId || wf.id || '—')} ${col(C.gray, '—')} ${wf.command?.substring(0, 55) ?? '—'}`);
+        console.log(`  ${col(statusColour, 'â–¶')}  ${col(C.bold, wf.workflowId || wf.id || 'â€”')} ${col(C.gray, 'â€”')} ${wf.command?.substring(0, 55) ?? 'â€”'}`);
       }
     }
   } catch { /* silent */ }
@@ -857,7 +1019,7 @@ async function cmdStatus() {
         sectionHead('  AGENT LEADERBOARD');
         for (const [name, s] of ranked) {
           const rate  = (s.successRate ?? 0).toFixed(0);
-          const bar   = '█'.repeat(Math.round((s.successRate ?? 0) / 10)).padEnd(10, '░');
+          const bar   = 'â–ˆ'.repeat(Math.round((s.successRate ?? 0) / 10)).padEnd(10, 'â–‘');
           const tasks = col(C.gray, `${s.totalTasks ?? 0} tasks`);
           const rateCol = (s.successRate ?? 0) >= 80 ? C.green : (s.successRate ?? 0) >= 50 ? C.yellow : C.red;
           console.log(`  ${col(rateCol, bar)}  ${col(C.white, name.padEnd(12))} ${col(rateCol, rate + '%')}  ${tasks}`);
@@ -879,7 +1041,7 @@ async function cmdStatus() {
     if (tower.circuitBreakers) {
       const open = Object.entries(tower.circuitBreakers || {}).filter(([, s]) => s === 'open');
       if (open.length > 0) {
-        console.log(`  ${col(C.yellow, '⚡ Circuit breakers open:')} ${open.map(([n]) => n).join(', ')}`);
+        console.log(`  ${col(C.yellow, 'âš¡ Circuit breakers open:')} ${open.map(([n]) => n).join(', ')}`);
       } else {
         console.log(`  Circuit breakers: ${col(C.green, 'all closed')}`);
       }
@@ -890,12 +1052,12 @@ async function cmdStatus() {
   try {
     const mem = await httpGet(PORTS.memory, '/health', 2000);
     sectionHead('  MEMORY MATRIX');
-    console.log(`  ${tick(true)}  ${col(C.green, 'memory_matrix_v2')} ${col(C.gray, ':' + PORTS.memory + ' — online')}`);
+    console.log(`  ${tick(true)}  ${col(C.green, 'memory_matrix_v2')} ${col(C.gray, ':' + PORTS.memory + ' â€” online')}`);
     if (mem.memories !== undefined) console.log(`  Stored memories : ${col(C.cyan, String(mem.memories))}`);
     if (mem.symbols  !== undefined) console.log(`  Lifted symbols  : ${col(C.cyan, String(mem.symbols))}`);
   } catch {
     sectionHead('  MEMORY MATRIX');
-    console.log(`  ${tick(false)}  ${col(C.red, 'memory_matrix_v2')} ${col(C.gray, ':' + PORTS.memory + ' — offline')}`);
+    console.log(`  ${tick(false)}  ${col(C.red, 'memory_matrix_v2')} ${col(C.gray, ':' + PORTS.memory + ' â€” offline')}`);
     console.log(col(C.gray,  '  Run `purpclaw start` to boot all services.'));
   }
 
@@ -927,7 +1089,7 @@ async function cmdStatus() {
 
   console.log('');
 
-  // ── Knowledge Pool ───────────────────────────────────────────────────────────
+  // â”€â”€ Knowledge Pool â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let poolRes = null;
   try {
     poolRes = await new Promise((resolve, reject) => {
@@ -952,10 +1114,10 @@ async function cmdStatus() {
       console.log(`  Uptime           : ${col(C.gray, ups)}`);
       if (ia) console.log(`  Last indexed     : ${col(C.gray, ia)}`);
       console.log(`  Pool endpoint    : ${col(C.cyan, 'http://localhost:7885')}`);
-console.log(`  ${col(C.green, '✔')}  Pool service online`);
+console.log(`  ${col(C.green, 'âœ”')}  Pool service online`);
     }
 
-    // ── Context Bus ──────────────────────────────────────────────
+    // â”€â”€ Context Bus â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const ctx = await ctxGet('/context/stats');
     if (ctx) {
       sectionHead('  CONTEXT BUS');
@@ -965,7 +1127,7 @@ console.log(`  ${col(C.green, '✔')}  Pool service online`);
       console.log(`  Agents spawned : ${col(C.gray, String(ctx.stats.totalAgentsSpawned))}`);
     } else {
       sectionHead('  CONTEXT BUS');
-      console.log(col(C.red, '  [X] offline'));
+      console.log(col(C.red, '  âœ— offline'));
     }
   } catch {
     sectionHead('  KNOWLEDGE POOL');
@@ -973,7 +1135,7 @@ console.log(`  ${col(C.green, '✔')}  Pool service online`);
     console.log(col(C.gray, '  Boot: purpclaw pool reindex or pm2 start --only purpclaw-pool'));
   }
 
-  // ── Queue snapshot ─────────────────────────────────────────────────────────
+  // â”€â”€ Queue snapshot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   try {
     const orch = await httpGet(PORTS.orchestrator, '/api/status', 2000);
     const pending = (orch.pending ?? []).length || 0;
@@ -986,7 +1148,7 @@ console.log(`  ${col(C.green, '✔')}  Pool service online`);
     }
   } catch { /* silent */ }
 
-  // ── Companion ──────────────────────────────────────────────────────────────
+  // â”€â”€ Companion â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   try {
     const mochiLib = require(path.join(PURP_DIR, 'lib', 'mochi'));
     const m = mochiLib.loadMochi();
@@ -995,7 +1157,7 @@ console.log(`  ${col(C.green, '✔')}  Pool service online`);
     const spriteLines = sprites.renderSprite(m, Math.floor(Date.now() / 800) % sprites.frameCount(m.species));
     const face   = sprites.renderFace(m);
     const rarity = m.rarity || 'common';
-    const shiny  = m.shiny ? col(C.yellow, ' ✨') : '';
+    const shiny  = m.shiny ? col(C.yellow, ' âœ¨') : '';
     const mood   = m.mood || 'curious';
     const interacts = m.interactions || 0;
     // Stat mini-bars from pool (already fetched above if pool is up)
@@ -1004,12 +1166,12 @@ console.log(`  ${col(C.green, '✔')}  Pool service online`);
       const failures = poolRes.failures ?? 0;
       const food = Math.max(0, Math.min(10, 10 - failures));
       const joy  = Math.min(10, Math.floor(interacts / 2) + (poolRes.memories ?? 0));
-      const bar  = (n) => '█'.repeat(Math.min(n, 10)).padEnd(10, '░');
+      const bar  = (n) => 'â–ˆ'.repeat(Math.min(n, 10)).padEnd(10, 'â–‘');
       statLine = `\n  FOOD ${col(C.green,  bar(food))}  JOY ${col(C.magenta, bar(joy))}`;
     }
     // Print sprite side-by-side with info
     const info = [
-      `${col(C.magenta + C.bold, m.name)}${shiny}  ${col(C.gray, '·')}  ${col(C.cyan, m.species)}`,
+      `${col(C.magenta + C.bold, m.name)}${shiny}  ${col(C.gray, 'Â·')}  ${col(C.cyan, m.species)}`,
       `${col(C.gray, 'eye:')} ${m.eye}   ${col(C.gray, 'hat:')} ${m.hat || 'none'}   ${col(C.gray, rarity)}`,
       `${col(C.gray, 'mood:')} ${col(C.magenta, mood)}   ${col(C.gray, 'chats:')} ${interacts}`,
       `${col(C.gray, 'face:')} ${col(C.magenta, face)}`,
@@ -1025,18 +1187,11 @@ console.log(`  ${col(C.green, '✔')}  Pool service online`);
 }
 
 
-// ── health ───────────────────────────────────────────────────
+// â”€â”€ health â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Compact scorecard: tool count, services, vault, spend, memory, providers, deps, skills, updates.
 async function cmdHealth(args) {
   const { run, formatText } = require('../lib/doctor');
-  const profileArg = args.find(a => a.startsWith('--profile='));
-  const profile = profileArg ? profileArg.split('=')[1] :
-                  args.includes('--all') ? 'all' :
-                  args.includes('--running') ? 'running' : 'core';
-  const opts = {
-    verbose: args.includes('--verbose') || args.includes('-v'),
-    profile,
-  };
+  const opts = { verbose: args.includes('--verbose') || args.includes('-v') };
   if (args.includes('--json')) {
     const r = await run(opts);
     console.log(JSON.stringify(r, null, 2));
@@ -1049,69 +1204,16 @@ async function cmdHealth(args) {
 
 
 
-// ── audit deep ──────────────────────────────────────────────
+// â”€â”€ audit deep â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdAudit(args) {
   const { runFast, runFull } = require('../lib/deep-audit');
   const isFast = args.includes('--fast') || args.includes('-f');
-  const isWatch = args.includes('--watch') || args.includes('--daemon');
-  const isDiff = args.includes('--diff');
-  const isStatus = args.includes('--status');
-  const isJson = args.includes('--json');
-
-  // Continuous audit modes (file-change tracking + delta manifest)
-  if (isStatus) {
-    // Show current audit state without running deep-audit
-    const { execSync } = require('child_process');
-    const result = execSync(
-      `node "${path.join(PURP_DIR, 'scripts', 'continuous-audit.js')}" status`,
-      { cwd: PURP_DIR, encoding: 'utf8', timeout: 15000 }
-    );
-    console.log(result);
-    return;
-  }
-  if (isDiff) {
-    const { execSync } = require('child_process');
-    const result = execSync(
-      `node "${path.join(PURP_DIR, 'scripts', 'continuous-audit.js')}" diff`,
-      { cwd: PURP_DIR, encoding: 'utf8', timeout: 15000 }
-    );
-    console.log(result);
-    return;
-  }
-  if (isWatch) {
-    const { execSync } = require('child_process');
-    const interval = (args.includes('--interval') && args[args.indexOf('--interval') + 1])
-      ? args[args.indexOf('--interval') + 1]
-      : '300000';
-    console.log('[audit] Starting continuous audit daemon...');
-    execSync(
-      `node "${path.join(PURP_DIR, 'scripts', 'continuous-audit.js')}" daemon --watch --interval ${interval}`,
-      { cwd: PURP_DIR, stdio: 'inherit' }
-    );
-    return;
-  }
-
-  // Standard deep audit
   const result = isFast ? await runFast() : await runFull();
-
-  // Also run continuous audit snapshot (fast, updates delta manifest + parity report)
-  if (!isFast) {
-    try {
-      const { execSync } = require('child_process');
-      execSync(
-        `node "${path.join(PURP_DIR, 'scripts', 'continuous-audit.js')}"`,
-        { cwd: PURP_DIR, encoding: 'utf8', timeout: 60000 }
-      );
-    } catch (e) {
-      // Non-fatal — deep audit result is what matters
-    }
-  }
-
   process.exit(result.fail > 0 ? 1 : 0);
 }
 
 
-// ── embeddings ───────────────────────────────────────────────
+// â”€â”€ embeddings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Hosted vector embeddings via NVIDIA NIM (bge-m3, 1024-dim, free).
 async function cmdEmbeddings(args) {
   const emb = require('../lib/embeddings');
@@ -1120,12 +1222,12 @@ async function cmdEmbeddings(args) {
   if (sub === 'health') {
     const h = await emb.health();
     if (h.ok) {
-      console.log(`\n  [OK] Embeddings healthy`);
+      console.log(`\n  âœ“ Embeddings healthy`);
       console.log(`    Model:    ${h.model}`);
       console.log(`    Dim:      ${h.dim}`);
       console.log(`    Endpoint: ${h.baseUrl}\n`);
     } else {
-      console.log(`\n  [X] Embeddings unavailable: ${h.reason}\n`);
+      console.log(`\n  âœ— Embeddings unavailable: ${h.reason}\n`);
       process.exit(1);
     }
     return;
@@ -1145,7 +1247,7 @@ async function cmdEmbeddings(args) {
       console.log(`\n  ${dim}-dim vector for "${text.substring(0, 40)}${text.length > 40 ? '...' : ''}"`);
       console.log(`  [${head}, ..., ${tail}]\n`);
     } catch (e) {
-      console.log(`\n  [X] ${e.message}\n`);
+      console.log(`\n  âœ— ${e.message}\n`);
       process.exit(1);
     }
     return;
@@ -1156,7 +1258,7 @@ async function cmdEmbeddings(args) {
 }
 
 
-// ── whoami ─────────────────────────────────────────────────
+// â”€â”€ whoami â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Self-introspection: polls live systems and describes itself.
 async function cmdWhoami(args) {
   const { whoami, formatText } = require('../lib/whoami');
@@ -1167,18 +1269,18 @@ async function cmdWhoami(args) {
   if (opts.json) {
     console.log(JSON.stringify(self, null, 2));
   } else if (opts.short) {
-    console.log(`${self.name} v${self.version} — ${self.tagline}.`);
-    console.log(`  ${self.surfaces.cli.command}  ·  ${self.motto}`);
+    console.log(`${self.name} v${self.version} â€” ${self.tagline}.`);
+    console.log(`  ${self.surfaces.cli.command}  Â·  ${self.motto}`);
   } else {
     console.log(formatText(self));
   }
 }
 
 
-// ── release ────────────────────────────────────────────────
-//   purpclaw release keygen     — generate Ed25519 keypair
-//   purpclaw release sign <m>   — sign a manifest
-//   purpclaw release verify <m> — verify a manifest signature
+// â”€â”€ release â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+//   purpclaw release keygen     â€” generate Ed25519 keypair
+//   purpclaw release sign <m>   â€” sign a manifest
+//   purpclaw release verify <m> â€” verify a manifest signature
 async function cmdRelease(args) {
   const C = { cyan: '\x1b[36m', green: '\x1b[32m', yellow: '\x1b[33m', red: '\x1b[31m', gray: '\x1b[90m', white: '\x1b[97m', bold: '\x1b[1m', magenta: '\x1b[35m' };
   const col = (c, s) => s;
@@ -1189,7 +1291,7 @@ async function cmdRelease(args) {
   if (sub === 'keygen') {
     const kp = rs.generateAndStoreKeypair();
     const pubB64 = kp.publicKeyDer.toString('base64');
-    console.log(`\n  ${col(C.green, '[OK]')} Ed25519 keypair generated`);
+    console.log(`\n  ${col(C.green, 'âœ“')} Ed25519 keypair generated`);
     console.log(`  ${col(C.gray, 'Private:')} ${rs.KEYS_DIR}\\private.pem`);
     console.log(`  ${col(C.gray, 'Public:')}  ${rs.KEYS_DIR}\\public.pem`);
     console.log(`\n  ${col(C.yellow, 'Public key (DER, base64):')}`);
@@ -1209,7 +1311,7 @@ async function cmdRelease(args) {
     manifest.signature = result.signature;
     manifest.publicKey = result.publicKey;
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-    console.log(`\n  ${col(C.green, '[OK]')} Signed ${manifestPath}`);
+    console.log(`\n  ${col(C.green, 'âœ“')} Signed ${manifestPath}`);
     console.log(`  ${col(C.gray, 'Signature:')} ${result.signature.substring(0, 40)}...\n`);
     return;
   }
@@ -1223,7 +1325,7 @@ async function cmdRelease(args) {
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     const sig = manifest.signature;
     if (!sig) {
-      console.log(`\n  ${col(C.red, '[X]')} No signature in manifest\n`);
+      console.log(`\n  ${col(C.red, 'âœ—')} No signature in manifest\n`);
       return;
     }
     // Strip signature and embedded publicKey before verifying so we get a
@@ -1232,14 +1334,14 @@ async function cmdRelease(args) {
     delete toVerify.signature;
     delete toVerify.publicKey;
     if (rs.verifyManifest(toVerify, sig)) {
-      console.log(`\n  ${col(C.green, '[OK]')} Valid signature\n`);
+      console.log(`\n  ${col(C.green, 'âœ“')} Valid signature\n`);
     } else {
       // Show more detail
       const kp = rs.loadKeypair();
       if (!kp) {
-        console.log(`\n  ${col(C.red, '[X]')} No keypair found — run ${col(C.cyan, 'purpclaw release keygen')} first\n`);
+        console.log(`\n  ${col(C.red, 'âœ—')} No keypair found â€” run ${col(C.cyan, 'purpclaw release keygen')} first\n`);
       } else {
-        console.log(`\n  ${col(C.red, '[X]')} Invalid signature (stored key does not match signing key)\n`);
+        console.log(`\n  ${col(C.red, 'âœ—')} Invalid signature (stored key does not match signing key)\n`);
       }
     }
     return;
@@ -1247,13 +1349,13 @@ async function cmdRelease(args) {
 
   // Show key status
   const kp = rs.loadKeypair();
-  console.log(`\n  ${col(C.cyan, '🔐 RELEASE SIGNING')}\n`);
+  console.log(`\n  ${col(C.cyan, 'ðŸ” RELEASE SIGNING')}\n`);
   if (kp) {
-    console.log(`  ${col(C.green, '[OK]')} Keypair present`);
+    console.log(`  ${col(C.green, 'âœ“')} Keypair present`);
     console.log(`  ${col(C.gray, '  Private:')} ${rs.KEYS_DIR}\\private.pem`);
     console.log(`  ${col(C.gray, '  Public:')}  ${rs.KEYS_DIR}\\public.pem`);
   } else {
-    console.log(`  ${col(C.yellow, '[!]')} No keypair found — run ${col(C.cyan, 'purpclaw release keygen')}\n`);
+    console.log(`  ${col(C.yellow, 'âš ')} No keypair found â€” run ${col(C.cyan, 'purpclaw release keygen')}\n`);
   }
   console.log(`  ${col(C.cyan, 'purpclaw release keygen')}          generate Ed25519 keypair`);
   console.log(`  ${col(C.cyan, 'purpclaw release sign <file>')}     sign a manifest`);
@@ -1262,496 +1364,13 @@ async function cmdRelease(args) {
 }
 
 
-// ── checkpoint ─────────────────────────────────────────────────────────────────
-// purpclaw checkpoint create [dir]  — take a manual checkpoint
-// purpclaw checkpoint list [dir]    — list checkpoints
-// purpclaw checkpoint rollback <id> [dir] — roll back to a checkpoint
-// purpclaw checkpoint prune [dir]  — prune old checkpoints
-// purpclaw checkpoint ... --json    — output result as JSON
-async function cmdCheckpoint(args) {
-  const wantJson = args.includes('--json');
-  const cleanArgs = args.filter(a => !a.startsWith('--'));
-  const sub = (cleanArgs[0] || '').toLowerCase();
-  const wd = cleanArgs[1] && !cleanArgs[1].startsWith('-')
-    ? path.resolve(cleanArgs[1])
-    : process.cwd();
-  const jsonOut = (obj) => wantJson && console.log(JSON.stringify(obj));
-
-
-  // Lazy-load the checkpoint manager
-  let CheckpointManager, checkpointManager;
-  try {
-    const mod = await import(pathToFileURL(path.join(PURP_DIR, 'lib', 'checkpoint-manager.mjs')));
-    CheckpointManager = mod.CheckpointManager;
-    checkpointManager = mod.checkpointManager || mod.default;
-    if (!checkpointManager || typeof checkpointManager.createCheckpoint !== 'function') {
-      // Fallback: instantiate from class
-      checkpointManager = new CheckpointManager({ enabled: true });
-    }
-  } catch (err) {
-    console.error('Failed to load checkpoint manager:', err.message);
-    console.error('Make sure lib/checkpoint-manager.mjs exists.');
-    return 1;
-  }
-
-  let exitCode = 0;
-  try {
-    switch (sub) {
-      case 'status': {
-        const st = await checkpointManager.status(wd);
-        const out = { action: 'status', ...st, success: true };
-        jsonOut(out);
-        if (!wantJson) {
-          console.log(`Git:        ${st.gitAvailable ? 'available' : 'not available'}`);
-          console.log(`Checkpoints: ${st.checkpointCount}`);
-          console.log(`Store:      ${st.storePath}  (${st.storeSizeMb} MB)`);
-          console.log(`Has index:  ${st.hasIndex ? 'yes' : 'no'}`);
-        }
-        recordLesson({ task: 'checkpoint status', success: true, outputPreview: `checkpoints=${st.checkpointCount}` });
-        break;
-      }
-
-      case 'create': {
-        const msg = cleanArgs.slice(1).join(' ') || `manual checkpoint from CLI`;
-        const result = await checkpointManager.createCheckpoint(wd, msg);
-        if (result) {
-          console.log(`✓ Checkpoint created: ${result.checkpointId} (${result.commitHash.slice(0, 8)})`);
-          jsonOut({ action: 'create', checkpointId: result.checkpointId, commitHash: result.commitHash, success: true });
-          exitCode = 0;
-        } else {
-          console.log('✗ No checkpoint created (no changes or git unavailable)');
-          jsonOut({ action: 'create', success: false, error: 'no changes or git unavailable' });
-          exitCode = 1;
-        }
-        break;
-      }
-
-      case 'list': {
-        const checkpoints = await checkpointManager.listCheckpoints(wd);
-        if (!checkpoints.length) {
-          if (!wantJson) console.log(`No checkpoints found for ${wd}`);
-          jsonOut({ action: 'list', checkpoints: [], workingDir: wd, success: true });
-          exitCode = 0;
-          break;
-        }
-        const cpList = checkpoints.map((cp, i) => ({ id: i + 1, checkpointId: cp.checkpointId, createdAt: cp.createdAt, message: cp.message || null }));
-        if (wantJson) {
-          jsonOut({ action: 'list', checkpoints: cpList, workingDir: wd, success: true });
-        } else {
-          console.log(`📸 Checkpoints for ${wd}:\n`);
-          checkpoints.forEach((cp, i) => {
-            const ts = cp.createdAt ? cp.createdAt.replace('T', ' ').slice(0, 19) : '?';
-            console.log(`  ${i + 1}. ${cp.checkpointId}  ${ts}  ${cp.message}`);
-          });
-          console.log('\n  purpclaw checkpoint rollback <id> [dir]  — restore a checkpoint');
-        }
-        exitCode = 0;
-        break;
-      }
-
-      case 'rollback': {
-        const id = cleanArgs[1];
-        if (!id) {
-          console.log('Usage: purpclaw checkpoint rollback <checkpoint-id> [dir]');
-          exitCode = 1;
-          break;
-        }
-        const targetDir = cleanArgs[2] && !cleanArgs[2].startsWith('-')
-          ? path.resolve(cleanArgs[2])
-          : wd;
-        const ok = await checkpointManager.rollback(targetDir, id);
-        if (ok) {
-          console.log(`✓ Rolled back ${targetDir} to checkpoint ${id.slice(0, 16)}`);
-          jsonOut({ action: 'rollback', checkpointId: id, targetDir, success: true });
-          exitCode = 0;
-        } else {
-          console.log(`✗ Rollback failed (checkpoint not found or invalid id: ${id})`);
-          jsonOut({ action: 'rollback', checkpointId: id, targetDir, success: false, error: 'not found or invalid' });
-          exitCode = 1;
-        }
-        break;
-      }
-
-      case 'prune': {
-        const retentionDays = parseInt(cleanArgs.find(a => a.startsWith('--days='))?.split('=')[1] || '7', 10);
-        const result = await checkpointManager.pruneCheckpoints(wd, retentionDays);
-        console.log(`✓ Pruned ${result.deleted} checkpoints, freed ~${result.freedMb} MB`);
-        jsonOut({ action: 'prune', retentionDays, deleted: result.deleted, freedMb: result.freedMb, success: true });
-        exitCode = 0;
-        break;
-      }
-
-      default: {
-        console.log('Usage:');
-        console.log('  purpclaw checkpoint create [dir]            — take a manual checkpoint');
-        console.log('  purpclaw checkpoint list [dir]              — list checkpoints');
-        console.log('  purpclaw checkpoint rollback <id> [dir]     — roll back to a checkpoint');
-        console.log('  purpclaw checkpoint prune [dir]             — prune old checkpoints');
-        console.log('  purpclaw checkpoint prune [dir] --days=30   — prune checkpoints older than 30 days');
-        exitCode = 0;
-        break;
-      }
-    }
-  } finally {
-    recordLesson({ task: `checkpoint ${args.join(' ')}`, success: exitCode === 0, outputPreview: `exit=${exitCode}` });
-  }
-  return exitCode;
-}
-
-
-// ── compress ───────────────────────────────────────────────────────────────────
-// Manual context compression — invokes the LLM-powered context compressor.
-async function cmdCompress(args) {
-  const { ContextCompressor } = require(path.join(PURP_DIR, 'lib', 'context-compressor'));
-  const pathToFileURL = require('url').pathToFileURL;
-  const fs = require('fs');
-  const readline = require('readline');
-
-  // Load most recent session history
-  const sessionsDir = path.join(PURP_DIR, 'agent_work', 'sessions');
-  if (!fs.existsSync(sessionsDir)) {
-    console.log('  No sessions directory found.');
-    return 1;
-  }
-  const files = fs.readdirSync(sessionsDir)
-    .filter(f => f.endsWith('.jsonl') || f.endsWith('.json'))
-    .map(f => ({ f, mtime: fs.statSync(path.join(sessionsDir, f)).mtime.getTime() }))
-    .sort((a, b) => b.mtime - a.mtime);
-  if (!files.length) { console.log('  No session files found.'); return 1; }
-
-  // Default to most recent
-  const sessionFile = path.join(sessionsDir, files[0].f);
-  const lines = fs.readFileSync(sessionFile, 'utf8').split('\n').filter(Boolean);
-  const messages = lines.map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
-
-  if (!messages.length) { console.log('  No messages in session.'); return 1; }
-
-  const focus = args.includes('--focus') ? args[args.indexOf('--focus') + 1] || '' : '';
-  const dry   = args.includes('--dry');
-  const force = args.includes('--force');
-
-  const cc = new ContextCompressor({
-    contextLength: 200_000,
-    threshold: 0.75,
-    protectFirst: 3,
-    protectLast: 20,
-  });
-
-  console.log(`  Compressing ${messages.length} messages (${files[0].f})...`);
-  if (dry) {
-    console.log(`  shouldCompress: ${cc.shouldCompress(messages)}`);
-    console.log(`  estimate: ${cc.thresholdTokens} tokens threshold`);
-    recordLesson({ task: 'compress --dry', success: true, outputPreview: `shouldCompress=${cc.shouldCompress(messages)}` });
-    return 0;
-  }
-
-  try {
-    const result = await cc.compress(messages, { force });
-    if (result.compressed) {
-      console.log(`  ✓ Compressed ${messages.length} → ${result.messages.length} messages`);
-      console.log(`  tokens: ${result.tokensBefore} → ${result.tokensAfter} (${result.tokensAfter < result.tokensBefore ? 'saved ' + (result.tokensBefore - result.tokensAfter) + ' tokens' : 'no reduction'})`);
-      if (result.usedFallback) console.log('  ⚠ LLM unavailable — used deterministic fallback');
-      if (result.summary) console.log('\n' + result.summary.slice(0, 500) + (result.summary.length > 500 ? '...' : ''));
-      recordLesson({ task: 'compress', success: true, outputPreview: `compressed=${result.messages.length} msgs tokens=${result.tokensAfter}` });
-    } else {
-      console.log(`  ✗ Not compressed: ${result.reason || 'already fits'}`);
-      recordLesson({ task: 'compress', success: false, outputPreview: result.reason || 'already fits' });
-    }
-  } catch (err) {
-    console.log(`  ✗ Compression error: ${err.message}`);
-    recordLesson({ task: 'compress', success: false, outputPreview: `error: ${err.message}` });
-  }
-  return 0;
-}
-
-// ── curator ───────────────────────────────────────────────────────────────────
-// Background skill maintenance: purge stale skills, archive unused ones.
-async function cmdCurator(args) {
-  const Curator = require(path.join(PURP_DIR, 'lib', 'curator'));
-  const wantJson = args.includes('--json');
-  const cleanArgs = args.filter(a => !a.startsWith('--'));
-  const sub = (cleanArgs[0] || '').toLowerCase();
-  const jsonOut = (obj) => wantJson && console.log(JSON.stringify(obj));
-
-  switch (sub) {
-    case '':
-    case 'status': {
-      const state = Curator.loadState();
-      const enabled = Curator.isEnabled();
-      const paused = Curator.isPaused();
-      const result = {
-        status: paused ? 'PAUSED' : enabled ? 'ACTIVE' : 'DISABLED',
-        enabled, paused,
-        lastRunAt: state.lastRunAt,
-        lastRunDurationSeconds: state.lastRunDurationSeconds,
-        runCount: state.runCount || 0,
-        lastRunSummary: state.lastRunSummary || null,
-        intervalDays: Curator.getIntervalHours() / 24,
-        staleAfterDays: Curator.getStaleAfterDays(),
-        archiveAfterDays: Curator.getArchiveAfterDays(),
-      };
-      if (wantJson) {
-        jsonOut(result);
-      } else {
-        sectionHead('  CURATOR — Skill Maintenance');
-        console.log(`  Status:  ${paused ? col(C.yellow, 'PAUSED') : enabled ? col(C.green, 'ACTIVE') : col(C.red, 'DISABLED')}`);
-        const last = state.lastRunAt ? state.lastRunAt.replace('T', ' ').slice(0, 19) : 'never';
-        const dur = state.lastRunDurationSeconds != null ? `${state.lastRunDurationSeconds.toFixed(1)}s` : '—';
-        console.log(`  Last:    ${last} (${dur})`);
-        console.log(`  Runs:    ${state.runCount || 0}`);
-        if (state.lastRunSummary) console.log(`  Summary: ${col(C.gray, state.lastRunSummary)}`);
-        console.log(`\n  Config:  interval=${Curator.getIntervalHours() / 24}d  stale=${Curator.getStaleAfterDays()}d  archive=${Curator.getArchiveAfterDays()}d`);
-        console.log(`\n  Usage:   purpclaw curator run [--dry-run] [--consolidate]`);
-        console.log(`          purpclaw curator pause | resume | status`);
-      }
-      recordLesson({ task: `curator ${args.join(' ')}`, success: true, outputPreview: `curator ${sub || 'status'}` });
-      return 0;
-    }
-    case 'pause': {
-      Curator.setPaused(true);
-      if (wantJson) jsonOut({ action: 'pause', success: true });
-      else console.log(col(C.yellow, '  Curator paused.'));
-      recordLesson({ task: `curator ${args.join(' ')}`, success: true, outputPreview: 'paused' });
-      return 0;
-    }
-    case 'resume': {
-      Curator.setPaused(false);
-      if (wantJson) jsonOut({ action: 'resume', success: true });
-      else console.log(col(C.green, '  Curator resumed.'));
-      recordLesson({ task: `curator ${args.join(' ')}`, success: true, outputPreview: 'resumed' });
-      return 0;
-    }
-    case 'run': {
-      const dryRun = cleanArgs.includes('--dry-run');
-      const consolidate = cleanArgs.includes('--consolidate');
-      const result = await Curator.runCurator({ dryRun, consolidate });
-      const out = {
-        action: 'run',
-        dryRun,
-        consolidate,
-        archived: result.archived || 0,
-        stale: result.stale || 0,
-        summary: result.summary || null,
-        success: true,
-      };
-      if (wantJson) {
-        jsonOut(out);
-      } else {
-        banner();
-        sectionHead('  CURATOR — Running skill maintenance pass');
-        if (dryRun) console.log(col(C.gray, '  [DRY RUN — no changes will be made]\n'));
-        console.log(col(C.cyan, '  Starting curator pass...\n'));
-        if (result.summary) {
-          console.log('\n' + result.summary);
-        } else {
-          console.log('\n  ' + col(C.green, `Done. ${result.archived || 0} archived, ${result.stale || 0} marked stale.`));
-        }
-      }
-      recordLesson({ task: `curator run`, success: true, outputPreview: `archived=${result.archived || 0} stale=${result.stale || 0}` });
-      return 0;
-    }
-    default:
-      if (wantJson) jsonOut({ error: 'unknown subcommand', success: false });
-      else console.log('Usage: purpclaw curator status | run [--dry-run] [--consolidate] | pause | resume');
-      recordLesson({ task: `curator ${args.join(' ')}`, success: false, outputPreview: 'unknown subcommand' });
-      return 1;
-  }
-}
-
-// ── approvals ──────────────────────────────────────────────────────────────────
-// Dangerous command approval queue.
-async function cmdApprovals(args) {
-  const AQ = require(path.join(PURP_DIR, 'lib', 'approval-queue'));
-  const wantJson = args.includes('--json');
-  const cleanArgs = args.filter(a => !a.startsWith('--'));
-  const sub = (cleanArgs[0] || '').toLowerCase();
-  const id = cleanArgs[1] || '';
-  const jsonOut = (obj) => wantJson && console.log(JSON.stringify(obj));
-
-  switch (sub) {
-    case '':
-    case 'list': {
-      const { getQueueDir } = AQ;
-      const queueDir = getQueueDir ? getQueueDir() : path.join(PURP_PATHS.DATA_ROOT, 'approvals');
-      if (!fs.existsSync(queueDir)) {
-        jsonOut({ action: 'list', pending: [], success: true, note: 'no queue dir' });
-        if (!wantJson) console.log(col(C.gray, '  No approvals yet.\n'));
-        recordLesson({ task: 'approvals list', success: true, outputPreview: 'no queue dir' });
-        return 0;
-      }
-      const files = fs.readdirSync(queueDir).filter(f => f.endsWith('.json'));
-      const pendingFiles = files.filter(f => !f.includes('-resolved')).slice(0, 20);
-      const pending = pendingFiles.map(f => {
-        try { const d = JSON.parse(fs.readFileSync(path.join(queueDir, f), 'utf8')); return d; } catch { return null; }
-      }).filter(Boolean);
-      if (wantJson) {
-        jsonOut({ action: 'list', pending, success: true });
-      } else {
-        sectionHead('  APPROVALS — Pending dangerous command review');
-        if (!pending.length) {
-          console.log(col(C.gray, '  No pending approvals.\n'));
-        } else {
-          pending.forEach(d => {
-            const age = d.createdAt ? Math.floor((Date.now() - new Date(d.createdAt)) / 60000) + 'm ago' : '?';
-            const label = (d.id || '?');
-            const cmd = d.command ? d.command.slice(0, 60) : (d.description || '\u2014');
-            console.log('  ' + col(C.yellow, label) + '  ' + age + '  ' + cmd);
-          });
-          console.log(`\n  purpclaw approvals approve <id> | deny <id> | clear`);
-        }
-      }
-      recordLesson({ task: 'approvals list', success: true, outputPreview: `pending=${pending.length}` });
-      return 0;
-    }
-    case 'approve': {
-      if (!id) { console.log('Usage: purpclaw approvals approve <id>'); return 1; }
-      // If this looks like a workflow approval (has 'wf-' prefix), resume the workflow
-      if (id.startsWith('wf-')) {
-        try {
-          const AQ = require(path.join(PURP_DIR, 'lib', 'approval-queue'));
-          AQ.onWorkflowApprovalResolved(id, async (approvalId, resolution) => {
-            const GATEWAY = require(path.join(PURP_DIR, 'lib', 'agent-gateway'));
-            const gateway = new GATEWAY.AgentGateway();
-            await gateway.resumeWorkflow(approvalId.replace('wf-', ''), {}, { resumeValue: { approved: resolution === 'approved' } });
-          });
-        } catch {}
-      }
-      const ok = AQ.resolveApproval(id, 'approve');
-      jsonOut({ action: 'approve', id, success: ok });
-      if (!wantJson) console.log(ok ? col(C.green, `  ✓ Approved: ${id}`) : col(C.red, `  ✗ Not found: ${id}`));
-      recordLesson({ task: `approvals approve ${id}`, success: ok, outputPreview: ok ? 'approved' : 'not found' });
-      return ok ? 0 : 1;
-    }
-    case 'deny': {
-      if (!id) { console.log('Usage: purpclaw approvals deny <id>'); return 1; }
-      // If this looks like a workflow approval, resume with denied
-      if (id.startsWith('wf-')) {
-        try {
-          const AQ = require(path.join(PURP_DIR, 'lib', 'approval-queue'));
-          AQ.onWorkflowApprovalResolved(id, async (approvalId, resolution) => {
-            const GATEWAY = require(path.join(PURP_DIR, 'lib', 'agent-gateway'));
-            const gateway = new GATEWAY.AgentGateway();
-            await gateway.resumeWorkflow(approvalId.replace('wf-', ''), {}, { resumeValue: { approved: false } });
-          });
-        } catch {}
-      }
-      const ok = AQ.resolveApproval(id, 'deny');
-      jsonOut({ action: 'deny', id, success: ok });
-      if (!wantJson) console.log(ok ? col(C.red, `  ✗ Denied: ${id}`) : col(C.red, `  ✗ Not found: ${id}`));
-      recordLesson({ task: `approvals deny ${id}`, success: ok, outputPreview: ok ? 'denied' : 'not found' });
-      return ok ? 0 : 1;
-    }
-    case 'clear': {
-      const { clearExpired } = AQ;
-      let n = 0;
-      if (clearExpired) n = clearExpired();
-      const result = { action: 'clear', cleared: n, success: true };
-      jsonOut(result);
-      if (!wantJson) {
-        if (n > 0) console.log(`  Cleared ${n} expired approvals.`);
-        else console.log(col(C.gray, '  Nothing to clear.'));
-      }
-      recordLesson({ task: 'approvals clear', success: true, outputPreview: `cleared=${n}` });
-      return 0;
-    }
-    default:
-      jsonOut({ error: 'unknown subcommand', success: false });
-      if (!wantJson) console.log('Usage: purpclaw approvals list | approve <id> | deny <id> | clear');
-      recordLesson({ task: `approvals ${args.join(' ')}`, success: false, outputPreview: 'unknown subcommand' });
-      return 1;
-  }
-}
-
-// ── tirith ─────────────────────────────────────────────────────────────────────
-// Claims validation and argument audit for agent outputs.
-async function cmdTirith(args) {
-  const Tirith = require(path.join(PURP_DIR, 'lib', 'tirith-security'));
-  const wantJson = args.includes('--json');
-  const cleanArgs = args.filter(a => !a.startsWith('--'));
-  const sub = (cleanArgs[0] || '').toLowerCase();
-  const target = cleanArgs[1] || '';
-  const jsonOut = (obj) => wantJson && console.log(JSON.stringify(obj));
-
-  if (!sub || sub === 'help') {
-    if (!wantJson) {
-      sectionHead('  TIRITH — Claims Validation');
-      console.log(col(C.gray, '  Audit command strings or file content for claim integrity.\n'));
-      console.log(`  ${col(C.bold, 'purpclaw tirith cmd <command>')}   — validate a command string`);
-      console.log(`  ${col(C.bold, 'purpclaw tirith file <path>')}   — scan a file for dangerous claims`);
-      console.log(`  ${col(C.bold, 'purpclaw tirith status')}        — circuit breaker state`);
-    }
-    return 0;
-  }
-
-  if (sub === 'status') {
-    const state = Tirith.getCircuitState();
-    const out = { action: 'status', circuitOpen: state.circuitOpen, crashCount: state.crashCount, success: true };
-    jsonOut(out);
-    if (!wantJson) console.log(`  Circuit: ${state.circuitOpen ? col(C.red, 'OPEN') : col(C.green, 'CLOSED')}  (${state.crashCount} crash(es))`);
-    recordLesson({ task: 'tirith status', success: true, outputPreview: `circuit=${state.circuitOpen ? 'OPEN' : 'CLOSED'}` });
-    return 0;
-  }
-
-  if (sub === 'cmd' || sub === 'command') {
-    if (!target) { console.log('Usage: purpclaw tirith cmd "<command>"'); return 1; }
-    const result = Tirith.checkCommand(target);
-    const out = { action: 'cmd', command: target, findings: result.findings, safe: !result.findings.length, success: true };
-    jsonOut(out);
-    if (!wantJson) {
-      if (!result.findings.length) {
-        console.log(col(C.green, `  ✓ No issues found in command`));
-      } else {
-        console.log(col(C.red, `  ✗ ${result.findings.length} finding(s):`));
-        result.findings.forEach(f => {
-          console.log(`    [${f.severity}] ${f.description}`);
-          if (f.location) console.log(`      → ${f.location}`);
-        });
-      }
-    }
-    const critical = result.findings.some(f => f.severity === 'critical');
-    recordLesson({ task: `tirith cmd "${target.slice(0, 50)}"`, success: !critical, outputPreview: `findings=${result.findings.length} critical=${critical}` });
-    return critical ? 1 : 0;
-  }
-
-  if (sub === 'file') {
-    if (!target) { console.log('Usage: purpclaw tirith file <path>'); return 1; }
-    const resolved = path.resolve(target);
-    if (!fs.existsSync(resolved)) { console.log(col(C.red, `  File not found: ${resolved}`)); return 1; }
-    const stat = fs.statSync(resolved);
-    if (stat.isDirectory()) { console.log(col(C.red, `  ${resolved} is a directory.`)); return 1; }
-    const result = Tirith.checkFile(resolved);
-    const out = { action: 'file', path: resolved, checkedChars: result.checkedChars, findings: result.findings, safe: !result.findings.length, success: true };
-    jsonOut(out);
-    if (!wantJson) {
-      if (!result.findings.length) {
-        console.log(col(C.green, `  ✓ File is clean (${result.checkedChars} chars scanned)`));
-      } else {
-        console.log(col(C.red, `  ✗ ${result.findings.length} finding(s) in ${resolved}:`));
-        result.findings.forEach(f => {
-          console.log(`    [${f.severity}] ${f.description}`);
-          if (f.location) console.log(`      → ${f.location}`);
-        });
-      }
-    }
-    const critical = result.findings.some(f => f.severity === 'critical');
-    recordLesson({ task: `tirith file ${target}`, success: !critical, outputPreview: `findings=${result.findings.length}` });
-    return critical ? 1 : 0;
-  }
-
-  console.log('Usage: purpclaw tirith status | cmd "<command>" | file <path>');
-  return 1;
-}
-
-// ── resume ─────────────────────────────────────────────────────────────────────
+// â”€â”€ resume â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Resume a previous session from agent_work/sessions/
 async function cmdResume(args) {
   const SESSIONS_DIR = path.join(PURP_DIR, 'agent_work', 'sessions');
   const sub = (args[0] || '').toLowerCase();
-  // Codex parity: --include-non-interactive flag (include batch/background sessions in list)
-  const includeNonInteractive = args.includes('--include-non-interactive');
-  const filterArgs = args.filter(a => !a.startsWith('--'));
 
-  // ── resume list ──────────────────────────────────────────────────────────
+  // â”€â”€ resume list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'list' || sub === 'ls') {
     banner();
     sectionHead('  SESSION RESUME');
@@ -1783,16 +1402,16 @@ async function cmdResume(args) {
     for (const s of sessions.slice(0, 10)) {
       const ts  = new Date(s.mtime).toISOString().replace('T', ' ').slice(0, 16);
       const sz  = s.size > 1024 ? (s.size/1024).toFixed(0) + 'K' : s.size + 'b';
-      const ln  = (s.lastLine || '—').slice(0, 60);
+      const ln  = (s.lastLine || 'â€”').slice(0, 60);
       console.log(`  ${col(C.cyan, s.id.padEnd(16))} ${col(C.gray, ts)}  ${col(C.white, ln)}`);
     }
     console.log(col(C.gray, `\n  ${sessions.length} session(s) stored.\n`));
-    console.log(col(C.gray, '  purpclaw resume <session-id>  — reload a session'));
-    console.log(col(C.gray, '  purpclaw resume latest        — reload most recent\n'));
+    console.log(col(C.gray, '  purpclaw resume <session-id>  â€” reload a session'));
+    console.log(col(C.gray, '  purpclaw resume latest        â€” reload most recent\n'));
     return;
   }
 
-  // ── resume <id> or latest ────────────────────────────────────────────────
+  // â”€â”€ resume <id> or latest â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const targetId = args[0] || 'latest';
   if (!fs.existsSync(SESSIONS_DIR)) {
     console.log(col(C.red, '  No sessions directory found. Run purpclaw run first.\n'));
@@ -1821,9 +1440,9 @@ async function cmdResume(args) {
   const lines = fs.readFileSync(sessionFile, 'utf8').split('\n').filter(Boolean);
   const messages = lines.map(l => { try { return JSON.parse(l); } catch { return null; } }).filter(Boolean);
 
-  sectionHead('  SESSION RESUME — ' + targetId);
+  sectionHead('  SESSION RESUME â€” ' + targetId);
   console.log(col(C.gray, `  ${messages.length} message(s) in this session\n`));
-
+  
   // Show session summary
   const userMsgs = messages.filter(m => m.role === 'user');
   const assistantMsgs = messages.filter(m => m.role === 'assistant');
@@ -1849,151 +1468,70 @@ async function cmdResume(args) {
   console.log(`    ${col(C.cyan, 'purpclaw run --resume ' + targetId + ' "continue from where we left off"')}`);
   console.log(col(C.gray, '\n  Or: purpclaw pool show <skill> to find what was being used\n'));
 }
-// ── bg ─────────────────────────────────────────────────────────────────────────
+// â”€â”€ bg â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Fire-and-forget background task dispatch
 async function cmdBg(args) {
-  const BG_DIR = path.join(PURP_DIR, 'agent_work', 'bg-sessions');
-  if (!fs.existsSync(BG_DIR)) fs.mkdirSync(BG_DIR, { recursive: true });
-
-  const sub = (args[0] || '').toLowerCase();
-
-  // purpclaw ps — list all jobs
-  if (sub === 'ps' || (!sub && args.length === 0)) {
-    banner();
-    sectionHead('  BACKGROUND TASKS');
-    const jobs = fs.readdirSync(BG_DIR).filter(f => f.endsWith('.json'));
-    if (jobs.length === 0) { console.log(col(C.gray, '  No background jobs tracked.\n')); return; }
-    for (const j of jobs) {
-      const d = JSON.parse(fs.readFileSync(path.join(BG_DIR, j), 'utf8'));
-      const jobId = j.replace('.json', '');
-      const logFile = path.join(BG_DIR, jobId + '.log');
-      const logExists = fs.existsSync(logFile);
-      let status, statusCol;
-      // killed is checked first: a killed job also carries done=true.
-      if (d.killed)       { status = 'killed';   statusCol = C.red; }
-      else if (d.done)    { status = 'done';     statusCol = C.green; }
-      else if (d.running) { status = 'running';  statusCol = C.cyan; }
-      else                { status = 'pending';  statusCol = C.gray; }
-      console.log(`  ${col(C.yellow, jobId)}  ${col(statusCol, status)}  ${col(C.gray, (d.task||'').slice(0, 55))}`);
-      console.log(`    dispatched: ${col(C.gray, d.dispatchedAt||'?')}  log: ${logExists ? col(C.cyan, logFile) : col(C.red, 'missing')}`);
-    }
-    console.log('');
-    return;
-  }
-
-  // purpclaw logs <id> [-f] — tail job log
-  if (sub === 'logs') {
-    const follow = args.includes('-f') || args.includes('--follow');
-    const rawId = args.slice(1).filter(a => !a.startsWith('-')).join(' ').trim();
-    if (!rawId) { console.log('Usage: purpclaw logs <jobId> [-f]'); return; }
-    const LOG_FILE = path.join(BG_DIR, rawId + '.log');
-    if (!fs.existsSync(LOG_FILE)) { console.log(col(C.red, `  Log not found: ${rawId}`)); return; }
-    const content = fs.readFileSync(LOG_FILE, 'utf8');
-    if (content) process.stdout.write(content + '\n');
-    if (follow) {
-      let lastSize = content.length;
-      console.log(col(C.gray, '\n  [Following — Ctrl+C to stop]'));
-      const interval = setInterval(() => {
-        try {
-          const newContent = fs.readFileSync(LOG_FILE, 'utf8');
-          if (newContent.length > lastSize) { process.stdout.write(newContent.slice(lastSize)); lastSize = newContent.length; }
-          const metaFile = path.join(BG_DIR, rawId + '.json');
-          if (fs.existsSync(metaFile)) {
-            const m = JSON.parse(fs.readFileSync(metaFile, 'utf8'));
-            if (m.done || m.killed) { clearInterval(interval); console.log(col(C.gray, '\n  [Job finished]')); }
-          }
-        } catch {}
-      }, 1000);
-    }
-    return;
-  }
-
-  // purpclaw kill <id> — stop a running job
-  if (sub === 'kill') {
-    const rawId = args.slice(1).filter(a => !a.startsWith('-')).join(' ').trim();
-    if (!rawId) { console.log('Usage: purpclaw kill <jobId>'); return; }
-    const sessionFile = path.join(BG_DIR, rawId + '.json');
-    if (!fs.existsSync(sessionFile)) { console.log(col(C.red, `  Job not found: ${rawId}`)); return; }
-    const meta = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
-    meta.killed = true; meta.done = true; meta.running = false;
-    meta.status = 'killed'; meta.killedAt = new Date().toISOString();
-    fs.writeFileSync(sessionFile, JSON.stringify(meta, null, 2));
-    if (meta.pid) { try { process.kill(meta.pid, 'SIGTERM'); } catch {} }
-    console.log(col(C.yellow, `  Job ${rawId} marked as killed.`));
-    console.log('');
-    return;
-  }
-
-  // purpclaw attach <id> — replay the log, then follow while the job is alive
-  if (sub === 'attach') {
-    const rawId = args.slice(1).filter(a => !a.startsWith('-')).join(' ').trim();
-    if (!rawId) { console.log('Usage: purpclaw attach <jobId>'); return; }
-    const metaFile = path.join(BG_DIR, rawId + '.json');
-    let live = false;
-    try { const m = JSON.parse(fs.readFileSync(metaFile, 'utf8')); live = !m.done && !m.killed; } catch {}
-    // Attaching to a finished job is a plain replay; a live job gets follow mode.
-    return cmdBg(live ? ['logs', rawId, '-f'] : ['logs', rawId]);
-  }
-
-  // Default: dispatch a new background task. `bg dispatch <task>` is accepted as
-  // an explicit spelling of the same thing.
-  const task = (sub === 'dispatch' ? args.slice(1) : args).join(' ').trim();
+  const task = args.join(' ').trim();
   if (!task) {
     banner();
     sectionHead('  BACKGROUND TASKS');
-    console.log(col(C.gray, '  purpclaw bg "<task>"    — fire and forget\n'));
-    console.log(col(C.gray, '  purpclaw ps              — list jobs\n'));
-    console.log(col(C.gray, '  purpclaw logs <id>       — show log\n'));
-    console.log(col(C.gray, '  purpclaw logs <id> -f   — follow log\n'));
-    console.log(col(C.gray, '  purpclaw kill <id>       — stop a job\n'));
-    console.log(col(C.gray, '  purpclaw attach <id>     — stream log to stdout\n'));
+    console.log(col(C.gray, '  purpclaw bg "<task>"  â€” dispatch and forget\n'));
+    console.log(col(C.gray, '  Background tasks run detached, results go to agent_work/\n'));
+    // List any running background jobs
+    const BGSESSIONS = path.join(PURP_DIR, 'agent_work', 'bg-sessions');
+    if (fs.existsSync(BGSESSIONS)) {
+      const jobs = fs.readdirSync(BGSESSIONS).filter(f => f.endsWith('.json'));
+      if (jobs.length > 0) {
+        console.log(col(C.gray, `  ${jobs.length} background job(s) tracked:`));
+        for (const j of jobs.slice(0, 10)) {
+          const d = JSON.parse(fs.readFileSync(path.join(BGSESSIONS, j), 'utf8'));
+          const status = d.done ? col(C.green, 'done') : d.running ? col(C.cyan, 'running') : col(C.gray, 'pending');
+          console.log(`    ${col(C.yellow, j.replace('.json',''))}  ${status}  ${col(C.gray, (d.task||'').slice(0,50))}`);
+        }
+      } else {
+        console.log(col(C.gray, '  No background jobs tracked yet.\n'));
+      }
+    }
+    console.log(col(C.gray, '  purpclaw bg "<build me a landing page>"  â€” fires and returns immediately'));
     console.log('');
     return;
   }
 
+  // Dispatch background task: write session file + spawn detached
+  const BG_DIR = path.join(PURP_DIR, 'agent_work', 'bg-sessions');
+  if (!fs.existsSync(BG_DIR)) fs.mkdirSync(BG_DIR, { recursive: true });
+  
   const jobId = 'bg-' + Date.now();
   const sessionFile = path.join(BG_DIR, jobId + '.json');
+  const meta = {
+    id: jobId, task, status: 'dispatched',
+    dispatchedAt: new Date().toISOString(), done: false, running: false
+  };
+  fs.writeFileSync(sessionFile, JSON.stringify(meta, null, 2));
+
+  // Spawn tracked: node bin/purpclaw.js run "<task>" with output redirected to log
   const LOG_FILE = path.join(BG_DIR, jobId + '.log');
   const logFd = fs.openSync(LOG_FILE, 'a');
-
-  const child = trackedSpawn(process.execPath, [path.join(PURP_DIR, 'bin', 'purpclaw.js'), 'run', task], {
+  trackedSpawn(process.execPath, [path.join(PURP_DIR, 'bin', 'purpclaw.js'), 'run', task], {
     tag: `bg-${jobId}`,
-    timeoutMs: 30 * 60_000,
+    timeoutMs: 30 * 60_000,  // 30 min hard budget for background tasks
     stdio: ['ignore', logFd, logFd],
     cwd: PURP_DIR,
   });
 
-  const meta = {
-    id: jobId, task, status: 'running',
-    dispatchedAt: new Date().toISOString(),
-    done: false, running: true, killed: false,
-    pid: child.pid,
-  };
-  fs.writeFileSync(sessionFile, JSON.stringify(meta, null, 2));
-
-  child.on('exit', (code) => {
-    try {
-      const m = JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
-      m.done = true; m.running = false; m.exitCode = code;
-      m.finishedAt = new Date().toISOString();
-      fs.writeFileSync(sessionFile, JSON.stringify(m, null, 2));
-    } catch {}
-  });
-
   banner();
   sectionHead('  BACKGROUND DISPATCHED');
-  console.log(`  ${col(C.green, '✔')}  Job ID : ${col(C.cyan, jobId)}`);
-  console.log(`  ${col(C.green, '✔')}  PID   : ${col(C.cyan, String(child.pid))}`);
-  console.log(`  ${col(C.green, '✔')}  Log   : ${col(C.gray, LOG_FILE)}`);
-  console.log(`  ${col(C.green, '✔')}  Task  : ${col(C.white, task)}`);
+  console.log(`  ${col(C.green, 'âœ”')}  Job ID : ${col(C.cyan, jobId)}`);
+  console.log(`  ${col(C.green, 'âœ”')}  Log   : ${col(C.gray, LOG_FILE)}`);
+  console.log(`  ${col(C.green, 'âœ”')}  Task  : ${col(C.white, task)}`);
   console.log(col(C.gray, '\n  Results appear in agent_work/bg-sessions/'));
-  console.log(col(C.gray, `  Watch:  purpclaw logs ${jobId} -f`));
-  console.log(col(C.gray, `  Status: purpclaw ps`));
+  console.log(col(C.gray, `  Watch:  tail -f "${LOG_FILE}"`));
+  console.log(col(C.gray, `  Status: purpclaw bg`));
   console.log('');
 }
-// ── registry ───────────────────────────────────────────────────────────────────
+// â”€â”€ registry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Local git-backed registry of installable skills and agents
-// registry/ index.json is the source of truth — publish = open a PR on it
+// registry/ index.json is the source of truth â€” publish = open a PR on it
 async function cmdRegistry(args) {
   const REGISTRY_DIR = path.join(PURP_DIR, 'registry');
   const LOCAL_SKILLS = path.join(PURP_DIR, 'skills');
@@ -2004,65 +1542,59 @@ async function cmdRegistry(args) {
   const name  = (args[1] || '').trim();
   const rest  = args.slice(1).join(' ').trim();
 
-  // ── registry audit ──────────────────────────────────────────────────────────
-  if (sub === 'audit') {
-    const { run } = require(path.join(__dirname, '..', 'lib', 'commands', 'registry-audit.js'));
-    return run(args, {});
-  }
-
-  // ── registry browse ─────────────────────────────────────────────────────────
+  // â”€â”€ registry browse â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'browse' || sub === 'ls' || (!sub)) {
-    sectionHead('  SKILL REGISTRY · ' + (sub ? sub.toUpperCase() : 'ALL'));
+    sectionHead('  SKILL REGISTRY Â· ' + (sub ? sub.toUpperCase() : 'ALL'));
     if (!fs.existsSync(INDEX_FILE)) {
       console.log(col(C.red, '  Registry not found. Run: purpclaw registry update'));
       return;
     }
     const reg = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf8'));
-
+    
     // Show skills
     sectionHead('  SKILLS (' + reg.skills.length + ')');
     for (const s of reg.skills.slice(0, 20)) {
       const installed = fs.existsSync(path.join(LOCAL_SKILLS, s.name, 'SKILL.md'));
-      const tick  = installed ? col(C.green, '✔') : col(C.gray, '[o]');
+      const tick  = installed ? col(C.green, 'âœ”') : col(C.gray, 'â—‹');
       const size  = col(C.gray, s.size_kb + 'K');
       const orig  = s.origin ? col(C.gray, '[' + s.origin + ']') : '';
       console.log(`  ${tick}  ${col(C.cyan, s.name.padEnd(32))}  ${col(C.gray, s.description.slice(0, 50))} ${size} ${orig}`);
     }
     if (reg.skills.length > 20) console.log(col(C.gray, `  ... and ${reg.skills.length - 20} more. Full list in registry/index.json`));
-
+    
     // Show agents
     sectionHead('  AGENTS (' + reg.agents.length + ')');
     for (const a of reg.agents) {
       const installed = fs.existsSync(path.join(LOCAL_AGENTS, a.name + '.md'));
-      const tick  = installed ? col(C.green, '✔') : col(C.gray, '[o]');
+      const tick  = installed ? col(C.green, 'âœ”') : col(C.gray, 'â—‹');
       console.log(`  ${tick}  ${col(C.yellow, a.name.padEnd(24))}  ${col(C.gray, a.description.slice(0, 50))}`);
     }
-    console.log(col(C.gray, '\n  purpclaw registry install <name>   — install from registry'));
-    console.log(col(C.gray, '  purpclaw registry publish <name>    — publish to registry (opens guide)'));
-    console.log(col(C.gray, '  purpclaw registry search "<text>" — keyword search'));
-    console.log(col(C.gray, '  purpclaw registry update          — rebuild local index'));
+    console.log(col(C.gray, '\n  purpclaw registry install <name>   â€” install from registry'));
+    console.log(col(C.gray, '  purpclaw registry publish <name>    â€” publish to registry (opens guide)'));
+    console.log(col(C.gray, '  purpclaw registry search "<text>" â€” keyword search'));
+    console.log(col(C.gray, '  purpclaw registry update          â€” rebuild local index'));
     console.log('');
     return;
   }
 
-  // ── registry search "<intent>" ─────────────────────────────────────────────
+  // â”€â”€ registry search "<intent>" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'search' && rest) {
-    sectionHead('  REGISTRY SEARCH · "' + rest + '"');
+    sectionHead('  REGISTRY SEARCH Â· "' + rest + '"');
     if (!fs.existsSync(INDEX_FILE)) { console.log(col(C.red, '  Run: purpclaw registry update')); return; }
     const reg = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf8'));
     const qTokens = new Set(rest.toLowerCase().split(/\s+/).filter(Boolean));
-
+    
     function score(item) {
       const text = ((item.description || '') + ' ' + (item.name || '')).toLowerCase();
       let s = 0;
       for (const t of qTokens) { if (text.includes(t)) s++; }
       return s;
     }
-
+    
     const scored = [...reg.skills, ...reg.agents].map(i => ({ ...i, _score: score(i) })).filter(i => i._score > 0).sort((a, b) => b._score - a._score);
-
+    
     if (scored.length === 0) { console.log(col(C.gray, '  Nothing matched. Try different keywords.\n')); return; }
-
+    
     for (const s of scored.slice(0, 15)) {
       const type = s.file.startsWith('skills/') ? col(C.cyan, 'skill') : col(C.yellow, 'agent ');
       console.log(`  [${type}]  ${col(C.white, s.name.padEnd(28))}  ${col(C.gray, s.description.slice(0, 50))}  score: ${s._score}`);
@@ -2071,12 +1603,12 @@ async function cmdRegistry(args) {
     return;
   }
 
-  // ── registry install <name> ─────────────────────────────────────────────────
+  // â”€â”€ registry install <name> â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'install' && name) {
-    sectionHead('  INSTALLING · ' + name);
+    sectionHead('  INSTALLING Â· ' + name);
     if (!fs.existsSync(INDEX_FILE)) { console.log(col(C.red, '  Run: purpclaw registry update first.\n')); return; }
     const reg = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf8'));
-
+    
     // Find in registry
     const entry = [...reg.skills, ...reg.agents].find(i => i.name === name);
     if (!entry) {
@@ -2084,10 +1616,10 @@ async function cmdRegistry(args) {
       console.log(col(C.gray, '  Run: purpclaw registry browse'));
       return;
     }
-
+    
     const srcDir  = path.join(PURP_DIR, entry.file).replace(/\\/g, '/').replace(/\/[^/]+$/, '');
     const srcFile = path.join(PURP_DIR, entry.file);
-
+    
     if (entry.file.startsWith('skills/')) {
       const destDir = path.join(LOCAL_SKILLS, name);
       if (fs.existsSync(destDir)) {
@@ -2097,7 +1629,7 @@ async function cmdRegistry(args) {
       fs.mkdirSync(destDir, { recursive: true });
       if (fs.existsSync(srcFile)) {
         fs.copyFileSync(srcFile, path.join(destDir, 'SKILL.md'));
-        console.log(col(C.green, '  ✔') + `  Installed skill: ${name}`);
+        console.log(col(C.green, '  âœ”') + `  Installed skill: ${name}`);
         console.log(col(C.gray, `  Copy: ${srcFile}`));
         console.log(col(C.gray, '  Pool will index it on next boot. Run: purpclaw pool reindex'));
       }
@@ -2109,7 +1641,7 @@ async function cmdRegistry(args) {
       }
       if (fs.existsSync(srcFile)) {
         fs.copyFileSync(srcFile, destFile);
-        console.log(col(C.green, '  ✔') + `  Installed agent: ${name}`);
+        console.log(col(C.green, '  âœ”') + `  Installed agent: ${name}`);
         console.log(col(C.gray, `  Copy: ${srcFile}`));
       }
     }
@@ -2117,9 +1649,9 @@ async function cmdRegistry(args) {
     return;
   }
 
-  // ── registry publish <name> ─────────────────────────────────────────────────
+  // â”€â”€ registry publish <name> â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'publish' && name) {
-    sectionHead('  PUBLISH GUIDE · ' + name);
+    sectionHead('  PUBLISH GUIDE Â· ' + name);
     console.log(col(C.cyan, '  To publish a skill or agent to the registry:'));
     console.log('');
     console.log(col(C.white, '  1. Create: registry/' + name + '/SKILL.md'));
@@ -2142,12 +1674,12 @@ async function cmdRegistry(args) {
     console.log(col(C.white, '     git push origin head -u'));
     console.log('');
     console.log(col(C.cyan, '  Registry is git-backed. If you have push access, commit directly.'));
-    console.log(col(C.gray, '  purpclaw registry install ' + name + '  — install locally after PR merges'));
+    console.log(col(C.gray, '  purpclaw registry install ' + name + '  â€” install locally after PR merges'));
     console.log('');
     return;
   }
 
-  // ── registry update ─────────────────────────────────────────────────────────
+  // â”€â”€ registry update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'update') {
     sectionHead('  REGISTRY UPDATE');
     const spin = spinner('rebuilding registry index').start();
@@ -2159,7 +1691,7 @@ async function cmdRegistry(args) {
       // Fallback: rebuild inline
       const skills = [];
       const agents = [];
-
+      
       for (const n of fs.readdirSync(path.join(PURP_DIR, 'skills')).filter(d => fs.existsSync(path.join(PURP_DIR, 'skills', d, 'SKILL.md')))) {
         skills.push({ name: n, file: 'skills/' + n + '/SKILL.md' });
       }
@@ -2168,7 +1700,7 @@ async function cmdRegistry(args) {
         const content = fs.readFileSync(path.join(PURP_DIR, 'agents', f), 'utf8');
         agents.push({ name, file: 'agents/' + f, description: (content.split('\n')[0] || '').trim() });
       }
-
+      
       const idx = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf8'));
       idx.skills = skills;
       idx.agents = agents;
@@ -2176,7 +1708,7 @@ async function cmdRegistry(args) {
       idx.total_skills = skills.length;
       idx.total_agents = agents.length;
       fs.writeFileSync(INDEX_FILE, JSON.stringify(idx, null, 2));
-      spin.succeed(`${skills.length} skills · ${agents.length} agents`);
+      spin.succeed(`${skills.length} skills Â· ${agents.length} agents`);
     }
     console.log('');
     console.log(col(C.gray, '  Browse: purpclaw registry browse'));
@@ -2195,268 +1727,18 @@ async function cmdRegistry(args) {
   console.log('');
 }
 
-// ── bundles ──────────────────────────────────────────────────────────────────
-// Skill bundle management — load multiple skills under one slash command.
-// Storage: ~/.purpclaw/skill-bundles/<name>.json
-// E.g. /backend-dev loads github-code-review + test-driven-development + github-pr-workflow.
-async function cmdBundles(args) {
-  const B = require(path.join(PURP_DIR, 'lib', 'skill-bundles'));
-  const sub = (args[0] || '').toLowerCase();
-  const name = args[1] || '';
-
-  if (sub === 'reload') {
-    const diff = B.reloadBundles();
-    console.log(`  ${col(C.green, '✓')} Reloaded — added: ${diff.added.length}, removed: ${diff.removed.length}, total: ${diff.total}`);
-    return;
-  }
-
-  if (sub === 'create') {
-    if (!name) return console.log(col(C.gray, '  Usage: purpclaw bundles create <name>'));
-    const { execSync } = require('child_process');
-    try {
-      execSync(`node "${path.join(PURP_DIR, 'lib', 'skill-bundles.js')}" create "${name}"`, { cwd: PURP_DIR, stdio: 'inherit' });
-    } catch { process.exit(1); }
-    return;
-  }
-
-  if (sub === 'show') {
-    if (!name) return console.log(col(C.gray, '  Usage: purpclaw bundles show <slug>'));
-    const { execSync } = require('child_process');
-    try {
-      execSync(`node "${path.join(PURP_DIR, 'lib', 'skill-bundles.js')}" show "${name}"`, { cwd: PURP_DIR, stdio: 'inherit' });
-    } catch { process.exit(1); }
-    return;
-  }
-
-  // Default: list all bundles
-  const bundles = B.listBundles();
-  if (!bundles.length) {
-    console.log(col(C.gray, '  No bundles found.'));
-    console.log(col(C.gray, '  Create ~/.purpclaw/skill-bundles/<name>.json'));
-    console.log(col(C.gray, '  Or: purpclaw bundles create backend-dev'));
-    return;
-  }
-  console.log(`\n  ${col(C.cyan + C.bold, 'Skill Bundles')}  (${bundles.length})\n`);
-  for (const b of bundles) {
-    console.log(`  ${col(C.bold, '/' + b.slug)}  — ${b.description}`);
-    console.log(`    skills: ${b.skills.join(', ')}`);
-    console.log('');
-  }
-  console.log(col(C.gray, '  Use: purpclaw bundles show <slug>'));
-  console.log(col(C.gray, '  Create: purpclaw bundles create <name>'));
-  console.log('');
-}
-
-// ── profile ──────────────────────────────────────────────────────────────────
-// Profile routing — list, create, switch, routes management.
-// Mirrors Hermes gateway/profile_routing.py.
-async function cmdProfile(args) {
-  const PROFILE_ROUTER = (() => { try { return require('../lib/profile-router'); } catch { return null; } })();
-  if (!PROFILE_ROUTER) return console.error('profile-router not available');
-  const sub = (args[0] || '');
-  if (sub === 'list') {
-    console.log(PROFILE_ROUTER.cliListProfiles());
-  } else if (sub === 'create') {
-    const name = args._[1];
-    if (!name) return console.error('Usage: purpclaw profile create <name> [--clone <from>]');
-    try { const p = PROFILE_ROUTER.createProfile(name, args.clone || null); console.log('Created:', name, 'at', p); } catch (e) { console.error('Error:', e.message); }
-  } else if (sub === 'switch') {
-    const name = args._[1];
-    if (!name) return console.error('Usage: purpclaw profile switch <name>');
-    try { PROFILE_ROUTER.setActiveProfile(name); console.log('Switched to:', name); } catch (e) { console.error('Error:', e.message); }
-  } else if (sub === 'routes') {
-    console.log(PROFILE_ROUTER.cliListRoutes());
-  } else if (sub === 'addroute') {
-    const name = args._[1], profile = args.profile || args._[2];
-    if (!name || !profile) return console.error('Usage: purpclaw profile addroute <name> --profile <p> [flags]');
-    try { PROFILE_ROUTER.addRoute({ name, platform: args.platform||null, guild_id: args.guild||null, chat_id: args.chat||null, thread_id: args.thread||null, profile, enabled: !args.disabled }); console.log('Route added:', name); } catch (e) { console.error('Error:', e.message); }
-  } else if (sub === 'rmroute') {
-    const name = args._[1];
-    if (!name) return console.error('Usage: purpclaw profile rmroute <name>');
-    PROFILE_ROUTER.removeRoute(name); console.log('Route removed:', name);
-  } else if (sub === 'test') {
-    console.log(PROFILE_ROUTER.cliTestRoute(args.platform||'local', args.chat||null, args.thread||null, args.guild||null));
-  } else if (sub === 'active') {
-    console.log('Active:', PROFILE_ROUTER.getActiveProfile());
-  } else {
-    console.log('Profile: list | create <n> [--clone <f>] | switch <n> | routes | addroute <n> --profile <p> [--platform p] [--guild id] [--chat id] [--thread id] | rmroute <n> | test | active');
-  }
-}
-
-// ── graph ─────────────────────────────────────────────────────────────────────
-// Learning graph — skill nodes, edges, memory cards, memory→skill links.
-async function cmdGraph(args) {
-  const G = require(path.join(PURP_DIR, 'lib', 'learning-graph'));
-  G.cmdGraph(args);
-  return 0;
-}
-
-// ── guard ────────────────────────────────────────────────────────────────────
-async function cmdGuard(args) {
-  const G = require(path.join(PURP_DIR, 'lib', 'skills-guard'));
-  const sub = (args[0] || '').toLowerCase();
-  const target = args[1] || '';
-
-  if (!sub || sub === 'help') {
-    sectionHead('  GUARD — Skills Security Scanner');
-    console.log(col(C.gray, '  Scan externally-sourced skills for 70+ threat patterns.\n'));
-    console.log(`  ${col(C.cyan, 'purpclaw guard scan <path>')}    scan a skill directory`);
-    console.log(`  ${col(C.cyan, 'purpclaw guard check <name>')}   check an installed skill`);
-    console.log(`  ${col(C.cyan, 'purpclaw guard list')}           list installed skills`);
-    console.log(`  ${col(C.cyan, 'purpclaw guard policy')}        show trust policy`);
-    console.log(col(C.gray, '\n  Verdict: safe | caution | dangerous'));
-    console.log('');
-    return;
-  }
-
-  if (sub === 'policy') {
-    sectionHead('  TRUST POLICY');
-    console.log(`  builtin:       always allow`);
-    console.log(`  trusted:       allow safe/caution; block dangerous`);
-    console.log(`  community:    allow safe; block caution/dangerous`);
-    console.log(`  agent-created: always ask`);
-    console.log(col(C.gray, '\n  --force bypasses non-dangerous blocks.'));
-    console.log('');
-    return;
-  }
-
-  if (sub === 'list') {
-    const SKILLS_DIR = path.join(PURP_DIR, 'skills');
-    if (!fs.existsSync(SKILLS_DIR)) {
-      return console.log(col(C.gray, '  No skills installed.'));
-    }
-    const entries = fs.readdirSync(SKILLS_DIR).filter(e => {
-      const full = path.join(SKILLS_DIR, e);
-      const skillMd = path.join(full, 'SKILL.md');
-      return fs.statSync(full).isDirectory() && fs.existsSync(skillMd);
-    });
-    if (!entries.length) return console.log(col(C.gray, '  No skills installed.'));
-    sectionHead(`  INSTALLED SKILLS (${entries.length})`);
-    for (const e of entries.sort()) {
-      console.log(`  ${col(C.cyan, e)}`);
-    }
-    console.log(col(C.gray, '\n  Scan: purpclaw guard check <name>'));
-    console.log('');
-    return;
-  }
-
-  let skillPath = '';
-  let source = 'community';
-  let skillName = '';
-
-  if (sub === 'check') {
-    if (!target) return console.log(col(C.gray, '  Usage: purpclaw guard check <skill-name>'));
-    const SKILLS_DIR = path.join(PURP_DIR, 'skills');
-    skillPath = path.join(SKILLS_DIR, target);
-    skillName = target;
-    if (!fs.existsSync(skillPath)) {
-      // Try hermes skills dir
-      const HERMES_SKILLS = path.join(process.env.HOME || process.env.USERPROFILE, '.hermes', 'skills', target);
-      if (fs.existsSync(HERMES_SKILLS)) {
-        skillPath = HERMES_SKILLS;
-      } else {
-        return console.log(col(C.red, `  Skill not found: ${target}`));
-      }
-    }
-    // Determine trust from path
-    const absSkillPath = path.resolve(skillPath);
-    const relToPurp  = path.relative(PURP_DIR, absSkillPath).split(path.sep).join('/');
-    const relToHome  = path.relative(process.env.HOME || '', absSkillPath).split(path.sep).join('/');
-    if (relToHome.startsWith('.hermes/skills')) {
-      source = 'builtin';
-    } else if (relToPurp.startsWith('skills/')) {
-      source = 'agent-created';
-    }
-  } else if (sub === 'scan') {
-    if (!target) return console.log(col(C.gray, '  Usage: purpclaw guard scan <path>'));
-    skillPath = path.resolve(target);
-    skillName = path.basename(skillPath);
-    if (!fs.existsSync(skillPath)) {
-      return console.log(col(C.red, `  Path not found: ${skillPath}`));
-    }
-  } else {
-    return console.log(col(C.gray, `  Unknown guard subcommand: ${sub}`));
-  }
-
-  const force = args.includes('--force') || args.includes('-f');
-  const cached = args.includes('--no-cache');
-
-  sectionHead('  SCANNING: ' + skillName);
-
-  let result;
-  if (cached) {
-    result = G.scanSkill(skillPath, source);
-  } else {
-    const { result: r } = G.scanSkillCached(skillPath, source);
-    result = r;
-  }
-
-  console.log(formatGuardReport(result));
-  console.log('');
-
-  const { allowed, reason } = G.shouldAllowInstall(result, force);
-  const verdictColor = result.verdict === 'safe' ? C.green
-    : result.verdict === 'caution' ? C.yellow : C.red;
-  console.log(`  Trust: ${col(C.cyan, result.trust_level)}   Verdict: ${col(C.bold + verdictColor, result.verdict.toUpperCase())}`);
-  if (allowed === true)      console.log(`  ${col(C.green, '✓ ALLOWED')}  ${col(C.gray, reason)}`);
-  else if (allowed === null) console.log(`  ${col(C.yellow, '⚠ NEEDS CONFIRMATION')}  ${reason}`);
-  else                        console.log(`  ${col(C.red, '✗ BLOCKED')}  ${reason}`);
-  console.log('');
-
-  if (allowed === false && !force && !['builtin', 'trusted'].includes(result.trust_level)) {
-    console.log(col(C.gray, '  Run with --force to override.'));
-  }
-
-  // TDO: notify other agents of skill guard scan
-  const allowedBool = allowed === true;
-  recordLesson({
-    task: `guard ${sub} ${target}`,
-    success: allowedBool,
-    outputPreview: `verdict=${result.verdict} trust=${result.trust_level} allowed=${allowedBool}`,
-  });
-}
-
-function formatGuardReport(result) {
-  const lines = [];
-  const SEV_ORDER = { critical: 0, high: 1, medium: 2, low: 3 };
-
-  if (!result.findings.length) {
-    return col(C.green, '  No threats found.');
-  }
-
-  const sorted = [...result.findings].sort((a, b) =>
-    (SEV_ORDER[a.severity] ?? 4) - (SEV_ORDER[b.severity] ?? 4)
-  );
-
-  for (const f of sorted) {
-    const sev  = f.severity.toUpperCase().padEnd(8);
-    const cat  = f.category.padEnd(14);
-    const loc  = `${f.file}:${f.line}`.padEnd(28);
-    const sevColor = f.severity === 'critical' ? C.red
-      : f.severity === 'high' ? C.yellow
-      : f.severity === 'medium' ? C.cyan : C.gray;
-    const match = f.match.slice(0, 55);
-    lines.push(`  ${col(sevColor, sev)} ${col(C.magenta, cat)} ${col(C.gray, loc)} "${match}"`);
-  }
-  return lines.join('\n');
-}
-
-// ── run ───────────────────────────────────────────────────────────────────────
+// â”€â”€ run â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdRun(args) {
   const approvalArg = args.find(a => a.startsWith('--approval='));
   const approvalId = approvalArg ? approvalArg.split('=')[1] : null;
-  const IS_JSON = args.includes('--json');
-  const taskArgs = args.filter(a => !a.startsWith('--approval=') && a !== '--json');
-  const task = taskArgs.join(' ').trim();
+  const task = args.filter(a => !a.startsWith('--approval=')).join(' ').trim();
   if (!task) {
     console.error(col(C.red, '\n  Usage: purpclaw run "<task>"\n'));
     process.exit(1);
   }
 
-  if (!IS_JSON) {
-    console.log(`\n  ${col(C.cyan + C.bold, '⚡ PURPCLAW RUN')}\n`);
-    console.log(`  ${col(C.gray, 'Task:')} ${task}\n`);
-  }
+  console.log(`\n  ${col(C.cyan + C.bold, 'âš¡ PURPCLAW RUN')}\n`);
+  console.log(`  ${col(C.gray, 'Task:')} ${task}\n`);
 
   // Subscribe to SSE stream BEFORE sending the task so we catch the first events
   let streamReq = null;
@@ -2470,36 +1752,13 @@ async function cmdRun(args) {
       (evt) => {
         if (evt.type === 'connected') return;
 
+        const ts = col(C.gray, new Date().toLocaleTimeString());
         const type = evt.type || evt.event || 'event';
 
-        // ── JSON mode: emit one JSONL line per event, resolve on completion ──
-        if (IS_JSON) {
-          if (type === 'workflow_complete' || type === 'completed') {
-            const result = evt.result !== undefined ? evt.result : evt.workflow?.result;
-            const workflowId = evt.workflowId || evt.workflow?.workflowId;
-            process.stdout.write(JSON.stringify({ timestamp_ms: Date.now(), type: 'workflow_complete', result, workflowId }) + '\n');
-            if (!resolved) { resolved = true; resolve(); }
-          } else if (type === 'workflow_failed' || type === 'failed') {
-            process.stdout.write(JSON.stringify({ timestamp_ms: Date.now(), type: 'workflow_failed', error: evt.error || '' }) + '\n');
-            if (!resolved) { resolved = true; resolve(); }
-          } else if (type === 'agent_spawned' || type === 'agent_complete' || type === 'step' || type === 'log') {
-            const out = { timestamp_ms: Date.now(), type };
-            if (evt.agent || evt.agentName) out.agent = evt.agent || evt.agentName;
-            if (evt.message) out.message = evt.message;
-            if (evt.description) out.description = evt.description;
-            if (evt.status) out.status = evt.status;
-            process.stdout.write(JSON.stringify(out) + '\n');
-          }
-          return;
-        }
-
-        // ── Human mode ──
-        const ts = col(C.gray, new Date().toLocaleTimeString());
-
         if (type === 'workflow_complete' || type === 'completed') {
-          console.log(`\n  ${col(C.green, '[OK] Complete')}  ${col(C.gray, evt.workflowId || '')}`);
+          console.log(`\n  ${col(C.green, 'âœ“ Complete')}  ${col(C.gray, evt.workflowId || '')}`);
           if (evt.result) {
-            console.log(`\n${col(C.gray, '  ─── Result ────────────────────────────────────────────')}`);
+            console.log(`\n${col(C.gray, '  â”€â”€â”€ Result â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€')}`);
             const r = typeof evt.result === 'string' ? evt.result : JSON.stringify(evt.result, null, 2);
             console.log(r.split('\n').map(l => `  ${l}`).join('\n'));
           }
@@ -2511,20 +1770,21 @@ async function cmdRun(args) {
           console.log(col(C.gray, '  Rerun:   purpclaw run "<task>" --approval=<id>\n'));
           if (!resolved) { resolved = true; resolve(); }
         } else if (type === 'workflow_failed' || type === 'failed') {
-          console.log(`\n  ${col(C.red, '[X] Failed')}  ${col(C.gray, evt.error || '')}`);
+          console.log(`\n  ${col(C.red, 'âœ— Failed')}  ${col(C.gray, evt.error || '')}`);
           if (!resolved) { resolved = true; resolve(); }
         } else if (type === 'agent_spawned') {
-          console.log(`  ${ts}  ${col(C.blue, '⚙ spawn')}   ${col(C.cyan, evt.agent || evt.agentName || '?')} ${col(C.gray, '→')} ${evt.task || evt.intent || ''}`);
+          console.log(`  ${ts}  ${col(C.blue, 'âš™ spawn')}   ${col(C.cyan, evt.agent || evt.agentName || '?')} ${col(C.gray, 'â†’')} ${evt.task || evt.intent || ''}`);
         } else if (type === 'agent_complete') {
-          console.log(`  ${ts}  ${col(C.green, '[OK] done ')}   ${col(C.cyan, evt.agent || evt.agentName || '?')}`);
+          console.log(`  ${ts}  ${col(C.green, 'âœ“ done ')}   ${col(C.cyan, evt.agent || evt.agentName || '?')}`);
         } else if (type === 'step' || type === 'workflow_step') {
-          const icon = evt.status === 'started' ? col(C.yellow, '▶ step ') : col(C.green, '[OK] step ');
+          const icon = evt.status === 'started' ? col(C.yellow, 'â–¶ step ') : col(C.green, 'âœ“ step ');
           console.log(`  ${ts}  ${icon}   ${evt.description || JSON.stringify(evt).substring(0, 80)}`);
         } else if (type === 'log') {
-          console.log(`  ${ts}  ${col(C.gray, '·')}          ${evt.message || ''}`);
+          console.log(`  ${ts}  ${col(C.gray, 'Â·')}          ${evt.message || ''}`);
         } else {
+          // Generic event â€” show compactly
           const msg = evt.message || evt.description || evt.summary || '';
-          if (msg) console.log(`  ${ts}  ${col(C.gray, '·')}          ${String(msg).substring(0, 100)}`);
+          if (msg) console.log(`  ${ts}  ${col(C.gray, 'Â·')}          ${msg.substring(0, 100)}`);
         }
       },
       (err) => {
@@ -2544,26 +1804,22 @@ async function cmdRun(args) {
       streamId : streamId,
       source   : 'cli',
       approvalId,
-    }, 600000); // full swarm pipeline can take minutes; events stream live via SSE meanwhile
+    });
 
     if (resp.status >= 400) {
-      console.error(col(C.red, `\n  [X] Orchestrator rejected task: ${JSON.stringify(resp.body)}\n`));
+      console.error(col(C.red, `\n  âœ— Orchestrator rejected task: ${JSON.stringify(resp.body)}\n`));
       streamReq && streamReq.destroy();
       process.exit(1);
     }
 
     const wf = resp.body;
-    if (IS_JSON) {
-      process.stdout.write(JSON.stringify({ timestamp_ms: Date.now(), type: 'workflow_start', workflowId: wf.workflowId }) + '\n');
-    } else {
-      console.log(`  ${col(C.gray, 'Workflow:')} ${col(C.cyan, wf.workflowId || '—')}\n`);
-    }
+    console.log(`  ${col(C.gray, 'Workflow:')} ${col(C.cyan, wf.workflowId || 'â€”')}\n`);
 
     // If the orchestrator returns a result synchronously (non-streaming), print it
     if (wf.status === 'completed' || wf.status === 'failed') {
       if (!resolved) { resolved = true; }
       if (wf.workflow?.result) {
-        console.log(`\n${col(C.gray, '  ─── Result ────────────────────────────────────────────')}`);
+        console.log(`\n${col(C.gray, '  â”€â”€â”€ Result â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€')}`);
         const r = typeof wf.workflow.result === 'string'
           ? wf.workflow.result
           : JSON.stringify(wf.workflow.result, null, 2);
@@ -2578,7 +1834,7 @@ async function cmdRun(args) {
     const timeout = setTimeout(() => {
       if (!resolved) {
         resolved = true;
-        console.log(col(C.yellow, '\n  [!] Timed out waiting for completion signal. Workflow may still be running.'));
+        console.log(col(C.yellow, '\n  âš  Timed out waiting for completion signal. Workflow may still be running.'));
         console.log(col(C.gray,   `  Poll: purpclaw workflows\n`));
       }
     }, 600000);
@@ -2590,22 +1846,16 @@ async function cmdRun(args) {
 
   } catch (e) {
     streamReq && streamReq.destroy();
-    if (e.message === 'timeout') {
-      // Orchestrator is reachable but the endpoint timed out — likely busy with active workflows.
-      // Try purpclaw status to see what's running, or wait for active workflows to drain.
-      console.error(col(C.red, `\n  [X] Orchestrator timed out [port=${PORTS.orchestrator}]. `) +
-        col(C.yellow, `The dispatch endpoint is busy — likely active workflows consuming capacity.\n`));
-      console.error(col(C.gray, `  Run \`purpclaw status\` to see active workflows.\n`));
-    } else if (e.code === 'ECONNREFUSED') {
-      console.error(col(C.red, `\n  [X] Orchestrator not reachable [port=${PORTS.orchestrator}]. Run \`purpclaw start\` first.\n`));
+    if (e.message === 'timeout' || e.code === 'ECONNREFUSED') {
+      console.error(col(C.red, '\n  âœ— Orchestrator not reachable. Run `purpclaw start` first.\n'));
     } else {
-      console.error(col(C.red, `\n  [X] ${e.message}\n`));
+      console.error(col(C.red, `\n  âœ— ${e.message}\n`));
     }
     process.exit(1);
   }
 }
 
-// ── agents ────────────────────────────────────────────────────────────────────
+// â”€â”€ agents â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdAgents() {
   sectionHead('  AGENT ROSTER');
 
@@ -2650,11 +1900,11 @@ async function cmdAgents() {
       const info    = routing[name] || {};
       const score   = scoreData[name];
       const busy    = poolData?.busy?.find(a => a.name === name);
-      const statusDot = busy ? col(C.cyan, '◉') : col(C.gray, '[o]');
+      const statusDot = busy ? col(C.cyan, 'â—‰') : col(C.gray, 'â—‹');
       const scoreStr  = score
         ? col(C.gray, ` [${(score.successRate ?? 0).toFixed(0)}% ok, ${score.totalTasks ?? 0} tasks]`)
         : '';
-      const roleStr   = info.role ? col(C.gray, ` — ${info.role}`) : '';
+      const roleStr   = info.role ? col(C.gray, ` â€” ${info.role}`) : '';
       console.log(`    ${statusDot}  ${col(C.white, name.padEnd(12))}${roleStr}${scoreStr}`);
     }
   }
@@ -2665,357 +1915,7 @@ async function cmdAgents() {
   console.log('');
 }
 
-// ── agent (singular) ─────────────────────────────────────────────────────────
-async function cmdAgent(args) {
-  // purpclaw agent [name] — show routing + score + pool status for one agent.
-  // With no name: fall back to roster view.
-  const name = args[0];
-
-  if (!name) {
-    return cmdAgents();
-  }
-
-  sectionHead('  AGENT DETAIL');
-
-  let scoreData = {};
-  try {
-    if (fs.existsSync(AGENT_SCORE)) {
-      scoreData = JSON.parse(fs.readFileSync(AGENT_SCORE, 'utf8'));
-    }
-  } catch { /* no scores yet */ }
-
-  let routing = {};
-  try {
-    routing = require(path.join(PURP_DIR, 'agent_routing_matrix.js')).AGENT_ROUTING;
-  } catch { /* no routing */ }
-
-  const info  = routing[name] || null;
-  const score = scoreData[name];
-
-  if (!info && !score) {
-    console.log(col(C.gray, `  Unknown agent: ${name}`));
-    console.log(col(C.gray, '  Try: purpclaw agents     (roster)'));
-    return 1;
-  }
-
-  let poolData = null;
-  try {
-    poolData = await httpGet(PORTS.orchestrator, '/api/agents', 2000);
-  } catch { /* offline */ }
-  const busy = poolData?.busy?.find(a => a.name === name);
-
-  const divCol = (DIV_COLOUR && DIV_COLOUR[info?.division]) || C.white;
-  console.log(`\n  ${col(C.bold, name)}  ${col(C.gray, info?.role || '')}`);
-  if (info?.division) {
-    console.log(`    ${col(C.gray, 'division:')} ${col(divCol, info.division)}`);
-  }
-  if (info) {
-    console.log(`    ${col(C.gray, 'role:    ')} ${col(C.white, info.role || 'n/a')}`);
-    if (info.capabilities?.length) {
-      console.log(`    ${col(C.gray, 'caps:    ')} ${col(C.cyan, info.capabilities.join(', '))}`);
-    }
-    if (info.model) {
-      console.log(`    ${col(C.gray, 'model:   ')} ${col(C.white, info.model)}`);
-    }
-  }
-  if (score) {
-    console.log(`    ${col(C.gray, 'tasks:   ')} ${col(C.white, String(score.totalTasks ?? 0))}  ${col(C.gray, 'ok rate:')} ${col(C.white, ((score.successRate ?? 0).toFixed(1)) + '%')}`);
-  } else {
-    console.log(`    ${col(C.gray, 'tasks:   ')} ${col(C.gray, 'no recorded tasks')}`);
-  }
-  console.log(`    ${col(C.gray, 'pool:    ')} ${busy ? col(C.cyan, '◉ busy') : col(C.gray, '○ idle')}`);
-  console.log('');
-  return 0;
-}
-
-// ── hook (singular) ──────────────────────────────────────────────────────────
-async function cmdHook(args) {
-  // purpclaw hook <list|show|enable|disable|run|events> [name]
-  // Singular form for the plural `hooks` command. Most subcommands forward
-  // directly to lib/commands/hooks.js.
-  const sub = (args[0] || 'list').toLowerCase();
-  const rest = args.slice(1);
-
-  // Hook loading helpers — duplicated minimally from hooks.js so cmdHook stays
-  // self-contained (loadCmd lives in the dispatch closure, out of scope here).
-  const fsLocal = require('fs');
-  const HOOKS_DIRS = [
-    path.join(PURP_DIR, 'hooks'),
-    path.join(PURP_DIR, 'settings', 'hooks'),
-  ];
-  const TYPE_MAP = {
-    'pretooluse':'PreToolUse','posttooluse':'PostToolUse','precompact':'PreCompact',
-    'postcompact':'PostCompact','sessionstart':'SessionStart','sessionend':'SessionEnd',
-    'userpromptsubmit':'UserPromptSubmit','subagentstart':'SubagentStart',
-    'subagentstop':'SubagentStop','permissionrequest':'PermissionRequest','agentstop':'Stop',
-  };
-
-  // show <name> — filter list to one hook (the hooks module doesn't have show)
-  if (sub === 'show') {
-    const name = rest[0];
-    if (!name) { console.log('\nusage: purpclaw hook show <name>\n'); return 1; }
-    const matches = [];
-    for (const dir of HOOKS_DIRS) {
-      let entries = [];
-      try { entries = fsLocal.readdirSync(dir, { withFileTypes: true }); } catch { continue; }
-      for (const e of entries) {
-        if (!e.isFile() && !e.isSymbolicLink()) continue;
-        const n = e.name;
-        if (!n.endsWith('.kiro.hook') && !n.endsWith('.hook')) continue;
-        const full = path.join(dir, n);
-        try {
-          const raw = fsLocal.readFileSync(full, 'utf8').trim();
-          let obj = null;
-          if (raw.startsWith('{')) {
-            obj = JSON.parse(raw);
-          } else {
-            obj = { name: n.replace(/\.(kiro\.)?hook$/, ''), enabled: true };
-            for (const line of raw.split('\n')) {
-              const m = line.match(/^#\s*(\w+)\s*:\s*(.*)$/);
-              if (!m) continue;
-              if (m[1] === 'event')   obj.when = { type: m[2] };
-              else if (m[1] === 'command') obj.then = { type: 'runCommand', command: m[2] };
-            }
-          }
-          if (obj && obj.name === name) {
-            const rawEvt = obj.when?.type || null;
-            const oc = rawEvt ? (TYPE_MAP[rawEvt.toLowerCase()] || rawEvt) : null;
-            matches.push({
-              name: obj.name,
-              file: full,
-              event: oc,
-              action: obj.then?.type || null,
-              command: obj.then?.command || null,
-              enabled: obj.enabled !== false,
-            });
-          }
-        } catch { /* skip unreadable */ }
-      }
-    }
-    if (!matches.length) {
-      console.log(col(C.gray, `\n  No hook named '${name}'.\n`));
-      console.log(col(C.gray, '  Run `purpclaw hook list` to see registered hooks.'));
-      return 1;
-    }
-    for (const h of matches) {
-      const status = h.enabled ? col(C.green, 'ON ') : col(C.red, 'OFF');
-      console.log(`\n  ${status} ${col(C.bold, h.name)}`);
-      console.log(`    event:   ${h.event || 'unknown'}`);
-      console.log(`    action:  ${h.action || 'n/a'}`);
-      if (h.command) console.log(`    command: ${h.command}`);
-      console.log(`    file:    ${h.file}`);
-    }
-    console.log('');
-    return 0;
-  }
-
-  // All other subcommands forward to hooks.js (list/ls/add/enable/disable/run/events)
-  const fwd = new Set(['list', 'ls', 'add', 'enable', 'disable', 'run', 'events', 'event']);
-  if (!fwd.has(sub)) {
-    console.log(`\npurpclaw hook — singular form for purpclaw hooks
-  purpclaw hook list                  list all hooks
-  purpclaw hook show <name>           show hook details
-  purpclaw hook enable <name>         enable a hook
-  purpclaw hook disable <name>        disable a hook
-  purpclaw hook events                list supported hook events
-  purpclaw hook run <name>            fire a hook by name
-`);
-    return 0;
-  }
-
-  let hooksMod;
-  try {
-    hooksMod = require(path.join(PURP_DIR, 'lib', 'commands', 'hooks.js'));
-  } catch (e) {
-    console.log(`\n[X] Could not load lib/commands/hooks.js: ${e.message}\n`);
-    return 1;
-  }
-  return hooksMod.run([sub, ...rest], {});
-}
-
-// ── archetypes ───────────────────────────────────────────────────────────────
-async function cmdArchetypes(args) {
-  const sub = (args[0] || 'list').toLowerCase();
-  const archetypes = (() => {
-    try { return require('../lib/agents/archetypes'); } catch { return null; }
-  })();
-  if (!archetypes) {
-    console.log('\n[X] Archetype loader not available\n');
-    return;
-  }
-
-  if (sub === 'list' || sub === 'ls') {
-    archetypes.cliList();
-    return;
-  }
-
-  if (sub === 'show' || sub === 'get') {
-    const name = args[1];
-    if (!name) { console.log('\nUsage: purpclaw archetype show <name>\n'); return; }
-    archetypes.cliShow(name);
-    return;
-  }
-
-  if (sub === 'search' || sub === 'find') {
-    const q = args.slice(1).join(' ');
-    if (!q) { console.log('\nUsage: purpclaw archetype search <query>\n'); return; }
-    const results = archetypes.searchArchetypes(q);
-    console.log(`\n${results.length} archetype(s) matching "${q}":\n`);
-    for (const r of results) {
-      console.log(`  ${col(C.cyan, r.name)} — ${r.description}`);
-      console.log(`    capabilities: ${(r.capabilities || []).join(', ')}\n`);
-    }
-    return;
-  }
-
-  if (sub === 'validate') {
-    const name = args[1];
-    if (!name) { console.log('\nUsage: purpclaw archetype validate <name>\n'); return; }
-    const v = archetypes.validateArchetype(name);
-    if (v.valid) {
-      console.log(`\n${col(C.green, '[OK]')} Archetype '${name}' is valid\n`);
-    } else {
-      console.log(`\n${col(C.red, '[X]')} Archetype '${name}' has errors:\n`);
-      for (const e of v.errors) console.log(`  - ${e}`);
-      console.log('');
-    }
-    return;
-  }
-
-  if (sub === 'spawn') {
-    const name = args[1];
-    if (!name) { console.log('\nUsage: purpclaw archetype spawn <name>\n'); return; }
-    const v = archetypes.validateArchetype(name);
-    if (!v.valid) {
-      console.log(`\n${col(C.red, '[X]')} Cannot spawn invalid archetype:\n`);
-      for (const e of v.errors) console.log(`  - ${e}`);
-      console.log('');
-      return;
-    }
-    const cfg = archetypes.spawnConfig(name, {
-      model: args[2] || null,
-      temperature: args[3] ? parseFloat(args[3]) : undefined,
-    });
-    console.log(`\n${col(C.green, '[OK]')} Spawn config for '${name}':\n`);
-    console.log(JSON.stringify(cfg, null, 2));
-    console.log('');
-    return;
-  }
-
-  // Default: list
-  archetypes.cliList();
-  console.log(`Usage: purpclaw archetype list|show|search|validate|spawn\n`);
-}
-
-// ── cost ──────────────────────────────────────────────────────────────────────
-async function cmdCost(args) {  const UP = (() => { try { return require('../lib/usage-pricing'); } catch { return null; } })();
-  if (!UP) { console.log('\n[X] usage-pricing not available\n'); return; }
-
-  const sub = (args[0] || 'calc').toLowerCase();
-
-  // purpclaw cost summary — read accumulated cost ledger
-  if (sub === 'summary' || sub === 'report') {
-    const CL = (() => { try { return require('../lib/cost-ledger'); } catch { return null; } })();
-    if (!CL) { console.log('\n[X] cost-ledger not available\n'); return; }
-    const { tasks, totalCost, totalCalls } = CL.summary();
-    console.log(`\n  ${col(C.bold || C.white, 'COST SUMMARY')}  ${col(C.gray, '· from cost-ledger.jsonl')}\n`);
-    if (!tasks.length) {
-      console.log(`  ${col(C.gray, 'No recorded calls yet.')}\n`);
-      return;
-    }
-    console.log(`  ${col(C.cyan, 'total cost:')}   ${col(C.green, '$' + totalCost)}`);
-    console.log(`  ${col(C.cyan, 'total calls:')}  ${col(C.white, totalCalls)}\n`);
-    console.log(`  ${col(C.gray, 'by task:')}`);
-    for (const t of tasks.slice(0, 20)) {
-      const rate = t.cost < 0.01 ? C.gray : t.cost < 0.10 ? C.yellow : C.red;
-      console.log(`    ${col(C.cyan, t.taskId.padEnd(20))}  ${col(C.white, String(t.calls).padStart(3))} calls  ${col(rate, '$' + t.cost)}`);
-    }
-    if (tasks.length > 20) console.log(`  ${col(C.gray, `...and ${tasks.length - 20} more tasks`)}`);
-    console.log('');
-    return;
-  }
-
-  // purpclaw cost analyze <provider> <model> [inputTokens] [outputTokens]
-  if (sub === 'analyze' || sub === 'cost-analyze') {
-    const provider = args[1] || 'openai';
-    const model = args[2] || 'gpt-4o';
-    const inputTok = parseInt(args[3] || '1000', 10);
-    const outputTok = parseInt(args[4] || '500', 10);
-    const UP = (() => { try { return require('../lib/usage-pricing'); } catch { return null; } })();
-    const CL = (() => { try { return require('../lib/cost-ledger'); } catch { return null; } })();
-    if (!UP || !CL) { console.log('\n[X] cost infrastructure not available\n'); return; }
-    const result = UP.estimateCost(provider, model, { input_tokens: inputTok, output_tokens: outputTok });
-    const tasks = CL.summary().tasks;
-    const taskByProvider = tasks.filter(t => t.provider === provider);
-    const cheapest = Object.entries(UP.buildPricingTable())
-      .filter(([,e]) => e.input_cost_per_million != null)
-      .sort((a,b) => (a[1].input_cost_per_million + a[1].output_cost_per_million) - (b[1].input_cost_per_million + b[1].output_cost_per_million));
-    console.log(`\n  ${col(C.bold, 'COST ARBITRAGE')}  ${col(C.gray, `for ${inputTok.toLocaleString()} in / ${outputTok.toLocaleString()} out`)}\n`);
-    console.log(`  ${col(C.cyan, 'your pick:')}    ${col(C.white, provider)}/${col(C.green, model)} = ${col(C.yellow, '$' + result.cost_usd)}`);
-    console.log(`  ${col(C.cyan, 'cheapest:')}    ${col(C.white, cheapest[0]?.[0])} = ${col(C.green, '$' + ((cheapest[0]?.[1].input_cost_per_million * inputTok + cheapest[0]?.[1].output_cost_per_million * outputTok) / 1e6).toFixed(6))}`);
-    console.log(`  ${col(C.cyan, 'savings:')}     ${col(C.green, '$' + Math.max(0, result.cost_usd - ((cheapest[0]?.[1].input_cost_per_million * inputTok + cheapest[0]?.[1].output_cost_per_million * outputTok) / 1e6)).toFixed(6))}`);
-    console.log('');
-    return;
-  }
-
-  // Default: cost calculator — read active model from env
-  const activeProvider = process.env.LLM_PROVIDER || process.env.PURPCLAW_PROVIDER || 'minimax';
-  const activeModel   = process.env.LLM_MODEL || process.env.MINIMAX_MODEL || 'MiniMax-M3';
-  const provider = args[0] || activeProvider;
-  const model    = args[1] || activeModel;
-  const inputTok = parseInt(args[2] || '1000', 10);
-  const outputTok= parseInt(args[3] || '500', 10);
-  const result = UP.estimateCost(provider, model, { input_tokens: inputTok, output_tokens: outputTok });
-  console.log(`\nProvider: ${col(C.cyan, provider)}`);
-  console.log(`Model:    ${col(C.white, model)}`);
-  console.log(`Input:    ${inputTok.toLocaleString()} tokens`);
-  console.log(`Output:   ${outputTok.toLocaleString()} tokens`);
-  console.log(`Cost:     ${col(C.green, '$' + result.cost_usd)} (${result.pricing_mode})`);
-  console.log('');
-}
-
-// ── usage ─────────────────────────────────────────────────────────────────────
-async function cmdUsage(args) {
-  const UP = (() => { try { return require('../lib/usage-pricing'); } catch { return null; } })();
-  if (!UP) { console.log('\n[X] usage-pricing not available\n'); return; }
-  const tracker = new UP.UsageTracker();
-  const sub = (args[0] || 'stats').toLowerCase();
-  if (sub === 'stats') {
-    console.log('\nUsage tracker (session):\n');
-    const s = tracker.stats();
-    console.log(`  Input tokens:       ${s.usage.input_tokens.toLocaleString()}`);
-    console.log(`  Output tokens:      ${s.usage.output_tokens.toLocaleString()}`);
-    console.log(`  Total tokens:      ${s.usage.total_tokens.toLocaleString()}`);
-    console.log(`  Cache read:        ${s.usage.cache_read_tokens.toLocaleString()}`);
-    console.log(`  Cache write:        ${s.usage.cache_write_tokens.toLocaleString()}`);
-    console.log(`  Reasoning tokens:   ${s.usage.reasoning_tokens.toLocaleString()}`);
-    console.log(`  Requests:          ${s.usage.request_count}`);
-    console.log(`  Session duration:   ${s.session_seconds}s`);
-    console.log(`  Cost (estimated):   $${s.cost_usd}`);
-    console.log('');
-  } else if (sub === 'add') {
-    const input = parseInt(args[1] || '0', 10);
-    const output= parseInt(args[2] || '0', 10);
-    tracker.add({ input_tokens: input, output_tokens: output });
-    console.log(`\n✅ Added: in=${input} out=${output}\n`);
-  } else if (sub === 'save') {
-    const file = tracker.save();
-    console.log(`\n✅ Saved to ${file}\n`);
-  } else if (sub === 'table') {
-    const table = UP.buildPricingTable();
-    console.log('\nDefault pricing table ($/M tokens):\n');
-    for (const [model, entry] of Object.entries(table)) {
-      const ic = entry.input_cost_per_million != null ? `in:$${entry.input_cost_per_million}` : 'in:—';
-      const oc = entry.output_cost_per_million != null ? `out:$${entry.output_cost_per_million}` : 'out:—';
-      console.log(`  ${model.padEnd(35)} ${ic.padEnd(12)} ${oc}`);
-    }
-    console.log('');
-  } else {
-    console.log('\nUsage: purpclaw usage stats|add <input> [output]|save|table\n');
-  }
-}
-
-// ── workflows ─────────────────────────────────────────────────────────────────
+// â”€â”€ workflows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdWorkflows() {
   sectionHead('  WORKFLOWS');
   try {
@@ -3031,7 +1931,7 @@ async function cmdWorkflows() {
           queued    : C.yellow,
         }[wf.status] || C.gray;
         const age = wf.startedAt ? `${Math.round((Date.now() - new Date(wf.startedAt).getTime()) / 1000)}s ago` : '';
-        console.log(`  ${col(statusColour, '▶')}  ${col(C.bold, (wf.workflowId || wf.id || '—').padEnd(22))} ${col(statusColour, (wf.status || '—').padEnd(10))} ${col(C.gray, age)}`);
+        console.log(`  ${col(statusColour, 'â–¶')}  ${col(C.bold, (wf.workflowId || wf.id || 'â€”').padEnd(22))} ${col(statusColour, (wf.status || 'â€”').padEnd(10))} ${col(C.gray, age)}`);
         if (wf.command) console.log(`     ${col(C.gray, wf.command.substring(0, 72))}`);
       }
     }
@@ -3041,7 +1941,7 @@ async function cmdWorkflows() {
     if (pipeline.completed?.length) {
       console.log(col(C.gray, `\n  Recent completed: ${pipeline.completed.length}`));
       for (const wf of pipeline.completed.slice(-4)) {
-        console.log(`     ${col(C.green, '[OK]')} ${col(C.gray, (wf.workflowId || wf.id || '—').padEnd(22))} ${wf.command?.substring(0, 50) ?? ''}`);
+        console.log(`     ${col(C.green, 'âœ“')} ${col(C.gray, (wf.workflowId || wf.id || 'â€”').padEnd(22))} ${wf.command?.substring(0, 50) ?? ''}`);
       }
     }
   } catch {
@@ -3050,7 +1950,7 @@ async function cmdWorkflows() {
   console.log('');
 }
 
-// ── queue ─────────────────────────────────────────────────────────────────────
+// â”€â”€ queue â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdQueue() {
   sectionHead('  TASK QUEUE');
   try {
@@ -3058,8 +1958,8 @@ async function cmdQueue() {
     console.log(`  Depth: ${col(C.cyan, String(q.depth ?? 0))}\n`);
     if (q.items?.length) {
       for (const item of q.items) {
-        console.log(`  ${col(C.yellow, '⏳')}  P${item.priority ?? '?'}  ${item.command ?? '—'}`);
-        console.log(col(C.gray, `       enqueued ${item.enqueuedAt ?? '—'}`));
+        console.log(`  ${col(C.yellow, 'â³')}  P${item.priority ?? '?'}  ${item.command ?? 'â€”'}`);
+        console.log(col(C.gray, `       enqueued ${item.enqueuedAt ?? 'â€”'}`));
       }
     } else {
       console.log(col(C.gray, '  Queue is empty.'));
@@ -3070,14 +1970,14 @@ async function cmdQueue() {
   console.log('');
 }
 
-// ── memory ────────────────────────────────────────────────────────────────────
+// â”€â”€ memory â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdMemory(args) {
   const sub   = (args[0] || '').toLowerCase();
   const rest  = args.slice(1).join(' ').trim();
 
-  // ── purpclaw memory stats ─────────────────────────────────────────────────
+  // â”€â”€ purpclaw memory stats â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'stats') {
-    sectionHead('  MEMORY MATRIX — STATS');
+    sectionHead('  MEMORY MATRIX â€” STATS');
     try {
       const [health, stats] = await Promise.allSettled([
         httpGet(PORTS.memory, '/health', 3000),
@@ -3108,15 +2008,15 @@ async function cmdMemory(args) {
     return;
   }
 
-  // ── purpclaw memory ingest "<text>" ───────────────────────────────────────
+  // â”€â”€ purpclaw memory ingest "<text>" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'ingest') {
     const text = rest || args.slice(1).join(' ').trim();
     if (!text) {
       console.error(col(C.red, '\n  Usage: purpclaw memory ingest "<text to remember>"\n'));
       process.exit(1);
     }
-    console.log(`\n  ${col(C.cyan + C.bold, '🧠 MEMORY INGEST')}\n`);
-    console.log(`  ${col(C.gray, 'Ingesting:')} ${text.substring(0, 80)}${text.length > 80 ? '…' : ''}\n`);
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ§  MEMORY INGEST')}\n`);
+    console.log(`  ${col(C.gray, 'Ingesting:')} ${text.substring(0, 80)}${text.length > 80 ? 'â€¦' : ''}\n`);
     try {
       const result = await httpPost(PORTS.memory, '/ingest', {
         content    : text,
@@ -3124,44 +2024,44 @@ async function cmdMemory(args) {
         importance : 0.7,
       }, 10000);
       if (result.status >= 400) {
-        console.error(col(C.red, `  [X] ${JSON.stringify(result.body)}\n`));
+        console.error(col(C.red, `  âœ— ${JSON.stringify(result.body)}\n`));
         return;
       }
-      console.log(col(C.green, `  [OK] Ingested successfully`));
+      console.log(col(C.green, `  âœ“ Ingested successfully`));
       if (result.body?.id) console.log(col(C.gray, `  id: ${result.body.id}`));
     } catch (e) {
       console.error(col(C.red, e.code === 'ECONNREFUSED'
-        ? '  [X] Memory matrix offline. Run `purpclaw start`.\n'
-        : `  [X] ${e.message}\n`));
+        ? '  âœ— Memory matrix offline. Run `purpclaw start`.\n'
+        : `  âœ— ${e.message}\n`));
     }
     console.log('');
     return;
   }
 
-  // ── purpclaw memory forget "<query>" ─────────────────────────────────────
+  // â”€â”€ purpclaw memory forget "<query>" â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'forget') {
     const query = rest;
     if (!query) {
       console.error(col(C.red, '\n  Usage: purpclaw memory forget "<query>"\n'));
       process.exit(1);
     }
-    console.log(`\n  ${col(C.yellow + C.bold, '🧠 MEMORY FORGET')}\n  ${col(C.gray, `"${query}"`)}\n`);
+    console.log(`\n  ${col(C.yellow + C.bold, 'ðŸ§  MEMORY FORGET')}\n  ${col(C.gray, `"${query}"`)}\n`);
     try {
       const result = await httpPost(PORTS.memory, '/forget', { query }, 8000);
       if (result.status >= 400) {
-        console.error(col(C.red, `  [X] ${JSON.stringify(result.body)}\n`)); return;
+        console.error(col(C.red, `  âœ— ${JSON.stringify(result.body)}\n`)); return;
       }
       const removed = result.body?.removed ?? result.body?.count ?? '?';
-      console.log(col(C.green, `  [OK] Removed ${removed} memories matching "${query}"\n`));
+      console.log(col(C.green, `  âœ“ Removed ${removed} memories matching "${query}"\n`));
     } catch (e) {
       console.error(col(C.red, e.code === 'ECONNREFUSED'
-        ? '  [X] Memory matrix offline.\n'
-        : `  [X] ${e.message}\n`));
+        ? '  âœ— Memory matrix offline.\n'
+        : `  âœ— ${e.message}\n`));
     }
     return;
   }
 
-  // ── purpclaw memory (no args) — status ────────────────────────────────────
+  // â”€â”€ purpclaw memory (no args) â€” status â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (!sub) {
     sectionHead('  MEMORY MATRIX STATUS');
     try {
@@ -3170,11 +2070,11 @@ async function cmdMemory(args) {
       if (health.memories !== undefined) console.log(`  Stored  : ${col(C.cyan, String(health.memories))} memories`);
       if (health.symbols  !== undefined) console.log(`  Symbols : ${col(C.cyan, String(health.symbols))}`);
       console.log(`\n  ${col(C.bold, 'Subcommands:')}`);
-      console.log(`  ${col(C.cyan, 'purpclaw memory <query>')}       — recall matching memories`);
-      console.log(`  ${col(C.cyan, 'purpclaw memory ingest "<text>"')} — store a new memory`);
-      console.log(`  ${col(C.cyan, 'purpclaw memory forget "<query>"')} — remove matching memories`);
-      console.log(`  ${col(C.cyan, 'purpclaw memory stats')}         — detailed matrix stats`);
-      console.log(`  ${col(C.cyan, 'purpclaw dream')}                — run AutoDream consolidation\n`);
+      console.log(`  ${col(C.cyan, 'purpclaw memory <query>')}       â€” recall matching memories`);
+      console.log(`  ${col(C.cyan, 'purpclaw memory ingest "<text>"')} â€” store a new memory`);
+      console.log(`  ${col(C.cyan, 'purpclaw memory forget "<query>"')} â€” remove matching memories`);
+      console.log(`  ${col(C.cyan, 'purpclaw memory stats')}         â€” detailed matrix stats`);
+      console.log(`  ${col(C.cyan, 'purpclaw dream')}                â€” run AutoDream consolidation\n`);
     } catch {
       console.log(`  ${tick(false)}  ${col(C.red, 'memory_matrix_v2 offline')}`);
       console.log(col(C.gray, '  Run `purpclaw start` to boot services.\n'));
@@ -3182,14 +2082,14 @@ async function cmdMemory(args) {
     return;
   }
 
-  // ── purpclaw memory <query> — recall ──────────────────────────────────────
+  // â”€â”€ purpclaw memory <query> â€” recall â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const query = args.join(' ').trim();
-  console.log(`\n  ${col(C.cyan + C.bold, '🧠 MEMORY RECALL')}\n  ${col(C.gray, `"${query}"`)}\n`);
+  console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ§  MEMORY RECALL')}\n  ${col(C.gray, `"${query}"`)}\n`);
 
   try {
-    const result = await httpPost(PORTS.memory, '/recall', { query, limit: 5 }, 8000);
+    const result = await httpPost(PORTS.memory, '/query', { query, limit: 5 }, 8000);
     if (result.status >= 400) {
-      console.error(col(C.red, `  [X] Memory matrix error: ${JSON.stringify(result.body)}\n`));
+      console.error(col(C.red, `  âœ— Memory matrix error: ${JSON.stringify(result.body)}\n`));
       return;
     }
     const memories = result.body?.results || result.body?.memories || result.body || [];
@@ -3200,23 +2100,1391 @@ async function cmdMemory(args) {
     for (const [i, mem] of memories.entries()) {
       const score   = mem.score !== undefined ? col(C.gray, ` [${(mem.score * 100).toFixed(0)}%]`) : '';
       const content = mem.content || mem.text || mem.summary || JSON.stringify(mem).substring(0, 120);
-      const source  = mem.source ? col(C.gray, ` • ${mem.source}`) : '';
-      const ts      = mem.timestamp ? col(C.gray, ` • ${new Date(mem.timestamp).toLocaleDateString()}`) : '';
+      const source  = mem.source ? col(C.gray, ` â€¢ ${mem.source}`) : '';
+      const ts      = mem.timestamp ? col(C.gray, ` â€¢ ${new Date(mem.timestamp).toLocaleDateString()}`) : '';
       console.log(`  ${col(C.cyan, String(i + 1) + '.')}  ${content}`);
       console.log(col(C.gray, `      ${score}${source}${ts}\n`));
     }
   } catch (e) {
     if (e.code === 'ECONNREFUSED') {
-      console.error(col(C.red, '  [X] Memory matrix offline. Run `purpclaw start`.\n'));
+      console.error(col(C.red, '  âœ— Memory matrix offline. Run `purpclaw start`.\n'));
     } else {
-      console.error(col(C.red, `  [X] ${e.message}\n`));
+      console.error(col(C.red, `  âœ— ${e.message}\n`));
     }
   }
 }
 
-// ── dream ─────────────────────────────────────────────────────────────────────
+// â”€â”€ constitution validate â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Per AGENTS.md "RELATED LAW" + PURPCLAW_INTEGRATION_MANIFEST.md Â§11.
+// Verifies canonical law files exist and cross-reference each other.
+
+// Module-level flag parser used by subcommands that take --flag value pairs.
+// Supports both `--key value` and `--key=value` forms. A flag followed by
+// another `--flag` or end-of-args is recorded as boolean `true`.
+function parseFlags(argv) {
+  const out = {};
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (typeof a !== 'string') continue;
+    const eq = a.indexOf('=');
+    let key, val;
+    if (a.startsWith('--') && eq > 0) {
+      key = a.slice(2, eq);
+      val = a.slice(eq + 1);
+    } else if (a.startsWith('--')) {
+      key = a.slice(2);
+      val = (i + 1 < argv.length && !String(argv[i + 1]).startsWith('--')) ? argv[++i] : true;
+    } else {
+      continue;
+    }
+    out[key] = val;
+  }
+  return out;
+}
+
+async function cmdConstitution(args) {
+  const constitution = require(path.join(PURP_DIR, 'lib', 'constitution'));
+  const sub = (args[0] || 'validate').toLowerCase();
+
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    console.log(`\n  ${col(C.magenta + C.bold, 'ðŸ“œ CONSTITUTION â€” Commands')}`);
+    console.log('  purpclaw constitution validate    Check canonical law files');
+    console.log('  purpclaw constitution list        List required files');
+    console.log('  purpclaw constitution help        Show this help\n');
+    return;
+  }
+
+  if (sub === 'list') {
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ“œ Required canonical files')}\n`);
+    for (const f of constitution.getRequiredFiles()) {
+      console.log(`  ${f.file.padEnd(45)} ${f.role}`);
+    }
+    console.log('');
+    return;
+  }
+
+  // Default: validate
+  const result = constitution.validateConstitution({ root: PURP_DIR });
+  console.log(constitution.formatResult(result));
+  if (!result.ok) process.exit(1);
+}
+
+// â”€â”€ soul-memory contract â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Per PURPCLAW_INTEGRATION_MANIFEST.md Â§8: USER.md and MEMORY.md are
+// the high-signal context files loaded into every prompt. This command
+// validates, views, and updates them under the canonical contract.
+async function cmdSoulMemory(args) {
+  const soulMemory = require(path.join(PURP_DIR, 'lib', 'soul-memory'));
+  const sub = (args[0] || 'validate').toLowerCase();
+
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    console.log(`\n  ${col(C.magenta + C.bold, 'ðŸ§  SOUL MEMORY â€” Commands')}`);
+    console.log('  purpclaw soul-memory validate          Check USER.md / MEMORY.md contracts');
+    console.log('  purpclaw soul-memory show              Show first lines of both files');
+    console.log('  purpclaw soul-memory inject            Print the prompt-context injection');
+    console.log('  purpclaw soul-memory help              Show this help\n');
+    return;
+  }
+
+  if (sub === 'show') {
+    const r = soulMemory.readContracts();
+    console.log(`\n  ${col(C.cyan + C.bold, 'USER.md')} (${r.user.chars} chars)`);
+    console.log('  ' + '-'.repeat(60));
+    console.log(r.user.content.split('\n').slice(0, 8).map(l => '  ' + l).join('\n'));
+    console.log('  ...');
+    console.log('');
+    console.log(`  ${col(C.cyan + C.bold, 'MEMORY.md')} (${r.memory.chars} chars)`);
+    console.log('  ' + '-'.repeat(60));
+    console.log(r.memory.content.split('\n').slice(0, 8).map(l => '  ' + l).join('\n'));
+    console.log('  ...\n');
+    return;
+  }
+
+  if (sub === 'inject') {
+    const ctx = soulMemory.buildPromptContext();
+    console.log(ctx);
+    return;
+  }
+
+  // Default: validate
+  const result = soulMemory.validateContracts();
+  console.log(soulMemory.formatResult(result));
+  if (!result.ok) process.exit(1);
+}
+
+// â”€â”€ cross-review (cross-provider review gate) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Per PURPCLAW_AUTONOMOUS_EXECUTION_CONTRACT.md Â§10: for significant
+// mutations, the reviewer MUST come from a different provider family
+// when available. The gate lives at lib/cross-review-gate.js and is
+// invoked by the Forge Loop and the agent loop. This CLI command is
+// the human-facing surface: dry-run the significance check, dry-run
+// the reviewer pick, and optionally execute a live review.
+//
+// NOTE: this is intentionally NOT `purpclaw review` â€” that command is
+// already used by lib/commands/claudecode.js for working-tree review.
+// Distinct names avoid breaking the existing CLI contract.
+async function cmdCrossReview(args) {
+  const gate = require(path.join(PURP_DIR, 'lib', 'cross-review-gate'));
+  const sub = (args[0] || 'help').toLowerCase();
+
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    console.log(`\n  ${col(C.magenta + C.bold, 'ðŸ” CROSS-REVIEW GATE â€” Commands')}`);
+    console.log('  purpclaw cross-review check --file <path> [--lines N] [--files a,b,c]');
+    console.log('      Run the significance heuristic. Returns shouldReview + severity.');
+    console.log('  purpclaw cross-review pick --executor <provider>');
+    console.log('      Pick a cross-family reviewer via Provider Parliament.');
+    console.log('  purpclaw cross-review run --executor <provider> --mutation <text> [--context <text>]');
+    console.log('      Run a live cross-provider review (invokes the reviewer LLM).');
+    console.log('  purpclaw cross-review thresholds');
+    console.log('      Print the significance thresholds (tunables).');
+    console.log('  purpclaw cross-review help');
+    console.log('      Show this help.\n');
+    return;
+  }
+
+  if (sub === 'thresholds') {
+    const t = gate.THRESHOLDS;
+    console.log(`\n  ${col(C.cyan + C.bold, 'Cross-Review Thresholds')}\n`);
+    console.log(`  ${'minLinesChanged'.padEnd(22)} ${col(C.cyan, String(t.minLinesChanged))}`);
+    console.log(`  ${'minFilesChanged'.padEnd(22)} ${col(C.cyan, String(t.minFilesChanged))}`);
+    console.log(`  ${'minDiffRatio'.padEnd(22)} ${col(C.cyan, String(t.minDiffRatio))}`);
+    console.log(`  ${'alwaysReviewPatterns'.padEnd(22)} ${col(C.gray, `${t.alwaysReviewPatterns.length} regex(es) â€” see lib/cross-review-gate.js`)}\n`);
+    return;
+  }
+
+  if (sub === 'check') {
+    const opts = parseFlags(args.slice(1));
+    const files = opts.files ? String(opts.files).split(',').map(s => s.trim()).filter(Boolean)
+                 : opts.file ? [String(opts.file)]
+                 : [];
+    const lines = opts.lines ? Number(opts.lines) : undefined;
+    if (!files.length && lines === undefined) {
+      console.error(col(C.red, '  âœ— need --file <path> or --lines <N> or --files a,b,c\n'));
+      process.exit(2);
+    }
+    const mutation = { files, linesChanged: lines };
+    const decision = gate.shouldReview(mutation);
+    const sevColor = decision.severity === 'critical' ? C.red
+                   : decision.severity === 'high'     ? C.yellow
+                   : decision.severity === 'medium'   ? C.cyan
+                   : C.gray;
+    console.log(`\n  ${col(C.cyan + C.bold, 'Significance check')}\n`);
+    console.log(`  Files:        ${files.length ? files.join(', ') : col(C.gray, '(none)')}`);
+    console.log(`  Lines:        ${lines !== undefined ? lines : col(C.gray, '(unspecified)')}`);
+    console.log(`  Should review: ${decision.shouldReview ? col(C.yellow + C.bold, 'YES') : col(C.green, 'no')}`);
+    console.log(`  Severity:     ${col(sevColor, decision.severity)}`);
+    console.log(`  Reason:       ${col(C.gray, decision.reason)}\n`);
+    if (!decision.shouldReview) process.exit(0);
+    return;
+  }
+
+  if (sub === 'pick') {
+    const opts = parseFlags(args.slice(1));
+    const executor = opts.executor || process.env.LLM_PROVIDER || 'unknown';
+    const reviewer = gate.pickReviewer({ executor });
+    if (!reviewer) {
+      console.log(col(C.yellow, `\n  ~ no cross-family reviewer available for executor="${executor}"\n`));
+      process.exit(1);
+    }
+    console.log(`\n  ${col(C.cyan + C.bold, 'Cross-family reviewer')}`);
+    console.log(`  Executor: ${col(C.gray, executor)}`);
+    console.log(`  Reviewer: ${col(C.green + C.bold, reviewer)}\n`);
+    return;
+  }
+
+  if (sub === 'run') {
+    const opts = parseFlags(args.slice(1));
+    const executor = opts.executor || process.env.LLM_PROVIDER || 'unknown';
+    const mutation = opts.mutation;
+    const context = opts.context || '';
+    if (!mutation) {
+      console.error(col(C.red, '  âœ— --mutation <text> is required for run\n'));
+      process.exit(2);
+    }
+    const reviewer = gate.pickReviewer({ executor });
+    if (!reviewer) {
+      console.log(col(C.yellow, `\n  ~ no cross-family reviewer available for executor="${executor}" â€” escalating\n`));
+      process.exit(1);
+    }
+    let llm;
+    try {
+      llm = require(path.join(PURP_DIR, 'lib', 'llm-provider'));
+    } catch (e) {
+      console.error(col(C.red, `  âœ— cannot load llm-provider: ${e.message}\n`));
+      process.exit(1);
+    }
+    console.log(`\n  ${col(C.magenta + C.bold, 'ðŸ” Cross-provider review')}`);
+    console.log(`  Executor: ${col(C.gray, executor)}`);
+    console.log(`  Reviewer: ${col(C.cyan, reviewer)}`);
+    console.log(`  ${col(C.gray, 'Asking reviewerâ€¦')}`);
+    const result = await gate.runReview({ executor, reviewer, mutation, context, llm });
+    const vColor = result.verdict === 'approve' ? C.green
+                 : result.verdict === 'reject'  ? C.red
+                 : C.yellow;
+    console.log(`  Verdict:  ${col(vColor + C.bold, result.verdict.toUpperCase())}`);
+    console.log(`  Provider: ${col(C.gray, result.provider || '(none)')}`);
+    console.log(`  Duration: ${col(C.gray, `${result.durationMs}ms`)}`);
+    console.log(`  Confidence: ${col(C.gray, String(result.confidence))}`);
+    console.log(`\n  ${col(C.cyan, 'Feedback:')}`);
+    console.log('  ' + (result.feedback || '(none)').split('\n').join('\n  '));
+    console.log('');
+    process.exit(result.verdict === 'approve' ? 0 : result.verdict === 'reject' ? 1 : 2);
+  }
+
+  // Unknown subcommand
+  console.error(col(C.red, `  âœ— unknown subcommand: ${sub}\n  try: purpclaw cross-review help\n`));
+  process.exit(2);
+}
+
+// â”€â”€ skill-forge (self-improving skills) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Per PURPCLAW_INTEGRATION_MANIFEST.md Â§9 + v0.5 spec: the Skill Forge
+// extends lib/evolution/skill-forge.js with trigger/preconditions/steps
+// structure and success-rate tracking. This CLI is the human surface
+// for attaching specs, recording outcomes, and triggering lifecycle eval.
+//
+// Distinct from `purpclaw forge` (which is the gacha soul-generator).
+// â”€â”€ bench (provider benchmarks) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Per PURPCLAW_INTEGRATION_MANIFEST.md + v0.5 spec: per-task model
+// benchmarking for dynamic routing. Sits on top of
+
+// â”€â”€ checkpoint (unified checkpoint system, P2 #12) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Per PURPCLAW_INTEGRATION_INVENTORY.md P2 #12: unify the existing
+// filesystem-snapshot manager (lib/checkpoint-manager.mjs) and the
+// per-loop JSON files (lib/forge/loop.js) under one canonical surface.
+// This CLI is the human-facing view of lib/unified-checkpoint.js.
+async function cmdCheckpoint(args) {
+  const uc = require(path.join(PURP_DIR, 'lib', 'unified-checkpoint'));
+  const sub = (args[0] || 'help').toLowerCase();
+
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    console.log(`\n  ${col(C.magenta + C.bold, 'ðŸ’¾ CHECKPOINT â€” Unified Checkpoint System')}`);
+    console.log('  purpclaw checkpoint list [--kind K] [--run-id R] [--scope S] [--limit N]');
+    console.log('      List checkpoints (unified store)');
+    console.log('  purpclaw checkpoint show <id>');
+    console.log('      Show one checkpoint (header + state preview)');
+    console.log('  purpclaw checkpoint lineage <id>');
+    console.log('      Show parent â†’ child lineage for an id');
+    console.log('  purpclaw checkpoint stats');
+    console.log('      Counts by kind, total bytes, oldest/newest ts');
+    console.log('  purpclaw checkpoint latest --run-id R');
+    console.log('      Show the most recent checkpoint for a run');
+    console.log('  purpclaw checkpoint remove <id>');
+    console.log('      Delete a checkpoint by id');
+    console.log('  purpclaw checkpoint migrate <path-to-legacy-cp.json>');
+    console.log('      Import a legacy forge-loop checkpoint into the unified store');
+    console.log('  purpclaw checkpoint help');
+    console.log('      Show this help\n');
+    return;
+  }
+
+  if (sub === 'list') {
+    const opts = parseFlags(args.slice(1));
+    const filter = {};
+    if (opts.kind)       filter.kind = opts.kind;
+    if (opts['run-id'])  filter.runId = opts['run-id'];
+    if (opts.scope)      filter.scope = opts.scope;
+    if (opts.limit)      filter.limit = Number(opts.limit);
+    const list = uc.list(filter);
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ’¾ Unified checkpoints')}  ${col(C.gray, `(${list.length} match${list.length === 1 ? '' : 'es'})`)}\n`);
+    if (!list.length) {
+      console.log(`  ${col(C.gray, '(none â€” try `purpclaw forge "..." --autonomous` to create one)')}\n`);
+      return;
+    }
+    for (const it of list) {
+      const age = it.ts ? `${((Date.now() - it.ts) / 1000).toFixed(0)}s ago` : '';
+      const run = it.runId ? col(C.gray, `run=${it.runId}`) : '';
+      console.log(`  ${col(C.cyan, it.id)}  ${col(C.gray, it.kind.padEnd(20))} ${col(C.gray, it.scope || '-')} ${run} ${col(C.gray, age)}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'show') {
+    const id = args[1];
+    if (!id) { console.error(col(C.red, '  âœ— usage: purpclaw checkpoint show <id>\n')); process.exit(2); }
+    const cp = uc.load(id);
+    if (!cp) { console.error(col(C.red, `  âœ— no checkpoint with id "${id}"\n`)); process.exit(1); }
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ’¾ ' + cp.id)}\n`);
+    console.log(`  Kind:        ${col(C.gray, cp.kind)}`);
+    console.log(`  Scope:       ${col(C.gray, cp.scope || '-')}`);
+    console.log(`  Run ID:      ${col(C.gray, cp.runId || '-')}`);
+    console.log(`  Task ID:     ${col(C.gray, cp.taskId || '-')}`);
+    console.log(`  Parent:      ${col(C.gray, cp.parentId || '-')}`);
+    console.log(`  Timestamp:   ${col(C.gray, new Date(cp.ts).toISOString())}`);
+    console.log(`  Bytes:       ${col(C.gray, String(cp.bytes || 0))}`);
+    console.log(`  SHA-256:     ${col(C.gray, cp.sha256 || '-')}`);
+    console.log(`  Source:      ${col(C.gray, cp.source || '-')}`);
+    if (cp.metadata && Object.keys(cp.metadata).length) {
+      console.log(`  Metadata:    ${col(C.gray, JSON.stringify(cp.metadata))}`);
+    }
+    if (cp.state) {
+      const stateStr = JSON.stringify(cp.state);
+      const preview = stateStr.length > 240 ? stateStr.slice(0, 237) + 'â€¦' : stateStr;
+      console.log(`\n  State preview:`);
+      console.log(`    ${col(C.gray, preview)}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'lineage') {
+    const id = args[1];
+    if (!id) { console.error(col(C.red, '  âœ— usage: purpclaw checkpoint lineage <id>\n')); process.exit(2); }
+    const tree = uc.lineage(id);
+    if (!tree.self) { console.error(col(C.red, `  âœ— no checkpoint with id "${id}"\n`)); process.exit(1); }
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ’¾ Lineage for ' + id)}\n`);
+    console.log(`  Self:`);
+    console.log(`    ${col(C.cyan, tree.self.id)}  ${col(C.gray, tree.self.kind)}  ts=${new Date(tree.self.ts).toISOString()}`);
+    if (tree.ancestors.length) {
+      console.log(`\n  Ancestors (${tree.ancestors.length}):`);
+      for (const a of tree.ancestors) {
+        console.log(`    ${col(C.cyan, a.id)}  ${col(C.gray, a.kind)}  ts=${new Date(a.ts).toISOString()}`);
+      }
+    }
+    if (tree.descendants.length) {
+      console.log(`\n  Descendants (${tree.descendants.length}):`);
+      for (const d of tree.descendants) {
+        console.log(`    ${col(C.cyan, d.id)}  ${col(C.gray, d.kind)}  ts=${new Date(d.ts).toISOString()}`);
+      }
+    }
+    if (!tree.ancestors.length && !tree.descendants.length) {
+      console.log(`\n  ${col(C.gray, '(no ancestors or descendants)')}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'stats') {
+    const s = uc.stats();
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ’¾ Unified Checkpoint Stats')}\n`);
+    console.log(`  Base:        ${col(C.gray, s.base)}`);
+    console.log(`  Total:       ${col(C.cyan, String(s.total))}`);
+    console.log(`  Total bytes: ${col(C.gray, String(s.totalBytes))}`);
+    console.log(`  By kind:`);
+    for (const [k, n] of Object.entries(s.byKind)) {
+      console.log(`    ${k.padEnd(24)} ${col(C.cyan, String(n))}`);
+    }
+    if (s.oldestTs) console.log(`  Oldest:      ${col(C.gray, new Date(s.oldestTs).toISOString())}`);
+    if (s.newestTs) console.log(`  Newest:      ${col(C.gray, new Date(s.newestTs).toISOString())}`);
+    console.log('');
+    return;
+  }
+
+  if (sub === 'latest') {
+    const opts = parseFlags(args.slice(1));
+    const runId = opts['run-id'];
+    if (!runId) { console.error(col(C.red, '  âœ— usage: purpclaw checkpoint latest --run-id R\n')); process.exit(2); }
+    const latest = uc.latestForRun(runId);
+    if (!latest) { console.log(col(C.yellow, `\n  ~ no checkpoint for run "${runId}"\n`)); return; }
+    console.log(col(C.green, `\n  âœ“ latest for run "${runId}": ${latest.id}  ${col(C.gray, latest.kind)}  ts=${new Date(latest.ts).toISOString()}\n`));
+    return;
+  }
+
+  if (sub === 'remove') {
+    const id = args[1];
+    if (!id) { console.error(col(C.red, '  âœ— usage: purpclaw checkpoint remove <id>\n')); process.exit(2); }
+    const r = uc.remove(id);
+    if (r.ok) console.log(col(C.green, `\n  âœ“ removed ${id}\n`));
+    else { console.error(col(C.red, `  âœ— ${r.error}\n`)); process.exit(1); }
+    return;
+  }
+
+  if (sub === 'migrate') {
+    const legacyPath = args[1];
+    if (!legacyPath) { console.error(col(C.red, '  âœ— usage: purpclaw checkpoint migrate <path>\n')); process.exit(2); }
+    const r = await uc.migrateFromForge(legacyPath);
+    if (r.ok) console.log(col(C.green, `\n  âœ“ migrated to ${r.id}\n`));
+    else { console.error(col(C.red, `  âœ— ${r.error}\n`)); process.exit(1); }
+    return;
+  }
+
+  console.error(col(C.red, `  âœ— unknown subcommand: ${sub}\n  try: purpclaw checkpoint help\n`));
+  process.exit(2);
+}
+
+// â”€â”€ certify (release-grade certification report) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Per docs/CERTIFICATION_GATE_AUDIT.md: wraps scripts/certify-ephemeral-runtime.mjs
+// and turns its JSON artifacts into a human-readable release report. The
+// harness produces 4 artifacts (baseline.json, snapshot-*.json, compare-*.json,
+// certification.json); the report reads all 4 and emits a markdown table
+// with gate verdicts, evidence pointers, and a top-level CERTIFIED / NOT_CERTIFIED verdict.
+async function cmdCertify(args) {
+  const sub = (args[0] || 'help').toLowerCase();
+  const scriptPath = path.join(PURP_DIR, 'scripts', 'certify-ephemeral-runtime.mjs');
+  const artifactsDir = path.join(PURP_DIR, 'artifacts', 'ephemeral-runtime');
+
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ“œ CERTIFY â€” 29-gate certification report')}`);
+    console.log('  purpclaw certify run [--baseline-samples N] [--baseline-ms MS]');
+    console.log('      Run the harness end-to-end and emit a release report.');
+    console.log('      Establishes a baseline (3-30 samples), compares, certifies.');
+    console.log('  purpclaw certify report');
+    console.log('      Read existing artifacts/ephemeral-runtime/certification.json');
+    console.log('      and produce a release report (markdown on stdout).');
+    console.log('  purpclaw certify help');
+    console.log('      Show this help\n');
+    return;
+  }
+
+  if (sub === 'run') {
+    const opts = parseFlags(args.slice(1));
+    const samples = Number(opts['baseline-samples']) || 3;
+    const sampleMs = Number(opts['baseline-ms']) || 2000;
+    const env = { ...process.env, PURPCLAW_BASELINE_SAMPLES: String(samples), PURPCLAW_BASELINE_SAMPLE_MS: String(sampleMs) };
+    if (!fs.existsSync(scriptPath)) {
+      console.error(col(C.red, `  âœ— harness script not found at ${scriptPath}\n`));
+      process.exit(2);
+    }
+    console.log(col(C.gray, `\n  â±  establishing baseline (${samples} samples Ã— ${sampleMs}ms = ${(samples * sampleMs / 1000).toFixed(1)}s)â€¦`));
+    const baseline = trackedSpawn(process.execPath, [scriptPath, 'baseline'], { tag: 'certify-baseline', stdio: 'inherit', timeoutMs: 0, env, cwd: PURP_DIR });
+    await new Promise((res) => baseline.on('close', (code) => code === 0 ? res() : res()));
+    console.log(col(C.gray, '\n  â±  comparing (idle grace)â€¦'));
+    const compare = trackedSpawn(process.execPath, [scriptPath, 'compare'], { tag: 'certify-compare', stdio: 'inherit', timeoutMs: 0, env, cwd: PURP_DIR });
+    await new Promise((res) => compare.on('close', (code) => res()));
+    console.log(col(C.gray, '\n  â±  certifyingâ€¦'));
+    const cert = trackedSpawn(process.execPath, [scriptPath, 'certify'], { tag: 'certify-certify', stdio: 'inherit', timeoutMs: 0, env, cwd: PURP_DIR });
+    await new Promise((res) => cert.on('close', (code) => res()));
+    // Now print the report
+    await cmdCertify(['report']);
+    return;
+  }
+
+  if (sub === 'report') {
+    const certPath = path.join(artifactsDir, 'certification.json');
+    const baselinePath = path.join(artifactsDir, 'baseline.json');
+    if (!fs.existsSync(certPath)) {
+      console.error(col(C.red, `  âœ— no certification.json at ${certPath} â€” run \`purpclaw certify run\` first\n`));
+      process.exit(2);
+    }
+    let cert, baseline;
+    try { cert = JSON.parse(fs.readFileSync(certPath, 'utf8')); } catch (e) {
+      console.error(col(C.red, `  âœ— corrupt certification.json: ${e.message}\n`));
+      process.exit(1);
+    }
+    try { baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8')); } catch (_) { baseline = null; }
+    const opts = parseFlags(args.slice(1));
+    const md = opts.markdown != null || (process.stdout.isTTY === false);
+    emitCertificationReport(cert, baseline, md);
+    return;
+  }
+
+  console.error(col(C.red, `  âœ— unknown subcommand: ${sub}\n  try: purpclaw certify help\n`));
+  process.exit(2);
+}
+
+function emitCertificationReport(cert, baseline, asMarkdown) {
+  const sep = asMarkdown ? '\n' : '\n';
+  const h1 = asMarkdown ? '# ' : col(C.cyan + C.bold, '\n  ');
+  const h2 = asMarkdown ? '## ' : col(C.cyan + C.bold, '\n  ');
+  const h3 = asMarkdown ? '### ' : col(C.magenta + C.bold, '\n  ');
+  const dim = asMarkdown ? '' : col(C.gray, '');
+  const grn = asMarkdown ? '**PASS**' : col(C.green, 'PASS');
+  const ylw = asMarkdown ? '`UNKNOWN`' : col(C.yellow, 'UNKNOWN');
+  const red = asMarkdown ? '**FAIL**' : col(C.red, 'FAIL');
+  const verdictColor = cert.verdict === 'CERTIFIED' ? grn : (cert.verdict === 'FAILED' ? red : ylw);
+  const gates = Object.entries(cert.gates || {});
+  const counts = gates.reduce((acc, [, v]) => { acc[v] = (acc[v] || 0) + 1; return acc; }, {});
+  const pass = counts.PASS || counts.pass || 0;
+  const fail = counts.FAIL || counts.fail || 0;
+  const unk  = counts.UNKNOWN || counts.unknown || 0;
+  process.stdout.write(sep);
+  process.stdout.write(h1 + `PurpClaw Certification Report${sep}`);
+  process.stdout.write(asMarkdown
+    ? `**Generated:** ${cert.createdAt}${sep}`
+    : `  ${dim}Generated: ${cert.createdAt}${sep}`);
+  process.stdout.write(asMarkdown
+    ? `**Schema:** \`${cert.schema}\`${sep}`
+    : `  ${dim}Schema: ${cert.schema}${sep}`);
+  process.stdout.write(asMarkdown
+    ? `**Verdict:** ${verdictColor} (${pass} PASS, ${fail} FAIL, ${unk} UNKNOWN of ${gates.length} gates)${sep}${sep}`
+    : `  Verdict: ${verdictColor} ${dim}(${pass} PASS, ${fail} FAIL, ${unk} UNKNOWN of ${gates.length} gates)${sep}${sep}`);
+  if (baseline && baseline.metrics) {
+    process.stdout.write(h2 + `Baseline (${baseline.sampleCount} samples Ã— ${baseline.config.sampleMs}ms)${sep}`);
+    const m = baseline.metrics;
+    const rows = [
+      ['total RSS median', m.totalRssBytesMedian, 'bytes'],
+      ['total RSS p95',    m.totalRssBytesP95,    'bytes'],
+      ['process count median', m.processCountMedian, ''],
+      ['process count p95',    m.processCountP95,    ''],
+      ['GPU MiB median',  m.gpuMiBMedian,  'MiB'],
+      ['GPU MiB p95',     m.gpuMiBP95,     'MiB']
+    ];
+    if (asMarkdown) {
+      process.stdout.write('| Metric | Value |\n|---|---|\n');
+      for (const [k, v, u] of rows) process.stdout.write(`| ${k} | ${v == null ? 'n/a' : v + ' ' + u} |\n`);
+    } else {
+      for (const [k, v, u] of rows) process.stdout.write(`  ${dim}${k.padEnd(28)} ${v == null ? 'n/a' : v + ' ' + u}${sep}`);
+    }
+    process.stdout.write(sep);
+  }
+  process.stdout.write(h2 + `Gates (${gates.length})${sep}`);
+  if (asMarkdown) {
+    process.stdout.write('| # | Gate | Verdict | Notes |\n|---|---|---|---|\n');
+    gates.forEach(([name, verdict], i) => {
+      const v = String(verdict).toUpperCase();
+      const vFmt = v === 'PASS' ? grn : v === 'FAIL' ? red : ylw;
+      const note = (cert.note && i === 0) ? cert.note : '';
+      process.stdout.write(`| ${i + 1} | \`${name}\` | ${vFmt} | ${note} |\n`);
+    });
+  } else {
+    gates.forEach(([name, verdict], i) => {
+      const v = String(verdict).toUpperCase();
+      const vFmt = v === 'PASS' ? grn : v === 'FAIL' ? red : ylw;
+      process.stdout.write(`  ${dim}${String(i + 1).padStart(2)}. ${name.padEnd(36)} ${vFmt}${sep}`);
+    });
+  }
+  process.stdout.write(sep);
+  process.stdout.write(h3 + `Audit reference${sep}`);
+  process.stdout.write(asMarkdown
+    ? `For per-gate evidence + gap status, see \`docs/CERTIFICATION_GATE_AUDIT.md\`.${sep}`
+    : `  ${dim}For per-gate evidence + gap status, see docs/CERTIFICATION_GATE_AUDIT.md.${sep}`);
+  if (cert.thresholds) {
+    process.stdout.write(asMarkdown
+      ? `Thresholds: RSS tolerance ${cert.thresholds.rssTolerancePercent}% / ${cert.thresholds.rssToleranceBytes}B, GPU tolerance ${cert.thresholds.gpuToleranceMiB} MiB.${sep}`
+      : `  ${dim}Thresholds: RSS tolerance ${cert.thresholds.rssTolerancePercent}% / ${cert.thresholds.rssToleranceBytes}B, GPU ${cert.thresholds.gpuToleranceMiB} MiB.${sep}`);
+  }
+  process.stdout.write(sep);
+}
+
+// â”€â”€ cryosleep (P3 #10) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Per docs/CRYOSLEEP_PLAN.md Â§10 step 6: the human-facing surface for the
+// runtime's quiesce-serialize-stop-restart-deserialize-resume cycle.
+// Slices 1-2 ship writer + reader + validation. `wake` validates the
+// bundle and prints the replay summary. Full state restoration (applying
+// replay.* back into in-process modules) ships with extractors/restorers
+// in slices 4-5.
+async function cmdCryosleep(args) {
+  const writer = require(path.join(PURP_DIR, 'lib', 'cryosleep', 'bundle-writer'));
+  const reader = require(path.join(PURP_DIR, 'lib', 'cryosleep', 'bundle-reader'));
+  const sub = (args[0] || 'help').toLowerCase();
+
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ›Œ CRYOSLEEP â€” runtime hibernate / wake')}`);
+    console.log('  purpclaw cryosleep status');
+    console.log('      Show runtime state: last sleep, last wake, idle watcher, bundle count, disk usage');
+    console.log('  purpclaw cryosleep sleep [--trigger T] [--now] [--dry-run]');
+    console.log('      Capture live state + write ~/.purpclaw/cryosleep/<sleepId>/');
+    console.log('      --dry-run : show what would be captured without writing');
+    console.log('  purpclaw cryosleep sleep --gc [--keep N]');
+    console.log('      Garbage-collect old bundles (default: keep last 3)');
+    console.log('  purpclaw cryosleep list');
+    console.log('      List bundles in the index');
+    console.log('  purpclaw cryosleep show <sleepId>');
+    console.log('      Show manifest of one bundle');
+    console.log('  purpclaw cryosleep idle [--configure] [--start] [--auto-sleep] [--stop] [--record] [--threshold-ms N]');
+    console.log('      Idle-watcher status / start / stop / record-activity. Used by Â§2.2 auto-sleep.');
+    console.log('      --auto-sleep : when idle, capture state via extractors and write a cryosleep bundle');
+    console.log('  purpclaw cryosleep wake [--from-bundle PATH] [--force-version-skip] [--apply] [--dry-run]');
+    console.log('      Re-hydrate the runtime from a bundle. Validates, restores, prints report.');
+    console.log('      --apply        : mark the bundle as consumed (idempotent)');
+    console.log('      --dry-run      : show what would be restored without calling any hooks');
+    console.log('  purpclaw cryosleep help');
+    console.log('      Show this help\n');
+    return;
+  }
+
+  if (sub === 'sleep') {
+    const opts = parseFlags(args.slice(1));
+    if (opts.gc != null) {
+      const keep = Number(opts.keep) || 3;
+      const root = writer.defaultRoot();
+      if (!fs.existsSync(root)) {
+        console.log(col(C.gray, `\n  ~ no bundles at ${root}\n`));
+        return;
+      }
+      const removed = await writer.gcOldBundles(root, keep);
+      console.log(col(C.green, `\n  âœ“ kept last ${keep} bundles, removed ${removed.length}\n`));
+      for (const p of removed) console.log(`    ${col(C.gray, '- ' + path.basename(p))}`);
+      console.log('');
+      return;
+    }
+    if (opts['dry-run'] != null) {
+      // Show what would be captured without writing a bundle
+      const extractors = require(path.join(PURP_DIR, 'lib', 'cryosleep', 'extractors'));
+      const inv = extractors.extractorInventory();
+      const sampleState = extractors.captureAll();
+      console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ›Œ Cryosleep sleep â€” dry run')}\n`);
+      console.log(`  ${col(C.gray, 'Module inventory:')}`);
+      for (const [k, v] of Object.entries(inv)) {
+        const mark = v.present ? col(C.green, 'â—') : col(C.yellow, 'â—‹');
+        console.log(`    ${mark} ${k.padEnd(20)} ${col(C.gray, v.kind)}`);
+      }
+      console.log(`\n  ${col(C.gray, 'Sample state shape (will be serialized):')}`);
+      for (const [k, v] of Object.entries(sampleState)) {
+        const len = Array.isArray(v) ? v.length : (v == null ? 'null' : 'object');
+        console.log(`    ${k.padEnd(20)} ${col(C.gray, String(len))}`);
+      }
+      console.log('');
+      return;
+    }
+    // Real sleep: capture state via extractors, then write the bundle
+    const extractors = require(path.join(PURP_DIR, 'lib', 'cryosleep', 'extractors'));
+    const trigger = opts.trigger || 'manual';
+    const captured = extractors.captureAll();
+    const ctx = {
+      trigger,
+      purpclawVersion: (() => {
+        try { return require(path.join(PURP_DIR, 'package.json')).version || '0.5.0'; }
+        catch { return '0.5.0'; }
+      })(),
+      pid: process.pid,
+      activeGoals: [],
+      activeSouls: (captured.souls || []).map(s => s.soulId || s.id).filter(Boolean),
+      openLeases: (captured.leases || []).length,
+      state: captured
+    };
+    try {
+      const res = await writer.write(ctx);
+      console.log(col(C.green, `\n  âœ“ sleep ${res.sleepId}`));
+      console.log(`    path:     ${col(C.gray, res.path)}`);
+      console.log(`    size:     ${col(C.gray, res.size + ' bytes')}`);
+      console.log(`    sha256:   ${col(C.gray, res.checksum)}`);
+      console.log(`    files:    ${col(C.gray, res.files.length + ' subfiles + manifest + checksum')}`);
+      const populated = Object.entries(captured).filter(([k, v]) =>
+        v != null && (Array.isArray(v) ? v.length > 0 : true)
+      ).map(([k]) => k);
+      console.log(`    captured: ${col(C.gray, populated.join(', ') || '(empty)')}`);
+      console.log('');
+      return;
+    } catch (e) {
+      console.error(col(C.red, `  âœ— ${e.message}\n`));
+      process.exit(1);
+    }
+  }
+
+  if (sub === 'idle') {
+    const idle = require(path.join(PURP_DIR, 'lib', 'cryosleep', 'idle-watcher'));
+    const opts = parseFlags(args.slice(1));
+    if (opts.configure != null) {
+      const t = Number(opts['threshold-ms']);
+      const c = Number(opts['confirm-ms']);
+      const i = Number(opts['interval-ms']);
+      idle.configure({
+        thresholdMs: t || undefined,
+        confirmTimeoutMs: c || undefined,
+        checkIntervalMs: i || undefined
+      });
+      console.log(col(C.green, '\n  âœ“ idle-watcher configured\n'));
+    }
+    if (opts.start != null) {
+      // When --auto-sleep is set, on idle: capture state via extractors
+      // and write a bundle; onSleep is the same with a stronger log.
+      // This wires the idle-watcher to the cryosleep writer per Â§2.2.
+      const autoSleep = opts['auto-sleep'] != null;
+      const triggerSleep = (ev, reason) => {
+        if (!autoSleep) return;
+        const extractors = require(path.join(PURP_DIR, 'lib', 'cryosleep', 'extractors'));
+        const captured = extractors.captureAll();
+        const ctx = {
+          trigger: 'idle-timeout',
+          purpclawVersion: (() => { try { return require(path.join(PURP_DIR, 'package.json')).version || '0.5.0'; } catch { return '0.5.0'; } })(),
+          pid: process.pid,
+          activeGoals: [],
+          activeSouls: (captured.souls || []).map(s => s.soulId || s.id).filter(Boolean),
+          openLeases: (captured.leases || []).length,
+          state: captured
+        };
+        writer.write(ctx).then((res) => {
+          console.log(col(C.green, `\n  âœ“ auto-sleep wrote ${res.sleepId} (${res.size}B, sha256 ${res.checksum.slice(0,8)}...)`));
+        }).catch((e) => {
+          console.log(col(C.red, `  âœ— auto-sleep write failed: ${e.message}`));
+        });
+      };
+      const goalInFlight = opts['allow-goal-in-flight'] != null;
+      idle.start({
+        isGoalInFlight: () => goalInFlight,
+        onIdle: (ev) => {
+          console.log(col(C.yellow, `\n  ~ idle detected at ${ev.at} (${Math.round(ev.idleMs / 1000)}s) â€” confirm in 60s`));
+          triggerSleep(ev, 'onIdle');
+        },
+        onSleep: (ev) => {
+          console.log(col(C.red, `\n  âœ— operator did not respond in 60s â€” auto-sleep at ${ev.at}`));
+          triggerSleep(ev, 'onSleep');
+        }
+      });
+      console.log(col(C.green, '\n  âœ“ idle-watcher started' + (autoSleep ? ' (auto-sleep ENABLED â€” idle triggers cryosleep sleep)' : ' (status-only) ') + '\n'));
+    }
+    if (opts.stop != null) {
+      idle.stop();
+      console.log(col(C.gray, '\n  âœ“ idle-watcher stopped\n'));
+    }
+    if (opts['record'] != null) {
+      idle.recordActivity();
+      console.log(col(C.gray, '\n  âœ“ activity recorded\n'));
+    }
+    const s = idle.status();
+    console.log(`  ${col(C.cyan, 'idle-watcher status')}\n`);
+    console.log(`    thresholdMs:       ${col(C.gray, String(s.configured.thresholdMs))}`);
+    console.log(`    confirmTimeoutMs:  ${col(C.gray, String(s.configured.confirmTimeoutMs))}`);
+    console.log(`    checkIntervalMs:   ${col(C.gray, String(s.configured.checkIntervalMs))}`);
+    console.log(`    running:           ${s.running ? col(C.green, 'yes') : col(C.gray, 'no')}`);
+    console.log(`    lastActivityAt:    ${col(C.gray, s.lastActivityAt || '(none)')}`);
+    console.log(`    msSinceActivity:   ${col(C.gray, s.msSinceLastActivity == null ? '(no activity yet)' : s.msSinceLastActivity + 'ms')}`);
+    console.log(`    isIdle:            ${s.isIdle ? col(C.yellow, 'yes') : col(C.green, 'no')}`);
+    console.log(`    history:           ${col(C.gray, String(s.historyCount) + ' events')}`);
+    if (s.recentHistory.length) {
+      console.log(`    recent:`);
+      for (const ev of s.recentHistory) {
+        console.log(`      ${col(C.gray, ev.at + '  idleMs=' + ev.idleMs)}`);
+      }
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'list') {
+    const root = writer.defaultRoot();
+    const idxPath = path.join(root, 'index.json');
+    if (!fs.existsSync(idxPath)) {
+      console.log(col(C.gray, `\n  ~ no bundles at ${root}\n`));
+      return;
+    }
+    let idx;
+    try { idx = JSON.parse(fs.readFileSync(idxPath, 'utf8')); }
+    catch (e) {
+      console.error(col(C.red, `  âœ— corrupt index.json â€” try purpclaw cryosleep sleep --gc\n`));
+      process.exit(1);
+    }
+    const list = Array.isArray(idx.bundles) ? idx.bundles : [];
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ›Œ Cryosleep bundles')}  ${col(C.gray, `(${list.length})`)}\n`);
+    for (const b of list) {
+      const age = b.completedAt ? `${((Date.now() - new Date(b.completedAt).getTime()) / 1000).toFixed(0)}s ago` : '';
+      const consumed = b.consumed ? col(C.yellow, ' [consumed]') : '';
+      console.log(`  ${col(C.cyan, b.sleepId)}  ${col(C.gray, b.trigger || '-')}  ${col(C.gray, b.size + 'B')}  ${col(C.gray, age)}${consumed}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'status') {
+    // Runtime state at a glance: last sleep, last wake, idle watcher, bundle count, disk usage.
+    const root = writer.defaultRoot();
+    const idle = require(path.join(PURP_DIR, 'lib', 'cryosleep', 'idle-watcher'));
+    const idxPath = path.join(root, 'index.json');
+    let idx = null;
+    try { if (fs.existsSync(idxPath)) idx = JSON.parse(fs.readFileSync(idxPath, 'utf8')); }
+    catch (_) { idx = null; }
+    const bundles = idx && Array.isArray(idx.bundles) ? idx.bundles : [];
+    // Compute total size on disk
+    let totalBytes = 0;
+    try {
+      if (fs.existsSync(root)) {
+        const walk = (p) => {
+          const st = fs.statSync(p);
+          if (st.isFile()) totalBytes += st.size;
+          else if (st.isDirectory()) for (const e of fs.readdirSync(p)) walk(path.join(p, e));
+        };
+        walk(root);
+      }
+    } catch (_) {}
+    const lastSleep = bundles[0] || null;
+    const consumed = bundles.filter(b => b.consumed).length;
+    const pending = bundles.filter(b => !b.consumed).length;
+    const is = idle.status();
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ›Œ Cryosleep runtime status')}\n`);
+    console.log(`    last sleep:        ${col(C.gray, lastSleep ? lastSleep.sleepId + ' (' + lastSleep.trigger + ')' : '(none)')}`);
+    console.log(`    last completed:    ${col(C.gray, lastSleep ? lastSleep.completedAt : '-')}`);
+    console.log(`    last consumed:     ${col(C.gray, lastSleep && lastSleep.consumed ? 'yes' : 'no')}`);
+    console.log(`    bundles:           ${col(C.cyan, String(bundles.length))} ${col(C.gray, '(' + pending + ' pending, ' + consumed + ' consumed)')}`);
+    console.log(`    disk usage:        ${col(C.cyan, (totalBytes / 1024).toFixed(1) + ' KiB')}  ${col(C.gray, '(bundles + index)')}`);
+    console.log(`    root:              ${col(C.gray, root)}`);
+    console.log('');
+    console.log(`    ${col(C.cyan, 'idle-watcher')}`);
+    console.log(`      running:         ${is.running ? col(C.green, 'yes') : col(C.gray, 'no')}`);
+    console.log(`      threshold:       ${col(C.gray, (is.configured.thresholdMs / 1000 / 60).toFixed(1) + ' min')}`);
+    console.log(`      confirm:         ${col(C.gray, (is.configured.confirmTimeoutMs / 1000).toFixed(0) + 's')}`);
+    console.log(`      last activity:   ${col(C.gray, is.lastActivityAt || '(none)')}`);
+    console.log(`      is idle:         ${is.isIdle ? col(C.yellow, 'yes') : col(C.green, 'no')}`);
+    console.log(`      history:         ${col(C.gray, String(is.historyCount) + ' idle events')}`);
+    console.log('');
+    return;
+  }
+
+  if (sub === 'show') {
+    const sleepId = args[1];
+    if (!sleepId) { console.error(col(C.red, '  âœ— usage: purpclaw cryosleep show <sleepId>\n')); process.exit(2); }
+    const root = writer.defaultRoot();
+    const manifestPath = path.join(root, sleepId, 'manifest.json');
+    if (!fs.existsSync(manifestPath)) {
+      console.error(col(C.red, `  âœ— no bundle with id "${sleepId}"\n`));
+      process.exit(1);
+    }
+    const m = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ›Œ ' + m.sleepId)}\n`);
+    console.log(`  Trigger:        ${col(C.gray, m.trigger)}`);
+    console.log(`  Started:        ${col(C.gray, m.startedAt)}`);
+    console.log(`  Completed:      ${col(C.gray, m.completedAt)}`);
+    console.log(`  PurpClaw ver:   ${col(C.gray, m.purpclawVersion)}`);
+    console.log(`  PID:            ${col(C.gray, String(m.pid))}`);
+    console.log(`  Active goals:   ${col(C.gray, (m.activeGoals || []).join(', ') || '-')}`);
+    console.log(`  Active souls:   ${col(C.gray, (m.activeSouls || []).join(', ') || '-')}`);
+    console.log(`  Open leases:    ${col(C.gray, String(m.openLeases))}`);
+    console.log(`  Size:           ${col(C.gray, m.size + ' bytes')}`);
+    console.log(`  SHA-256:        ${col(C.gray, m.sha256)}`);
+    console.log(`  Files:          ${col(C.gray, String(m.fileCount))}`);
+    if (m.files) {
+      console.log(`  Subfiles:`);
+      for (const f of m.files) console.log(`    ${col(C.gray, f.name.padEnd(28) + ' ' + f.bytes + 'B')}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'wake') {
+    const opts = parseFlags(args.slice(1));
+    // First non-flag positional after `wake` is the sleepId (if any).
+    // Otherwise read() uses findLatest() to pick the most recent bundle.
+    const sleepId = args.slice(1).find(a => !a.startsWith('--'));
+    // Note: --from-bundle for portable bundle paths (v1.0) is not yet
+    // implemented â€” slice 2 only reads from the local rootDir.
+    try {
+      const r = await reader.read({
+        sleepId: sleepId || null,
+        forceVersionSkip: !!opts['force-version-skip'],
+        apply: !!opts.apply
+      });
+      console.log(col(C.green, `\n  âœ“ wake ${r.sleepId}`));
+      console.log(`    path:           ${col(C.gray, r.path)}`);
+      console.log(`    validation:     schema=${r.validation.schema} checksum=${r.validation.checksum} version=${r.validation.version}`);
+      console.log(`    completed:      ${col(C.gray, r.manifest.completedAt)}`);
+      console.log(`    trigger:        ${col(C.gray, r.manifest.trigger)}`);
+      console.log(`    active goals:   ${col(C.gray, (r.manifest.activeGoals || []).join(', ') || '-')}`);
+      console.log(`    active souls:   ${col(C.gray, (r.manifest.activeSouls || []).join(', ') || '-')}`);
+      console.log(`    open leases:    ${col(C.gray, String(r.manifest.openLeases))}`);
+      console.log(`    consumed:       ${r.consumed ? col(C.yellow, 'yes (idempotent on next read)') : col(C.gray, 'no')}`);
+
+      // Replay-section summary (always)
+      const restorers = require(path.join(PURP_DIR, 'lib', 'cryosleep', 'restorers'));
+      const plan = restorers.planRestore(r.replay);
+      const dryRun = opts['dry-run'] != null;
+      if (dryRun) {
+        console.log(`    would-restore (dry run):`);
+        for (const p of plan) {
+          const mark = p.wouldApply ? col(C.green, 'â—') : col(C.gray, 'â—‹');
+          console.log(`      ${mark} ${p.subsystem.padEnd(20)} ${p.wouldApply ? col(C.green, 'would apply') : col(C.gray, p.reason || 'skipped')}`);
+        }
+        console.log('');
+        return;
+      }
+
+      // Real restore: call the restorers
+      const result = await restorers.restoreAll(r.replay);
+      console.log(`    restore result: applied=${col(C.green, String(result.applied.length))} skipped=${col(C.yellow, String(result.skipped.length))} errors=${col(C.red, String(result.errors.length))}`);
+      for (const p of plan) {
+        const status = result.results[p.subsystem].status;
+        let mark;
+        if (status === 'applied') mark = col(C.green, 'â—');
+        else if (status === 'error') mark = col(C.red, 'âœ—');
+        else mark = col(C.gray, 'â—‹');
+        const note = result.results[p.subsystem].reason || result.results[p.subsystem].message || '';
+        console.log(`      ${mark} ${p.subsystem.padEnd(20)} ${col(C.gray, status.padEnd(8))} ${col(C.gray, note)}`);
+      }
+      if (result.errors.length) {
+        console.log('');
+        console.log(col(C.red, `  âœ— ${result.errors.length} restore error(s) â€” wake partial`));
+        process.exit(2);
+      }
+      console.log('');
+      return;
+    } catch (e) {
+      console.error(col(C.red, `  âœ— ${e.message}\n`));
+      process.exit(1);
+    }
+  }
+
+  console.error(col(C.red, `  âœ— unknown subcommand: ${sub}\n  try: purpclaw cryosleep help\n`));
+  process.exit(2);
+}
+
+// â”€â”€ steering (first-class control system) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Per FOUNDING_PRINCIPLES.md Â§11 + Eddie's design law (2026-08-16):
+// "Steering has to be treated as a first-class control system, not
+//  just another prompt blob." The resolver answers three questions
+// before any turn runs: what governs, what is forbidden, what must
+// be proven. The per-reply supervisor consults the capsule before
+// deciding which capability pillars to spawn.
+async function cmdSteering(args) {
+  const sr = require(path.join(PURP_DIR, 'lib', 'steering-resolver'));
+  const sub = (args[0] || 'help').toLowerCase();
+
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    console.log(`\n  ${col(C.magenta + C.bold, 'ðŸŽ¯ STEERING â€” Commands')}`);
+    console.log('  purpclaw steering ladder                 Show the 9-step authority ladder');
+    console.log('  purpclaw steering fields                 Show the 6 field taxonomies');
+    console.log('  purpclaw steering list                    List all built-in steering items');
+    console.log('  purpclaw steering show <id>               Show one steering item');
+    console.log('  purpclaw steering resolve [--intent I] [--field F] [--project P]');
+    console.log('                                           Resolve a capsule for a context');
+    console.log('  purpclaw steering check-action <kind>    Test if a forbidden action is blocked');
+    console.log('  purpclaw steering help                    Show this help\n');
+    return;
+  }
+
+  if (sub === 'ladder') {
+    const ladder = sr.authorityLadder();
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸŽ¯ Authority ladder')}\n`);
+    for (const { name, value } of ladder) {
+      const bar = 'â–ˆ'.repeat(Math.round(value / 50));
+      const color = value >= 800 ? C.green : value >= 500 ? C.yellow : C.gray;
+      console.log(`  ${col(color, String(value).padStart(3))}  ${name.padEnd(24)} ${col(C.gray, bar)}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'fields') {
+    const tax = sr.fieldTaxonomy();
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸŽ¯ Field taxonomies')}\n`);
+    for (const { field, pillars } of tax) {
+      console.log(`  ${col(C.cyan, field.padEnd(20))} ${col(C.gray, pillars.join(', '))}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'list') {
+    const idx = sr.loadBuiltInIndex();
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸŽ¯ Built-in steering items')}  ${col(C.gray, `(${idx.length} items)`)}\n`);
+    const byAuth = {};
+    for (const it of idx) {
+      const tier = Object.entries(sr.AUTHORITY).find(([, v]) => v === it.authority);
+      const tierName = tier ? tier[0] : 'UNKNOWN';
+      if (!byAuth[tierName]) byAuth[tierName] = [];
+      byAuth[tierName].push(it);
+    }
+    for (const tierName of sr.AUTHORITY_ORDER) {
+      const items = byAuth[tierName];
+      if (!items || !items.length) continue;
+      console.log(`  ${col(C.cyan, tierName)} ${col(C.gray, `(${sr.AUTHORITY[tierName]})`)}`);
+      for (const it of items) {
+        const field = it.field ? col(C.yellow, `[${it.field}]`) : col(C.gray, '[general]');
+        const mandatory = it.mandatory ? col(C.red, '!') : ' ';
+        console.log(`    ${mandatory} ${col(C.gray, it.id)}  ${field}`);
+        const rulePreview = it.rule.length > 80 ? it.rule.slice(0, 77) + 'â€¦' : it.rule;
+        console.log(`        ${col(C.gray, rulePreview)}`);
+      }
+      console.log('');
+    }
+    return;
+  }
+
+  if (sub === 'show') {
+    const id = args[1];
+    if (!id) {
+      console.error(col(C.red, '  âœ— usage: purpclaw steering show <id>\n'));
+      process.exit(2);
+    }
+    const idx = sr.loadBuiltInIndex();
+    const item = idx.find(i => i.id === id);
+    if (!item) {
+      console.error(col(C.red, `  âœ— no steering item with id "${id}"\n`));
+      process.exit(1);
+    }
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸŽ¯ ' + item.id)}\n`);
+    console.log(`  Authority:  ${col(C.cyan, String(item.authority))} (${Object.entries(sr.AUTHORITY).find(([,v]) => v === item.authority)?.[0] || 'unknown'})`);
+    console.log(`  Scope:      ${col(C.gray, item.scope || 'global')}`);
+    console.log(`  Field:      ${col(C.gray, item.field || 'general')}`);
+    console.log(`  Mandatory:  ${item.mandatory ? col(C.red, 'yes') : col(C.gray, 'no')}`);
+    console.log(`  Applies to: ${col(C.gray, (item.appliesTo || []).join(', '))}`);
+    if (item.condition) console.log(`  Condition:  ${col(C.gray, item.condition)}`);
+    if (item.source)    console.log(`  Source:     ${col(C.gray, item.source)}`);
+    console.log(`\n  Rule:`);
+    console.log(`    ${col(C.white, item.rule)}\n`);
+    return;
+  }
+
+  if (sub === 'resolve') {
+    const opts = parseFlags(args.slice(1));
+    const capsule = sr.resolve({
+      intent:  opts.intent  || 'chat',
+      field:   opts.field   || 'general',
+      project: opts.project || (process.env.PURPCLAW_PROJECT || 'purpclaw'),
+      workflowNode: opts['workflow-node'],
+      soulId:  opts['soul-id'],
+    });
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸŽ¯ Resolved Steering Capsule')}\n`);
+    console.log(`  Field:        ${col(C.gray, capsule.field)}`);
+    console.log(`  Resolved at:  ${col(C.gray, capsule.resolvedAt)}`);
+    console.log(`  Items:        ${col(C.cyan, String(capsule.items.length))}`);
+    console.log(`  Forbids:      ${col(C.yellow, String(capsule.forbids.length))}`);
+    console.log(`  Proofs:       ${col(C.green, String(capsule.proofs.length))}`);
+    console.log(`  Cutoff:       ${col(C.gray, String(capsule.authorityCutoff))}`);
+    console.log('');
+    for (const it of capsule.items) {
+      const authColor = it.authority >= 800 ? C.green : it.authority >= 500 ? C.yellow : C.gray;
+      console.log(`  ${col(authColor, String(it.authority).padStart(3))}  ${it.id}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'check-action') {
+    const kind = args[1];
+    if (!kind) {
+      console.error(col(C.red, '  âœ— usage: purpclaw steering check-action <kind>\n'));
+      process.exit(2);
+    }
+    const opts = parseFlags(args.slice(2));
+    const capsule = sr.resolve({
+      intent:  opts.intent  || 'chat',
+      field:   opts.field   || 'pc-control',
+      project: opts.project || (process.env.PURPCLAW_PROJECT || 'purpclaw'),
+    });
+    const r = sr.applyToAction(capsule, { kind });
+    if (r.allowed) {
+      console.log(col(C.green, `\n  âœ“ action "${kind}" is allowed`));
+      console.log(col(C.gray, `    reason: ${r.reason}\n`));
+      process.exit(0);
+    } else {
+      console.log(col(C.red, `\n  âœ— action "${kind}" is FORBIDDEN`));
+      console.log(col(C.gray, `    reason: ${r.reason}\n`));
+      process.exit(1);
+    }
+  }
+
+  console.error(col(C.red, `  âœ— unknown subcommand: ${sub}\n  try: purpclaw steering help\n`));
+  process.exit(2);
+}
+
+// lib/provider-benchmarks.js (JSONL persistence + per-task aggregation)
+// and the parliamentary pickWithBenchmarks() method.
+async function cmdBench(args) {
+  const bench = require(path.join(PURP_DIR, 'lib', 'provider-benchmarks'));
+  const { ProviderParliament } = require(path.join(PURP_DIR, 'lib', 'provider-parliament'));
+  const sub = (args[0] || 'help').toLowerCase();
+
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    console.log(`\n  ${col(C.magenta + C.bold, 'ðŸ“Š BENCH â€” Provider Benchmarks')}`);
+    console.log('  purpclaw bench summary                            Snapshot of all benchmarks');
+    console.log('  purpclaw bench show <provider> <taskType>          Stats for one provider+task');
+    console.log('  purpclaw bench rank <taskType> <p1,p2,p3>          Rank candidates empirically');
+    console.log('  purpclaw bench record --provider P --task T --success|--failure [--latency-ms N] [--cost N] [--quality 0..1]');
+    console.log('                                                     Record an observation');
+    console.log('  purpclaw bench pick "<task>" [--since-ms N]         Pick via Parliament + empirical');
+    console.log('  purpclaw bench reset                               Wipe history (test-only)');
+    console.log('  purpclaw bench help                                Show this help\n');
+    return;
+  }
+
+  if (sub === 'summary') {
+    const s = bench.summary();
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ“Š Provider Benchmarks')}  ${col(C.gray, `(${s.totalObservations} observations)`)}\n`);
+    if (s.totalObservations === 0) {
+      console.log(`  ${col(C.gray, '(no data â€” record some with `purpclaw bench record ...`')}\n`);
+      return;
+    }
+    if (Object.keys(s.byProvider).length) {
+      console.log(`  ${col(C.white + C.bold, 'by provider:')}`);
+      for (const [p, e] of Object.entries(s.byProvider)) {
+        const sr = (e.successRate * 100).toFixed(0);
+        const color = e.successRate >= 0.8 ? C.green : e.successRate >= 0.5 ? C.yellow : C.red;
+        console.log(`    ${p.padEnd(20)} ${col(color, sr + '%')}  ${col(C.gray, `(${e.successes}/${e.samples})`)}`);
+      }
+      console.log('');
+    }
+    if (Object.keys(s.byTaskType).length) {
+      console.log(`  ${col(C.white + C.bold, 'by task type:')}`);
+      for (const [t, e] of Object.entries(s.byTaskType)) {
+        const sr = (e.successRate * 100).toFixed(0);
+        const color = e.successRate >= 0.8 ? C.green : e.successRate >= 0.5 ? C.yellow : C.red;
+        const top = s.topByTaskType[t];
+        const topStr = top ? col(C.cyan, `top: ${top.provider} (${(top.successRate*100).toFixed(0)}%)`) : '';
+        console.log(`    ${t.padEnd(20)} ${col(color, sr + '%')}  ${col(C.gray, `(${e.successes}/${e.samples})`)} ${topStr}`);
+      }
+      console.log('');
+    }
+    return;
+  }
+
+  if (sub === 'show') {
+    const provider = args[1];
+    const taskType = args[2];
+    if (!provider || !taskType) {
+      console.error(col(C.red, '  âœ— usage: purpclaw bench show <provider> <taskType>\n'));
+      process.exit(2);
+    }
+    const s = bench.scoreFor(provider, taskType, { minSamples: 1 });
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ“Š')} ${provider} / ${taskType}\n`);
+    console.log(`  Samples:      ${col(C.cyan, String(s.samples))}`);
+    console.log(`  Success-rate: ${col(C.cyan, (s.successRate * 100).toFixed(1) + '%')}`);
+    console.log(`  Avg latency:  ${col(C.gray, s.avgLatencyMs.toFixed(0) + 'ms')}`);
+    console.log(`  p95 latency:  ${col(C.gray, s.p95LatencyMs.toFixed(0) + 'ms')}`);
+    console.log(`  Avg cost:     ${col(C.gray, s.avgCostTokens.toFixed(0) + ' tokens')}`);
+    console.log(`  Avg quality:  ${col(C.gray, s.avgQuality != null ? s.avgQuality.toFixed(2) : '(none)')}`);
+    console.log(`  Confidence:   ${col(C.cyan, (s.confidence * 100).toFixed(0) + '%')}\n`);
+    return;
+  }
+
+  if (sub === 'rank') {
+    const taskType = args[1];
+    const list = (args[2] || '').split(',').map(s => s.trim()).filter(Boolean);
+    if (!taskType || !list.length) {
+      console.error(col(C.red, '  âœ— usage: purpclaw bench rank <taskType> <p1,p2,p3>\n'));
+      process.exit(2);
+    }
+    const ranking = bench.getProviderRanking(taskType, list, { minSamples: 1 });
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ“Š Empirical ranking')}  ${col(C.gray, `taskType=${taskType}`)}\n`);
+    for (let i = 0; i < ranking.length; i++) {
+      const r = ranking[i];
+      const medal = i === 0 ? col(C.green, '1st') : i === 1 ? col(C.yellow, '2nd') : col(C.gray, '3rd');
+      console.log(`  ${medal}  ${r.provider.padEnd(18)} composite=${r.composite.toFixed(3)}  succ=${(r.successRate*100).toFixed(0)}%  lat=${r.avgLatencyMs.toFixed(0)}ms  conf=${(r.confidence*100).toFixed(0)}%  n=${r.samples}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'record') {
+    const opts = parseFlags(args.slice(1));
+    if (!opts.provider || !opts.task) {
+      console.error(col(C.red, '  âœ— usage: purpclaw bench record --provider P --task T --success|--failure [--latency-ms N] [--cost N] [--quality 0..1]\n'));
+      process.exit(2);
+    }
+    let success;
+    if (opts.success === true || opts.success === 'true')  success = true;
+    else if (opts.failure === true || opts.failure === 'true') success = false;
+    else { console.error(col(C.red, '  âœ— pass --success or --failure\n')); process.exit(2); }
+    const obs = {
+      provider: opts.provider,
+      taskType: opts.task,
+      success,
+      latencyMs: opts['latency-ms'] || opts.latencyMs ? Number(opts['latency-ms'] || opts.latencyMs) : 0,
+      costTokens: opts.cost ? Number(opts.cost) : 0,
+      qualityScore: opts.quality != null ? Number(opts.quality) : undefined,
+      context: opts.context || null,
+    };
+    const r = bench.record(obs);
+    if (!r.ok) {
+      console.error(col(C.red, `  âœ— record failed: ${r.error}\n`));
+      process.exit(1);
+    }
+    console.log(col(C.green, `\n  âœ“ recorded ${success ? 'success' : 'failure'} for ${opts.provider} / ${opts.task}\n`));
+    return;
+  }
+
+  if (sub === 'pick') {
+    const task = args.slice(1).join(' ').replace(/^["']|["']$/g, '');
+    if (!task) {
+      console.error(col(C.red, '  âœ— usage: purpclaw bench pick "<task>"\n'));
+      process.exit(2);
+    }
+    const opts = parseFlags(args.slice(1).filter(a => a.startsWith('--')));
+    const sinceMs = opts['since-ms'] ? Number(opts['since-ms']) : undefined;
+    const parl = new ProviderParliament();
+    const pick = parl.pickWithBenchmarks(task, { sinceMs });
+    console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ“Š Empirical pick')}\n`);
+    console.log(`  Task:      ${col(C.gray, task)}`);
+    console.log(`  Task-type: ${col(C.gray, pick.taskType)}`);
+    console.log(`  Pick:      ${col(C.green + C.bold, pick.provider || '(none)')}`);
+    console.log(`  Rationale: ${col(C.gray, pick.rationale)}`);
+    if (pick.empirical) {
+      console.log(`  Empirical: ${col(C.gray, pick.empirical.reason)}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'reset') {
+    const ok = bench._resetForTests();
+    console.log(ok ? col(C.yellow, '\n  âš  bench history cleared (test-only)\n') : col(C.red, '\n  âœ— reset failed\n'));
+    return;
+  }
+
+  console.error(col(C.red, `  âœ— unknown subcommand: ${sub}\n  try: purpclaw bench help\n`));
+  process.exit(2);
+}
+
+async function cmdSkillForge(args) {
+  const sf = require(path.join(PURP_DIR, 'lib', 'evolution', 'skill-forge'));
+  const sub = (args[0] || 'help').toLowerCase();
+
+  if (sub === 'help' || sub === '--help' || sub === '-h') {
+    console.log(`\n  ${col(C.magenta + C.bold, 'âš’  SKILL FORGE â€” Commands')}`);
+    console.log('  purpclaw skill-forge run                          Run gap-detector forge pass');
+    console.log('  purpclaw skill-forge list [--status pending|validated|retired]');
+    console.log('      List forged skills (optionally filtered by status).');
+    console.log('  purpclaw skill-forge show <id>                    Show one forged skill + success-rate');
+    console.log('  purpclaw skill-forge attach <id> --trigger "..." [--preconditions "a,b,c"] [--steps "x,y,z"]');
+    console.log('      Attach trigger/preconditions/steps to a forged skill.');
+    console.log('  purpclaw skill-forge record <id> --success|--failure');
+    console.log('      Record an invocation outcome. Auto-evaluates lifecycle.');
+    console.log('  purpclaw skill-forge evaluate <id>                Run lifecycle evaluation (promote/retire).');
+    console.log('  purpclaw skill-forge help                         Show this help.\n');
+    return;
+  }
+
+  if (sub === 'run') {
+    const r = sf.runForgePass();
+    console.log(`\n  ${col(C.cyan + C.bold, 'âš’  Forge pass complete')}`);
+    console.log(`  Jobs surveyed:   ${col(C.gray, String(r.evidenceSummary.jobs))}`);
+    console.log(`  Benchmarks seen: ${col(C.gray, String(r.evidenceSummary.benchmarks))}`);
+    console.log(`  Proposals:       ${col(r.proposals.length ? C.yellow : C.green, String(r.proposals.length))}`);
+    if (r.proposals.length) {
+      for (const p of r.proposals) {
+        console.log(`    ${col(C.cyan, p.id)}  ${col(C.gray, `(${p.kind} / ${p.status})`)}`);
+      }
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'list') {
+    const filterStatus = (args.find(a => a.startsWith('--status=')) || '').slice('--status='.length) || null;
+    const items = sf.listForged(filterStatus ? { status: filterStatus } : {});
+    console.log(`\n  ${col(C.cyan + C.bold, 'âš’  Forged skills')} ${col(C.gray, filterStatus ? `(status=${filterStatus})` : '(all)')}\n`);
+    if (!items.length) {
+      console.log(`  ${col(C.gray, '(none â€” run `purpclaw skill-forge run` to detect gaps)')}\n`);
+      return;
+    }
+    for (const it of items) {
+      const sr = (it.invocationCount || 0) > 0
+        ? `${(it.successRate * 100).toFixed(0)}% (${it.successCount || 0}/${it.invocationCount})`
+        : col(C.gray, 'no outcomes yet');
+      const statusColor = it.status === 'validated' ? C.green
+                       : it.status === 'retired'   ? C.red
+                       : it.status === 'approved'  ? C.green
+                       : C.yellow;
+      console.log(`  ${col(C.cyan, it.id)}`);
+      console.log(`    kind: ${col(C.gray, it.kind)}  status: ${col(statusColor, it.status)}  success-rate: ${sr}`);
+      if (it.trigger) console.log(`    trigger: ${col(C.gray, it.trigger)}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'show') {
+    const id = args[1];
+    if (!id) {
+      console.error(col(C.red, '  âœ— usage: purpclaw skill-forge show <id>\n'));
+      process.exit(2);
+    }
+    const item = sf.getForged(id);
+    if (!item) {
+      console.error(col(C.red, `  âœ— no forged skill with id "${id}"\n`));
+      process.exit(1);
+    }
+    const sr = sf.getSuccessRate(id);
+    console.log(`\n  ${col(C.cyan + C.bold, 'âš’  ' + item.id)}\n`);
+    console.log(`  Kind:         ${col(C.gray, item.kind)}`);
+    console.log(`  Name:         ${col(C.gray, item.name || '(unnamed)')}`);
+    console.log(`  Status:       ${col(C.gray, item.status)}`);
+    console.log(`  Risk:         ${col(C.gray, item.risk || '(unspecified)')}`);
+    if (item.trigger) {
+      console.log(`  Trigger:      ${col(C.gray, item.trigger)}`);
+      if (item.preconditions?.length) {
+        console.log(`  Preconditions:`);
+        for (const p of item.preconditions) console.log(`    - ${col(C.gray, p)}`);
+      }
+      if (item.steps?.length) {
+        console.log(`  Steps:`);
+        for (const s of item.steps) console.log(`    - ${col(C.gray, s)}`);
+      }
+    }
+    if (sr && sr.invocationCount > 0) {
+      console.log(`  Invocations:  ${col(C.cyan, String(sr.invocationCount))}`);
+      console.log(`  Successes:    ${col(C.cyan, String(sr.successCount))}`);
+      console.log(`  Success-rate: ${col(C.cyan, `${(sr.successRate * 100).toFixed(0)}%`)}`);
+      console.log(`  Last outcome: ${col(C.gray, sr.lastOutcome || '(none)')}`);
+    } else {
+      console.log(`  ${col(C.gray, '(no outcomes recorded yet)')}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'attach') {
+    const id = args[1];
+    if (!id) {
+      console.error(col(C.red, '  âœ— usage: purpclaw skill-forge attach <id> --trigger "..." [opts]\n'));
+      process.exit(2);
+    }
+    const opts = parseFlags(args.slice(2));
+    if (!opts.trigger) {
+      console.error(col(C.red, '  âœ— --trigger is required\n'));
+      process.exit(2);
+    }
+    const preconditions = opts.preconditions ? String(opts.preconditions).split(',').map(s => s.trim()).filter(Boolean) : [];
+    const steps = opts.steps ? String(opts.steps).split(',').map(s => s.trim()).filter(Boolean) : [];
+    const r = sf.attachSkillSpec(id, { trigger: opts.trigger, preconditions, steps });
+    if (!r.ok) {
+      console.error(col(C.red, `  âœ— attach failed: ${r.error}\n`));
+      process.exit(1);
+    }
+    console.log(`\n  ${col(C.green, 'âœ“')} attached spec to ${col(C.cyan, r.id)}`);
+    console.log(`  Trigger:      ${col(C.gray, r.spec.trigger)}`);
+    console.log(`  Preconditions: ${col(C.gray, String(r.spec.preconditions.length))}`);
+    console.log(`  Steps:         ${col(C.gray, String(r.spec.steps.length))}\n`);
+    return;
+  }
+
+  if (sub === 'record') {
+    const id = args[1];
+    if (!id) {
+      console.error(col(C.red, '  âœ— usage: purpclaw skill-forge record <id> --success|--failure\n'));
+      process.exit(2);
+    }
+    const opts = parseFlags(args.slice(2));
+    let success;
+    if (opts.success === true || opts.success === 'true')  success = true;
+    else if (opts.failure === true || opts.failure === 'true') success = false;
+    else if (opts.success === false || opts.failure === false) {
+      success = opts.success === false ? false : (opts.failure === false ? false : undefined);
+      if (success === undefined) {
+        console.error(col(C.red, '  âœ— pass exactly one of --success or --failure\n'));
+        process.exit(2);
+      }
+    } else {
+      console.error(col(C.red, '  âœ— pass exactly one of --success or --failure\n'));
+      process.exit(2);
+    }
+    const r = sf.recordOutcome(id, success);
+    if (!r.ok) {
+      console.error(col(C.red, `  âœ— record failed: ${r.error}\n`));
+      process.exit(1);
+    }
+    const lifecycle = sf.evaluateLifecycle(id);
+    const vColor = r.lastOutcome === 'success' ? C.green : C.red;
+    console.log(`\n  ${col(vColor, '\u2713')} recorded ${r.lastOutcome} for ${col(C.cyan, r.id)}`);
+    console.log(`  Invocations:  ${col(C.cyan, String(r.invocationCount))}`);
+    console.log(`  Success-rate: ${col(C.cyan, `${(r.successRate * 100).toFixed(0)}%`)}`);
+    if (lifecycle.action === 'validated') {
+      console.log(`  ${col(C.green + C.bold, '\u2191 auto-validated')} ${col(C.gray, '(promoted to hot path)')}`);
+    } else if (lifecycle.action === 'retired') {
+      console.log(`  ${col(C.red + C.bold, '\u2193 auto-retired')} ${col(C.gray, '(never invoke again)')}`);
+    } else {
+      console.log(`  ${col(C.gray, '(no lifecycle change)')}`);
+    }
+    console.log('');
+    return;
+  }
+
+  if (sub === 'evaluate') {
+    const id = args[1];
+    if (!id) {
+      console.error(col(C.red, '  âœ— usage: purpclaw skill-forge evaluate <id>\n'));
+      process.exit(2);
+    }
+    const r = sf.evaluateLifecycle(id);
+    if (!r.ok) {
+      console.error(col(C.red, `  âœ— evaluate failed: ${r.id}\n`));
+      process.exit(1);
+    }
+    if (r.action === 'validated') {
+      console.log(col(C.green, `\n  \u2191 ${r.id} validated (auto-promoted to hot path)\n`));
+    } else if (r.action === 'retired') {
+      console.log(col(C.red, `\n  \u2193 ${r.id} retired (auto-retired due to low success-rate)\n`));
+    } else {
+      console.log(col(C.gray, `\n  ~ ${r.id} unchanged (thresholds not met)\n`));
+    }
+    return;
+  }
+
+  console.error(col(C.red, `  âœ— unknown subcommand: ${sub}\n  try: purpclaw skill-forge help\n`));
+  process.exit(2);
+}
+
+// â”€â”€ dream â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdDream() {
-  console.log(`\n  ${col(C.magenta + C.bold, '💤 AUTODREAM — Memory Consolidation')}\n`);
+  console.log(`\n  ${col(C.magenta + C.bold, 'ðŸ’¤ AUTODREAM â€” Memory Consolidation')}\n`);
 
   // Try autoDream HTTP server first (port 7895), fall back to memory matrix
   let tried = 'autodream';
@@ -3224,14 +3492,14 @@ async function cmdDream() {
     console.log(col(C.gray, '  Triggering autoDream consolidation cycle (port 7895)...\n'));
     const result = await httpPost(PORTS.dream, '/dream', { force: true }, 30000);
     if (result.status >= 400) {
-      console.error(col(C.red, `  [X] Dream error: ${JSON.stringify(result.body)}\n`));
+      console.error(col(C.red, `  âœ— Dream error: ${JSON.stringify(result.body)}\n`));
       return;
     }
     const r = result.body;
     if (r.skipped) {
-      console.log(`  ${col(C.yellow, '~')} Dream skipped — ${r.skipped}`);
+      console.log(`  ${col(C.yellow, '~')} Dream skipped â€” ${r.skipped}`);
     } else {
-      console.log(`  ${col(C.green, '[OK]')} Dream cycle complete`);
+      console.log(`  ${col(C.green, 'âœ“')} Dream cycle complete`);
       if (r.entriesMerged  !== undefined) console.log(`  Merged     : ${col(C.cyan, String(r.entriesMerged))} entries`);
       if (r.rulesExtracted !== undefined) console.log(`  Rules      : ${col(C.cyan, String(r.rulesExtracted))} extracted`);
       if (r.archived       !== undefined) console.log(`  Archived   : ${col(C.gray, String(r.archived))} old entries`);
@@ -3240,22 +3508,22 @@ async function cmdDream() {
     return;
   } catch (e) {
     if (e.code !== 'ECONNREFUSED') {
-      console.error(col(C.red, `  [X] ${e.message}\n`));
+      console.error(col(C.red, `  âœ— ${e.message}\n`));
       return;
     }
-    // autoDream offline — fall through to memory matrix
+    // autoDream offline â€” fall through to memory matrix
   }
 
   tried = 'memory-matrix';
-  console.log(col(C.gray, '  autoDream offline — falling back to memory matrix (port 7880)...\n'));
+  console.log(col(C.gray, '  autoDream offline â€” falling back to memory matrix (port 7880)...\n'));
   try {
     const result = await httpPost(PORTS.memory, '/dream', { mode: 'full' }, 30000);
     if (result.status >= 400) {
-      console.error(col(C.red, `  [X] Dream cycle error: ${JSON.stringify(result.body)}\n`));
+      console.error(col(C.red, `  âœ— Dream cycle error: ${JSON.stringify(result.body)}\n`));
       return;
     }
     const r = result.body;
-    console.log(`  ${col(C.green, '[OK]')} Dream cycle complete (via memory matrix)`);
+    console.log(`  ${col(C.green, 'âœ“')} Dream cycle complete (via memory matrix)`);
     if (r.phase)        console.log(`  Phase      : ${col(C.cyan, r.phase)}`);
     if (r.consolidated) console.log(`  Consolidated: ${col(C.cyan, String(r.consolidated))} memories`);
     if (r.pruned)       console.log(`  Pruned     : ${col(C.gray, String(r.pruned))} stale memories`);
@@ -3263,19 +3531,19 @@ async function cmdDream() {
     console.log('');
   } catch (e) {
     if (e.code === 'ECONNREFUSED') {
-      console.error(col(C.red, `  [X] Both autoDream (7895) and memory matrix (7880) offline. Run \`purpclaw start\`.\n`));
+      console.error(col(C.red, `  âœ— Both autoDream (7895) and memory matrix (7880) offline. Run \`purpclaw start\`.\n`));
     } else {
-      console.error(col(C.red, `  [X] ${e.message}\n`));
+      console.error(col(C.red, `  âœ— ${e.message}\n`));
     }
   }
 }
 
-// ── forge — create a new lobster agent from a gacha soul draw ────────────────
+// â”€â”€ forge â€” create a new lobster agent from a gacha soul draw â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdLora(args) {
   const sub = (args[0] || 'help').toLowerCase();
   const path_mod = require('path');
 
-  // ── Parse flags ──────────────────────────────────────────────────────
+  // â”€â”€ Parse flags â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const flags = { personal: false, merge: false };
   const cleanArgs = args.filter(a => {
     if (a === '--personal') { flags.personal = true; return false; }
@@ -3285,9 +3553,9 @@ async function cmdLora(args) {
 
   console.log('');
   if (flags.personal) {
-    console.log(`  \\x1b[1m\\x1b[35m🧠  PURPCLAW LORA — PERSONAL PASS\\x1b[0m  \\x1b[90m· training on YOUR corrections\\x1b[0m`);
+    console.log(`  \\x1b[1m\\x1b[35mðŸ§   PURPCLAW LORA â€” PERSONAL PASS\\x1b[0m  \\x1b[90mÂ· training on YOUR corrections\\x1b[0m`);
   } else {
-    console.log(`  \\x1b[1m\\x1b[35m🧠  PURPCLAW LORA\\x1b[0m  \\x1b[90m· LoRA fine-tuning pipeline\\x1b[0m`);
+    console.log(`  \\x1b[1m\\x1b[35mðŸ§   PURPCLAW LORA\\x1b[0m  \\x1b[90mÂ· LoRA fine-tuning pipeline\\x1b[0m`);
   }
   console.log('');
 
@@ -3334,7 +3602,7 @@ async function cmdLora(args) {
     console.log(`  \\x1b[36mgguf:\\x1b[0m            ${fs.existsSync(gguf) ? fs.readdirSync(gguf).filter(f => f.endsWith('.gguf')).length + ' files' : 'none'}`);
     console.log('');
 
-    // ── Personal training data ──────────────────────────────────────
+    // â”€â”€ Personal training data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     let personalStats = null;
     try { personalStats = require(path.join(PURP_DIR, 'lib', 'training', 'personal-dataset')).stats(); }
     catch { personalStats = { corrections: 0, preferences: 0, edits: 0, readyForTraining: false }; }
@@ -3342,32 +3610,32 @@ async function cmdLora(args) {
     const personalTotal = personalStats.corrections + personalStats.preferences + personalStats.edits;
     console.log(`  \\x1b[36mpersonal data:\\x1b[0m   ${personalTotal} examples (${personalStats.corrections} corrections, ${personalStats.preferences} preferences, ${personalStats.edits} edits)`);
     if (personalTotal >= 10) {
-      console.log(`  \\x1b[32m[OK]\\x1b[0m  personal data ready. run: \\x1b[36mpurpclaw lora train --personal\\x1b[0m`);
+      console.log(`  \\x1b[32mâœ“\\x1b[0m  personal data ready. run: \\x1b[36mpurpclaw lora train --personal\\x1b[0m`);
     } else if (personalTotal > 0) {
-      console.log(`  \\x1b[33m⟳\\x1b[0m  collecting personal data... (${personalTotal}/10, need ${10-personalTotal} more)`);
+      console.log(`  \\x1b[33mâŸ³\\x1b[0m  collecting personal data... (${personalTotal}/10, need ${10-personalTotal} more)`);
     } else {
-      console.log(`  \\x1b[90m[o]\\x1b[0m  no personal data yet. use PurpClaw normally — corrections auto-capture`);
+      console.log(`  \\x1b[90mâ—‹\\x1b[0m  no personal data yet. use PurpClaw normally â€” corrections auto-capture`);
     }
     console.log('');
     if (examples < 10 && personalTotal < 10) {
-      console.log(`  \\x1b[33m[!]\\x1b[0m  need at least 10 examples to train (general or personal). let the runtime accumulate.`);
+      console.log(`  \\x1b[33mâš \\x1b[0m  need at least 10 examples to train (general or personal). let the runtime accumulate.`);
     }
     console.log('');
     return;
   }
 
   if (sub === 'train') {
-    // ── Personal training pass ──────────────────────────────────────
+    // â”€â”€ Personal training pass â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if (flags.personal) {
       const pd = require(path.join(PURP_DIR, 'lib', 'training', 'personal-dataset'));
       const exported = pd.exportToFile('chatml');
       if (!exported.ready) {
-        console.log(`  \\x1b[33m[!]\\x1b[0m  ${exported.reason}`);
-        console.log(`  \\x1b[90mUse PurpClaw normally — every correction auto-captures to ${pd.FEEDBACK_DIR}\\x1b[0m`);
+        console.log(`  \\x1b[33mâš \\x1b[0m  ${exported.reason}`);
+        console.log(`  \\x1b[90mUse PurpClaw normally â€” every correction auto-captures to ${pd.FEEDBACK_DIR}\\x1b[0m`);
         console.log('');
         return;
       }
-      console.log(`  \\x1b[36mpersonal dataset:\\x1b[0m ${exported.count} examples → ${exported.path}`);
+      console.log(`  \\x1b[36mpersonal dataset:\\x1b[0m ${exported.count} examples â†’ ${exported.path}`);
       console.log('');
 
       // Write a personal-specific training script wrapper
@@ -3392,34 +3660,34 @@ async function cmdLora(args) {
       child.on('exit', code => {
         console.log('');
         if (code === 0) {
-          console.log(`  \\x1b[32m[OK]\\x1b[0m  Personal LoRA training complete.`);
+          console.log(`  \\x1b[32mâœ“\\x1b[0m  Personal LoRA training complete.`);
           console.log(`  \\x1b[90mYour model now knows your preferences. Every correction made it smarter.\\x1b[0m`);
         } else {
-          console.log(`  \\x1b[31m[X]\\x1b[0m  personal training exited with code ${code}`);
+          console.log(`  \\x1b[31mâœ—\\x1b[0m  personal training exited with code ${code}`);
         }
         console.log('');
       });
       return;
     }
 
-    // ── General training pass ───────────────────────────────────────
+    // â”€â”€ General training pass â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const scriptPath = path.join(__dirname, '..', 'scripts', 'lora-train.py');
     const py = process.env.PYTHON_BIN || 'C:/Users/Admin/AppData/Local/Programs/Python/Python311/python.exe';
     const cmd = [py, scriptPath, ...cleanArgs.slice(1)];
     console.log(`  \\x1b[36mstarting:\\x1b[0m  ${cmd.join(' ')}\\n`);
-    const child = trackedSpawn(cmd[0], cmd.slice(1), {
+    const child = trackedSpawn(cmd[0], cmd.slice(1), { 
       tag: 'lora-train',
       timeoutMs: 30 * 60_000,  // 30 min for LoRA training
-      stdio: 'inherit',
-      cwd: process.cwd()
+      stdio: 'inherit', 
+      cwd: process.cwd() 
     });
     child.on('exit', code => {
       console.log('');
       if (code === 0) {
-        console.log(`  \\x1b[32m[OK]\\x1b[0m  LoRA pipeline complete.`);
-        console.log(`  \\x1b[90mnext:\\x1b[0m  pm2 restart purpclaw-api  \\x1b[90m— to pick up the new LLM_MODEL\\x1b[0m`);
+        console.log(`  \\x1b[32mâœ“\\x1b[0m  LoRA pipeline complete.`);
+        console.log(`  \\x1b[90mnext:\\x1b[0m  pm2 restart purpclaw-api  \\x1b[90mâ€” to pick up the new LLM_MODEL\\x1b[0m`);
       } else {
-        console.log(`  \\x1b[31m[X]\\x1b[0m  pipeline exited with code ${code}`);
+        console.log(`  \\x1b[31mâœ—\\x1b[0m  pipeline exited with code ${code}`);
       }
       console.log('');
     });
@@ -3429,14 +3697,728 @@ async function cmdLora(args) {
   console.log(`  \x1b[33munknown subcommand. try:\x1b[0m  purpclaw lora help\n`);
 }
 
+// â”€â”€ Web search (MiniMax Code's "Web Search & Data" support capability) â”€â”€â”€â”€â”€â”€â”€
+
+async function cmdWebsearch(args) {
+  const sub = (args[0] || 'help').toLowerCase();
+  if (sub === 'help' || sub === '-h' || sub === '--help') {
+    console.log('\n  purpclaw websearch â€” real Bing search + HTTP fetch (no API key)\n'
+      + '  Subcommands:\n'
+      + '    purpclaw websearch search <query>      Bing web search, returns top 10 results\n'
+      + '    purpclaw websearch fetch <url>          Fetch a URL, return title + text\n'
+      + '    purpclaw websearch ping <url>          Probe a URL (status + latency)\n'
+      + '    purpclaw websearch help                Show this help\n');
+    return;
+  }
+
+  let driver;
+  try {
+    ({ WebsearchDriver: driver } = require('../lib/control/drivers/websearch.js'));
+  } catch (e) {
+    console.error(`  \x1b[31merror loading websearch.js:\x1b[0m ${e.message}`);
+    return;
+  }
+  const ws = new driver();
+  const rest = args.slice(1).join(' ').trim();
+
+  if (sub === 'search') {
+    if (!rest) { console.log('  \x1b[33musage:\x1b[0m  purpclaw websearch search <query>'); return; }
+    const r = await ws.execute({ capability: 'websearch.search', args: { query: rest, limit: 10 } });
+    if (r.status !== 'SUCCESS') { console.log(`  \x1b[31mfail:\x1b[0m ${r.error}`); return; }
+    console.log(`  \x1b[36m${r.resultCount}\x1b[0m results for "\x1b[1m${r.query}\x1b[0m" (${r.durationMs}ms)\n`);
+    for (const hit of r.results) {
+      console.log(`    \x1b[1m${hit.title}\x1b[0m`);
+      console.log(`      ${hit.url}`);
+      if (hit.snippet) console.log(`      ${hit.snippet.slice(0, 140)}${hit.snippet.length > 140 ? 'â€¦' : ''}`);
+      console.log('');
+    }
+    return;
+  }
+
+  if (sub === 'fetch') {
+    if (!rest) { console.log('  \x1b[33musage:\x1b[0m  purpclaw websearch fetch <url>'); return; }
+    const r = await ws.execute({ capability: 'websearch.fetch', args: { url: rest } });
+    if (r.status !== 'SUCCESS') { console.log(`  \x1b[31mfail:\x1b[0m ${r.error}`); return; }
+    console.log(`  \x1b[36m${r.statusCode}\x1b[0m ${r.finalUrl} (${r.textLength} chars, ${r.durationMs}ms)`);
+    if (r.title) console.log(`  title: \x1b[1m${r.title}\x1b[0m`);
+    console.log(`  ---`);
+    console.log(r.text.split('\n').map(l => '  ' + l).join('\n'));
+    return;
+  }
+
+  if (sub === 'ping') {
+    if (!rest) { console.log('  \x1b[33musage:\x1b[0m  purpclaw websearch ping <url>'); return; }
+    const r = await ws.execute({ capability: 'websearch.ping', args: { url: rest } });
+    console.log(`  status: \x1b[36m${r.statusCode}\x1b[0m  latency: \x1b[36m${r.latencyMs}ms\x1b[0m  url: ${r.finalUrl}`);
+    if (r.error) console.log(`  \x1b[31merror:\x1b[0m ${r.error}`);
+    return;
+  }
+
+  console.log(`  \x1b[33munknown subcommand:\x1b[0m ${sub}. try: purpclaw websearch help`);
+}
+
+// â”€â”€ Team formation (Hermes / MiniMax-style multi-agent) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+async function cmdTeam(args) {
+  // subcommands: form <task...> | help
+  const sub = (args[0] || 'help').toLowerCase();
+  if (sub === 'help' || sub === '-h' || sub === '--help') {
+    console.log('\n  purpclaw team â€” form an agent team for a task\n'
+      + '  Subcommands:\n'
+      + '    purpclaw team form <task>     Form a team (lead/executor/reviewer/supporter) for a task\n'
+      + '    purpclaw team help             Show this help\n\n'
+      + '  Stolen from Hermes harness and MiniMax Code harness.\n'
+      + '  Scans the 95-soul registry for keyword matches and assigns roles by division.\n');
+    return;
+  }
+  if (sub === 'form') {
+    const task = args.slice(1).join(' ').trim();
+    if (!task) {
+      console.log('  \x1b[33musage:\x1b[0m  purpclaw team form <task>');
+      return;
+    }
+    let tf;
+    try {
+      ({ TeamFormation: tf } = require('../lib/team-formation.js'));
+    } catch (e) {
+      console.error(`  \x1b[31merror loading team-formation.js:\x1b[0m ${e.message}`);
+      return;
+    }
+    const team = new tf();
+    const r = team.formTeam(task, { teamSize: 4 });
+    console.log(`  task: \x1b[36m"${task}"\x1b[0m`);
+    console.log(`  ${r.rationale}\n`);
+    for (const m of r.members) {
+      const role = m.role.padEnd(10);
+      const score = String(m.score).padStart(3);
+      const tags = m.matchedTerms.length ? `matched=${m.matchedTerms.join(',')}` : 'matched=-';
+      console.log(`    [${role}] ${m.name.padEnd(20)}  score=${score}  division=${(m.division||'?').padEnd(12)}  ${tags}`);
+    }
+    if (r.members.length === 0) {
+      console.log('    (no soul matched the task â€” try different keywords)');
+    }
+    return;
+  }
+  console.log(`  \x1b[33munknown subcommand:\x1b[0m ${sub}. try: purpclaw team help`);
+}
+
+// â”€â”€ Team roster (persistent role identity) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+async function cmdTeamRoster(args) {
+  // subcommands: list | show | clear | form-persist | help
+  const sub = (args[0] || 'help').toLowerCase();
+  const { TeamRoster, ROSTER_SCHEMA, HISTORY_CAP, VALID_ROLES } = require('../lib/team-roster.js');
+  const { TeamFormation, formPersistentTeam } = require('../lib/team-formation.js');
+  const defaultRoot = path.join(PURP_DIR, '.purpclaw', 'teams');
+
+  function parsePath(args, startIdx) {
+    for (let i = startIdx; i < args.length; i++) {
+      if (args[i] === '--path') return args[i + 1];
+      if (args[i] === '--root') return require('../lib/team-roster.js').defaultRosterPath(args[i + 1]);
+    }
+    return require('../lib/team-roster.js').defaultRosterPath(defaultRoot);
+  }
+
+  if (sub === 'help' || sub === '-h' || sub === '--help') {
+    console.log('\n  purpclaw team-roster â€” persistent role identity for formed teams\n'
+      + '  Stolen from MiniMax\'s "Agent Teams with stable role identity".\n\n'
+      + '  Subcommands:\n'
+      + '    purpclaw team-roster list                          Show the current roster\n'
+      + '    purpclaw team-roster show [--path <file>]          Show full roster file contents\n'
+      + '    purpclaw team-roster form-persist <task...>        Form a team + persist roles to disk\n'
+      + '    purpclaw team-roster clear [--path <file>]         Wipe the roster file\n'
+      + '    purpclaw team-roster help                          Show this help\n\n'
+      + `  Default path: ${defaultRoot}/team-roster.json\n`
+      + `  Schema: ${ROSTER_SCHEMA}  History cap: ${HISTORY_CAP}  Roles: ${[...VALID_ROLES].join(', ')}\n`);
+    return;
+  }
+
+  if (sub === 'list') {
+    const p = parsePath(args, 1);
+    const r = new TeamRoster({ path: p });
+    if (r.exists()) r.load();
+    const s = r.summary();
+    console.log(`  roster: ${s.path}`);
+    console.log(`  updated: ${new Date(s.updatedAt).toISOString()}  filled: ${s.filledSlots}/${s.totalSlots}  history: ${s.historySize}/${s.historyCap}`);
+    for (const [role, entry] of Object.entries(s.activeRoles)) {
+      if (entry) {
+        const since = new Date(entry.since).toISOString();
+        console.log(`    [${role.padEnd(10)}] ${entry.name.padEnd(24)}  id=${entry.soulId}  since=${since}`);
+      } else {
+        console.log(`    [${role.padEnd(10)}] (empty)`);
+      }
+    }
+    if (!r.exists()) console.log('  (file does not exist yet â€” no persistent roles)');
+    return;
+  }
+
+  if (sub === 'show') {
+    const p = parsePath(args, 1);
+    const r = new TeamRoster({ path: p });
+    if (!r.exists()) {
+      console.log('  (file does not exist yet)');
+      return;
+    }
+    r.load();
+    const s = r.summary();
+    console.log(`  path: ${s.path}`);
+    console.log(`  activeRoles: ${JSON.stringify(s.activeRoles, null, 2)}`);
+    console.log(`  history (last ${s.historySize}):`);
+    for (const h of r.history.slice(-10)) {
+      console.log(`    ${new Date(h.formedAt).toISOString()}  "${h.task}"  members=${h.members.length}  replaced=${h.replaced.length}`);
+    }
+    return;
+  }
+
+  if (sub === 'form-persist') {
+    // Collect task words up to the first --flag.
+    const taskArgs = [];
+    for (let i = 1; i < args.length; i++) {
+      if (args[i].startsWith('--')) break;
+      taskArgs.push(args[i]);
+    }
+    const task = taskArgs.join(' ').trim();
+    if (!task) {
+      console.log('  \x1b[33musage:\x1b[0m  purpclaw team-roster form-persist <task> [--path <file>] [--root <dir>]');
+      return;
+    }
+    const p = parsePath(args, 1);
+    const tf = new TeamFormation();
+    const r = new TeamRoster({ path: p });
+    r.load();
+    const out = formPersistentTeam(task, { teamFormation: tf, roster: r, teamSize: 4 });
+    const f = out.formation.formation;
+    console.log(`  task: \x1b[36m"${task}"\x1b[0m`);
+    console.log(`  ${out.formation.rationale}\n`);
+    if (f.lead) console.log(`    lead:      ${f.lead.name} (id=${f.lead.id}, score=${f.lead.score})`);
+    if (f.executor) console.log(`    executor:  ${f.executor.name} (id=${f.executor.id}, score=${f.executor.score})`);
+    if (f.reviewer) console.log(`    reviewer:  ${f.reviewer.name} (id=${f.reviewer.id}, score=${f.reviewer.score})`);
+    if (f.supporter) console.log(`    supporter: ${f.supporter.name} (id=${f.supporter.id}, score=${f.supporter.score})`);
+    console.log(`\n  persisted to: ${p}`);
+    return;
+  }
+
+  if (sub === 'clear') {
+    const p = parsePath(args, 1);
+    const r = new TeamRoster({ path: p });
+    if (r.exists()) {
+      r.load();
+      r.clear();
+      r.save();
+      console.log(`  wiped: ${p}`);
+    } else {
+      console.log(`  (nothing to clear â€” file does not exist: ${p})`);
+    }
+    return;
+  }
+
+  console.log(`  \x1b[33munknown subcommand:\x1b[0m ${sub}. try: purpclaw team-roster help`);
+}
+
+// â”€â”€ Hierarchical Skills (MiniMax steal â€” typed-edge composition) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+async function cmdSkillGraph(args) {
+  // subcommands: list | plan <id> | validate | help
+  const sub = (args[0] || 'help').toLowerCase();
+  const { SkillGraph, loadSeedCatalog } = require('../lib/evolution/skill-graph.js');
+  const path = require('path');
+
+  if (sub === 'help' || sub === '-h' || sub === '--help') {
+    console.log('\n  purpclaw skill-graph â€” Hierarchical Skills (typed-edge composition)\n'
+      + '  Stolen from MiniMax\'s "Hierarchical Skills (composable + chainable)" (2026-08).\n\n'
+      + '  Subcommands:\n'
+      + '    purpclaw skill-graph list                       List all skills in the catalog\n'
+      + '    purpclaw skill-graph plan <target-skill-id>     Plan the ordered chain to reach a skill\n'
+      + '    purpclaw skill-graph validate                   Check for cycles + missing requirements\n'
+      + '    purpclaw skill-graph help                       Show this help\n\n'
+      + '  Seed catalog: data/registries/skills/catalog.json (7 skills, 5-stage release pipeline)\n');
+    return;
+  }
+
+  if (sub === 'list') {
+    let explicitPath;
+    for (let i = 1; i < args.length; i++) {
+      if (args[i] === '--catalog') { explicitPath = args[i + 1]; break; }
+    }
+    const g = loadSeedCatalog({ path: explicitPath });
+    if (!g) {
+      console.log('  (catalog not found)');
+      return;
+    }
+    console.log(`  ${g.size} skills\n`);
+    for (const s of g.list()) {
+      const req = s.requires.length ? s.requires.join(', ') : '(none)';
+      const prod = s.produces.length ? s.produces.join(', ') : '(none)';
+      console.log(`    ${s.id.padEnd(20)}  requires: ${req.padEnd(28)}  produces: ${prod}`);
+    }
+    return;
+  }
+
+  if (sub === 'plan') {
+    const target = args[1];
+    if (!target) { console.log('  usage: purpclaw skill-graph plan <target-skill-id>'); return; }
+    const g = loadSeedCatalog();
+    if (!g) { console.log('  (catalog not found)'); return; }
+    try {
+      const chain = g.plan(target);
+      console.log(`  plan for "${target}": ${chain.length} skill(s) in order\n`);
+      for (let i = 0; i < chain.length; i++) {
+        const skill = g.get(chain[i]);
+        console.log(`    ${(i + 1).toString().padStart(2)}. ${chain[i].padEnd(20)}  produces: ${skill.produces.join(', ') || '(none)'}`);
+      }
+    } catch (err) {
+      console.log(`  \x1b[31merror:\x1b[0m ${err.message}`);
+    }
+    return;
+  }
+
+  if (sub === 'validate') {
+    const g = loadSeedCatalog();
+    if (!g) { console.log('  (catalog not found)'); return; }
+    const v = g.validate();
+    if (v.ok) {
+      console.log('  \x1b[32mok\x1b[0m â€” no cycles, no missing requirements');
+    } else {
+      console.log('  \x1b[31mfail\x1b[0m');
+      if (v.cycles.length) {
+        console.log(`  ${v.cycles.length} cycle(s):`);
+        for (const c of v.cycles) console.log(`    ${c.join(' -> ')}`);
+      }
+      if (v.missing.length) {
+        console.log(`  ${v.missing.length} missing requirement(s):`);
+        for (const [sid, req] of v.missing) console.log(`    ${sid} requires "${req}" (no skill with that id produces that name)`);
+      }
+    }
+    return;
+  }
+
+  console.log(`  \x1b[33munknown subcommand:\x1b[0m ${sub}. try: purpclaw skill-graph help`);
+}
+
+// â”€â”€ Sub-agent bridges (claude-code, codex, dsh, custom) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+async function cmdSubagent(args) {
+  // subcommands: list | health | call <bridge> <task...>
+  const sub = (args[0] || 'list').toLowerCase();
+  if (sub === 'help' || sub === '-h' || sub === '--help') {
+    console.log('\n  purpclaw subagent â€” delegate tasks to external agent CLIs\n'
+      + '  Subcommands:\n'
+      + '    purpclaw subagent list              List registered bridges\n'
+      + '    purpclaw subagent health            Show health of all bridges\n'
+      + '    purpclaw subagent call <bridge> <task>   Invoke a bridge with a task\n\n'
+      + '  Bridges:\n'
+      + '    claude-code    Claude Code (Anthropic) â€” "claude -p <task>"\n'
+      + '    codex          Codex (OpenAI)         â€” "codex exec <task>"\n'
+      + '    dsh            DeepSeek Harness       â€” "dsh run <task>"\n');
+    return;
+  }
+
+  const bridgeMod = require('../lib/subagent-bridge.js');
+  const bridges = bridgeMod.list;
+  const get = bridgeMod.get;
+  const healthAll = bridgeMod.healthAll;
+
+  if (sub === 'list') {
+    const items = bridges();
+    console.log(`  registered bridges: ${items.length}\n`);
+    for (const b of items) {
+      console.log(`    ${b.name.padEnd(20)}  ${b.displayName.padEnd(30)}  bin=${b.bin}`);
+    }
+    return;
+  }
+
+  if (sub === 'health') {
+    const results = healthAll();
+    for (const h of results) {
+      const icon = h.status === 'HEALTHY' ? '\x1b[32mâ—\x1b[0m' : '\x1b[31mâ—\x1b[0m';
+      const ver = h.version || '(no version)';
+      const where = h.binPath || '(not found)';
+      console.log(`    ${icon} ${h.name.padEnd(20)}  status=${h.status.padEnd(8)}  v=${ver.slice(0, 40).padEnd(40)}  ${where}`);
+    }
+    return;
+  }
+
+  if (sub === 'call') {
+    const bridgeName = args[1];
+    const task = args.slice(2).join(' ').trim();
+    if (!bridgeName || !task) {
+      console.log('  \x1b[33musage:\x1b[0m  purpclaw subagent call <bridge> <task>');
+      return;
+    }
+    const b = get(bridgeName);
+    if (!b) {
+      console.log(`  \x1b[31munknown bridge:\x1b[0m ${bridgeName}`);
+      console.log(`  \x1b[33mavailable:\x1b[0m ${bridges().map(x => x.name).join(', ')}`);
+      return;
+    }
+    const h = b.health();
+    if (h.status !== 'HEALTHY') {
+      console.log(`  \x1b[31mbinary not available:\x1b[0m ${b.bin} (${h.problems.map(p => p.code).join(', ')})`);
+      return;
+    }
+    console.log(`  invoking \x1b[36m${bridgeName}\x1b[0m with task: ${task.slice(0, 80)}${task.length > 80 ? 'â€¦' : ''}`);
+    const r = await b.call(task, { timeoutMs: 300000 });
+    console.log(`  status: ${r.ok ? '\x1b[32mok\x1b[0m' : '\x1b[31mfail\x1b[0m'}  exit=${r.exitCode}  duration=${r.durationMs}ms  mode=${r.raw && r.raw.mode}`);
+    if (r.text) console.log(`  text: ${r.text.slice(0, 500)}${r.text.length > 500 ? 'â€¦' : ''}`);
+    if (r.json) console.log(`  json: ${JSON.stringify(r.json).slice(0, 500)}`);
+    if (r.error) console.log(`  \x1b[31merror:\x1b[0m ${r.error}`);
+    return;
+  }
+
+  console.log(`  \x1b[33munknown subcommand:\x1b[0m ${sub}. try: purpclaw subagent help`);
+}
+
+// â”€â”€ Forge Code (DeepSeek's code-runtime â€” PTC: one program, N tool calls) â”€â”€â”€â”€â”€
+
+async function cmdForgeCode(args) {
+  // subcommands: run --program <src> [--cwd <dir>] | run --task <text> | demo | help
+  const sub = (args[0] || 'help').toLowerCase();
+  if (sub === 'help' || sub === '-h' || sub === '--help') {
+    console.log('\n  purpclaw forge-code â€” DeepSeek-style Code Mode (PTC)\n'
+      + '  The model writes ONE program that calls N tools in a single execution,\n'
+      + '  instead of N separate LLM round-trips. Same Service Definition as\n'
+      + '  DeepSeek Harness\'s @deepseek-ai/dsh-code-runtime (MIT, 2026-06).\n\n'
+      + '  Subcommands:\n'
+      + '    purpclaw forge-code run --program <src>   Run a JS program against tool bindings\n'
+      + '    purpclaw forge-code demo                  Built-in demo (read, write, edit, glob, grep)\n\n'
+      + '  Optional flags:\n'
+      + '    --cwd <dir>      Working directory (default: process.cwd())\n'
+      + '    --timeout <ms>   Hard timeout (default: 10000ms)\n'
+      + '    --output <bytes> Max output bytes (default: 256KB)\n\n'
+      + '  Bindings exposed: tools.{read_file, write_file, edit_file, glob, grep, run_command}\n'
+      + '  Error class:      ToolCallError (program-side instanceof works)\n');
+    return;
+  }
+
+  let effectiveSub = sub;
+  if (sub === 'demo') {
+    const program = [
+      "// One program = one LLM round-trip = many tool calls.",
+      "const found = await tools.glob({ pattern: 'lib/forge/*.js' });",
+      "const sample = found.files[0];",
+      "const r = await tools.read_file({ path: sample });",
+      "return { matched: found.files.length, sample, sample_bytes: r.bytes, sample_lines: r.lines };",
+    ].join('\n');
+    args = ['run', '--program', program];
+    effectiveSub = 'run';
+  }
+
+  if (effectiveSub === 'run') {
+    const codeRuntime = require('../lib/forge/code-runtime-vm.js');
+    const bindings = require('../lib/forge/code-runtime-bindings.js');
+    let program = null;
+    let cwd = process.cwd();
+    let timeoutMs = 10000;
+    let outputBytes = 256 * 1024;
+    for (let i = 1; i < args.length; i++) {
+      const a = args[i];
+      if (a === '--program') { program = args[++i]; }
+      else if (a === '--cwd') { cwd = args[++i]; }
+      else if (a === '--timeout') { timeoutMs = parseInt(args[++i], 10); }
+      else if (a === '--output') { outputBytes = parseInt(args[++i], 10); }
+    }
+    if (!program) {
+      console.log('  \x1b[33m--program is required\x1b[0m');
+      console.log('  \x1b[33mtip: try `purpclaw forge-code demo`\x1b[0m');
+      return;
+    }
+    const rt = new codeRuntime.VMCodeRuntime({ maxOutputBytes: outputBytes, defaultTimeoutMs: timeoutMs });
+    const toolsNs = bindings.buildToolsNamespace({ cwd });
+    const t0 = Date.now();
+    const r = await rt.run({ program, bindings: [toolsNs] });
+    const elapsed = Date.now() - t0;
+    console.log(`  purpclaw forge-code â€” vm-context backend (timeout=${timeoutMs}ms, maxOutput=${outputBytes}B)\n`);
+    if (r.error) {
+      console.log(`  status: \x1b[31mfail\x1b[0m  kind=${r.error.kind}  elapsed=${elapsed}ms`);
+      console.log(`  error: ${r.error.message.split('\n').slice(0, 6).join('\n         ')}`);
+    } else {
+      console.log(`  status: \x1b[32mok\x1b[0m  elapsed=${elapsed}ms  logs=${r.logs.length}`);
+    }
+    if (r.logs && r.logs.length) {
+      console.log('  --- logs ---');
+      for (const l of r.logs.slice(0, 10)) console.log(`    ${l}`);
+    }
+    if (r.value !== undefined) {
+      console.log('  --- value ---');
+      console.log('  ' + JSON.stringify(r.value, null, 2).split('\n').join('\n  '));
+    }
+    return;
+  }
+
+  console.log(`  \x1b[33munknown subcommand:\x1b[0m ${sub}. try: purpclaw forge-code help`);
+}
+
+// â”€â”€ Session log (DeepSeek's append-only JSONL with fork + replay) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+async function cmdSessionLog(args) {
+  // subcommands: new | list | show | append | fork | replay | help
+  const sub = (args[0] || 'help').toLowerCase();
+  const sessionLog = require('../lib/session-log.js');
+  const { SessionLog, newSessionId, listSessions } = sessionLog;
+  const defaultRoot = path.join(PURP_DIR, '.purpclaw', 'sessions');
+
+  function parseRoot(args, startIdx) {
+    for (let i = startIdx; i < args.length; i++) {
+      if (args[i] === '--root') return args[i + 1];
+    }
+    return defaultRoot;
+  }
+
+  if (sub === 'help' || sub === '-h' || sub === '--help') {
+    console.log('\n  purpclaw session-log â€” append-only JSONL with header + seq contiguity\n'
+      + '  Stolen from DeepSeek Harness\'s @deepseek-ai/dsh-session-persistence-jsonl (MIT, 2026-08).\n\n'
+      + '  Subcommands:\n'
+      + '    purpclaw session-log new [--root <dir>]    Create a new session, print the id\n'
+      + '    purpclaw session-log list [--root <dir>]   List all sessions under root\n'
+      + '    purpclaw session-log show <id>             Show header + every event in seq order\n'
+      + '    purpclaw session-log append <id> <type> <json-data>   Append one event\n'
+      + '    purpclaw session-log fork <id> --new-id <nid>          Fork a session\n'
+      + '    purpclaw session-log replay <id>          Replay events (prints each line)\n\n'
+      + '  Default root: ' + defaultRoot + '\n');
+    return;
+  }
+
+  if (sub === 'new') {
+    const root = parseRoot(args, 1);
+    const id = newSessionId();
+    const log = new SessionLog({ root, id, cwd: process.cwd() });
+    await log.create();
+    console.log(`  created session: ${id}\n  root: ${root}\n  path: ${log.filePath()}`);
+    return;
+  }
+
+  if (sub === 'list') {
+    const root = parseRoot(args, 1);
+    const ids = listSessions(root);
+    console.log(`  ${ids.length} session(s) under ${root}\n`);
+    for (const id of ids) console.log(`    ${id}`);
+    return;
+  }
+
+  if (sub === 'show') {
+    const id = args[1];
+    if (!id) { console.log('  usage: purpclaw session-log show <id>'); return; }
+    const root = parseRoot(args, 2);
+    const log = new SessionLog({ root, id });
+    const view = await log.read();
+    console.log(`  session: ${id}`);
+    console.log(`  parent:  ${view.header.parentSession || '(top-level)'}`);
+    console.log(`  created: ${new Date(view.header.createdAt).toISOString()}`);
+    console.log(`  events:  ${view.count}\n`);
+    for (const ev of view.events) {
+      const t = new Date(ev.ts).toISOString();
+      console.log(`    [${ev.seq}] ${t}  ${ev.type}  ${JSON.stringify(ev.data).slice(0, 120)}`);
+    }
+    return;
+  }
+
+  if (sub === 'append') {
+    const id = args[1];
+    const type = args[2];
+    // Collect data args up to the first --flag (so --root doesn't leak in).
+    const dataArgs = [];
+    let rootStartIdx = args.length;
+    for (let i = 3; i < args.length; i++) {
+      if (args[i].startsWith('--')) { rootStartIdx = i; break; }
+      dataArgs.push(args[i]);
+    }
+    const dataStr = dataArgs.join(' ');
+    if (!id || !type || !dataStr) {
+      console.log('  usage: purpclaw session-log append <id> <type> <json-data>');
+      return;
+    }
+    let data;
+    try { data = JSON.parse(dataStr); }
+    catch (err) { console.log(`  \x1b[31minvalid JSON for data:\x1b[0m ${err.message}`); return; }
+    const root = parseRoot(args, rootStartIdx);
+    const log = new SessionLog({ root, id });
+    const seq = await log.append({ type, data });
+    console.log(`  appended seq=${seq}  type=${type}  path=${log.filePath()}`);
+    return;
+  }
+
+  if (sub === 'fork') {
+    const id = args[1];
+    let newId = null;
+    for (let i = 2; i < args.length; i++) {
+      if (args[i] === '--new-id') newId = args[i + 1];
+    }
+    if (!id || !newId) {
+      console.log('  usage: purpclaw session-log fork <id> --new-id <nid>');
+      return;
+    }
+    const root = parseRoot(args, 4);
+    const log = new SessionLog({ root, id });
+    const child = await log.fork({ newId });
+    console.log(`  forked: ${id}  ->  ${newId}\n  child path: ${child.filePath()}`);
+    return;
+  }
+
+  if (sub === 'replay') {
+    const id = args[1];
+    if (!id) { console.log('  usage: purpclaw session-log replay <id>'); return; }
+    const root = parseRoot(args, 2);
+    const log = new SessionLog({ root, id });
+    const summary = await log.replay({
+      onHeader: (h) => console.log(`  [header]  id=${h.id}  parent=${h.parentSession || '(none)'}  created=${new Date(h.createdAt).toISOString()}`),
+      onEvent: (ev) => console.log(`  [${ev.seq}]  ${new Date(ev.ts).toISOString()}  ${ev.type}  ${JSON.stringify(ev.data).slice(0, 200)}`),
+    });
+    console.log(`\n  replayed ${summary.replayed} event(s).`);
+    return;
+  }
+
+  console.log(`  \x1b[33munknown subcommand:\x1b[0m ${sub}. try: purpclaw session-log help`);
+}
+
+// â”€â”€ Forge Loop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+async function cmdForgeStatus() {
+  const CHECKPOINT_DIR = path.join(PURP_DIR, '.purpclaw', 'forge', 'checkpoints');
+  const INTERRUPT_FILE = path.join(PURP_DIR, '.purpclaw', 'forge', 'interrupt');
+
+  let latestCp = null;
+  let latestTs = 0;
+  try {
+    const files = fs.readdirSync(CHECKPOINT_DIR).filter(f => f.startsWith('cp-') && f.endsWith('.json'));
+    for (const file of files) {
+      const stat = fs.statSync(path.join(CHECKPOINT_DIR, file));
+      if (stat.mtimeMs > latestTs) {
+        latestTs = stat.mtimeMs;
+        latestCp = file;
+      }
+    }
+  } catch {
+    // checkpoint dir doesn't exist yet
+  }
+
+  const isInterrupted = fs.existsSync(INTERRUPT_FILE);
+
+  if (!latestCp) {
+    console.log('\n  Forge Loop â€” no checkpoints found.\n');
+    if (isInterrupted) console.log('  ' + col(C.yellow, 'âš  Interrupt flag is set. Clear with:') + ' purpclaw forge interrupt --clear\n');
+    return;
+  }
+
+  const cp = JSON.parse(fs.readFileSync(path.join(CHECKPOINT_DIR, latestCp), 'utf8'));
+  const started = cp.ts ? new Date(cp.ts).toLocaleString() : 'unknown';
+  const elapsed = cp.ts ? Math.floor((Date.now() - cp.ts) / 1000) : 0;
+  const mins = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
+
+  console.log('\n  ' + col(C.cyan + C.bold, 'âš™ Forge Loop â€” Status'));
+  console.log('  ' + col(C.dim, 'State') + '     : ' + (isInterrupted ? col(C.yellow, 'INTERRUPTED') : cp.data.state || 'unknown'));
+  console.log('  ' + col(C.dim, 'Checkpoint') + ' : ' + latestCp.replace('.json', ''));
+  console.log('  ' + col(C.dim, 'Started') + '   : ' + started + ' (' + mins + 'm ' + secs + 's ago)');
+  console.log('  ' + col(C.dim, 'Iteration') + ' : ' + cp.data.iteration);
+  console.log('  ' + col(C.dim, 'Goal') + '      : ' + cp.data.goal);
+  console.log('  ' + col(C.dim, 'Tool calls') + ' : ' + (cp.data.toolHistory || []).length);
+  console.log('  ' + col(C.dim, 'Last tool') + '  : ' + (cp.data.toolHistory || []).at(-1)?.tool?.name || 'none');
+  if (isInterrupted) console.log('  ' + col(C.yellow, '  âš  Interrupt flag set â€” loop will pause at end of current iteration.\n'));
+  else console.log('');
+}
+
+async function cmdForgeInterrupt() {
+  const INTERRUPT_FILE = path.join(PURP_DIR, '.purpclaw', 'forge', 'interrupt');
+
+  if (process.argv.includes('--clear')) {
+    try { fs.unlinkSync(INTERRUPT_FILE); } catch {}
+    console.log('\n  ' + col(C.green, 'âœ“ Interrupt flag cleared.\n'));
+    return;
+  }
+
+  fs.writeFileSync(INTERRUPT_FILE, JSON.stringify({ loopId: 'cli', ts: Date.now() }), 'utf8');
+  console.log('\n  ' + col(C.yellow, 'âš  Forge Loop interrupt sent.'));
+  console.log('  ' + col(C.dim, 'Loop will pause at the end of the current iteration.\n'));
+}
+
+async function cmdForgeAutonomous(args, taskArg) {
+  console.log(`\n  ${col(C.magenta + C.bold, 'âš™ forge Loop â€” Autonomous Mode')}\n`);
+  console.log(`  ${col(C.dim, 'Loading ForgeLoop...')}`);
+  try {
+    const { ForgeLoop } = require('../lib/forge/loop');
+    const llmProvider = require('../lib/llm-provider');
+
+    // Wrap llmProvider.complete to match the { chat(promptString) } interface ForgeLoop expects.
+    // _plan() passes a plain string prompt. Use complete() which returns plain text with
+    // embedded JSON. (MiniMax's chat() API returns code-agent output we can't parse.)
+    const llmClient = {
+      chat: async (prompt) => {
+        return llmProvider.complete(prompt, {}, '');
+      },
+      summarize: async (text) => {
+        // Truncate to first 200 chars for summary
+        return llmProvider.complete('Summarize this in one sentence: ' + text.slice(0, 500), {}, '');
+      },
+    };
+
+    const task = taskArg || args.find(a => !a.startsWith('-')) || 'autonomous task';
+    console.log(`  ${col(C.green, 'âœ“')} Loaded. Starting loop for: "${task}"\n`);
+
+    const loop = new ForgeLoop({
+      goal: task,
+      llmClient,
+      maxIterations: 50,
+      checkpointInterval: 10,
+    });
+
+    loop.on('iteration', (state) => {
+      process.stdout.write(
+        `\r  [${col(C.cyan, `iter ${state.iteration}`)}] ${state.phase} â€” ${state.message || ''}   `
+      );
+    });
+
+    loop.on('complete', (result) => {
+      console.log(`\n\n  ${col(C.green + C.bold, 'âœ“ Forge Loop complete!')}`);
+      console.log(`  ${col(C.dim, 'Iterations')}: ${result.iterations}`);
+      console.log(`  ${col(C.dim, 'Edits')}: ${result.editsApplied}`);
+      console.log(`  ${col(C.dim, 'Result')}: ${result.summary}\n`);
+    });
+
+    loop.on('error', (err) => {
+      console.error(`\n\n  ${col(C.red, 'âœ— Forge Loop error:')} ${err.message}`);
+    });
+
+    await loop.run();
+  } catch (e) {
+    console.error(`  ${col(C.red, 'âœ— Failed to start Forge Loop:')} ${e.message}\n`);
+    if (e.stack) console.error(col(C.gray, e.stack.split('\n').slice(0, 5).join('\n')));
+  }
+}
+
 async function cmdForge(args) {
-  console.log(`\n  ${col(C.magenta + C.bold, '🦞 PERSONA FORGE — Soul Draw & Agent Creation')}\n`);
+  // â”€â”€ Autonomous Forge Loop mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // purpclaw forge "task description" --autonomous
+  // purpclaw forge status
+  // purpclaw forge interrupt
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log('\n  ' + col(C.magenta + C.bold, 'âš™ Forge â€” Commands'));
+    console.log('  purpclaw forge "task" --autonomous   Start autonomous loop');
+    console.log('  purpclaw forge status               Check loop status');
+    console.log('  purpclaw forge interrupt            Pause running loop');
+    console.log('  purpclaw forge interrupt --clear   Clear interrupt flag\n');
+    return;
+  }
+  if (args[0] === 'status' || args[0] === '--status') {
+    return cmdForgeStatus();
+  }
+  if (args[0] === 'interrupt' || args[0] === '--interrupt' || args[0] === '-i') {
+    return cmdForgeInterrupt();
+  }
+
+  const isAutonomous = args.includes('--autonomous') || args.includes('-a') || args.includes('forge');
+  const taskArg = args.find(a => !a.startsWith('-') && a.length > 10 && a.includes(' '));
+  if (isAutonomous || taskArg) {
+    return cmdForgeAutonomous(args, taskArg);
+  }
+
+  // â”€â”€ Gacha Soul Draw mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  console.log(`\n  ${col(C.magenta + C.bold, 'ðŸ¦ž PERSONA FORGE â€” Soul Draw & Agent Creation')}\n`);
 
   let forgeLib = null;
   try {
     forgeLib = require(path.join(PURP_DIR, 'lib', 'persona-forge.js'));
   } catch (e) {
-    console.error(col(C.red, `  [X] persona-forge.js not found: ${e.message}\n`));
+    console.error(col(C.red, `  âœ— persona-forge.js not found: ${e.message}\n`));
     return;
   }
 
@@ -3446,12 +4428,12 @@ async function cmdForge(args) {
   try {
     soul = forgeLib.drawSoul();
   } catch (e) {
-    console.error(col(C.red, `  [X] Gacha failed: ${e.message}\n  Is Python available? Set PYTHON_BIN in .env.\n`));
+    console.error(col(C.red, `  âœ— Gacha failed: ${e.message}\n  Is Python available? Set PYTHON_BIN in .env.\n`));
     return;
   }
 
   // Display soul draw
-  console.log(`  ${col(C.cyan + C.bold, '✦ Soul Draw')}`);
+  console.log(`  ${col(C.cyan + C.bold, 'âœ¦ Soul Draw')}`);
   console.log(`  ${col(C.dim, 'Former Life')} : ${soul.life}`);
   console.log(`  ${col(C.dim, 'Reason')}      : ${soul.reason}`);
   console.log(`  ${col(C.dim, 'Vibe')}        : ${soul.vibe}`);
@@ -3461,9 +4443,9 @@ async function cmdForge(args) {
 
   // Suggest names
   const suggestions = forgeLib.suggestNames(soul);
-  console.log(`  ${col(C.cyan + C.bold, '✦ Name Candidates')}`);
+  console.log(`  ${col(C.cyan + C.bold, 'âœ¦ Name Candidates')}`);
   suggestions.forEach((s, i) => {
-    console.log(`  ${col(C.yellow, String(i + 1))}. ${col(C.bold, s.name)} (${s.strategy}) — ${s.why}`);
+    console.log(`  ${col(C.yellow, String(i + 1))}. ${col(C.bold, s.name)} (${s.strategy}) â€” ${s.why}`);
   });
   console.log('');
 
@@ -3486,17 +4468,17 @@ async function cmdForge(args) {
   try {
     result = forgeLib.forge(agentName, soul);
   } catch (e) {
-    console.error(col(C.red, `  [X] Forge failed: ${e.message}\n`));
+    console.error(col(C.red, `  âœ— Forge failed: ${e.message}\n`));
     return;
   }
 
   // Report
-  console.log(`  ${col(C.green, '[OK]')} Agent forged: ${col(C.bold, agentName)} (${result.slug})`);
+  console.log(`  ${col(C.green, 'âœ“')} Agent forged: ${col(C.bold, agentName)} (${result.slug})`);
   console.log(`  ${col(C.dim, 'Directory')} : ${result.dir}`);
-  result.files.forEach(f => console.log(`  ${col(C.gray, '·')} ${f}`));
+  result.files.forEach(f => console.log(`  ${col(C.gray, 'Â·')} ${f}`));
   console.log('');
-  console.log(`  ${col(C.cyan + C.bold, '✦ Avatar Prompt')} (paste into Gemini, ChatGPT, or Midjourney)`);
-  console.log(col(C.gray, '  ─────────────────────────────────────────────'));
+  console.log(`  ${col(C.cyan + C.bold, 'âœ¦ Avatar Prompt')} (paste into Gemini, ChatGPT, or Midjourney)`);
+  console.log(col(C.gray, '  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€'));
   console.log(result.avatarPrompt.split('\n').slice(0, 8).map(l => `  ${col(C.dim, l)}`).join('\n'));
   console.log(col(C.gray, '  ... (full prompt in skills/' + result.slug + '/avatar-prompt.txt)'));
 
@@ -3507,11 +4489,11 @@ async function cmdForge(args) {
   } catch {}
 
   console.log('');
-  console.log(`  ${col(C.green, 'Done.')} ${col(C.bold, agentName)} is ready — dispatch with: ${col(C.cyan, `purpclaw run "${agentName} <task>"`)}`);
+  console.log(`  ${col(C.green, 'Done.')} ${col(C.bold, agentName)} is ready â€” dispatch with: ${col(C.cyan, `purpclaw run "${agentName} <task>"`)}`);
   console.log('');
 }
 
-// ── init wizard (interactive first-run) ─────────────────────────────────────
+// â”€â”€ init wizard (interactive first-run) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdInitWizard(args) {
   // Belt-and-brace: redact every byte written to stdout/stderr for the entire
   // wizard run. Catches accidental leaks from provider error bodies, llm SDK
@@ -3570,16 +4552,17 @@ async function cmdInitWizard(args) {
     stdin.resume();
   });
 
-  // ── Provider pick ──
+  // â”€â”€ Provider pick â”€â”€
   console.log(col(C.gray, '  Pick which LLM your harness should call. You can change this any time in .env.\n'));
   const providers = [
-    { key: 'minimax',   label: 'MiniMax (M2.7) — recommended, has a generous tier' },
+    { key: 'minimax',   label: 'MiniMax (M2.7) â€” recommended, has a generous tier' },
   { key: 'anthropic', label: 'Anthropic Claude' },
   { key: 'gemini',    label: 'Google Gemini' },
   { key: 'openai',    label: 'OpenAI (GPT-4o etc.)' },
     { key: 'kimi',      label: 'Kimi / Moonshot' },
     { key: 'groq',      label: 'Groq (fast inference)' },
     { key: 'deepseek',  label: 'DeepSeek' },
+    { key: 'openrouter',label: 'OpenRouter (access 200+ models with one key)' },
     { key: 'ollama',    label: 'Ollama (fully local, no key needed)' },
     { key: 'custom',    label: 'Custom (paste an OpenAI-compatible URL)' },
   ];
@@ -3594,7 +4577,7 @@ async function cmdInitWizard(args) {
   }
   const provider = providers[providerIdx];
 
-  // ── Key (skip for local providers) ──
+  // â”€â”€ Key (skip for local providers) â”€â”€
   let apiKey = '';
   let baseUrl = '';
   let model = '';
@@ -3608,8 +4591,8 @@ async function cmdInitWizard(args) {
       const redactor = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
       const result = redactor.sanitizeApiKey(apiKey);
       if (result.warnings.length) {
-        console.log(col(C.yellow, '  [!]  key sanitiser noticed:'));
-        for (const w of result.warnings) console.log(col(C.gray, `     · ${w}`));
+        console.log(col(C.yellow, '  âš   key sanitiser noticed:'));
+        for (const w of result.warnings) console.log(col(C.gray, `     Â· ${w}`));
       }
       apiKey = result.value;
       console.log(col(C.gray, `  Stored as: ${redactor.maskForDisplay(apiKey)}  (length ${apiKey.length})`));
@@ -3617,17 +4600,17 @@ async function cmdInitWizard(args) {
     model   = await ask('Model name:');
   } else {
     apiKey = await askSecret(`API key for ${provider.key} (input hidden, paste & press enter):`);
-    // ── Sanitize + validate the pasted key ────────────────────────────────────
+    // â”€â”€ Sanitize + validate the pasted key â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     {
       const redactor = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
       const result = redactor.sanitizeApiKey(apiKey);
       if (result.warnings.length) {
-        console.log(col(C.yellow, `  [!]  key sanitiser noticed:`));
-        for (const w of result.warnings) console.log(col(C.gray, `     · ${w}`));
+        console.log(col(C.yellow, `  âš   key sanitiser noticed:`));
+        for (const w of result.warnings) console.log(col(C.gray, `     Â· ${w}`));
       }
       apiKey = result.value;
       if (!result.ok) {
-        console.log(col(C.red, `  [X] key looks malformed (length ${apiKey.length}); proceeding but auth will likely fail.`));
+        console.log(col(C.red, `  âœ— key looks malformed (length ${apiKey.length}); proceeding but auth will likely fail.`));
         console.log(col(C.gray, '     Re-run: purpclaw init --wizard'));
       }
       console.log(col(C.gray, `  Stored as: ${redactor.maskForDisplay(apiKey)}  (length ${apiKey.length})`));
@@ -3642,11 +4625,11 @@ async function cmdInitWizard(args) {
     if (provider.key === 'openrouter') model = await ask('Model name:', 'anthropic/claude-3.5-haiku');
   }
 
-  // ── Companion seed ──
+  // â”€â”€ Companion seed â”€â”€
   const userName = process.env.USERNAME || process.env.USER || 'wanderer';
-  const seed = await ask('Companion seed (anything — controls species/eye/hat):', userName);
+  const seed = await ask('Companion seed (anything â€” controls species/eye/hat):', userName);
 
-  // ── Persist .env ──
+  // â”€â”€ Persist .env â”€â”€
   function setEnvKey(body, key, value) {
     if (!value) return body;
     const lines = body.split(/\r?\n/);
@@ -3670,7 +4653,7 @@ async function cmdInitWizard(args) {
   if (model)    envBody = setEnvKey(envBody, 'LLM_MODEL', model);
   if (seed && !existingEnv.PURPCLAW_MOCHI_SEED) envBody = setEnvKey(envBody, 'PURPCLAW_MOCHI_SEED', seed);
   fs.writeFileSync(envPath, envBody.trim() + '\n', 'utf8');
-  console.log(`\n  ${col(C.green, '✔')} Wrote ${path.relative(PURP_DIR, envPath)}\n`);
+  console.log(`\n  ${col(C.green, 'âœ”')} Wrote ${path.relative(PURP_DIR, envPath)}\n`);
 
   // Re-export into current process so subsequent steps see the new vars
   process.env.LLM_PROVIDER = provider.key;
@@ -3679,18 +4662,18 @@ async function cmdInitWizard(args) {
   if (model)   process.env.LLM_MODEL    = model;
   if (seed)    process.env.PURPCLAW_MOCHI_SEED = seed;
 
-  // ── Hatch companion ──
+  // â”€â”€ Hatch companion â”€â”€
   try {
     const mochiLib = require(path.join(PURP_DIR, 'lib', 'mochi'));
     const mochi = mochiLib.hatchMochi(seed);
     console.log(col(C.magenta, '\n  Hatching your companion...\n'));
     mochiLib.renderSprite(mochi, 0).forEach(l => console.log('  ' + col(C.magenta + C.bold, l)));
-    console.log(`\n  ${col(C.cyan, mochi.name)} — ${col(C.gray, mochi.species + ' · ' + (mochi.rarity || 'common'))}${mochi.shiny ? col(C.yellow, '  ✨ shiny') : ''}\n`);
+    console.log(`\n  ${col(C.cyan, mochi.name)} â€” ${col(C.gray, mochi.species + ' Â· ' + (mochi.rarity || 'common'))}${mochi.shiny ? col(C.yellow, '  âœ¨ shiny') : ''}\n`);
   } catch (e) {
     console.log(col(C.yellow, `  Could not hatch companion now: ${e.message} (we'll try again on first \`purpclaw mochi\`)\n`));
   }
 
-  // ── Smoke-test the LLM (skip for local providers) ──
+  // â”€â”€ Smoke-test the LLM (skip for local providers) â”€â”€
   if (apiKey || provider.key === 'ollama') {
     const spin = spinner(`testing ${provider.key} connectivity...`).start();
     try {
@@ -3699,49 +4682,48 @@ async function cmdInitWizard(args) {
       if (out && String(out).toLowerCase().includes('ready')) {
         spin.succeed(`${provider.key} answered`);
       } else {
-        spin.warn(`${provider.key} responded but did not say "ready" — that's usually fine, just unusual`);
+        spin.warn(`${provider.key} responded but did not say "ready" â€” that's usually fine, just unusual`);
       }
     } catch (e) {
       const redactor = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
       const safeMsg = redactor.redact(String(e.message || '')).slice(0, 200);
       spin.fail(`${provider.key} test failed: ${safeMsg}`);
       console.log(col(C.yellow, '  Provider config saved, but authentication failed.'));
-      console.log(col(C.gray, '  Your key may be invalid or malformed — double-check at the provider dashboard.'));
+      console.log(col(C.gray, '  Your key may be invalid or malformed â€” double-check at the provider dashboard.'));
       console.log(col(C.gray, '  Re-test later with `purpclaw doctor`, or re-run `purpclaw init --wizard`.'));
     }
   }
 
 rl.close();
 
-  // ── Offer to boot ──
+  // â”€â”€ Offer to boot â”€â”€
   console.log('');
   const rl2 = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: isTTY });
   const boot = await new Promise(r => {
-    if (!isTTY) return r(false);  // non-interactive — skip
+    if (!isTTY) return r(false);  // non-interactive â€” skip
     rl2.question(col(C.cyan + C.bold, '  Boot the swarm now? ') + col(C.gray, '[Y/n] '), ans => r(ans !== 'n' && ans !== 'N'));
   });
   rl2.close();
 
   if (boot) {
     console.log(col(C.gray, '\n  Starting PURPCLAW...\n'));
-    // Use trackedSpawn — purpclaw start uses PM2 internally, so services
+    // Use trackedSpawn â€” purpclaw start uses PM2 internally, so services
     // survive even after this CLI parent exits. No detached: true needed.
     trackedSpawn(process.execPath, [path.join(PURP_DIR, 'bin', 'purpclaw.js'), 'start'], {
       tag: 'purpclaw-boot',
-      timeoutMs: 0,  // no timeout — PM2 keeps this alive
+      timeoutMs: 0,  // no timeout â€” PM2 keeps this alive
       cwd: PURP_DIR,
       stdio: 'inherit',
     });
     console.log(col(C.cyan, '  PURPCLAW is booting in the background.'));
     console.log(col(C.gray, '  Watch: purpclaw status'));
-    console.log(col(C.gray, '  Web:   http://localhost:3030\n'));
+    console.log(col(C.gray, '  Web:   http://localhost:3000\n'));
   }
 
-  console.log(col(C.green + C.bold, '  ✔  PURPCLAW IS READY\n'));
+  console.log(col(C.green + C.bold, '  âœ”  PURPCLAW IS READY\n'));
   console.log(col(C.gray, '  Next:'));
   console.log(`    ${col(C.cyan, 'purpclaw status')}      live dashboard`);
   console.log(`    ${col(C.cyan, 'purpclaw mochi')}      chat with your companion`);
-  console.log(`    ${col(C.red,   'purpclaw awaken')}      DO NOT PRESS — the machine breathes`);
   console.log(`    ${col(C.cyan, 'purpclaw doctor')}     health check`);
   console.log(`    ${col(C.cyan, 'purpclaw run "<task>"')} dispatch an agent task\n`);
   } finally {
@@ -3750,7 +4732,7 @@ rl.close();
   }
 }
 
-// ── init ─────────────────────────────────────────────────────────────────────
+// â”€â”€ init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdInit(args) {
   if (args.includes('--wizard')) return cmdInitWizard(args);
   banner();
@@ -3760,14 +4742,14 @@ async function cmdInit(args) {
   const issues = [];
   const checks = [];
 
-  // ── 1. Node version ──────────────────────────────────────────────────────────
+  // â”€â”€ 1. Node version â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const nodeVer = parseInt(process.versions.node.split('.')[0], 10);
   const nodeOk  = nodeVer >= 18;
   checks.push({ label: `Node.js v${process.versions.node}`, ok: nodeOk,
                 hint: nodeOk ? '' : 'Need Node 18+. Install from nodejs.org.' });
   if (!nodeOk) issues.push('Upgrade Node.js to v18 or later');
 
-  // ── 2. PM2 ───────────────────────────────────────────────────────────────────
+  // â”€â”€ 2. PM2 â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   let pm2Ok = false;
   // No shell: pm2 is invoked via the platform-correct binary directly.
   try {
@@ -3778,12 +4760,12 @@ async function cmdInit(args) {
   checks.push({ label: 'PM2', ok: pm2Ok, hint: pm2Ok ? '' : 'Run: npm install -g pm2' });
   if (!pm2Ok) issues.push('Install PM2 globally: npm install -g pm2');
 
-  // ── 3. ecosystem.config.js ───────────────────────────────────────────────────
+  // â”€â”€ 3. ecosystem.config.js â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const ecoOk = fs.existsSync(ECOSYSTEM);
   checks.push({ label: 'ecosystem.config.js', ok: ecoOk,
                 hint: ecoOk ? '' : `Missing at ${ECOSYSTEM}` });
 
-  // ── 4. .env file ─────────────────────────────────────────────────────────────
+  // â”€â”€ 4. .env file â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const envPath = path.join(PURP_DIR, '.env');
   let envExists = fs.existsSync(envPath);
   let envVars   = {};
@@ -3798,7 +4780,7 @@ async function cmdInit(args) {
   checks.push({ label: '.env file', ok: envExists,
                 hint: envExists ? '' : `Create one at ${envPath} (see --template flag)` });
 
-  // ── 5. LLM Provider ──────────────────────────────────────────────────────────
+  // â”€â”€ 5. LLM Provider â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const provider = (envVars.LLM_PROVIDER || '').toLowerCase();
   const apiKey   = envVars.LLM_API_KEY  || '';
   const local    = provider === 'ollama' || provider === 'lmstudio';
@@ -3810,7 +4792,7 @@ async function cmdInit(args) {
     issues.push('LLM_PROVIDER not set in .env');
   } else if (noKeyNeeded) {
     checks.push({ label: `LLM provider: ${provider}`, ok: true,
-                  hint: `Local provider — no API key required` });
+                  hint: `Local provider â€” no API key required` });
   } else if (!apiKey) {
     checks.push({ label: `LLM provider: ${provider}`, ok: false,
                   hint: `Set LLM_API_KEY in .env for ${provider}` });
@@ -3821,7 +4803,7 @@ async function cmdInit(args) {
                   hint: `Key: ${masked}` });
   }
 
-  // ── 6. Swarm provider (optional) ─────────────────────────────────────────────
+  // â”€â”€ 6. Swarm provider (optional) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const swarmProvider = (envVars.SWARM_PROVIDER || '').toLowerCase();
   const swarmKey      = envVars.SWARM_API_KEY || '';
   if (swarmProvider && swarmProvider !== provider) {
@@ -3833,7 +4815,7 @@ async function cmdInit(args) {
     if (!swarmOk) issues.push(`SWARM_API_KEY not set for swarm provider "${swarmProvider}"`);
   }
 
-  // ── 7. Service connectivity (if stack is running) ─────────────────────────────
+  // â”€â”€ 7. Service connectivity (if stack is running) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const coreServices = [
     { name: 'orchestrator', port: PORTS.orchestrator },
     { name: 'tower',        port: PORTS.tower },
@@ -3847,8 +4829,8 @@ async function cmdInit(args) {
 
   console.log(col(C.bold, '  CHECKS\n'));
   for (const c of checks) {
-    const icon = c.ok ? col(C.green, '  [OK]') : col(C.red, '  [X]');
-    const hint = c.hint ? col(C.gray, `  ← ${c.hint}`) : '';
+    const icon = c.ok ? col(C.green, '  âœ“') : col(C.red, '  âœ—');
+    const hint = c.hint ? col(C.gray, `  â† ${c.hint}`) : '';
     console.log(`${icon}  ${c.label}${hint}`);
   }
 
@@ -3857,23 +4839,23 @@ async function cmdInit(args) {
     console.log(`\n${col(C.bold, '  SERVICES (running)')}`)
     for (const r of svcResults) {
       const s = r.value || { name: '?', ok: false };
-      const icon = s.ok ? col(C.green, '  [OK]') : col(C.gray, '  ·');
+      const icon = s.ok ? col(C.green, '  âœ“') : col(C.gray, '  Â·');
       console.log(`${icon}  ${s.name.padEnd(16)}${col(C.gray, s.ok ? 'online' : 'offline')}`);
     }
   } else {
-    console.log(col(C.gray, '\n  (Services not running yet — run `purpclaw start` after setup)'));
+    console.log(col(C.gray, '\n  (Services not running yet â€” run `purpclaw start` after setup)'));
   }
 
-  // ── Result ───────────────────────────────────────────────────────────────────
+  // â”€â”€ Result â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   console.log('');
   if (issues.length === 0) {
-    console.log(col(C.green + C.bold, '  [OK] All checks passed!\n'));
-    console.log(`  ${col(C.cyan,  'purpclaw start')}   — boot the full stack`);
-    console.log(`  ${col(C.cyan,  'purpclaw chat')}    — open the REPL`);
-    console.log(`  ${col(C.cyan,  'purpclaw run "<task>"')} — send a task to the swarm`);
+    console.log(col(C.green + C.bold, '  âœ“ All checks passed!\n'));
+    console.log(`  ${col(C.cyan,  'purpclaw start')}   â€” boot the full stack`);
+    console.log(`  ${col(C.cyan,  'purpclaw chat')}    â€” open the REPL`);
+    console.log(`  ${col(C.cyan,  'purpclaw run "<task>"')} â€” send a task to the swarm`);
   } else {
-    console.log(col(C.yellow + C.bold, `  [!] ${issues.length} issue${issues.length > 1 ? 's' : ''} to fix:\n`));
-    for (const issue of issues) console.log(`  ${col(C.yellow, '·')}  ${issue}`);
+    console.log(col(C.yellow + C.bold, `  âš  ${issues.length} issue${issues.length > 1 ? 's' : ''} to fix:\n`));
+    for (const issue of issues) console.log(`  ${col(C.yellow, 'Â·')}  ${issue}`);
 
     if (!envExists) {
       console.log(col(C.gray, '\n  Generate a .env template:'));
@@ -3882,13 +4864,13 @@ async function cmdInit(args) {
   }
   console.log('');
 
-  // ── --template flag: write a starter .env ────────────────────────────────────
+  // â”€â”€ --template flag: write a starter .env â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (args.includes('--template') && !envExists) {
     const template = [
       '# PURPCLAW Environment Configuration',
       '# Generated by purpclaw init --template',
       '',
-      '# ── LLM Provider ──────────────────────────────────────────────',
+      '# â”€â”€ LLM Provider â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€',
       '# Any OpenAI-compatible provider. Free options below.',
       'LLM_PROVIDER=openai',
       'LLM_API_KEY=sk-...',
@@ -3903,68 +4885,61 @@ async function cmdInit(args) {
       '# LLM_API_KEY=sk-or-...',
       '# LLM_MODEL=anthropic/claude-3.5-haiku',
       '',
-      '# ── Swarm Engine (heavy reasoning) ────────────────────────────',
-      '# Defaults to main provider if not set. Kimi K2.6 recommended (100-wide fanout).',
+      '# â”€â”€ Swarm Engine (heavy reasoning) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€',
+      '# Defaults to main provider if not set. Kimi K2 recommended.',
       '# SWARM_PROVIDER=kimi',
       '# SWARM_API_KEY=',
-      '# SWARM_MODEL=kimi-k2-6',
+      '# SWARM_MODEL=kimi-k2-5',
       '',
-      '# ── Internal ───────────────────────────────────────────────────',
+      '# â”€â”€ Internal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€',
       'INTERNAL_API_KEY=',
-      'PURPCLAW_GATEWAY_URL=ws://127.0.0.1:18789',
+      'OPENCLAW_GATEWAY=ws://127.0.0.1:18789',
     ].join('\n');
 
     try {
       fs.writeFileSync(envPath, template, 'utf8');
-      console.log(col(C.green, `  [OK] .env template written to ${envPath}`));
+      console.log(col(C.green, `  âœ“ .env template written to ${envPath}`));
       console.log(col(C.gray,  '  Edit it with your API key, then run `purpclaw init` again to verify.\n'));
     } catch (e) {
-      console.error(col(C.red, `  [X] Could not write .env: ${e.message}\n`));
+      console.error(col(C.red, `  âœ— Could not write .env: ${e.message}\n`));
     }
   }
 }
 
-// ── logs ──────────────────────────────────────────────────────────────────────
+// â”€â”€ logs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdLogs(args) {
-  // `logs` is shared between PM2 services and background jobs. A background job
-  // owns the name only if agent_work/bg-sessions/<id>.json exists, so PM2 service
-  // logs keep working unchanged for every other name.
-  const bgId = (args[0] || '').trim();
-  if (bgId && fs.existsSync(path.join(PURP_DIR, 'agent_work', 'bg-sessions', bgId + '.json'))) {
-    return cmdBg(['logs', ...args]);
-  }
   const service = args[0] ? `purpclaw-${args[0]}` : '--merge';
   const child = trackedSpawn('pm2', ['logs', service, '--lines', '50'], {
     tag: 'pm2-logs',
     timeoutMs: 0,  // user controls duration via Ctrl+C
     stdio : 'inherit',
-    shell : false,  // no shell needed — pm2 is in PATH
+    shell : false,  // no shell needed â€” pm2 is in PATH
     cwd   : PURP_DIR,
   });
   child.on('close', code => process.exit(code || 0));
   child.on('error', () => {
-    console.error(col(C.red, '  [X] PM2 not found. Install: npm install -g pm2'));
+    console.error(col(C.red, '  âœ— PM2 not found. Install: npm install -g pm2'));
     process.exit(1);
   });
 }
 
-// ── chat ──────────────────────────────────────────────────────────────────────
+// â”€â”€ chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdChat(args) {
   banner();
 
-  // Check orchestrator health — advise if offline
+  // Check orchestrator health â€” advise if offline
   const orchOnline = await ping(PORTS.orchestrator, '/health');
   const memOnline  = await ping(PORTS.memory, '/health');
 
   console.log(`  Orchestrator ${tick(orchOnline)}   Memory ${tick(memOnline)}\n`);
 
   if (!orchOnline) {
-    console.log(col(C.yellow, '  [!] Orchestrator is offline — agent routing unavailable.'));
+    console.log(col(C.yellow, '  âš  Orchestrator is offline â€” agent routing unavailable.'));
     console.log(col(C.gray,   '  Run `purpclaw start` in another terminal to enable full swarm.\n'));
   }
 
   if (!fs.existsSync(NANOCLAW)) {
-    console.error(col(C.red, `  [X] nanoclaw.js not found at ${NANOCLAW}`));
+    console.error(col(C.red, `  âœ— nanoclaw.js not found at ${NANOCLAW}`));
     process.exit(1);
   }
 
@@ -3988,12 +4963,12 @@ async function cmdChat(args) {
 
   child.on('close', code => process.exit(code || 0));
   child.on('error', e => {
-    console.error(col(C.red, `  [X] Failed to launch nanoclaw: ${e.message}`));
+    console.error(col(C.red, `  âœ— Failed to launch nanoclaw: ${e.message}`));
     process.exit(1);
   });
 }
 
-// ── look ─────────────────────────────────────────────────────────────────────
+// â”€â”€ look â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdLook(args) {
   const screenLook = require(path.join(PURP_DIR, 'lib', 'screen-look.js'));
 
@@ -4021,7 +4996,7 @@ async function cmdLook(args) {
     }
     spin.succeed(`${info.count} monitor${info.count !== 1 ? 's' : ''} detected`);
     for (const s of info.screens) {
-      console.log(`  ${col(C.cyan, `Screen ${s.index}`)}  ${s.width}×${s.height}  ${col(C.gray, `@ (${s.left}, ${s.top})`)}`);
+      console.log(`  ${col(C.cyan, `Screen ${s.index}`)}  ${s.width}Ã—${s.height}  ${col(C.gray, `@ (${s.left}, ${s.top})`)}`);
     }
     return;
   }
@@ -4041,7 +5016,7 @@ async function cmdLook(args) {
       return;
     }
     indices = Array.from({ length: info.count }, (_, i) => i + 1);
-    spin.succeed(`${info.count} monitor${info.count !== 1 ? 's' : ''} found — capturing all`);
+    spin.succeed(`${info.count} monitor${info.count !== 1 ? 's' : ''} found â€” capturing all`);
   }
 
   console.log('');
@@ -4056,7 +5031,7 @@ async function cmdLook(args) {
       continue;
     }
 
-    spin.succeed(`Screen ${idx}  (${r.width}×${r.height})`);
+    spin.succeed(`Screen ${idx}  (${r.width}Ã—${r.height})`);
 
     if (r.description) {
       const lines = r.description.split('\n');
@@ -4064,7 +5039,7 @@ async function cmdLook(args) {
     } else if (noVision) {
       console.log(col(C.gray, '  [vision skipped]'));
     } else {
-      console.log(col(C.gray, '  [no vision — provider may not support images, or no key set]'));
+      console.log(col(C.gray, '  [no vision â€” provider may not support images, or no key set]'));
     }
 
     if (r.objectCount > 0) {
@@ -4075,22 +5050,22 @@ async function cmdLook(args) {
     console.log('');
   }
 
-  console.log(col(C.gray, '  Context saved → agent_work/.screen_context.json'));
+  console.log(col(C.gray, '  Context saved â†’ agent_work/.screen_context.json'));
   const ws = screenLook.readWorkspace();
   if (ws?.summary) console.log(col(C.gray, `  Workspace -> ${ws.summary}`));
   console.log(col(C.gray, '  Agents will read this before their next task.\n'));
 }
 
-// ── config ────────────────────────────────────────────────────────────────────
+// â”€â”€ config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdConfig(args) {
   const envPath = path.join(PURP_DIR, '.env');
 
-  // ── known config keys with metadata
+  // â”€â”€ known config keys with metadata
   const CONFIG_KEYS = [
-    { key: 'LLM_PROVIDER',   label: 'LLM Provider',        choices: ['nvidia','minimax','anthropic','gemini','openai','kimi','groq','deepseek','together','mistral','ollama','lmstudio'],  secret: false },
+    { key: 'LLM_PROVIDER',   label: 'LLM Provider',        choices: ['anthropic','gemini','openai','kimi','groq','deepseek','openrouter','together','mistral','ollama','lmstudio'],  secret: false },
     { key: 'LLM_MODEL',      label: 'LLM Model',           choices: [],  secret: false, hint: 'e.g. claude-opus-4-5, gpt-4o, kimi-k2-5' },
     { key: 'LLM_API_KEY',    label: 'LLM API Key',         choices: [],  secret: true  },
-    { key: 'SWARM_PROVIDER', label: 'Swarm Provider',      choices: ['nvidia','minimax','kimi','anthropic','gemini','openai','groq'], secret: false },
+    { key: 'SWARM_PROVIDER', label: 'Swarm Provider',      choices: ['kimi','anthropic','gemini','openai','groq','openrouter'], secret: false },
     { key: 'SWARM_MODEL',    label: 'Swarm Model',         choices: [],  secret: false, hint: 'Heavy reasoning engine model' },
     { key: 'SWARM_API_KEY',  label: 'Swarm API Key',       choices: [],  secret: true  },
     { key: 'KIMI_API_KEY',   label: 'Kimi API Key',        choices: [],  secret: true  },
@@ -4098,11 +5073,11 @@ async function cmdConfig(args) {
     { key: 'TOWER_PORT',     label: 'Tower Port',          choices: [],  secret: false, hint: 'default 7790' },
     { key: 'API_PORT',       label: 'API Port',            choices: [],  secret: false, hint: 'default 7780' },
     { key: 'MEMORY_PORT',    label: 'Memory Port',         choices: [],  secret: false, hint: 'default 7880' },
-    { key: 'XIAOZHI_WS_URL', label: 'Xiaozhi WS URL',     choices: [],  secret: false, hint: 'ws://... — the AI ball WebSocket' },
+    { key: 'XIAOZHI_WS_URL', label: 'Xiaozhi WS URL',     choices: [],  secret: false, hint: 'ws://... â€” the AI ball WebSocket' },
     { key: 'VOICE_PORT',     label: 'Voice Service Port',  choices: [],  secret: false, hint: 'default 7781' },
   ];
 
-  // ── parse .env into a map
+  // â”€â”€ parse .env into a map
   function parseEnv() {
     const map = {};
     try {
@@ -4122,7 +5097,7 @@ async function cmdConfig(args) {
     return col(C.yellow, `${val.slice(0, 6)}...${val.slice(-3)}`);
   }
 
-  // ── write one key back to .env
+  // â”€â”€ write one key back to .env
   function writeEnvKey(key, value) {
     let raw = '';
     try { raw = fs.readFileSync(envPath, 'utf8'); } catch {}
@@ -4135,9 +5110,9 @@ async function cmdConfig(args) {
     fs.writeFileSync(envPath, raw, 'utf8');
   }
 
-  // ── show mode: just print current values
+  // â”€â”€ show mode: just print current values
   if (args[0] === 'show' || args[0] === 'list') {
-    sectionHead('  ⚙  PURPCLAW CONFIG');
+    sectionHead('  âš™  PURPCLAW CONFIG');
     const env = parseEnv();
     for (const k of CONFIG_KEYS) {
       const val = env[k.key] || process.env[k.key] || '';
@@ -4150,24 +5125,24 @@ async function cmdConfig(args) {
     return;
   }
 
-  // ── set mode: purpclaw config set KEY value
+  // â”€â”€ set mode: purpclaw config set KEY value
   if (args[0] === 'set' && args[1]) {
     const key   = args[1].toUpperCase();
     const value = args.slice(2).join(' ');
     if (!value) {
-      console.log(col(C.red, `  [X] Usage: purpclaw config set ${key} <value>`));
+      console.log(col(C.red, `  âœ— Usage: purpclaw config set ${key} <value>`));
       return;
     }
     writeEnvKey(key, value);
     const meta  = CONFIG_KEYS.find(k => k.key === key);
     const shown = meta?.secret ? maskVal(value, true) : col(C.green, value);
-    console.log(col(C.green, `  ✔  ${key} updated → ${shown}`));
+    console.log(col(C.green, `  âœ”  ${key} updated â†’ ${shown}`));
     console.log(col(C.gray,  `  Restart services to apply: purpclaw restart\n`));
     return;
   }
 
-  // ── interactive mode: readline menu
-  sectionHead('  ⚙  PURPCLAW INTERACTIVE CONFIG');
+  // â”€â”€ interactive mode: readline menu
+  sectionHead('  âš™  PURPCLAW INTERACTIVE CONFIG');
   const env = parseEnv();
 
   console.log(col(C.gray, '  Arrow keys / number to pick a setting. "q" to quit.\n'));
@@ -4190,11 +5165,11 @@ async function cmdConfig(args) {
     CONFIG_KEYS.forEach((k, i) => {
       const val    = env[k.key] || process.env[k.key] || '';
       const masked = val ? maskVal(val, k.secret) : col(C.gray, '[not set]');
-      const prefix = i === selected ? col(C.magenta, ' ▶ ') : '   ';
+      const prefix = i === selected ? col(C.magenta, ' â–¶ ') : '   ';
       const bg     = i === selected ? C.bold : '';
       process.stdout.write(`${prefix}${col(bg, k.label.padEnd(20))} ${masked}\n`);
     });
-    process.stdout.write(col(C.gray, '\n  ↑↓ navigate  Enter=edit  q=quit\n'));
+    process.stdout.write(col(C.gray, '\n  â†‘â†“ navigate  Enter=edit  q=quit\n'));
   }
 
   renderMenu();
@@ -4220,7 +5195,7 @@ async function cmdConfig(args) {
 
         // If choices available, show them
         if (k.choices && k.choices.length > 0) {
-          process.stdout.write(`\n  ${col(C.cyan, k.label)} — choose one:\n`);
+          process.stdout.write(`\n  ${col(C.cyan, k.label)} â€” choose one:\n`);
           k.choices.forEach((c, i) => console.log(`  ${col(C.gray, `${i + 1}.`)} ${c}`));
           process.stdout.write('  > ');
           rl.question('', (answer) => {
@@ -4229,19 +5204,19 @@ async function cmdConfig(args) {
             if (val) {
               writeEnvKey(k.key, val);
               env[k.key] = val;
-              console.log(col(C.green, `  ✔  ${k.key} = ${val}`));
+              console.log(col(C.green, `  âœ”  ${k.key} = ${val}`));
             }
             if (process.stdin.isTTY) process.stdin.setRawMode(true);
             renderMenu();
           });
         } else {
           const hint = k.hint ? ` (${k.hint})` : '';
-          process.stdout.write(`\n  ${col(C.cyan, k.label)}${col(C.gray, hint)} → `);
+          process.stdout.write(`\n  ${col(C.cyan, k.label)}${col(C.gray, hint)} â†’ `);
           rl.question('', (answer) => {
             if (answer.trim()) {
               writeEnvKey(k.key, answer.trim());
               env[k.key] = answer.trim();
-              console.log(col(C.green, `  ✔  ${k.key} updated`));
+              console.log(col(C.green, `  âœ”  ${k.key} updated`));
             }
             if (process.stdin.isTTY) process.stdin.setRawMode(true);
             renderMenu();
@@ -4252,19 +5227,19 @@ async function cmdConfig(args) {
   });
 }
 
-// ── voice (/command shorthand) ────────────────────────────────────────────────
+// â”€â”€ voice (/command shorthand) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdVoice(args) {
   // If a command string is passed, send it directly to the voice/orchestrator pipeline
   // without going through the normal text routing.
   // Usage:
-  //   purpclaw voice "build the login page"   — send as voice command
-  //   purpclaw voice                           — show voice service status
+  //   purpclaw voice "build the login page"   â€” send as voice command
+  //   purpclaw voice                           â€” show voice service status
 
   const text = args.join(' ').trim();
 
   if (!text) {
     // Show voice service status
-    sectionHead('  🎙  VOICE SERVICE');
+    sectionHead('  ðŸŽ™  VOICE SERVICE');
     const spin = spinner('Checking voice service...').start();
     const online = await ping(PORTS.voice, '/health');
     if (online) {
@@ -4311,60 +5286,84 @@ async function cmdVoice(args) {
   }
 }
 
-// ── doctor ───────────────────────────────────────────────────────────────────
+// â”€â”€ doctor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdDoctor(args) {
   const registry = require(path.join(PURP_DIR, 'service_registry.js'));
   const screenLook = require(path.join(PURP_DIR, 'lib', 'screen-look.js'));
+
+  // Driver preflight is a separate mode: `purpclaw doctor --drivers`.
+  // It checks each of the 10 native drivers for its prerequisites
+  // (binaries on PATH, install paths, etc.) and prints a structured
+  // report. Stolen from the Hermes install flow.
+  if (args.includes('--drivers')) {
+    const { runPreflight } = require(path.join(PURP_DIR, 'lib', 'driver-preflight.js'));
+    banner();
+    sectionHead('  PURPCLAW DOCTOR â€” DRIVER PREFLIGHT');
+    const r = runPreflight();
+    console.log(`  drivers: ${r.ready}/${r.totalDrivers} ready, ${r.missing} missing\n`);
+    for (const driver of r.results) {
+      const icon = driver.ok ? '\x1b[32mâ—\x1b[0m' : '\x1b[31mâ—\x1b[0m';
+      const status = driver.ok ? '\x1b[32mready\x1b[0m' : '\x1b[31mMISSING\x1b[0m';
+      console.log(`    ${icon} ${driver.id.padEnd(14)}  ${status.padEnd(20)}  ${driver.detail}`);
+      if (!driver.ok && driver.installHint) {
+        console.log(`        \x1b[33mâ†’\x1b[0m ${driver.installHint}`);
+      }
+    }
+    if (r.missing > 0) {
+      console.log(`\n  ${r.missing} driver(s) need installation. Run \`purpclaw install --drivers\` once that ships.`);
+    } else {
+      console.log(`\n  \x1b[32mAll drivers ready.\x1b[0m`);
+    }
+    return;
+  }
 
   banner();
   sectionHead('  PURPCLAW DOCTOR');
 
   const checks = [];
-  const add = (label, ok, detail = '', cat = 'runtime') => checks.push({ label, ok: Boolean(ok), detail, cat });
-  const catFilter = (args.includes('--category') ? args[args.indexOf('--category') + 1] : null);
-  const showCat = (c) => !catFilter || c === catFilter;
+  const add = (label, ok, detail = '') => checks.push({ label, ok: Boolean(ok), detail });
 
-  add('package.json', fs.existsSync(path.join(PURP_DIR, 'package.json')), 'runtime manifest', 'runtime');
-  add('node_modules/next', fs.existsSync(path.join(PURP_DIR, 'node_modules', 'next', 'dist', 'bin', 'next')), 'Next.js CLI installed', 'runtime');
-  add('ecosystem.config.js', fs.existsSync(ECOSYSTEM), 'PM2 service config', 'runtime');
-  add('service_registry.js', fs.existsSync(path.join(PURP_DIR, 'service_registry.js')), 'single service map', 'runtime');
-  add('.env', fs.existsSync(path.join(PURP_DIR, '.env')), 'local keys/config', 'runtime');
+  add('package.json', fs.existsSync(path.join(PURP_DIR, 'package.json')), 'runtime manifest');
+  add('node_modules/next', fs.existsSync(path.join(PURP_DIR, 'node_modules', 'next', 'dist', 'bin', 'next')), 'Next.js CLI installed');
+  add('ecosystem.config.js', fs.existsSync(ECOSYSTEM), 'PM2 service config');
+  add('service_registry.js', fs.existsSync(path.join(PURP_DIR, 'service_registry.js')), 'single service map');
+  add('.env', fs.existsSync(path.join(PURP_DIR, '.env')), 'local keys/config');
 
-  // ── NVIDIA NIM probe (if --nim flag) ─────────────────────────
+  // â”€â”€ NVIDIA NIM probe (if --nim flag) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (args.includes('--nim') || args.includes('--embeddings')) {
     try {
       const emb = require(path.join(PURP_DIR, 'lib', 'embeddings.js'));
       const h = await emb.health();
       if (h.ok) {
-        add('NVIDIA NIM bge-m3', true, `${h.model} · ${h.dim}-dim · ${h.baseUrl}`, 'nim');
+        add('NVIDIA NIM bge-m3', true, `${h.model} Â· ${h.dim}-dim Â· ${h.baseUrl}`);
       } else {
-        add('NVIDIA NIM bge-m3', false, h.reason || 'unreachable', 'nim');
+        add('NVIDIA NIM bge-m3', false, h.reason || 'unreachable');
       }
     } catch (e) {
-      add('NVIDIA NIM bge-m3', false, e.message, 'nim');
+      add('NVIDIA NIM bge-m3', false, e.message);
     }
   }
 
   try {
-    const py311 = require('child_process').execSync('py -3.11 --version 2>&1', { cwd: PURP_DIR, encoding: 'utf8', timeout: 5000, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
-    add('Python 3.11', true, py311, 'runtime');
-  } catch (e) {
-    add('Python 3.11', false, 'py -3.11 unavailable', 'runtime');
+    const py = execSync('py -3.11 -c "import sys; print(sys.version.split()[0])"', { cwd: PURP_DIR, encoding: 'utf8', windowsHide: true, stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    add('Python 3.11', true, py);
+  } catch {
+    add('Python 3.11', false, 'py -3.11 unavailable');
   }
 
   try {
     const info = await screenLook.listScreens();
-    add('screen capture deps', !info.error && info.count > 0, info.error || `${info.count} monitor(s)`, 'runtime');
+    add('screen capture deps', !info.error && info.count > 0, info.error || `${info.count} monitor(s)`);
   } catch (e) {
-    add('screen capture deps', false, e.message, 'runtime');
+    add('screen capture deps', false, e.message);
   }
 
-  // ── Cross-reference PM2's actual managed process list ──────────────────────
-  // A port answering /health is necessary but not sufficient — it tells you
+  // â”€â”€ Cross-reference PM2's actual managed process list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // A port answering /health is necessary but not sufficient â€” it tells you
   // SOMETHING owns the port, not that PM2 is supervising it. Orphan processes
   // from previous sessions can squat on ports and block their PM2 siblings'
   // restart loop. We surface that as a warning.
-  let pm2State = {}; // pm2-name → { status, restarts, pid }
+  let pm2State = {}; // pm2-name â†’ { status, restarts, pid }
   let pm2Available = false;
   try {
     const pm2Bin = process.platform === 'win32' ? 'npx.cmd' : 'npx';
@@ -4372,14 +5371,14 @@ async function cmdDoctor(args) {
     const arr = JSON.parse(raw);
     pm2Available = true;
     for (const p of arr) pm2State[p.name] = { status: p.pm2_env?.status, restarts: p.pm2_env?.restart_time || 0, pid: p.pid };
-  } catch { /* pm2 not available or hung — we still do the port probes */ }
+  } catch { /* pm2 not available or hung â€” we still do the port probes */ }
 
   const orphans = [];
   const crashLoops = [];
 
   for (const service of registry.getServices()) {
     if (!service.healthPort || !service.healthPath) {
-      add(`${service.name} (${service.group})`, !service.required, service.note || 'no health endpoint', 'services');
+      add(`${service.name} (${service.group})`, !service.required, service.note || 'no health endpoint');
       continue;
     }
     const online = await ping(service.healthPort, service.healthPath);
@@ -4390,10 +5389,10 @@ async function cmdDoctor(args) {
     // Detect split-brain conditions
     let detail = null;
     if (online && pm2Available && pm2Name && !pm2Online) {
-      detail = `online :${service.healthPort}  [!] ORPHAN (not under PM2)`;
+      detail = `online :${service.healthPort}  âš  ORPHAN (not under PM2)`;
       orphans.push({ name: service.name, port: service.healthPort, pm2: pm2Name });
     } else if (pm2Info && pm2Info.restarts > 50) {
-      detail = `online :${service.healthPort}  [!] ${pm2Info.restarts} restarts (crash loop history)`;
+      detail = `online :${service.healthPort}  âš  ${pm2Info.restarts} restarts (crash loop history)`;
       crashLoops.push({ name: service.name, restarts: pm2Info.restarts, pm2: pm2Name });
     } else if (online) {
       detail = `online :${service.healthPort}${service.healthPath}` + (pm2Online ? `  (pm2 pid ${pm2Info.pid})` : '');
@@ -4404,42 +5403,33 @@ async function cmdDoctor(args) {
     }
 
     const ok = service.required ? online : true;
-    add(`${service.name} (${service.group})`, ok, detail, 'services');
+    add(`${service.name} (${service.group})`, ok, detail);
   }
 
   let failures = 0;
-  if (catFilter) {
-    const cats = [...new Set(checks.map(c => c.cat))];
-    if (!cats.includes(catFilter)) {
-      console.log('Available categories: ' + cats.join(', '));
-      return 1;
-    }
-    console.log(col(C.gray, `  [--category ${catFilter}]`));
-  }
   for (const check of checks) {
-    if (!showCat(check.cat)) continue;
     if (!check.ok) failures++;
     const icon = check.ok ? col(C.green, 'OK') : col(C.red, 'NO');
     console.log(`  ${icon}  ${check.label.padEnd(30)} ${col(C.gray, check.detail)}`);
   }
 
-  // ── Split-brain summary ────────────────────────────────────────────────────
+  // â”€â”€ Split-brain summary â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (orphans.length) {
-    console.log('\n  ' + col(C.yellow + C.bold, '[!]  ORPHAN PROCESSES DETECTED'));
+    console.log('\n  ' + col(C.yellow + C.bold, 'âš   ORPHAN PROCESSES DETECTED'));
     console.log(col(C.gray, '  These services answer on their port but PM2 does NOT manage them.'));
     console.log(col(C.gray, '  They will not auto-restart on crash and they block PM2 siblings.'));
     for (const o of orphans) {
-      console.log(`    · ${col(C.yellow, o.name.padEnd(26))} port ${o.port} — pm2 entry: ${o.pm2}`);
+      console.log(`    Â· ${col(C.yellow, o.name.padEnd(26))} port ${o.port} â€” pm2 entry: ${o.pm2}`);
     }
     console.log(col(C.gray, '\n  Resolve: find the PID with `netstat -ano | findstr :<port>` and stop it,'));
     console.log(col(C.gray, '           then use the cascade-safe launcher (NOT raw pm2 start):'));
     console.log(col(C.cyan,  '             purpclaw safe-start ' + orphans.map(o => o.pm2.replace('purpclaw-', '')).join(' ')));
   }
   if (crashLoops.length) {
-    console.log('\n  ' + col(C.yellow + C.bold, '[!]  CRASH-LOOP HISTORY'));
-    console.log(col(C.gray, '  These services have restarted >50 times — investigate the cause.'));
+    console.log('\n  ' + col(C.yellow + C.bold, 'âš   CRASH-LOOP HISTORY'));
+    console.log(col(C.gray, '  These services have restarted >50 times â€” investigate the cause.'));
     for (const cl of crashLoops) {
-      console.log(`    · ${col(C.yellow, cl.name.padEnd(26))} ${cl.restarts} restarts (${cl.pm2})`);
+      console.log(`    Â· ${col(C.yellow, cl.name.padEnd(26))} ${cl.restarts} restarts (${cl.pm2})`);
     }
     console.log(col(C.gray, '\n  Inspect: pm2 logs ' + crashLoops[0].pm2 + ' --lines 30'));
     console.log(col(C.gray, '  Reset:   pm2 reset ' + crashLoops.map(c => c.pm2).join(' ')));
@@ -4458,7 +5448,7 @@ async function cmdDoctor(args) {
   }
 }
 
-// ── reject ──────────────────────────────────────────────────────────────────
+// â”€â”€ reject â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function cmdReject(args) {
   const gov = require(path.join(PURP_DIR, 'lib', 'governance.js'));
 
@@ -4478,17 +5468,17 @@ function cmdReject(args) {
   const approvalId = args[0];
   const result = gov.setApprovalStatus(PURP_DIR, approvalId, 'rejected');
   if (!result.id) {
-    console.log(col(C.red, `  [X] Approval ${approvalId} not found`));
+    console.log(col(C.red, `  âœ— Approval ${approvalId} not found`));
   } else {
-    console.log(col(C.yellow, `  [X] Rejected: ${approvalId}`));
+    console.log(col(C.yellow, `  âœ— Rejected: ${approvalId}`));
   }
 }
 
 
 
-// ── profiles ───────────────────────────────────────────────────────────────────
+// â”€â”€ profiles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// ── Context Bus (cross-agent state) ─────────────────────────────────────────
+// â”€â”€ Context Bus (cross-agent state) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdContext(args) {
   const sub  = (args[0] || '').toLowerCase();
   const rest = args.slice(1).join(' ').trim();
@@ -4505,10 +5495,10 @@ async function cmdContext(args) {
 
   if (sub === 'stats') {
     const s = await ctxGet('/context/stats');
-    if (!s) return console.log(col(C.red, '  [X] context-bus offline on :' + CTX_PORT));
+    if (!s) return console.log(col(C.red, '  âœ— context-bus offline on :' + CTX_PORT));
     console.log('');
-    console.log(col(C.bold, '  CONTEXT BUS · CROSS-AGENT STATE'));
-    console.log('  ─────────────────────────────────────────────────');
+    console.log(col(C.bold, '  CONTEXT BUS Â· CROSS-AGENT STATE'));
+    console.log('  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
     console.log(`  Active agents  : ${col(C.green, s.activeAgents)}`);
     console.log(`  Total agents  : ${s.totalAgents}`);
     console.log(`  Workflows     : ${s.totalWorkflows}`);
@@ -4522,7 +5512,7 @@ async function cmdContext(args) {
 
   if (sub === 'team' && rest) {
     const team = await ctxGet('/context/team/' + encodeURIComponent(rest));
-    if (!team) return console.log(col(C.red, '  [X] context-bus offline'));
+    if (!team) return console.log(col(C.red, '  âœ— context-bus offline'));
     if (!team.length) return console.log(col(C.gray, `  No active team for "${rest}"`));
     console.log('');
     console.log(col(C.bold, `  TEAM: ${rest.toUpperCase()}`));
@@ -4536,7 +5526,7 @@ async function cmdContext(args) {
 
   if (sub === 'agent' && rest) {
     const a = await ctxGet('/context/agent/' + encodeURIComponent(rest));
-    if (!a) return console.log(col(C.red, '  [X] context-bus offline'));
+    if (!a) return console.log(col(C.red, '  âœ— context-bus offline'));
     if (a.not_found) return console.log(col(C.gray, `  Agent "${rest}" not found`));
     console.log('');
     console.log(col(C.bold, `  AGENT: ${rest}`));
@@ -4547,7 +5537,7 @@ async function cmdContext(args) {
 
   if (sub === 'workflows') {
     const wf = await ctxGet('/context/workflows');
-    if (!wf) return console.log(col(C.red, '  [X] context-bus offline'));
+    if (!wf) return console.log(col(C.red, '  âœ— context-bus offline'));
     const keys = Object.keys(wf);
     if (!keys.length) return console.log(col(C.gray, '  No workflows yet'));
     console.log('');
@@ -4566,17 +5556,17 @@ async function cmdContext(args) {
     return new Promise(resolve => {
       const req = http.request({ hostname: '127.0.0.1', port: CTX_PORT, path: '/context/lock', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } }, res => {
         let d = ''; res.on('data', c => d += c);
-        res.on('end', () => { try { const r = JSON.parse(d); console.log(col(r.success ? C.green : C.red, `  ${r.success ? '[OK]' : '[X]'} ${resourceId} ${r.success ? 'locked' : (r.reason || r.lockedBy)}`)); } catch { console.log(col(C.red, '  lock failed')); } resolve(); });
+        res.on('end', () => { try { const r = JSON.parse(d); console.log(col(r.success ? C.green : C.red, `  ${r.success ? 'âœ“' : 'âœ—'} ${resourceId} ${r.success ? 'locked' : (r.reason || r.lockedBy)}`)); } catch { console.log(col(C.red, '  lock failed')); } resolve(); });
       });
-      req.on('error', e => { console.log(col(C.red, '  [X] ' + e.message)); resolve(); });
+      req.on('error', e => { console.log(col(C.red, '  âœ— ' + e.message)); resolve(); });
       req.write(body); req.end();
     });
   }
 
   // Default help
   console.log('');
-  console.log(col(C.bold, '  CONTEXT BUS · cross-agent shared state'));
-  console.log('  ─────────────────────────────────────────────────');
+  console.log(col(C.bold, '  CONTEXT BUS Â· cross-agent shared state'));
+  console.log('  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€');
   console.log('  ' + cmd('purpclaw context stats',             'active agents, workflows, locks'));
   console.log('  ' + cmd('purpclaw context team <intent>',      'active team for an intent'));
   console.log('  ' + cmd('purpclaw context agent <name>',      'agent state snapshot'));
@@ -4608,9 +5598,9 @@ async function cmdPool(args) {
     });
   }
 
-  // ── pool query <text> ──────────────────────────────────────────────────────
+  // â”€â”€ pool query <text> â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'query' && rest) {
-    sectionHead('  KNOWLEDGE POOL · SEARCH');
+    sectionHead('  KNOWLEDGE POOL Â· SEARCH');
     console.log(col(C.gray, `  Query: "${rest}"\n`));
     try {
       const res = await poolReq('GET', `/pool/skills/search?q=${encodeURIComponent(rest)}&limit=10`);
@@ -4625,29 +5615,29 @@ for (const s of res.results) {
       }
       console.log(col(C.gray, `\n  Try: purpclaw pool show <name>\n`));
     } catch (e) {
-      console.error(col(C.red, `  [X] ${e.message} — is the pool running on :${POOL_PORT}? Try \`purpclaw doctor\`.\n`));
+      console.error(col(C.red, `  âœ— ${e.message} â€” is the pool running on :${POOL_PORT}? Try \`purpclaw doctor\`.\n`));
     }
     return;
   }
 
-  // ── pool show <name> ───────────────────────────────────────────────────────
+  // â”€â”€ pool show <name> â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'show' && rest) {
-    sectionHead(`  SKILL · ${rest}`);
+    sectionHead(`  SKILL Â· ${rest}`);
     try {
       const res = await poolReq('GET', `/pool/skills/${encodeURIComponent(rest)}`);
-      if (res.error) { console.error(col(C.red, `  [X] ${res.error}\n`)); return; }
+      if (res.error) { console.error(col(C.red, `  âœ— ${res.error}\n`)); return; }
       console.log(col(C.gray, `  ${res.description || ''}\n`));
       console.log(res.content);
       console.log('');
     } catch (e) {
-      console.error(col(C.red, `  [X] ${e.message}\n`));
+      console.error(col(C.red, `  âœ— ${e.message}\n`));
     }
     return;
   }
 
-  // ── pool routing <task text> ───────────────────────────────────────────────
+  // â”€â”€ pool routing <task text> â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'routing' && rest) {
-    sectionHead('  KNOWLEDGE POOL · ROUTING HINTS');
+    sectionHead('  KNOWLEDGE POOL Â· ROUTING HINTS');
     console.log(col(C.gray, `  Task: "${rest}"\n`));
     try {
       const res = await poolReq('GET', `/pool/routing/for-task?text=${encodeURIComponent(rest)}`);
@@ -4659,23 +5649,23 @@ for (const s of res.results) {
         const agent = col(C.cyan, h.agent.padEnd(12));
         const div   = col(C.gray, (h.division || '').padEnd(14));
         const role  = h.role || '';
-        console.log(`  ${agent} ${div} ${col(C.white, role)}  ${col(C.gray, '· score ' + h.score)}`);
+        console.log(`  ${agent} ${div} ${col(C.white, role)}  ${col(C.gray, 'Â· score ' + h.score)}`);
         if (h.give && h.give.length) console.log(col(C.gray, `    give:  ${h.give.slice(0,3).join(', ')}`));
       }
       console.log('');
     } catch (e) {
-      console.error(col(C.red, `  [X] ${e.message}\n`));
+      console.error(col(C.red, `  âœ— ${e.message}\n`));
     }
     return;
   }
 
-  // ── pool reindex ───────────────────────────────────────────────────────────
+  // â”€â”€ pool reindex â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'reindex') {
-    sectionHead('  KNOWLEDGE POOL · REINDEX');
+    sectionHead('  KNOWLEDGE POOL Â· REINDEX');
     const spin = spinner('rebuilding index from disk').start();
     try {
       const res = await poolReq('POST', '/pool/reindex', {});
-      spin.succeed(`reindexed: ${res.skillsCount} skills · ${res.agentsCount} agents · ${res.routingProfiles || 0} routing profiles`);
+      spin.succeed(`reindexed: ${res.skillsCount} skills Â· ${res.agentsCount} agents Â· ${res.routingProfiles || 0} routing profiles`);
       console.log('');
     } catch (e) {
       spin.fail(e.message);
@@ -4683,9 +5673,9 @@ for (const s of res.results) {
     return;
   }
 
-  // ── pool stats (default) ───────────────────────────────────────────────────
+  // â”€â”€ pool stats (default) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (sub === 'stats' || !sub) {
-    sectionHead('  KNOWLEDGE POOL · STATS');
+    sectionHead('  KNOWLEDGE POOL Â· STATS');
     try {
       const m = await poolReq('GET', '/pool/stats');
       console.log(`  Skills indexed   : ${col(C.green, String(m.skillsCount ?? 0))}`);
@@ -4707,14 +5697,14 @@ for (const s of res.results) {
         console.log('');
       }
     } catch (e) {
-      console.error(col(C.red, `  [X] pool offline (:${POOL_PORT})  —  ${e.message}\n`));
+      console.error(col(C.red, `  âœ— pool offline (:${POOL_PORT})  â€”  ${e.message}\n`));
       console.log(col(C.gray, '  Boot it:  purpclaw start  (or)  npx pm2 start ecosystem.config.js --only purpclaw-pool\n'));
     }
     return;
   }
 
   if (sub === 'recent') {
-    sectionHead('  KNOWLEDGE POOL · RECENT QUERIES');
+    sectionHead('  KNOWLEDGE POOL Â· RECENT QUERIES');
     try {
       const r = await poolReq('GET', '/pool/recent?limit=15');
       if (!r.entries || !r.entries.length) { console.log(col(C.gray, '  No queries yet.\n')); return; }
@@ -4724,7 +5714,7 @@ for (const s of res.results) {
       }
       console.log('');
     } catch (e) {
-      console.error(col(C.red, `  [X] ${e.message}\n`));
+      console.error(col(C.red, `  âœ— ${e.message}\n`));
     }
     return;
   }
@@ -4825,7 +5815,7 @@ function cmdRollback(args) {
   console.log(col(C.gray, '  Next required piece: snapshot manifest per approved job, then rollback can restore exact artifacts.\n'));
 }
 
-// ── mochi ─────────────────────────────────────────────────────────────────────
+// â”€â”€ mochi â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdMochi(args) {
   const mochiLib = require(path.join(PURP_DIR, 'lib', 'mochi'));
 
@@ -4837,7 +5827,7 @@ async function cmdMochi(args) {
     console.log('');
     const lines = mochiLib.renderSprite(mochi, 0);
     lines.forEach(l => console.log('  ' + col(C.magenta, l)));
-    console.log(`\n  ${col(C.cyan, mochi.name)} — ${col(C.gray, mochi.species + ' · ' + mochi.rarity)}\n`);
+    console.log(`\n  ${col(C.cyan, mochi.name)} â€” ${col(C.gray, mochi.species + ' Â· ' + mochi.rarity)}\n`);
     console.log(col(C.gray, '  Hatched. Run `purpclaw mochi` to chat.\n'));
     return;
   }
@@ -4846,37 +5836,37 @@ async function cmdMochi(args) {
     const mochi = mochiLib.loadMochi();
     console.log('');
     mochiLib.renderSprite(mochi, 0).forEach(l => console.log('  ' + col(C.magenta, l)));
-    console.log(`\n  ${col(C.cyan + C.bold, mochi.name)}  ${col(C.gray, '·')}  ${col(C.gray, mochi.species + ' · ' + (mochi.rarity || 'common') + (mochi.shiny ? ' · ✨ shiny' : ''))}`);
+    console.log(`\n  ${col(C.cyan + C.bold, mochi.name)}  ${col(C.gray, 'Â·')}  ${col(C.gray, mochi.species + ' Â· ' + (mochi.rarity || 'common') + (mochi.shiny ? ' Â· âœ¨ shiny' : ''))}`);
     console.log(`  ${col(C.gray, 'eye: ' + mochi.eye + '   hat: ' + (mochi.hat || 'none') + '   tone: ' + (mochi.tone || ''))}`);
     console.log(`  ${col(C.gray, 'hatched: ' + (mochi.hatchedAt || '?') + '   chats: ' + (mochi.interactions || 0))}\n`);
     return;
   }
 
-  // Default → interactive REPL
+  // Default â†’ interactive REPL
   const mochi  = mochiLib.loadMochi();
   const status = await mochiLib.snapshotStatus();
   const provider = mochiLib.activeProvider();   // null if no keys
 
-  // ── Header
+  // â”€â”€ Header
   console.log('');
   const sprite = mochiLib.renderSprite(mochi, 0);
   sprite.forEach(line => console.log('  ' + col(C.magenta + C.bold, line)));
   const tagline = provider
-    ? col(C.green,  `live · ${provider}`)
-    : col(C.yellow, 'offline · set ANTHROPIC_API_KEY (or MINIMAX_API_KEY) for chat');
-  console.log(`  ${col(C.cyan + C.bold, mochi.name)} ${col(C.gray, '· ' + mochi.species + ' ·')} ${tagline}`);
+    ? col(C.green,  `live Â· ${provider}`)
+    : col(C.yellow, 'offline Â· set ANTHROPIC_API_KEY (or MINIMAX_API_KEY) for chat');
+  console.log(`  ${col(C.cyan + C.bold, mochi.name)} ${col(C.gray, 'Â· ' + mochi.species + ' Â·')} ${tagline}`);
   if (status.poolOnline) {
-    console.log(col(C.gray, `  pool: ${status.skills} skills · ${status.agents} agents · ${status.memories} memories`));
+    console.log(col(C.gray, `  pool: ${status.skills} skills Â· ${status.agents} agents Â· ${status.memories} memories`));
   } else {
-    console.log(col(C.yellow, `  pool offline — boot it: purpclaw start`));
+    console.log(col(C.yellow, `  pool offline â€” boot it: purpclaw start`));
   }
-  console.log(col(C.gray, '  type your message — "/help" for commands, "bye" to leave\n'));
+  console.log(col(C.gray, '  type your message â€” "/help" for commands, "bye" to leave\n'));
 
-  // ── REPL with serial line processing
+  // â”€â”€ REPL with serial line processing
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
-    prompt: col(C.magenta, '  you › '),
+    prompt: col(C.magenta, '  you â€º '),
     terminal: isTTY,
   });
 
@@ -4912,7 +5902,7 @@ async function cmdMochi(args) {
     }
     if (text === '/card') {
       const face = mochiLib.renderFace(mochi);
-      console.log(`  ${col(C.magenta, face)} ${col(C.cyan, mochi.name)} · ${col(C.gray, mochi.species + ' · ' + mochi.rarity)}\n`);
+      console.log(`  ${col(C.magenta, face)} ${col(C.cyan, mochi.name)} Â· ${col(C.gray, mochi.species + ' Â· ' + mochi.rarity)}\n`);
       return;
     }
     if (text === '/hatch') {
@@ -4926,8 +5916,8 @@ async function cmdMochi(args) {
     if (text.startsWith('/pool ')) {
       const q = text.slice(6).trim();
       const ctx = await mochiLib.poolContext(q);
-      console.log(col(C.gray, `\n  skills:  ${ctx.skills.map(s => s.name).join(', ') || '—'}`));
-      console.log(col(C.gray, `  routing: ${ctx.routing.map(h => h.agent + ' (' + h.role + ')').join(', ') || '—'}`));
+      console.log(col(C.gray, `\n  skills:  ${ctx.skills.map(s => s.name).join(', ') || 'â€”'}`));
+      console.log(col(C.gray, `  routing: ${ctx.routing.map(h => h.agent + ' (' + h.role + ')').join(', ') || 'â€”'}`));
       console.log('');
       return;
     }
@@ -4970,13 +5960,13 @@ async function cmdMochi(args) {
   rl.on('SIGINT', closeNow);
 }
 
-// ── tick (manual reasoning heartbeat) ─────────────────────────────────────────
+// â”€â”€ tick (manual reasoning heartbeat) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdTick(args) {
   const { tick, readState } = require(path.join(PURP_DIR, 'lib', 'reasoning-tick'));
   const sub = (args[0] || '').toLowerCase();
 
   if (sub === 'status' || sub === 'last') {
-    sectionHead('  REASONING TICK · LAST STATE');
+    sectionHead('  REASONING TICK Â· LAST STATE');
     const s = readState();
     if (!s.lastTickAt) { console.log(col(C.gray, '  No ticks recorded yet. Run `purpclaw tick` to fire one.\n')); return; }
     console.log(`  Last tick     : ${col(C.cyan, s.lastTickId || '?')}`);
@@ -4996,7 +5986,7 @@ async function cmdTick(args) {
   }
 
   banner();
-  sectionHead('  REASONING TICK · FIRING');
+  sectionHead('  REASONING TICK Â· FIRING');
   const spin = spinner('the swarm is taking a heartbeat...').start();
   try {
     const r = await tick({ verbose: false });
@@ -5008,23 +5998,22 @@ async function cmdTick(args) {
       console.log(`  ${col(C.yellow, 'Newly down    :')} ${r.newlyDown.map(d => d.key + ' (:' + d.port + ')').join(', ')}`);
     }
     console.log(`  Pool          : ${r.poolAlive ? col(C.green, 'reachable') : col(C.red, 'offline')}`);
-    if (r.poolStats) console.log(`  Pool snapshot : ${r.poolStats.skills} skills · ${r.poolStats.agents} agents · ${r.poolStats.memories} memories`);
+    if (r.poolStats) console.log(`  Pool snapshot : ${r.poolStats.skills} skills Â· ${r.poolStats.agents} agents Â· ${r.poolStats.memories} memories`);
     console.log(`  Wrote to pool : heartbeat=${r.writes.heartbeat ? col(C.green, 'yes') : col(C.gray, 'skipped')}  failures=${r.writes.failures}`);
     if (r.writes.errors.length) console.log(`  ${col(C.yellow, 'Write errors :')} ${r.writes.errors.length}`);
     if (r.proposals.length) {
       console.log('');
       console.log(col(C.cyan, '  Proactive proposals (not executed):'));
-      for (const p of r.proposals) console.log(`    · ${p.command}   ${col(C.gray, '(' + p.reason + ')')}`);
+      for (const p of r.proposals) console.log(`    Â· ${p.command}   ${col(C.gray, '(' + p.reason + ')')}`);
     }
     console.log('');
-    console.log(col(C.gray, '  proposals are NOT executed — they\'re proposals. Run them with: purpclaw run "<command>"'));
+    console.log(col(C.gray, '  proposals are NOT executed â€” they\'re proposals. Run them with: purpclaw run "<command>"'));
     console.log(col(C.gray, '  enable continuous ticking: PURPCLAW_PROACTIVE=1 in .env, then `purpclaw restart purpclaw-reasoning`\n'));
   } catch (e) {
     spin.fail(`tick failed: ${e.message}`);
   }
 }
 
-// ── spaghetti ─────────────────────────────────────────────────────────────────────
 function cmdSpaghetti(args) {
   const sub = (args[0] || 'audit').toLowerCase();
   const target = args[1];
@@ -5091,35 +6080,7 @@ function cmdSpaghetti(args) {
   console.log(col(C.gray, '\n  Usage: purpclaw spaghetti audit | explain <file> | rewrite-plan <file> | diff <before> <after> | quarantine <file> | annona <file>\n'));
 }
 
-// ── squad ─────────────────────────────────────────────────────────────────────
-async function cmdSquad(args) {
-  const squad = require(path.join(PURP_DIR, 'lib', 'squad'));
-  const sub = (args[0] || '').toLowerCase();
-
-  if (sub === 'feed') {
-    const result = squad.feedPet(args[1] || 'mochi', args[2] || 'snack');
-    console.log(result.error || `  ${result.pet} — ${result.mood} · ${result.reaction}`);
-    return;
-  }
-
-  if (sub === 'react') {
-    const r = squad.squadReact(args[1] || 'mochi', args[2] || 'idle');
-    console.log(r ? `  ${r}` : `  pet not found`);
-    return;
-  }
-
-  const status = squad.squadStatus();
-  console.log('');
-  console.log('  === Pet Squad ===');
-  for (const pet of status.pets) {
-    const m = pet.mood === 'happy' ? '[*]' : pet.mood === 'concerned' ? '[o]' : '◌';
-    console.log(`  ${m} ${pet.slug} (${pet.name})`);
-    console.log(`     ${pet.personality} · mood: ${pet.mood} · chats: ${pet.interactions}`);
-  }
-  console.log(`\n  Total: ${status.totalInteractions} interactions\n`);
-}
-
-// ── tui ───────────────────────────────────────────────────────────────────────
+// â”€â”€ tui â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function cmdTui(args = []) {
   // `purpclaw tui ask` opens the interactive agent chat TUI.
   // `purpclaw tui` (no subcommand) opens the live dashboard cockpit.
@@ -5127,7 +6088,7 @@ function cmdTui(args = []) {
   if (sub === 'ask') {
     const TUI_ASK = path.join(PURP_DIR, 'scripts', 'tui-ask.js');
     if (!fs.existsSync(TUI_ASK)) {
-      console.error(col(C.red, `\n  [X] scripts/tui-ask.js not found at ${TUI_ASK}\n`));
+      console.error(col(C.red, `\n  âœ— scripts/tui-ask.js not found at ${TUI_ASK}\n`));
       process.exit(1);
     }
     const child = trackedSpawn(process.execPath, [TUI_ASK, ...args.slice(1)], {
@@ -5138,12 +6099,12 @@ function cmdTui(args = []) {
       cwd  : PURP_DIR,
     });
     child.on('close', code => process.exit(code || 0));
-    child.on('error', e => { console.error(col(C.red, `\n  [X] tui-ask failed: ${e.message}\n`)); process.exit(1); });
+    child.on('error', e => { console.error(col(C.red, `\n  âœ— tui-ask failed: ${e.message}\n`)); process.exit(1); });
     return;
   }
   const TUI_SCRIPT = path.join(PURP_DIR, 'scripts', 'tui.js');
   if (!fs.existsSync(TUI_SCRIPT)) {
-    console.error(col(C.red, `\n  [X] scripts/tui.js not found at ${TUI_SCRIPT}\n`));
+    console.error(col(C.red, `\n  âœ— scripts/tui.js not found at ${TUI_SCRIPT}\n`));
     process.exit(1);
   }
   const child = trackedSpawn(process.execPath, [TUI_SCRIPT, ...args], {
@@ -5155,12 +6116,12 @@ function cmdTui(args = []) {
   });
   child.on('close', code => process.exit(code || 0));
   child.on('error', e => {
-    console.error(col(C.red, `  [X] TUI failed to launch: ${e.message}`));
+    console.error(col(C.red, `  âœ— TUI failed to launch: ${e.message}`));
     process.exit(1);
   });
 }
 
-// ── help ──────────────────────────────────────────────────────────────────────
+// â”€â”€ help â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function cmdHelp() {
   banner();
 
@@ -5168,15 +6129,15 @@ function cmdHelp() {
   const inner = W - 4;
 
   // Section box helpers
-  const secTop  = () => col(C.gray, '  ┌' + '─'.repeat(inner) + '┐');
-  const secBot  = () => col(C.gray, '  └' + '─'.repeat(inner) + '┘');
+  const secTop  = () => col(C.gray, '  â”Œ' + 'â”€'.repeat(inner) + 'â”');
+  const secBot  = () => col(C.gray, '  â””' + 'â”€'.repeat(inner) + 'â”˜');
   const secRow  = (left, right) => {
     const l = left  || '';
     const r = right || '';
     const lRaw = l.replace(/\x1b\[[0-9;]*m/g, '');
     const rRaw = r.replace(/\x1b\[[0-9;]*m/g, '');
     const pad  = Math.max(1, inner - lRaw.length - rRaw.length);
-    return col(C.gray, '  │') + ' ' + l + ' '.repeat(pad) + r + ' ' + col(C.gray, '│');
+    return col(C.gray, '  â”‚') + ' ' + l + ' '.repeat(pad) + r + ' ' + col(C.gray, 'â”‚');
   };
 
   function section(title, rows) {
@@ -5188,7 +6149,7 @@ function cmdHelp() {
     console.log(secBot());
   }
 
-  section('🚀  LIFECYCLE', [
+  section('ðŸš€  LIFECYCLE', [
     ['purpclaw init',                  'Audit env, keys, and services'],
     ['purpclaw init --wizard',         'Interactive first-run setup (60 seconds)'],
     ['purpclaw start',                 'Boot the harness (bounded profile)'],
@@ -5196,38 +6157,32 @@ function cmdHelp() {
     ['purpclaw start --profile=voice', 'Boot harness + voice bridge'],
     ['purpclaw stop',                  'Shut down gracefully'],
     ['purpclaw restart [service]',     'Restart all or one service'],
-    ['purpclaw doctor',                'Quick health check — reads only'],
-    ['purpclaw doctors',               'Pulse + per-service probe + recent findings (v0.2.0)'],
-    ['purpclaw whoami',                'Live stack self-description (live counts, not marketing) (v0.2.0)'],
+    ['purpclaw doctor',                'Quick health check â€” reads only'],
     ['purpclaw status',                'Dashboard: services + leaderboard + pool'],
   ]);
 
-  section('💬  CHAT WITH THE STACK  (front door)', [
-    ['purpclaw',                       'No args → drop into chat REPL (stack-aware, persistent)'],
-    ['purpclaw ask "<question>"',      'One-shot LLM query — answers from live stack context'],
-    ['purpclaw ask',                   'REPL mode — /exit /clear /help /status, sessions saved'],
+  section('ðŸ’¬  CHAT WITH THE STACK  (front door)', [
+    ['purpclaw',                       'No args â†’ drop into chat REPL (stack-aware, persistent)'],
+    ['purpclaw ask "<question>"',      'One-shot LLM query â€” answers from live stack context'],
+    ['purpclaw ask',                   'REPL mode â€” /exit /clear /help /status, sessions saved'],
     ['purpclaw ask --session <name>',  'Named session (separate context, persisted on disk)'],
     ['purpclaw ask --fresh',           'Clear the current session and start clean'],
     ['purpclaw ask --status',          'Show provider + active session info'],
-    ['purpclaw chat',                  'NanoClaw REPL — swarm-aware (uses claude CLI)'],
+    ['purpclaw chat',                  'NanoClaw REPL â€” swarm-aware (uses claude CLI)'],
     ['purpclaw mochi',                 'Chat with your companion (animated, LLM-backed)'],
     ['purpclaw architecture',          'Live runtime overview: services + flow + files + concepts'],
     ['purpclaw architecture services', 'Service topology only'],
     ['purpclaw architecture flow',     'Task-flow diagram only'],
-    ['purpclaw overview',              'Canonical doc — what PURPCLAW is + philosophy (the README)'],
+    ['purpclaw overview',              'Canonical doc â€” what PURPCLAW is + philosophy (the README)'],
     ['purpclaw overview --raw',        'Raw markdown for piping'],
   ]);
 
-  section('⚡  THE WORK LOOP', [
-    ['purpclaw tui',                   '🎛  LIVE cockpit — full-screen TUI dashboard'],
-    ['purpclaw next',                  'Oracle next-step engine: phase, missing artifacts, next command'],
-    ['purpclaw workflow',              'List planning workflow registry entries'],
-    ['purpclaw council "<question>"',  'Terminal-first Council decision session'],
+  section('âš¡  THE WORK LOOP', [
+    ['purpclaw tui',                   'ðŸŽ›  LIVE cockpit â€” full-screen TUI dashboard'],
     ['purpclaw run "<task>"',          'Dispatch + stream agent progress live'],
-    ['purpclaw bg "<task>"',           'Background dispatch — fire and forget'],
+    ['purpclaw bg "<task>"',           'Background dispatch â€” fire and forget'],
     ['purpclaw code status',           'Repo/GitHub tools: status, diff, issues, PRs, checks'],
     ['purpclaw llm',                   'Provider status: Claude, Gemini, OpenAI, Kimi, Ollama'],
-    ['purpclaw eval',                   'Run tests, LLM-fix loop, re-test until pass or max-iter'],
     ['purpclaw browser smoke [url]',   'Playwright open/read/screenshot tool surface'],
     ['purpclaw cognition smoke',       'Neuro-symbolic/modal/rules/diagnostics health + lift test'],
     ['purpclaw workflows',             'Show active and recent workflows'],
@@ -5239,7 +6194,7 @@ function cmdHelp() {
     ['purpclaw bg',                    'List active background jobs'],
   ]);
 
-  section('🧠  KNOWLEDGE POOL  (:7885)', [
+  section('ðŸ§   KNOWLEDGE POOL  (:7885)', [
     ['purpclaw pool query "<text>"',   'Keyword-search the skill index'],
     ['purpclaw pool show <name>',      'Full SKILL.md content'],
     ['purpclaw pool routing "<task>"', 'Routing hints for a task type'],
@@ -5247,31 +6202,7 @@ function cmdHelp() {
     ['purpclaw pool reindex',          'Rebuild index from disk'],
   ]);
 
-  section('🧠  BRAIN STACK', [
-    ['purpclaw brain',                'Show full brain stack — controller + worker lanes'],
-    ['purpclaw brain -v',            'Full config with fallbacks'],
-    ['purpclaw route "<task>"',     'Show which lane a task routes to'],
-    ['purpclaw providers status',    'Provider readiness: configured / verified / auth_failed'],
-    ['purpclaw providers verify',    'Re-probe all providers with live calls'],
-    ['purpclaw cost summary',       'Cost by task from cost-ledger'],
-  ]);
-
-  section('🐾  COMPANION PET', [
-    ['purpclaw pet',                 'Pet status — mood, hunger, energy, happiness'],
-    ['purpclaw pet feed [food]',     'Feed the pet (cookie, pizza, sushi...)'],
-    ['purpclaw pet pet',            'Pet it'],
-    ['purpclaw pet play [toy]',      'Play fetch (ball, frisbee, laser, yarn)'],
-    ['purpclaw pet sleep',          'Sleep time'],
-    ['purpclaw pet wake',           'Wake up'],
-    ['purpclaw pet clean',          'Bath time'],
-    ['purpclaw pet mute',           'Mute / unmute companion'],
-    ['purpclaw pet name [n]',       'Rename the pet'],
-    ['purpclaw pet trick [n]',      'Teach a trick'],
-    ['purpclaw pet thoughts',       'Current thought + message'],
-    ['purpclaw pet reset',          'Reset pet state'],
-  ]);
-
-  section('📦  REGISTRY  (139 skills  ·  38 Claude-agent definitions)', [
+  section('ðŸ“¦  REGISTRY  (139 skills  Â·  38 Claude-agent definitions)', [
     ['purpclaw registry browse',       'See all skills + agents with install status'],
     ['purpclaw install <name>',        'Install a skill from the local registry'],
     ['purpclaw search "<text>"',       'Keyword-search across all 139 skills'],
@@ -5279,7 +6210,7 @@ function cmdHelp() {
     ['purpclaw registry update',       'Rebuild local index from disk'],
   ]);
 
-  section('🧬  MEMORY + DREAM', [
+  section('ðŸ§¬  MEMORY + DREAM', [
     ['purpclaw memory [query]',        'Recall matching memories from the matrix'],
     ['purpclaw memory ingest "<text>"','Store a new memory manually'],
     ['purpclaw memory forget "<q>"',   'Remove matching memories'],
@@ -5287,7 +6218,7 @@ function cmdHelp() {
     ['purpclaw dream',                 'Trigger AutoDream memory consolidation'],
   ]);
 
-  section('🤖  AGENTS + FORGE', [
+  section('ðŸ¤–  AGENTS + FORGE', [
     ['purpclaw agents',                'List swarm agents (44 in tower), divisions, scores'],
     ['purpclaw roster',                'Compare tower swarm vs disk persona files'],
     ['purpclaw roster --missing',      'Show animals lacking persona files (Codex migration target)'],
@@ -5298,12 +6229,10 @@ function cmdHelp() {
     ['purpclaw voice "<command>"',     'Send command via voice pipeline'],
   ]);
 
-  section('🔧  CONFIG + GOVERNANCE', [
-    ['purpclaw config',                'Interactive config editor (↑↓ arrow keys)'],
+  section('ðŸ”§  CONFIG + GOVERNANCE', [
+    ['purpclaw config',                'Interactive config editor (â†‘â†“ arrow keys)'],
     ['purpclaw config show',           'Print current config values (secrets masked)'],
     ['purpclaw config set KEY val',    'Set a config key in .env directly'],
-    ['purpclaw apply-diff <file>',       'Parse + apply unified diff (--dry to preview)'],
-    ['purpclaw init-project <type> [name]', 'Scaffold project (node|react|python|rust|...)'],
     ['purpclaw policies',              'Show active governance policies'],
     ['purpclaw introspect',            'Runtime state summary'],
     ['purpclaw introspect risks',      'Live risk classification'],
@@ -5313,8 +6242,8 @@ function cmdHelp() {
     ['purpclaw spaghetti diff A B',    'Compare code health before/after refactor'],
   ]);
 
-  section('🔍  DIAGNOSTICS + DEVOPS', [
-    ['purpclaw bughunt',               'Full stack scan — syntax, ports, health, smells'],
+  section('ðŸ”  DIAGNOSTICS + DEVOPS', [
+    ['purpclaw bughunt',               'Full stack scan â€” syntax, ports, health, smells'],
     ['purpclaw bughunt --json',        'Machine-readable JSON output'],
     ['purpclaw ctx-viz',               'Visualise the live service mesh as a tree'],
     ['purpclaw ctx-viz --json',        'JSON dump of all node states'],
@@ -5327,10 +6256,9 @@ function cmdHelp() {
     ['purpclaw autofix-pr plan',       'Scan for build/PR issues (read-only)'],
     ['purpclaw autofix-pr run <plan>', 'Execute a repair plan (governance-gated)'],
     ['purpclaw autofix-pr verify',     'Confirm repairs landed'],
-    ['purpclaw stats',                'Tool/session/permission/compaction analytics'],
   ]);
 
-  section('🧹  HOUSEKEEPING  (keep the workshop tidy)', [
+  section('ðŸ§¹  HOUSEKEEPING  (keep the workshop tidy)', [
     ['purpclaw gc --stats',            'Show disk usage breakdown of agent_work/'],
     ['purpclaw gc',                    'Dry-run: list what would be cleaned'],
     ['purpclaw gc --apply',            'Sweep proof-test scratch, age-out sessions, compact tasks'],
@@ -5338,7 +6266,7 @@ function cmdHelp() {
     ['purpclaw smoke',                 'End-to-end self-test: services + LLM + pool + memory + dispatch'],
     ['purpclaw smoke --quick',         'Skip the orchestrator workflow round-trip'],
     ['purpclaw smoke --json',          'Machine-readable for CI'],
-    ['purpclaw safe-start --core',     'Wake the stable core baseline (one at a time)'],
+    ['purpclaw safe-start --core',     'Wake the 16-service stable baseline (one at a time)'],
     ['purpclaw safe-start --dark',     'Sequentially wake defined-but-dark services (no Windows cmd flood)'],
     ['purpclaw safe-start <name>',     'Start one service with circuit breaker + stabilisation watch'],
     ['purpclaw safe-stop --dark',      'Sequentially put the dark cluster back to sleep'],
@@ -5347,7 +6275,7 @@ function cmdHelp() {
     ['purpclaw heal --execute',        'Apply the recovery plan via safe-start'],
   ]);
 
-  section('☁  CLOUD / SCALE  (worker pool)', [
+  section('â˜  CLOUD / SCALE  (worker pool)', [
     ['purpclaw workers status',        'Health check all registered worker nodes'],
     ['purpclaw workers list',          'Show worker registry (IDs, types, targets)'],
     ['purpclaw workers add --type http --url <url>', 'Register remote HTTP worker'],
@@ -5358,7 +6286,7 @@ function cmdHelp() {
     ['purpclaw workers secret',        'Generate a fresh HMAC worker secret (copy/paste)'],
   ]);
 
-  section('🦆  GOOSE COMMANDS  (for the unhinged)', [
+  section('ðŸ¦†  GOOSE COMMANDS  (for the unhinged)', [
     ['purpclaw mochi',                 'Chat with your companion (animated, LLM-backed)'],
     ['purpclaw mochi hatch [seed]',    'Hatch a new mochi species'],
     ['purpclaw mochi card',            'Show companion card'],
@@ -5368,47 +6296,48 @@ function cmdHelp() {
   ]);
 
   // Port quick-ref
-  console.log(`\n  ${col(C.cyan + C.bold, '🗺  PORTS')}`);
-  console.log(col(C.gray, '  ┌──────────────────────────────────────────────────────────────────────────┐'));
+  console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ—º  PORTS')}`);
+  console.log(col(C.gray, '  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”'));
   const portRows = [
-    [3030, 'Next.js Mission Control UI'],
-    [7780, 'unified-api   — main HTTP API + MCP tools'],
-    [7781, 'voice-coord   — intent parsing + TTS'],
-    [7782, 'eventbus      — central pub/sub broker'],
-    [7783, 'state-store   — shared state namespaces'],
-    [7784, 'orchestrator  — priority queue + governance'],
-    [7790, 'agent-tower   — 44 swarm agents (animals), spawning'],
-    [7791, 'gatekeeper    — pre-merge validation'],
-    [7881, 'context-bus   — cross-agent context propagation'],
+    [3000, 'Next.js Mission Control UI'],
+    [7780, 'unified-api   â€” main HTTP API + MCP tools'],
+    [7781, 'voice-coord   â€” intent parsing + TTS'],
+    [7782, 'eventbus      â€” central pub/sub broker'],
+    [7783, 'state-store   â€” shared state namespaces'],
+    [7784, 'orchestrator  â€” priority queue + governance'],
+    [7790, 'agent-tower   â€” 44 swarm agents (animals), spawning'],
+    [7791, 'gatekeeper    â€” pre-merge validation'],
+    [7881, 'context-bus   â€” cross-agent context propagation'],
     [7884, 'neuro-symbolic bridge (Python)'],
-    [7885, 'pool          — knowledge pool (skills + agents)'],
-    [7880, 'cognitive-spine — vector memory engine'],
-    [7895, 'autodream     — memory consolidation'],
-    [7897, 'worker-pool   — overflow lane (HTTP/SSH workers)'],
+    [7885, 'pool          â€” knowledge pool (skills + agents)'],
+    [7889, 'vision-monitor â€” webcam + YOLO'],
+    [7890, 'metrics       â€” health polling + SSE heartbeat'],
+    [7895, 'autodream     â€” memory consolidation'],
+    [7897, 'worker-pool   â€” overflow lane (HTTP/SSH workers)'],
   ];
   for (const [port, desc] of portRows) {
-    console.log(col(C.gray, '  │') + `  ${col(C.cyan, String(port).padStart(5))}  ${col(C.white, String(desc).padEnd(54))}` + col(C.gray, '│'));
+    console.log(col(C.gray, '  â”‚') + `  ${col(C.cyan, String(port).padStart(5))}  ${col(C.white, String(desc).padEnd(54))}` + col(C.gray, 'â”‚'));
   }
-  console.log(col(C.gray, '  └──────────────────────────────────────────────────────────────────────────┘'));
+  console.log(col(C.gray, '  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜'));
 
   console.log('');
-  console.log(`  ${col(C.magenta, 'purpclaw tui')}   ${col(C.gray, '— launch the live cockpit')}`);
-  console.log(`  ${col(C.gray, 'Web UI')}        ${col(C.gray, '—')}  ${col(C.cyan, 'http://localhost:3030')}`);
-  console.log(`  ${col(C.gray, 'Pool')}          ${col(C.gray, '—')}  ${col(C.cyan, 'http://localhost:7885')}`);
+  console.log(`  ${col(C.magenta, 'purpclaw tui')}   ${col(C.gray, 'â€” launch the live cockpit')}`);
+  console.log(`  ${col(C.gray, 'Web UI')}        ${col(C.gray, 'â€”')}  ${col(C.cyan, 'http://localhost:3000')}`);
+  console.log(`  ${col(C.gray, 'Pool')}          ${col(C.gray, 'â€”')}  ${col(C.cyan, 'http://localhost:7885')}`);
   console.log('');
   console.log(col(C.gray, '  The hammers walk. The tickets file themselves. The pool is open.'));
-  console.log(col(C.dim,  '  — Built by Eddie Cannon. Maintained by the goose. Watched by the mochi.'));
-  console.log(col(C.dim,  `  ${TAINT_MODE ? col(C.magenta, '  🎨 taint mode is ON. the interface is embodying state. slightly damp.') : '  append --taint to any command. you\'ll know.'}\n`));
+  console.log(col(C.dim,  '  â€” Built by Eddie Cannon. Maintained by the goose. Watched by the mochi.'));
+  console.log(col(C.dim,  `  ${TAINT_MODE ? col(C.magenta, '  ðŸŽ¨ taint mode is ON. the interface is embodying state. slightly damp.') : '  append --taint to any command. you\'ll know.'}\n`));
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 //  ENTRY POINT
-// ═════════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 async function main() {
-  // ── Belt-and-brace secret redaction across the entire CLI lifetime ─────────
+  // â”€â”€ Belt-and-brace secret redaction across the entire CLI lifetime â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Wraps stdout + stderr at the lowest level so anything printed (our logs,
   // child-process inheritance, error stacks, third-party library noise) gets
-  // run through the redactor first. Catches: env-var lines, JWTs, sk-… keys,
+  // run through the redactor first. Catches: env-var lines, JWTs, sk-â€¦ keys,
   // long hex blobs, X-Worker-Token headers, Bearer tokens. Opt-out via
   // PURPCLAW_NO_REDACT=1 for debugging.
   if (process.env.PURPCLAW_NO_REDACT !== '1') {
@@ -5416,75 +6345,33 @@ async function main() {
       const redactor = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
       redactor.wrapStream(process.stdout);
       redactor.wrapStream(process.stderr);
-    } catch { /* redactor optional — never block CLI if module missing */ }
+    } catch { /* redactor optional â€” never block CLI if module missing */ }
   }
 
   const argv = process.argv.slice(2);
-
-  // Strip --bars / --no-bars / --provider-env-file flags so they don't pollute command args
-  // --provider-env-file <path> — load key=value pairs from a .env file before any command runs
-  // Supports OPENCLAUDE_CONFIG_DIR env override for config directory
-  // Strip bare -- (cmdExec's "pass-through" marker — cmd.exe built-in exec doesn't consume it)
-  (function loadProviderEnvFile() {
-    const idx = argv.indexOf('--provider-env-file');
-    if (idx === -1) return;
-    const filePath = argv[idx + 1];
-    if (!filePath || filePath.startsWith('--')) return;
-    try {
-      const lines = require('fs').readFileSync(filePath, 'utf8').split(/\r?\n/);
-      let loaded = 0;
-      for (const raw of lines) {
-        const line = raw.trim();
-        if (!line || line.startsWith('#')) continue;
-        const eq = line.indexOf('=');
-        if (eq <= 0) continue;
-        const k = line.substring(0, eq).trim();
-        const v = line.substring(eq + 1).trim().replace(/^["']|["']$/g, '');
-        if (!(k in process.env)) { process.env[k] = v; loaded++; }
-      }
-      if (loaded > 0) console.log(`  [purpclaw] loaded ${loaded} env var(s) from ${filePath}`);
-    } catch { /* best-effort */ }
-  })();
-
-  const envFileIdx = argv.indexOf('--provider-env-file');
+  // Strip --bars / --no-bars flags so they don't pollute command args
   const wantBars  = argv.includes('--bars')    || process.env.PURPCLAW_BARS === '1';
   const skipBars  = argv.includes('--no-bars') || process.env.PURPCLAW_BARS === '0';
-
-  // --repo-map / --no-repo-map override REPO_MAP for this run (and for anything
-  // this process spawns). lib/agent-loop.js reads REPO_MAP when it builds the
-  // system prompt; --no-repo-map wins over --repo-map.
-  if (argv.includes('--repo-map'))    process.env.REPO_MAP = '1';
-  if (argv.includes('--no-repo-map')) process.env.REPO_MAP = '0';
-
-  const STRIP_FLAGS = new Set([
-    '--bars', '--no-bars', '--taint',
-    '--repo-map', '--no-repo-map',
-    '--provider-env-file',
-    '--',        // cmd.exe exec pass-through marker — not a real flag
-  ]);
-  const cleanArgv = argv.filter((a, i) =>
-    !STRIP_FLAGS.has(a) && !(envFileIdx >= 0 && i === envFileIdx + 1)
-  );
+  const cleanArgv = argv.filter(a => a !== '--bars' && a !== '--no-bars' && a !== '--taint');
 
   // Taint mode Easter egg announcement
   if (TAINT_MODE) {
-    console.log(col(C.magenta + C.bold, '\n  🎨 TAINT MODE ACTIVATED. the interface will now embody state.'));
+    console.log(col(C.magenta + C.bold, '\n  ðŸŽ¨ TAINT MODE ACTIVATED. the interface will now embody state.'));
     console.log(col(C.gray, '  errors are now emotionally resonant. success is slightly damp.\n'));
   }
   let [command, ...args] = cleanArgv;
 
-  // Chat-first entry: bare `purpclaw` opens the conversational agent.
-  if (!command) {
-    command = 'ask';
-    args = [];
+  // 2026-08-17: slash command parity with Claude Code / Antigravity CLI / Kimi CLI.
+  // `purpclaw /status` is equivalent to `purpclaw status`. New slash commands
+  // that don't have a non-slash alias (like /plan, /clear, /compact) are routed
+  // through the case statement below. This keeps the existing 148 cases
+  // working while adding the modern slash ergonomics.
+  if (command && command.startsWith('/')) {
+    command = command.slice(1);
+    if (!command) { cmdHelp(); return; }
   }
 
-  // Check original argv for --help/-h flags (before STRIP_FLAGS filtering strips them)
-  // Commands that handle --help themselves: detected here and re-dispatched after loadCmd is ready
-  const _helpDelegate = argv.includes('--help') || argv.includes('-h')
-    ? [command, argv[argv.indexOf('--help') !== -1 ? argv.indexOf('--help') : argv.indexOf('-h')]]
-    : null;
-  // Explicit bare help (no subcommand)
+  // Explicit help/version paths
   if (command === 'help' || command === '--help' || command === '-h') {
     cmdHelp(); return;
   }
@@ -5494,32 +6381,32 @@ async function main() {
     return;
   }
 
-  // No args — first-run experience. Auto-detect keys, show menu, launch.
+  // No args â€” first-run experience. Auto-detect keys, show menu, launch.
   if (!command) {
     const setup = require(path.join(PURP_DIR, 'lib', 'commands', 'setup'));
     const found = setup.scanForKeys();
     const ready = Object.keys(found).length;
 
     console.log('');
-    console.log(col(C.cyan + C.bold, '  🟣 PURPCLAW v0.2.0 — AI Workstation OS'));
-    console.log(col(C.gray, '  ─────────────────────────────────────────'));
+    console.log(col(C.cyan + C.bold, '  ðŸŸ£ PURPCLAW v0.1.1 â€” AI Workstation OS'));
+    console.log(col(C.gray, '  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€'));
 
     if (ready > 0) {
-      console.log(col(C.green, `  ✅ ${ready} provider(s) detected:`));
+      console.log(col(C.green, `  âœ… ${ready} provider(s) detected:`));
       Object.entries(found).slice(0, 5).forEach(([id, info]) => {
-        console.log(col(C.gray, `     ${id} — ${info.source === 'local' ? 'local' : info.key}`));
+        console.log(col(C.gray, `     ${id} â€” ${info.source === 'local' ? 'local' : info.key}`));
       });
     } else {
-      console.log(col(C.yellow, '  [!] No API keys detected.'));
+      console.log(col(C.yellow, '  âš  No API keys detected.'));
     }
 
     console.log('');
     console.log(col(C.white, '  What would you like to launch?'));
     console.log('');
-    console.log(col(C.cyan, `    ${col(C.bold, '1')}. CLI chat        `) + col(C.gray, '(purpclaw ask — interactive agent chat)'));
-    console.log(col(C.cyan, `    ${col(C.bold, '2')}. TUI cockpit     `) + col(C.gray, '(purpclaw tui — live dashboard)'));
-    console.log(col(C.cyan, `    ${col(C.bold, '3')}. TUI ask         `) + col(C.gray, '(purpclaw tui ask — full-screen chat)'));
-    console.log(col(C.cyan, `    ${col(C.bold, '4')}. WebUI           `) + col(C.gray, '(http://localhost:3030 — mission control)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '1')}. CLI chat        `) + col(C.gray, '(purpclaw ask â€” interactive agent chat)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '2')}. TUI cockpit     `) + col(C.gray, '(purpclaw tui â€” live dashboard)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '3')}. TUI ask         `) + col(C.gray, '(purpclaw tui ask â€” full-screen chat)'));
+    console.log(col(C.cyan, `    ${col(C.bold, '4')}. WebUI           `) + col(C.gray, '(http://localhost:3000 â€” mission control)'));
     console.log(col(C.cyan, `    ${col(C.bold, '5')}. Setup wizard    `) + col(C.gray, '(configure providers)'));
     console.log(col(C.cyan, `    ${col(C.bold, '6')}. Guided tour     `) + col(C.gray, '(TTS-narrated walkthrough)'));
     console.log(col(C.cyan, `    ${col(C.bold, '7')}. Help            `) + col(C.gray, '(show all commands)'));
@@ -5535,27 +6422,10 @@ async function main() {
       else if (choice === '2') { command = 'tui'; args = []; }
       else if (choice === '3') { command = 'tui'; args = ['ask']; }
       else if (choice === '4') {
-        // WebUI launcher — check backend before opening browser
-        console.log(col(C.gray, '\n  Checking backend...'));
-        const { execSync } = require('child_process');
-        let backendOk = false;
-        try {
-          const r = execSync('curl -s --max-time 2 http://127.0.0.1:7780/health', { timeout: 4000, encoding: 'utf8', windowsHide: true });
-          backendOk = r.includes('ok') || r.includes('200');
-        } catch {}
-
-        if (!backendOk) {
-          console.log(col(C.yellow, '  [!] Backend offline — starting services...\n'));
-          try {
-            execSync('start cmd /c purpclaw start', { detached: true, stdio: 'ignore', windowsHide: true });
-          } catch {}
-          console.log(col(C.gray, '  Run `purpclaw start` manually if the browser does not open.\n'));
-          console.log(col(C.green, '  Opening WebUI at http://localhost:3030 anyway...\n'));
-        } else {
-          console.log(col(C.green, '  [OK] Backend online\n'));
-        }
-
-        execSync('start http://localhost:3030', { windowsHide: true });
+        console.log(col(C.green, '\n  ðŸš€ Opening WebUI at http://localhost:3000'));
+        console.log(col(C.gray, '  Make sure the backend is running: purpclaw start\n'));
+        const { exec } = require('child_process');
+        exec('start http://localhost:3000');
         process.exit(0);
       }
       else if (choice === '5') { command = 'setup'; args = []; }
@@ -5579,548 +6449,8 @@ async function main() {
   const useBars = wantBars && !skipBars && isTTY && !ownsScreen.has(command.toLowerCase());
 
   // Load a lib/commands/<name>.js module (throws clearly if missing)
-// v2.1 — New v0.2.0 CLI commands: pulse, whoami, doctors
-// All hit live endpoints, no hardcoded numbers.
-
-const http = require('http');
-
-function httpJSON(method, port, path, timeoutMs = 8000) {
-  return new Promise((resolve) => {
-    const req = http.request({ hostname: '127.0.0.1', port, path, method, timeout: timeoutMs }, (res) => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => {
-        try { resolve(JSON.parse(d)); } catch { resolve({ error: 'invalid_json', raw: d }); }
-      });
-    });
-    req.on('error', e => resolve({ error: e.message }));
-    req.on('timeout', () => { req.destroy(); resolve({ error: 'timeout' }); });
-    req.end();
-  });
-}
-
-async function cmdSmoke(args = []) {
-  // purpclaw smoke              → run full end-to-end smoke, print report
-  // purpclaw smoke --only chain → only that layer
-  // purpclaw smoke --json       → machine-readable
-  // Mirrors GET /api/smoke — same underlying scripts/smoke-test.mjs.
-  const { execSync } = require('child_process');
-  banner();
-  sectionHead('  SMOKE TEST — the CLI talking to itself, layer by layer');
-  const script = path.join(PURP_DIR, 'scripts', 'smoke-test.mjs');
-  const only = args.includes('--only') ? ['--only', args[args.indexOf('--only') + 1]] : [];
-  const json = args.includes('--json') ? ['--json'] : [];
-  try {
-    execSync(`node "${script}" ${[...only, ...json].join(' ')}`, { cwd: PURP_DIR, stdio: 'inherit', timeout: 180000 });
-    console.log(col(C.green, `\n  smoke: green — every layer proven callable\n`));
-    return 0;
-  } catch (e) {
-    console.log(col(C.red, `\n  smoke: FAILED — see report above (public/showcase/smoke-report.json)\n`));
-    process.exitCode = 1;
-    return 1;
-  }
-}
-
-async function cmdApiCall(args = []) {
-  // purpclaw api <route>            → GET /api/<route>
-  // purpclaw api <route> --post <json>  → POST /api/<route> with body
-  // The generic CLI-over-API bridge: any Next API route is reachable from the
-  // CLI without hand-coding a case for it. Closes the API-only side of parity.
-  const routePath = args[0];
-  if (!routePath) {
-    banner(); sectionHead('  API CALL — generic CLI→API bridge');
-    console.log(col(C.gray, `  usage: purpclaw api <route> [--post '<json>']\n         purpclaw api heartbeat\n         purpclaw api steer --post '{"message":"build login"}'\n`));
-    return;
-  }
-  const postIdx = args.findIndex(a => a === '--post');
-  const method = postIdx >= 0 ? 'POST' : 'GET';
-  const body = postIdx >= 0 ? args.slice(postIdx + 1).join(' ') : null;
-  const clean = routePath.replace(/^\/*(api\/)?/, '');
-  return new Promise((resolve) => {
-    const http = require('http');
-    const req = http.request({
-      hostname: '127.0.0.1', port: 3030, path: '/api/' + clean, method,
-      headers: body ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } : {},
-    }, (res) => {
-      let data = ''; res.on('data', c => data += c);
-      res.on('end', () => {
-        console.log(col(C.gray, `  ${method} /api/${clean}  →  ${res.statusCode}`));
-        try { console.log(JSON.stringify(JSON.parse(data), null, 2)); }
-        catch { console.log(data.slice(0, 4000)); }
-        resolve();
-      });
-    });
-    req.setTimeout(45000, () => { req.destroy(new Error('45s timeout')); });
-    req.on('error', (e) => { console.log(col(C.red, `  request failed: ${e.message}`)); resolve(); });
-    if (body) req.write(body);
-    req.end();
-  });
-}
-
-async function cmdApiRouteWrapper(routePath, args = []) {
-  const cleanedArgs = Array.isArray(args) ? args : [];
-  return cmdApiCall([routePath, ...cleanedArgs]);
-}
-
-async function cmdParityAudit(_args = []) {
-  // purpclaw parity-audit → the real system-wide CLI↔API parity delta.
-  const { execSync } = require('child_process');
-  banner(); sectionHead('  PARITY AUDIT — CLI ↔ API delta (real, not curated)');
-  try { execSync(`node scripts/audit-parity.mjs`, { cwd: PURP_DIR, stdio: 'inherit' }); } catch { /* soft */ }
-  const fs = require('fs');
-  try {
-    const rep = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'public', 'showcase', 'parity-report.json'), 'utf8'));
-    console.log(col(C.cyan, `\n  CLI cases: ${rep.cli_cases_total}   API routes: ${rep.api_routes_total}   matched: ${rep.matched}`));
-    console.log(col(rep.parity_pct_api_side < 80 ? C.yellow : C.green, `  api-side parity: ${rep.parity_pct_api_side}%    cli-side parity: ${rep.parity_pct_cli_side}%`));
-    console.log(col(C.gray, `\n  ${rep.api_without_cli} API routes have no CLI (call via: purpclaw api <route>)`));
-    console.log(col(C.gray, `  ${rep.cli_without_api} CLI cases have no API`));
-    console.log(col(C.gray, `\n  full report: docs/PARITY_AUDIT.md   |   json: public/showcase/parity-report.json\n`));
-  } catch (e) { console.log(col(C.red, '  no report: ' + e.message)); }
-}
-
-async function cmdWatch(args = []) {
-  // purpclaw watch [jobId]      → stream every hop of that job in real time
-  // purpclaw watch --all         → stream ALL live events (all jobs, all sources)
-  // purpclaw watch --tail 20     → replay last N first, then stream
-  // Ctrl+C to exit. Reads lib/trace-store.subscribe (in-process events) + tails
-  // ~/.purpclaw/trace/recent.jsonl (durable log) so it works even without an
-  // active service (as long as the trace-store module is loaded by something).
-  const jobId = args.find(a => !a.startsWith('--'));
-  const filterAll = args.includes('--all') || !jobId;
-  const snapshot = args.includes('--snapshot');
-  const tailN = (() => { const i = args.indexOf('--tail'); return i >= 0 ? parseInt(args[i+1] || '0', 10) : 0; })();
-  banner();
-  sectionHead(`  LIVE WATCH — ${jobId ? 'jobId=' + jobId : 'ALL EVENTS'}${tailN ? ' (tail ' + tailN + ')' : ''}${snapshot ? ' snapshot' : ''}`);
-  console.log(col(C.gray, `  ${new Date().toISOString()} — ${snapshot ? 'snapshot mode.' : 'subscribed. Ctrl+C to exit.'}\n`));
-
-  const trace = require('../lib/trace-store');
-  const seen = new Set();
-  function render(t) {
-    if (!t) return;
-    if (!filterAll && jobId && t.jobId !== jobId) return;
-    if (seen.has(t.id)) return; seen.add(t.id);
-    const stage = String(t.action || '').replace('chain.', '');
-    const status = String(t.status || '');
-    const c = status === 'failed' ? C.red : status === 'done' || status === 'verified' ? C.green : status === 'delegated' || status === 'routed' ? C.cyan : C.gray;
-    const ts = String(t.at || '').slice(11, 19);
-    const src = (t.source || '?').slice(0, 14).padEnd(14);
-    const route = (t.route || '').slice(0, 22).padEnd(22);
-    const detail = (t.detail || '').slice(0, 100);
-    const job = (t.jobId || '').slice(0, 14).padEnd(14);
-    console.log(`  ${col(c, '[*]')} ${col(C.gray, ts)} ${col(C.bold, job)} ${col(C.gray, src)} ${col(c, (stage || 'event').padEnd(11))} ${col(C.gray, route)} ${col(C.gray, detail)}`);
-  }
-  // Replay tail if asked (or a default small tail so you see recent context)
-  const initialTail = tailN || 8;
-  for (const t of (trace.recent(200).slice(-initialTail))) render(t);
-  if (snapshot) {
-    console.log(col(C.gray, `\n  watch: snapshot closed (${seen.size} event${seen.size === 1 ? '' : 's'})\n`));
-    return;
-  }
-  // Subscribe live
-  const off = trace.subscribe(render);
-  await new Promise((resolve) => {
-    process.on('SIGINT', () => { try { off && off(); } catch {} console.log(col(C.gray, '\n  watch: closed\n')); resolve(); });
-  });
-}
-
-async function cmdFlow(args = []) {
-  // purpclaw flow "<goal>"   → open a real job for a goal AND stream its full
-  //   chain live to stdout (steer → route → delegate → agent → tool → done).
-  //   This is the "see every part of the stack passing information from chat
-  //   to end product" command. One call, one live view.
-  const goal = args.join(' ').replace(/^["']|["']$/g, '');
-  banner();
-  sectionHead(`  FLOW — end-to-end live watch of one goal`);
-  if (!goal) {
-    console.log(col(C.gray, `  usage: purpclaw flow "<goal>"   — e.g.: purpclaw flow "build a website with media and a game about itself"\n`));
-    return;
-  }
-  console.log(col(C.cyan, `  GOAL → "${goal}"\n`));
-  // 1) Steer with execute:true → opens a real kernel job
-  const steer = require('../lib/steering-router');
-  const decision = steer.steer(goal, { source: 'purpclaw-flow', execute: true });
-  const jobId = decision.jobId || decision.steerId || 'no-job';
-  console.log(col(decision.delegated ? C.green : C.yellow,
-    `  steer: route=${decision.route}${decision.agent ? ' agent=' + decision.agent : ''} reason="${decision.reason}" conf=${decision.confidence}`));
-  console.log(col(C.gray, `  jobId=${jobId}${decision.delegated ? ' (delegated)' : ' (preview)'}\n`));
-  // 2) Stream every hop for this job until Ctrl+C or done/failed
-  console.log(col(C.gray, `  ─ LIVE CHAIN (Ctrl+C to exit) ─────────────────────────────────`));
-  const trace = require('../lib/trace-store');
-  const seen = new Set();
-  let done = false;
-  function render(t) {
-    if (!t || (t.jobId !== jobId && !(t.jobId || '').startsWith(jobId))) return;
-    if (seen.has(t.id)) return; seen.add(t.id);
-    const stage = String(t.action || '').replace('chain.', '');
-    const status = String(t.status || '');
-    const c = status === 'failed' ? C.red : status === 'done' || status === 'verified' ? C.green : status === 'delegated' || status === 'routed' ? C.cyan : C.gray;
-    const ts = String(t.at || '').slice(11, 19);
-    const route = (t.route || '').slice(0, 24).padEnd(24);
-    const detail = (t.detail || '').slice(0, 120);
-    console.log(`  ${col(c, '[*]')} ${col(C.gray, ts)} ${col(c, (stage || 'event').padEnd(11))} ${col(C.gray, route)} ${col(C.gray, detail)}`);
-    if (status === 'done' || status === 'failed') done = true;
-  }
-  for (const t of (trace.recent(400))) render(t);
-  const off = trace.subscribe(render);
-  // Fallback: also print the final chain snapshot every 4s so the user sees progress even if events are quiet
-  const chainMod = require('../lib/job-chain');
-  const printer = setInterval(() => {
-    const v = chainMod.get(jobId);
-    if (v.status !== 'unknown') console.log(col(C.gray, `  … chain status=${v.status} steps=${v.steps.length}${v.failedAt ? ' failedAt=' + v.failedAt.area : ''}`));
-    if (done || v.status === 'complete' || v.status === 'failed') { clearInterval(printer); try { off && off(); } catch {} process.exit(0); }
-  }, 4000);
-  await new Promise((resolve) => {
-    process.on('SIGINT', () => { try { off && off(); } catch {} console.log(col(C.gray, '\n  flow: closed\n')); resolve(); });
-  });
-}
-
-async function cmdSpine(_args = []) {
-  // purpclaw spine → the parity map. Same content as GET /api/spine so any
-  // agent/UI/CLI user discovers the same surfaces the same way.
-  banner();
-  sectionHead('  SPINE — one door per concern (CLI ↔ API parity)');
-  // Fetch the same map the API exposes. Keeping a fallback list in sync would
-  // fork the truth; instead, if the API isn't up, read the manifest's parity block.
-  let surfaces = null;
-  try {
-    const r = await httpJSON('GET', 3030, '/api/spine', 4000);
-    if (Array.isArray(r.surfaces)) surfaces = r.surfaces;
-  } catch { /* soft */ }
-  if (!surfaces) {
-    try {
-      const fs = require('fs');
-      const p = require('path').join(process.cwd(), 'public', 'showcase', 'truth-manifest.json');
-      const m = JSON.parse(fs.readFileSync(p, 'utf8'));
-      surfaces = (m.parity && m.parity.surfaces) || [];
-      surfaces = surfaces.map(s => ({ surface: s.surface, cli: `purpclaw ${s.surface}`, api: { path: `/api/${s.surface}` } }));
-    } catch { surfaces = []; }
-  }
-  if (!surfaces.length) { console.log(col(C.gray, `  (no spine map available — run: npm run truth)\n`)); return; }
-  console.log(col(C.gray, `  ${surfaces.length} surfaces — every one callable identically from CLI, chat, and main UI:\n`));
-  for (const s of surfaces) {
-    console.log(col(C.cyan, `  ${s.surface}`) + (s.owns ? col(C.gray, ` — ${s.owns}`) : ''));
-    if (s.cli) console.log(col(C.gray, `      CLI  ${s.cli}`));
-    if (s.api) console.log(col(C.gray, `      API  ${s.api.method || 'GET'} ${s.api.path}` + (s.api.body ? `  body: ${s.api.body}` : '')));
-    if (s.returns) console.log(col(C.gray, `      →    ${s.returns}`));
-    console.log('');
-  }
-}
-
-async function cmdSteer(args = []) {
-  // purpclaw steer "<message>"            → classify only (preview)
-  // purpclaw steer --execute "<message>"  → route + open a real job (delegated)
-  // Mirrors POST /api/steer exactly, so CLI and chat/UI share one door.
-  const doExecute = args.includes('--execute') || args.includes('--go');
-  const message = args.filter(a => !/^--(execute|go)$/.test(a)).join(' ').replace(/^["']|["']$/g, '');
-  banner();
-  sectionHead('  STEER — where does this request go');
-  if (!message) { console.log(col(C.gray, `  usage: purpclaw steer "<message>" [--execute]\n`)); return; }
-  const steering = require('../lib/steering-router');
-  const r = steering.steer(message, { source: 'cli', execute: doExecute });
-  const c = r.delegated ? C.green : C.cyan;
-  console.log(col(c, `  route=${r.route}${r.agent ? ' agent=' + r.agent : ''}${r.skill ? ' skill=' + r.skill : ''}`));
-  console.log(col(C.gray, `    reason: ${r.reason}   confidence: ${r.confidence}`));
-  if (r.delegated) console.log(col(C.green, `    DELEGATED → job ${r.jobId} (poll: purpclaw chain ${r.jobId})`));
-  else console.log(col(C.gray, `    preview only — re-run with --execute to open a real job`));
-  console.log('');
-}
-
-async function cmdInsight(args = []) {
-  // purpclaw insight "<lesson>"     → capture a mid-job better-way (instant)
-  // purpclaw insight recall "<q>"   → recall learned better-ways
-  // purpclaw insight recent         → last 10 captured
-  // Mirrors POST /api/insight so agents/chat/CLI all feed the same brain.
-  const sub = (args[0] || '').toLowerCase();
-  const ins = require('../lib/insight');
-  banner();
-  sectionHead('  INSIGHT — mid-job learning');
-  if (sub === 'recall' || sub === 'r') {
-    const q = args.slice(1).join(' ').replace(/^["']|["']$/g, '') || 'better way to do this';
-    const { insights, formatted } = await ins.recall(q, { limit: 8 });
-    if (!insights.length) { console.log(col(C.gray, `  (no insights match "${q}")\n`)); return; }
-    console.log(col(C.cyan, `  ${insights.length} learned better-way(s) for "${q}":`));
-    insights.forEach((r, i) => console.log(col(C.gray, `    ${i + 1}. [${r.layer || '?'}] ${String(r.content || r.text || '').replace(ins.TAG, '').trim().slice(0, 150)}`)));
-    console.log('');
-    return;
-  }
-  if (sub === 'recent') {
-    const { insights } = await ins.recall('', { limit: 10 });
-    if (!insights.length) { console.log(col(C.gray, '  (no recent insights)\n')); return; }
-    insights.forEach((r, i) => console.log(col(C.gray, `    ${i + 1}. ${String(r.content || r.text || '').replace(ins.TAG, '').trim().slice(0, 150)}`)));
-    console.log('');
-    return;
-  }
-  const text = args.join(' ').replace(/^["']|["']$/g, '');
-  if (!text) { console.log(col(C.gray, `  usage: purpclaw insight "<lesson>"  |  insight recall "<q>"  |  insight recent\n`)); return; }
-  const id = await ins.capture(text, { source: 'cli', kind: 'tooling' });
-  if (id) console.log(col(C.green, `  CAPTURED → memory ${String(id).slice(0, 12)} (instant recall — cache cleared)\n`));
-  else console.log(col(C.yellow, `  capture path OK, spine :7880 not confirmed (persistence uncertain until service up)\n`));
-}
-
-async function cmdChain(args = []) {
-  // purpclaw chain <jobId>           → the job's full start→finish chain
-  // purpclaw chain                   → last 20 job-chain events (all jobs)
-  // Mirrors the `chain` block from GET /api/kernel/jobs/[id].
-  const jobId = args[0];
-  banner();
-  sectionHead('  JOB CHAIN — start → finish, exact break point');
-  const chain = require('../lib/job-chain');
-  if (!jobId) {
-    // No id: dump recent chain events across all jobs.
-    const trace = require('../lib/trace-store');
-    const rows = trace.recent(60).filter(t => String(t.action || '').startsWith('chain.'));
-    if (!rows.length) { console.log(col(C.gray, `  (no chain events yet)\n`)); return; }
-    for (const r of rows.slice(-20)) {
-      const c = r.status === 'failed' ? C.red : r.status === 'done' ? C.green : C.cyan;
-      console.log(`  ${col(c, '[*]')} ${col(C.gray, String(r.at || '').slice(11, 19))} ${col(C.bold, (r.jobId || '?').slice(0, 14).padEnd(14))} ${col(c, (String(r.action || '').replace('chain.', '') || '').padEnd(10))} ${col(C.gray, (r.route || '').padEnd(24))} ${col(C.gray, (r.detail || '').slice(0, 70))}`);
-    }
-    console.log('');
-    return;
-  }
-  const v = chain.get(jobId);
-  if (!v.steps.length) { console.log(col(C.yellow, `  no chain found for "${jobId}"\n`)); return; }
-  console.log(col(C.cyan, `  ${v.jobId} — status=${v.status}, ${v.steps.length} step(s)`));
-  for (const s of v.steps) {
-    const c = s.status === 'failed' ? C.red : s.status === 'done' ? C.green : C.cyan;
-    console.log(`    ${col(c, '[*]')} ${col(C.bold, s.stage.padEnd(11))} ${col(c, (s.area || '').padEnd(16))} ${col(C.gray, s.detail || '')}`);
-  }
-  if (v.failedAt) console.log(col(C.red, `\n  FAILED AT ${v.failedAt.area} — ${v.failedAt.detail}\n`));
-  else if (v.complete) console.log(col(C.green, `\n  DONE\n`));
-  else console.log(col(C.gray, `\n  still running\n`));
-}
-
-async function cmdReceipts(args = []) {
-  // purpclaw receipts                  → last 20 receipts
-  // purpclaw receipts stats            → totals + breakdown
-  // purpclaw receipts job <jobId>      → all receipts for a job (chain)
-  // purpclaw receipts agent <name>     → filter by agent
-  // purpclaw receipts fails            → recent failures only
-  const led = require('../lib/proof-ledger');
-  const sub = (args[0] || '').toLowerCase();
-  banner();
-  sectionHead('  PROOF LEDGER — receipts trail (~/.purpclaw/proof/ledger.jsonl)');
-  let rows = [];
-  if (sub === 'stats') {
-    const s = led.stats();
-    console.log(col(C.cyan, `  total receipts: ${s.total || 0}`));
-    console.log(`    ${col(C.green, 'verified')}: ${s.verified || 0}   ${col(C.red, 'failed')}: ${s.failed || 0}   ${col(C.yellow, 'rolled-back')}: ${s.rolledBack || 0}`);
-    if (s.fakeGreens > 0) console.log(col(C.red, `    [!] fake greens: ${s.fakeGreens} (status=verified/applied but verification!=pass)`));
-    else console.log(col(C.green, `    fake greens: 0 (no receipts claim pass without proof)`));
-    if (s.byStatus) { console.log(col(C.gray, `\n  by status:`)); for (const [k, v] of Object.entries(s.byStatus)) console.log(col(C.gray, `    ${k}: ${v}`)); }
-    if (s.byVerification) { console.log(col(C.gray, `\n  by verification:`)); for (const [k, v] of Object.entries(s.byVerification)) console.log(col(C.gray, `    ${k}: ${v}`)); }
-    if (s.byProject) { console.log(col(C.gray, `\n  by project:`)); for (const [k, v] of Object.entries(s.byProject).slice(0, 6)) console.log(col(C.gray, `    ${k}: ${v}`)); }
-    if (s.tokensEstimate) console.log(col(C.gray, `\n  tokens estimate: ${s.tokensEstimate.toLocaleString()}`));
-    console.log('');
-    return;
-  }
-  if (sub === 'job' && args[1]) rows = led.byTask(args[1]);
-  else if (sub === 'agent' && args[1]) rows = led.recent(200, { agent: args[1] });
-  else if (sub === 'fails') rows = led.recent(200, { status: 'failed' });
-  else rows = led.recent(Number(args[0]) > 0 ? Number(args[0]) : 20);
-  if (!rows.length) { console.log(col(C.gray, '  (no receipts match)\n')); return; }
-  for (const r of rows.slice(-30)) {
-    const c = r.status === 'verified' ? C.green : r.status === 'failed' ? C.red : C.gray;
-    const when = String(r.at || '').slice(11, 19);
-    console.log(`  ${col(c, '[*]')} ${col(C.gray, when)} ${col(C.bold, (r.agent || '?').slice(0, 14).padEnd(14))} ${col(c, (r.status || '').padEnd(9))} ${col(C.gray, (r.claim || r.action || '').slice(0, 90))}`);
-  }
-  console.log(col(C.gray, `\n  showing ${Math.min(30, rows.length)} of ${rows.length}\n`));
-}
-
-async function cmdPurpflow(args = []) {
-  // purpclaw purpflow <mode> "<objective>"   modes: goal plan validate execute review repair prove
-  // Controlled recursion with receipts — never "just keeps going".
-  const pf = require('../lib/purpflow');
-  const mode = (args[0] || 'help').toLowerCase();
-  const objective = args.slice(1).join(' ').replace(/^["']|["']$/g, '');
-  banner();
-  sectionHead('  PURPFLOW — controlled recursion with receipts');
-  if (mode === 'help' || !pf.MODES.includes(mode)) {
-    console.log(col(C.gray, `  modes: ${pf.MODES.join(' · ')}`));
-    console.log(col(C.gray, `  usage: purpclaw purpflow <mode> "<objective>"`));
-    console.log(col(C.gray, `  stop rules: ${pf.STOP_CONDITIONS.join(', ')}\n`));
-    return;
-  }
-  if (!objective) { console.log(col(C.yellow, `  need an objective: purpclaw purpflow ${mode} "<objective>"\n`)); return; }
-  console.log(col(C.cyan, `  ${mode.toUpperCase()} → "${objective}"\n`));
-  const loop = await pf.run(mode, objective, {});
-  for (const r of loop.receipts) {
-    const c = r.result === 'pass' ? C.green : r.result === 'fail' ? C.red : C.gray;
-    console.log(`  ${col(c, '[*]')} ${col(C.bold, r.step)} ${col(c, r.result || 'info')} — ${col(C.gray, r.detail)}`);
-    for (const e of (r.evidence || [])) console.log(col(C.gray, `      ${e}`));
-  }
-  const done = loop.status === 'done';
-  console.log(`\n  ${col(done ? C.green : C.red, done ? 'DONE BECAUSE:' : `${loop.status.toUpperCase()} (stopped_by ${loop.stopped_by}):`)} ${col(C.gray, loop.receipts.filter(r => r.result === 'pass').map(r => r.step).join(', ') || '—')}`);
-  console.log(col(C.gray, `  loop ${loop.id} · ${loop.receipts.length} receipt(s) · ${loop.FLOW_DIR || '~/.purpclaw/purpflow'}\n`));
-  return loop;
-}
-
-async function cmdPulse(args = []) {
-  // purpclaw pulse          — show current pulse status + last 5 findings
-  // purpclaw pulse tick     — trigger a manual tick and show findings
-  // purpclaw pulse history  — show last 20 findings
-  const sub = (args[0] || '').toLowerCase();
-  banner();
-  sectionHead('  PURPCLAW PULSE — the stack\'s own heartbeat');
-
-  if (sub === 'tick') {
-    const r = await httpJSON('POST', 7780, '/api/pulse/tick');
-    console.log(col(C.cyan, '  Manual tick complete.'));
-    if (r.findings && r.findings.length) {
-      for (const f of r.findings) {
-        const sev = f.severity === 'error' ? C.red : f.severity === 'warn' ? C.yellow : C.green;
-        console.log(`  ${col(sev, '[*]')} ${col(C.bold, f.title)}: ${col(C.gray, f.body)}`);
-      }
-    } else {
-      console.log(col(C.green, '  No new findings. Stack is nominal.'));
-    }
-    return 0;
-  }
-
-  if (sub === 'history') {
-    const r = await httpJSON('GET', 7780, '/api/pulse/notifications?limit=20');
-    if (r.error) { console.log(col(C.red, '  [X] ' + r.error)); return 1; }
-    const nf = r.notifications || [];
-    console.log(col(C.gray, `  Last ${nf.length} findings (live from /api/pulse/notifications):`));
-    for (const n of nf) {
-      const sev = n.severity === 'error' ? C.red : n.severity === 'warn' ? C.yellow : C.green;
-      const ts = n.ts ? n.ts.substring(11, 19) : '';
-      console.log(`  ${col(sev, '[*]')} ${col(C.gray, ts)} ${col(C.bold, n.title)} ${col(C.gray, '(' + (n.kind || '') + ')')}`);
-      console.log(`     ${col(C.gray, n.body)}`);
-    }
-    return 0;
-  }
-
-  const status = await httpJSON('GET', 7780, '/api/pulse');
-  if (status.error) {
-    console.log(col(C.red, '  [X] Pulse unavailable: ' + status.error));
-    return 1;
-  }
-  console.log(`  ${col(C.bold, 'Tick')}            ${col(C.white, String(status.tickCount))}`);
-  console.log(`  ${col(C.bold, 'Interval')}        ${col(C.gray, (status.intervalMs / 1000) + 's')}`);
-  console.log(`  ${col(C.bold, 'Last pulse')}      ${col(C.gray, status.lastPulseAt || 'never')}`);
-  const down = status.servicesDown && status.servicesDown.length;
-  console.log(`  ${col(C.bold, 'Services down')}   ${down ? col(C.red, down + ' ' + status.servicesDown.join(', ')) : col(C.green, '0')}`);
-  console.log(`  ${col(C.bold, 'Notifications')}   ${col(C.white, String(status.notificationCount))}`);
-
-  if (status.latestNotifications && status.latestNotifications.length) {
-    console.log('');
-    console.log(col(C.gray, '  ── Latest findings ──'));
-    for (const n of status.latestNotifications.slice(0, 5)) {
-      const sev = n.severity === 'error' ? C.red : n.severity === 'warn' ? C.yellow : C.green;
-      console.log(`  ${col(sev, '[*]')} ${col(C.bold, n.title)} ${col(C.gray, '(' + n.severity + ')')}`);
-      console.log(`     ${col(C.gray, n.body)}`);
-    }
-  }
-  return 0;
-}
-
-async function cmdWhoami() {
-  // purpclaw whoami — live stack self-description, no hardcoded numbers
-  banner();
-  sectionHead('  PURPCLAW WHOAMI — the stack, truthfully');
-  const w = await httpJSON('GET', 7780, '/api/whoami');
-  if (w.error) {
-    console.log(col(C.red, '  [X] /api/whoami unavailable: ' + w.error));
-    console.log(col(C.gray, '    (unified_api :7780 may be down)'));
-    return 1;
-  }
-  const t = w.systems && w.systems.tools;
-  const a = w.systems && w.systems.agents;
-  const p = w.systems && w.systems.providers;
-  let _pkgV = '0.2.0'; try { _pkgV = require(path.join(PURP_DIR, 'package.json')).version; } catch {}
-  console.log(`  ${col(C.bold, 'I am')}            ${col(C.purple, w.name)} ${col(C.gray, 'v' + (w.version || _pkgV))}`);
-  console.log(`  ${col(C.bold, 'Mode')}            ${col(C.white, w.mode)}`);
-  console.log(`  ${col(C.bold, 'Runtime')}         ${col(C.white, w.runtime && w.runtime.node + ' on ' + w.runtime.platform + '/' + w.runtime.arch)}`);
-  console.log(`  ${col(C.bold, 'Uptime')}          ${col(C.white, w.runtime && w.runtime.uptimeSec + 's')}`);
-  console.log('');
-  console.log(`  ${col(C.bold, 'Tools')}           ${col(C.white, t && t.total + ' registered')} ${col(C.gray, '(' + t.breakdown.core + ' core, ' + t.breakdown.skills + ' skills, ' + t.breakdown.bodyBridge + ' body, ' + t.breakdown.nim + ' nim, ' + t.breakdown.mcp + ' mcp)')}`);
-  console.log(`  ${col(C.bold, 'Agents')}          ${col(C.white, a.count + ' registered, ' + (w.surfaces && w.surfaces.agentTower.divisions) + ' divisions')}`);
-  console.log(`  ${col(C.bold, 'Providers')}       ${col(C.white, p.count + ' ready (' + p.present.join(', ') + ')')}`);
-  console.log(`  ${col(C.bold, 'Unified API')}     ${col(C.white, 'port ' + w.surfaces.unifiedApi.port + ', ' + (w.surfaces.unifiedApi.ok ? col(C.green, 'UP') : col(C.red, 'DOWN'))) + ', uptime ' + Math.round(w.surfaces.unifiedApi.uptime || 0) + 's, ' + (w.surfaces.unifiedApi.memoryMB || '?') + 'MB'}`);
-  console.log(`  ${col(C.bold, 'Agent tower')}     ${col(C.white, 'port ' + w.surfaces.agentTower.port + ', ' + w.surfaces.agentTower.registered + ' registered')}`);
-  console.log('');
-  console.log(col(C.cyan, '  I have: read, write, edit, shell, grep, code-search, discover, web-fetch, git, ls, cp, mv.'));
-  console.log(col(C.cyan, '  Use discover() if you need a tool not in that list.'));
-  return 0;
-}
-
-async function cmdDoctors(args = []) {
-  // purpclaw doctors — pulse + service health + last 5 errors in one screen
-  const sub = (args[0] || '').toLowerCase();
-  banner();
-  sectionHead('  PURPCLAW DOCTORS — pulse + health + errors');
-
-  // 1. Pulse status
-  const ps = await httpJSON('GET', 7780, '/api/pulse');
-  if (ps.error) {
-    console.log(col(C.red, '  [X] Pulse: ' + ps.error));
-  } else {
-    const down = ps.servicesDown && ps.servicesDown.length;
-    const status = down ? col(C.red, down + ' DOWN') : col(C.green, 'ALL GREEN');
-    console.log(`  ${col(C.bold, 'Pulse')}        tick ${ps.tickCount}, last ${col(C.gray, ps.lastPulseAt)}  ${status}`);
-  }
-
-  // 2. Service probe
-  console.log('');
-  console.log(col(C.gray, '  ── Service probe ──'));
-  const targets = [
-    { name: 'unified-api', port: 7780, path: '/api/health' },
-    { name: 'eventbus',    port: 7782, path: '/health' },
-    { name: 'state',       port: 7783, path: '/health' },
-    { name: 'orchestrator',port: 7784, path: '/api/health' },
-    { name: 'agent-tower', port: 7790, path: '/tower/status' },
-    { name: 'gatekeeper',  port: 7791, path: '/health' },
-    { name: 'harness',     port: 7798, path: '/health' },
-    { name: 'cognitive',   port: 7880, path: '/api/spine/health' },
-  ];
-  for (const t of targets) {
-    const r = await httpJSON('GET', t.port, t.path, 1500);
-    // v2.1 — httpJSON returns the parsed body. A healthy response has 'status' or
-    // no error key. A failed one has 'error' set.
-    const ok = r && !r.error && (r.status === 'healthy' || r.ok === true || r.tickCount !== undefined || Object.keys(r).length > 0);
-    const tag = ok ? col(C.green, '[*]') : col(C.red, '[o]');
-    const label = r && r.error ? col(C.red, r.error.substring(0, 30)) : (ok ? col(C.gray, 'up') : col(C.red, 'down'));
-    console.log(`    ${tag}  ${t.name.padEnd(15)} :${t.port}  ${label}`);
-  }
-
-  // 3. Latest pulse findings
-  if (ps && ps.latestNotifications && ps.latestNotifications.length) {
-    console.log('');
-    console.log(col(C.gray, '  ── Recent findings ──'));
-    for (const n of ps.latestNotifications.slice(0, 5)) {
-      const sev = n.severity === 'error' ? C.red : n.severity === 'warn' ? C.yellow : C.green;
-      console.log(`    ${col(sev, '[*]')} ${col(C.bold, n.title)} ${col(C.gray, '(' + n.severity + ')')}`);
-      console.log(`      ${col(C.gray, n.body)}`);
-    }
-  }
-  return 0;
-}
-
-  // Cache loaded commands — avoids repeated require() syscalls for the
-  // same module (e.g. 'hooks', 'plugin' called on every tick).
-  const _cmdCache = new Map();
   function loadCmd(name) {
-    if (_cmdCache.has(name)) return _cmdCache.get(name);
-    try {
-      const mod = require(path.join(PURP_DIR, 'lib', 'commands', name + '.js'));
-      _cmdCache.set(name, mod);
-      return mod;
-    } catch (e) {
-      if (e.code === 'MODULE_NOT_FOUND' || e.code === 'ENOENT') {
-        throw new Error(`purpclaw: command '${name}' not found — lib/commands/${name}.js does not exist`);
-      }
-      throw e;
-    }
-  }
-
-  // Re-dispatch --help for commands that handle it themselves (captured before STRIP_FLAGS stripped it)
-  const HELP_DELEGATE = new Set(['workflow', 'llm', 'browser']);
-  if (_helpDelegate && HELP_DELEGATE.has(_helpDelegate[0])) {
-    const cmdPath = path.join(PURP_DIR, 'lib', 'commands', _helpDelegate[0] + '.js');
-    // Force fresh load — cmdHelp() may have cached the old module this tick
-    delete require.cache[require.resolve(cmdPath)];
-    const mod = require(cmdPath);
-    return await mod.run(_helpDelegate.slice(1), sharedCtx());
+    return require(path.join(PURP_DIR, 'lib', 'commands', name + '.js'));
   }
 
   // Shared context object passed to all lib/commands modules
@@ -6132,999 +6462,6 @@ async function cmdDoctors(args = []) {
   }
 
   // Helper: dispatches the command, optionally wrapped in mochi status bars
-"use strict";
-// _missing_cmds.js — 8 genuinely missing Codex parity commands
-// Injected into bin/purpclaw.js at line 4836
-
-// ── login ─────────────────────────────────────────────────────────────────────
-// Codex: codex login [--api-key <key> | --device-auth | --chatgpt]
-// PURPCLAW: credentials-store.js stores keys as TOML in ~/.purpclaw/credentials.toml
-async function cmdLogin(args) {
-  const CS = require(path.join(PURP_DIR, 'lib', 'credentials-store'));
-  const readline = require('readline');
-
-  const sub = (args[0] || '').toLowerCase();
-
-  // ── login status ─────────────────────────────────────────────────────────────
-  if (sub === 'status') {
-    const CS = require(path.join(PURP_DIR, 'lib', 'credentials-store'));
-    const creds = CS.list();
-    if (!creds.length) {
-      console.log('No credentials stored. Run: purpclaw login');
-      return;
-    }
-    console.log('\n  Stored credentials:');
-    for (const c of creds) {
-      console.log('  ' + c.provider + '  ' + c.masked);
-    }
-    console.log('');
-    return;
-  }
-
-  const apiKeyIdx = args.indexOf('--api-key');
-  const provider = args[args.indexOf('--provider') + 1] || 'openai';
-
-  banner();
-  sectionHead('  PURPCLAW LOGIN');
-
-  // List existing
-  const existing = CS.list();
-  if (existing.length > 0) {
-    console.log(col(C.gray, '  Currently stored:'));
-    for (const e of existing) {
-      console.log(`  ${col(C.cyan, e.provider.padEnd(16))} ${col(C.gray, e.masked)}`);
-    }
-    console.log('');
-  }
-
-  // Interactive key prompt
-  let apiKey = null;
-  if (apiKeyIdx !== -1 && args[apiKeyIdx + 1]) {
-    apiKey = args[apiKeyIdx + 1];
-  } else if (sub === 'api-key' && args[1]) {
-    apiKey = args[1];
-  }
-
-  if (!apiKey) {
-    const rl = readline.createInterface({ input: process.stdin, output: process.stdout, terminal: true });
-    apiKey = await new Promise(res => rl.question('  Enter API key: ', res));
-    rl.close();
-    if (!apiKey || !apiKey.trim()) {
-      console.log(col(C.red, '  Cancelled.\n'));
-      return;
-    }
-  }
-
-  apiKey = apiKey.trim();
-  CS.store(provider, apiKey);
-  console.log(`\n  ${col(C.green, 'Saved')} — ${provider} key stored in ~/.purpclaw/credentials.toml`);
-  console.log(col(C.gray, '  Run `purpclaw logout` to remove, `purpclaw doctor` to verify.\n'));
-}
-
-// ── logout ─────────────────────────────────────────────────────────────────────
-// Codex: codex logout [--all | <provider>]
-async function cmdLogout(args) {
-  const CS = require(path.join(PURP_DIR, 'lib', 'credentials-store'));
-  const sub = (args[0] || '').toLowerCase();
-
-  banner();
-  sectionHead('  PURPCLAW LOGOUT');
-
-  if (sub === '--all' || sub === 'all') {
-    const existing = CS.list();
-    if (existing.length === 0) {
-      console.log(col(C.gray, '  No credentials stored.\n'));
-      return;
-    }
-    let count = 0;
-    for (const e of existing) { CS.remove(e.provider); count++; }
-    console.log(`  ${col(C.green, 'Cleared')} — ${count} credential(s) removed`);
-    console.log(col(C.gray, '  ~/.purpclaw/credentials.toml emptied.\n'));
-    return;
-  }
-
-  const provider = args[0] || 'openai';
-  const ok = CS.remove(provider);
-  if (ok) {
-    console.log(`  ${col(C.green, 'Removed')} — ${provider} key deleted`);
-  } else {
-    console.log(`  ${col(C.yellow, 'Not found')} — no key for '${provider}'`);
-  }
-  console.log('');
-}
-
-// ── cmdDelete ─────────────────────────────────────────────────────────────────
-// Codex: codex delete <session-id>
-async function cmdDelete(args) {
-  const SESSIONS_DIR = path.join(PURP_DIR, 'agent_work', 'sessions');
-  const target = (args[0] || '').toLowerCase();
-
-  banner();
-  sectionHead('  PURPCLAW DELETE SESSION');
-
-  if (!target || target === 'list') {
-    console.log(col(C.gray, '  usage: purpclaw delete <session-id>'));
-    console.log(col(C.gray, '  Run `purpclaw resume list` to see session IDs.\n'));
-    return;
-  }
-
-  const sessionFile = path.join(SESSIONS_DIR, target + '.jsonl');
-  if (!fs.existsSync(sessionFile)) {
-    console.log(`  ${col(C.red, 'Not found')} — '${target}' does not exist`);
-    console.log(col(C.gray, '  Run `purpclaw resume list` to see session IDs.\n'));
-    return;
-  }
-
-  fs.unlinkSync(sessionFile);
-  console.log(`  ${col(C.green, 'Deleted')} — ${target}.jsonl`);
-  // Also clean up any metadata
-  const metaFile = path.join(SESSIONS_DIR, target + '.meta.json');
-  if (fs.existsSync(metaFile)) fs.unlinkSync(metaFile);
-  console.log('');
-}
-
-// ── cmdArchive ────────────────────────────────────────────────────────────────
-// Codex: codex archive <session-id>
-async function cmdArchive(args, unarchive) {
-  const SESSIONS_DIR = path.join(PURP_DIR, 'agent_work', 'sessions');
-  const ARCHIVE_DIR = path.join(PURP_DIR, 'agent_work', 'archive');
-  const target = (args[0] || '').toLowerCase();
-  const op = unarchive ? 'Restored' : 'Archived';
-
-  banner();
-  sectionHead(`  PURPCLAW ${unarchive ? 'UNARCHIVE' : 'ARCHIVE'} SESSION`);
-
-  if (!target || target === 'list') {
-    console.log(col(C.gray, `  usage: purpclaw ${unarchive ? 'unarchive' : 'archive'} <session-id>`));
-    if (unarchive) {
-      if (!fs.existsSync(ARCHIVE_DIR)) {
-        console.log(col(C.gray, '  No archived sessions.\n'));
-        return;
-      }
-      const archived = fs.readdirSync(ARCHIVE_DIR).filter(f => f.endsWith('.jsonl'));
-      if (!archived.length) { console.log(col(C.gray, '  No archived sessions.\n')); return; }
-      console.log(col(C.gray, '  Archived:'));
-      for (const f of archived.sort()) {
-        console.log(`  ${col(C.cyan, f.replace('.jsonl', ''))}`);
-      }
-      console.log('');
-    } else {
-      console.log(col(C.gray, '  Run `purpclaw resume list` to see session IDs.\n'));
-    }
-    return;
-  }
-
-  const srcDir = unarchive ? ARCHIVE_DIR : SESSIONS_DIR;
-  const dstDir = unarchive ? SESSIONS_DIR : ARCHIVE_DIR;
-  const srcFile = path.join(srcDir, target + '.jsonl');
-
-  if (!fs.existsSync(srcFile)) {
-    console.log(`  ${col(C.red, 'Not found')} — '${target}' not in ${unarchive ? 'archive' : 'active sessions'}`);
-    return;
-  }
-
-  fs.mkdirSync(ARCHIVE_DIR, { recursive: true });
-  const dstFile = path.join(dstDir, target + '.jsonl');
-  fs.renameSync(srcFile, dstFile);
-  console.log(`  ${col(C.green, op)} — ${target}.jsonl ${unarchive ? 'moved to active' : 'moved to archive'}`);
-  console.log(col(C.gray, `  Run: purpclaw resume ${target}\n`));
-}
-
-// ── cmdFork ───────────────────────────────────────────────────────────────────
-// Codex: codex fork [--last | <session-id>]
-async function cmdFork(args) {
-  const SESSIONS_DIR = path.join(PURP_DIR, 'agent_work', 'sessions');
-  const fs2 = require('fs');
-
-  banner();
-  sectionHead('  PURPCLAW FORK SESSION');
-
-  // Find target session
-  let targetId = null;
-  let sessionFile = null;
-
-  if (args[0] === '--last' || args[0] === 'last') {
-    const files = fs.readdirSync(SESSIONS_DIR).filter(f => f.endsWith('.jsonl')).sort();
-    if (!files.length) { console.log(col(C.red, '  No sessions found.\n')); return; }
-    targetId = files[files.length - 1].replace('.jsonl', '');
-    sessionFile = path.join(SESSIONS_DIR, files[files.length - 1]);
-  } else {
-    targetId = args[0] || '';
-    sessionFile = path.join(SESSIONS_DIR, targetId + '.jsonl');
-    if (!fs.existsSync(sessionFile)) {
-      console.log(`  ${col(C.red, 'Not found')} — '${targetId}'`);
-      console.log(col(C.gray, '  Run `purpclaw resume list`\n'));
-      return;
-    }
-  }
-
-  // Generate new UUID for fork
-  const { randomUUID } = require('crypto');
-  const forkId = randomUUID ? randomUUID() : ('fork-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7));
-  const forkFile = path.join(SESSIONS_DIR, forkId + '.jsonl');
-
-  // Copy session
-  fs.copyFileSync(sessionFile, forkFile);
-  console.log(`  ${col(C.green, 'Forked')} — ${targetId} → ${col(C.cyan, forkId)}`);
-  console.log(col(C.gray, `  File: ${forkFile}`));
-  console.log(col(C.gray, `  Run: purpclaw resume ${forkId}\n`));
-}
-
-// ── cmdSandbox ────────────────────────────────────────────────────────────────
-// Codex: codex sandbox [--list | --create | --destroy <id> | --run <id> <cmd>]
-async function cmdSandbox(args) {
-  const SB = require(path.join(PURP_DIR, 'lib', 'sandbox'));
-
-  banner();
-  sectionHead('  PURPCLAW SANDBOX');
-
-  const sub = (args[0] || '').toLowerCase();
-
-  if (sub === '--list' || sub === 'list' || sub === 'ls' || !sub) {
-    const avail = await SB.dockerAvailable();
-    if (!avail.available) {
-      console.log(`  ${col(C.red, 'Docker not available')}: ${avail.error || 'unknown error'}`);
-      console.log(col(C.gray, '  Install Docker and ensure the daemon is running.\n'));
-      return;
-    }
-    console.log(`  ${col(C.gray, 'Docker')} ${col(C.green, avail.version)}`);
-    const boxes = await SB.listSandboxes();
-    if (!boxes.length) {
-      console.log(col(C.gray, '  No sandbox containers.\n'));
-      console.log(`  ${col(C.gray, 'Create: purpclaw sandbox --create [--name <name>] [--image <image>]')}`);
-    } else {
-      console.log(col(C.gray, '  Containers:'));
-      for (const b of boxes) {
-        const running = b.Status && b.Status.startsWith('Up') ? C.green : C.yellow;
-        console.log(`  ${col(C.cyan, b.ID.slice(0, 12))} ${col(running, b.Status.slice(0, 20).padEnd(20))} ${col(C.white, b.Names)}`);
-      }
-    }
-    console.log('');
-    return;
-  }
-
-  if (sub === '--create' || sub === 'create') {
-    const nameIdx = args.indexOf('--name');
-    const imageIdx = args.indexOf('--image');
-    const name = nameIdx !== -1 ? args[nameIdx + 1] : null;
-    const image = imageIdx !== -1 ? args[imageIdx + 1] : 'alpine';
-    try {
-      const box = await SB.createSandbox(name, { image });
-      console.log(`  ${col(C.green, 'Created')} sandbox ${col(C.cyan, box.name)} (${box.id.slice(0, 12)})`);
-      console.log(col(C.gray, `  Image: ${box.image}`));
-    } catch (e) {
-      console.log(`  ${col(C.red, 'Failed')}: ${e.message}`);
-    }
-    console.log('');
-    return;
-  }
-
-  if (sub === '--destroy' || sub === 'destroy' || sub === 'rm' || sub === 'delete') {
-    const targetId = args[1] || args[args.indexOf('--destroy') + 1] || '';
-    if (!targetId) {
-      console.log(col(C.gray, '  usage: purpclaw sandbox --destroy <container-id-or-name>\n'));
-      return;
-    }
-    try {
-      await SB.destroySandbox(targetId);
-      console.log(`  ${col(C.green, 'Destroyed')} sandbox ${targetId}`);
-    } catch (e) {
-      console.log(`  ${col(C.red, 'Failed')}: ${e.message}`);
-    }
-    console.log('');
-    return;
-  }
-
-  if (sub === '--run' || sub === 'run') {
-    const sandboxId = args[1];
-    const command = args.slice(2).join(' ');
-    if (!sandboxId || !command) {
-      console.log(col(C.gray, '  usage: purpclaw sandbox --run <id> <command>\n'));
-      return;
-    }
-    const result = await SB.runInSandbox(sandboxId, command);
-    if (result.stdout) process.stdout.write(result.stdout);
-    if (result.stderr) process.stderr.write(result.stderr);
-    console.log(col(C.gray, `\n  exit ${result.exitCode}`));
-    return;
-  }
-
-  console.log(col(C.gray, '  usage:'));
-  console.log(col(C.gray, '    purpclaw sandbox [--list]          list containers'));
-  console.log(col(C.gray, '    purpclaw sandbox --create          create new sandbox'));
-  console.log(col(C.gray, '    purpclaw sandbox --destroy <id>   destroy sandbox'));
-  console.log(col(C.gray, '    purpclaw sandbox --run <id> <cmd> run command in sandbox\n'));
-}
-
-// ── cmdRemoteControl ──────────────────────────────────────────────────────────
-// Codex: codex remote-control [start | stop | pair]
-async function cmdRemoteControl(args) {
-  banner();
-  sectionHead('  PURPCLAW REMOTE CONTROL');
-  const sub = (args[0] || '').toLowerCase();
-
-  // Load existing remote config
-  const RC = path.join(PURP_DIR, '.purpclaw', 'remote-config.json');
-  const loadCfg = () => { try { return JSON.parse(fs.readFileSync(RC, 'utf-8')); } catch { return { targets: [], paired: false }; } };
-
-  if (sub === 'start') {
-    console.log(`  ${col(C.green, 'Starting')} remote control daemon...`);
-    const cfg = loadCfg();
-    cfg.enabled = true;
-    cfg.lastStart = new Date().toISOString();
-    fs.mkdirSync(path.dirname(RC), { recursive: true });
-    fs.writeFileSync(RC, JSON.stringify(cfg, null, 2));
-    console.log(`  ${col(C.green, 'Enabled')} — remote control active`);
-    console.log(col(C.gray, '  Note: Requires app-server daemon running (purpclaw start)'));
-    console.log('');
-    return;
-  }
-
-  if (sub === 'stop') {
-    const cfg = loadCfg();
-    cfg.enabled = false;
-    fs.writeFileSync(RC, JSON.stringify(cfg, null, 2));
-    console.log(`  ${col(C.yellow, 'Stopped')} — remote control disabled\n`);
-    return;
-  }
-
-  if (sub === 'pair') {
-    const cfg = loadCfg();
-    const code = Math.random().toString(36).slice(2, 8).toUpperCase();
-    cfg.pairingCode = code;
-    cfg.pairedAt = null;
-    cfg.paired = false;
-    fs.writeFileSync(RC, JSON.stringify(cfg, null, 2));
-    console.log(`  ${col(C.cyan, 'Pairing code')}: ${col(C.white, code)}`);
-    console.log(col(C.gray, '  Enter this code in the remote client within 5 minutes.\n'));
-    return;
-  }
-
-  if (sub === 'share') {
-    // Codex: codex remote-control share — generate a shareable URL/token
-    const cfg = loadCfg();
-    const token = Math.random().toString(36).slice(2, 10) + '-' + Math.random().toString(36).slice(2, 6);
-    cfg.shareToken = token;
-    cfg.shareCreated = new Date().toISOString();
-    fs.writeFileSync(RC, JSON.stringify(cfg, null, 2));
-    console.log('  Share token: ' + col(C.cyan, token));
-    console.log(col(C.gray, '  Remote clients connect via: purpclaw remote connect ' + token));
-    console.log('');
-    return;
-  }
-
-  // Default: status
-  const cfg = loadCfg();
-  console.log(`  ${col(C.gray, 'Status')}: ${cfg.enabled ? col(C.green, 'enabled') : col(C.yellow, 'disabled')}`);
-  if (cfg.lastStart) console.log(`  ${col(C.gray, 'Last start')}: ${cfg.lastStart}`);
-  if (cfg.paired) console.log(`  ${col(C.green, 'Paired')}: yes`);
-  console.log('');
-  console.log(col(C.gray, '  usage: purpclaw remote-control [start | stop | pair]\n'));
-}
-
-// ── cmdCloud ──────────────────────────────────────────────────────────────────
-// Codex: codex cloud — browse Codex Cloud tasks
-async function cmdCloud(args) {
-  const CS = (() => { try { return require('../lib/cloud-sync'); } catch { return null; } })();
-  if (!CS) {
-    banner();
-    sectionHead('  PURPCLAW CLOUD');
-    console.log(`  ${col(C.red, '[X]')} cloud-sync not available\n`);
-    return;
-  }
-
-  const sub = (args[0] || 'status').toLowerCase();
-
-  if (sub === 'status' || sub === 'st') {
-    CS.cliStatus();
-    return;
-  }
-
-  if (sub === 'push' || sub === 'upload') {
-    const sessionId = args[1];
-    if (!sessionId) { console.log(`\n  ${col(C.red, 'Usage:')} purpclaw cloud push <session-id>\n`); return; }
-    console.log(`  ${col(C.cyan, 'Pushing')} ${sessionId} ...`);
-    CS.push(sessionId).then(r => {
-      if (!r.ok) { console.log(`  ${col(C.red, '[X]')} ${r.error}\n`); return; }
-      console.log(`  ${col(C.green, '[OK]')} pushed to cloud${r.size ? ` (${r.size} bytes)` : ''}\n`);
-    });
-    return;
-  }
-
-  if (sub === 'pull' || sub === 'download') {
-    const sessionId = args[1];
-    if (!sessionId) { console.log(`\n  ${col(C.red, 'Usage:')} purpclaw cloud pull <session-id>\n`); return; }
-    console.log(`  ${col(C.cyan, 'Pulling')} ${sessionId} ...`);
-    CS.pull(sessionId).then(r => {
-      if (!r.ok) { console.log(`  ${col(C.red, '[X]')} ${r.error}\n`); return; }
-      console.log(`  ${col(C.green, '[OK]')} restored as ${r.sessionId}\n`);
-    });
-    return;
-  }
-
-  if (sub === 'configure' || sub === 'config') {
-    const cfg = CS.getConfig();
-    console.log(`\n  Cloud Sync Configuration`);
-    console.log(`  ─────────────────────────`);
-    console.log(`  Backend:  ${cfg.backend}`);
-    console.log(`  Auto-sync: ${cfg.autoSync ? 'on' : 'off'}`);
-    console.log(`  Interval:  ${cfg.syncIntervalMs / 1000 / 60}min`);
-    console.log(`\n  Usage: purpclaw cloud configure --backend localfs|gist|webhook`);
-    console.log(`         purpclaw cloud configure --gist-token <token>`);
-    console.log(`         purpclaw cloud configure --gist-id <id>`);
-    console.log(`         purpclaw cloud configure --auto-sync --interval-ms <ms>`);
-    console.log(`         purpclaw cloud configure --webhook-url <url>`);
-    console.log('');
-    return;
-  }
-
-  if (sub === 'backend' || sub === 'set-backend') {
-    const backend = args[1];
-    if (!backend || !CS.backends[backend]) {
-      console.log(`\n  ${col(C.red, 'Usage:')} purpclaw cloud backend <name>`);
-      console.log(`  Available: ${Object.keys(CS.backends).join(', ')}\n`);
-      return;
-    }
-    CS.configure({ backend });
-    console.log(`\n  ${col(C.green, '[OK]')} backend set to ${backend}\n`);
-    return;
-  }
-
-  console.log(`\n  Cloud Sync`);
-  console.log(`  ──────────`);
-  console.log(`  status / st        — show sync status`);
-  console.log(`  push <session-id>  — upload session to cloud`);
-  console.log(`  pull <session-id>  — download session from cloud`);
-  console.log(`  configure           — show / update config`);
-  console.log(`  backend <name>     — switch backend (${Object.keys(CS.backends).join('|')})`);
-  console.log('');
-}
-
-
-// cmdUpdate — self-update from GitHub releases
-async function cmdUpdate(args) {
-  const https = require('https');
-  const fs = require('fs');
-  const os = require('os');
-  const path = require('path');
-  const { execSync } = require('child_process');
-
-  const check = args.includes('--check');
-  const force = args.includes('--force');
-  const dryRun = args.includes('--dry-run');
-
-  // Get current version from package.json
-  const pkg = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'package.json'), 'utf-8'));
-  const currentVersion = pkg.version || '0.0.0';
-
-  console.log(`\n  ${col(C.cyan + C.bold, 'purpclaw update')}`);
-  console.log(`    current version : ${col(C.white, currentVersion)}`);
-
-  // Fetch latest release from GitHub
-  console.log(`    ${col(C.gray, 'Checking GitHub…')}`);
-  let latestVersion = null;
-  try {
-    latestVersion = await new Promise((resolve, reject) => {
-      const req = https.get({
-        hostname: 'api.github.com',
-        path: '/repos/weemadscotsman/purpclaw/releases/latest',
-        headers: { 'User-Agent': 'purpclaw/' + currentVersion, 'Accept': 'application/vnd.github+json' },
-      }, (res) => {
-        if (res.statusCode === 403) { reject(new Error('rate limited')); return; }
-        if (res.statusCode !== 200) { reject(new Error('HTTP ' + res.statusCode)); return; }
-        let data = '';
-        res.on('data', d => data += d);
-        res.on('end', () => {
-          try { resolve(JSON.parse(data).tag_name || null); } catch { resolve(null); }
-        });
-      });
-      req.on('error', reject);
-      req.setTimeout(8000, () => { req.destroy(); reject(new Error('timeout')); });
-    });
-  } catch (e) {
-    console.log(`    ${col(C.yellow, '[!] Could not check GitHub: ' + e.message)}`);
-    console.log(`    ${col(C.gray, 'Install manually: npm install -g purpclaw')}`);
-    console.log('');
-    return;
-  }
-
-  if (!latestVersion) {
-    console.log(`    ${col(C.yellow, '[!] Could not determine latest version')}`);
-    return;
-  }
-
-  latestVersion = latestVersion.replace(/^v/, '');
-
-  const current = currentVersion.split('.').map(Number);
-  const latest = latestVersion.split('.').map(Number);
-  const outdated = (latest[0] > current[0]) || (latest[0] === current[0] && latest[1] > current[1]) || (latest[0] === current[0] && latest[1] === current[1] && latest[2] > current[2]);
-
-  console.log(`    latest version  : ${outdated ? col(C.yellow, latestVersion) : col(C.green, latestVersion)}`);
-
-  if (check) {
-    if (!outdated) {
-      console.log(`\n  ${col(C.green, '[OK] You are on the latest version')}`);
-    } else {
-      console.log(`\n  ${col(C.yellow, '↑ Update available: ' + currentVersion + ' → ' + latestVersion)}`);
-      console.log(`  ${col(C.gray, 'Run: purpclaw update [--force]')}`);
-    }
-    console.log('');
-    return;
-  }
-
-  if (!outdated && !force) {
-    console.log(`\n  ${col(C.green, '[OK] You are on the latest version')}`);
-    console.log('');
-    return;
-  }
-
-  if (dryRun) {
-    console.log(`\n  ${col(C.cyan, 'Dry run — would update from ' + currentVersion + ' to ' + latestVersion)}`);
-    console.log(`  ${col(C.gray, 'Remove --dry-run to actually update')}`);
-    console.log('');
-    return;
-  }
-
-  // Download and install
-  const tmpDir = path.join(os.tmpdir(), 'purpclaw-update-' + Date.now());
-  fs.mkdirSync(tmpDir);
-  const tarballPath = path.join(tmpDir, 'purpclaw-update.tar.gz');
-
-  console.log(`\n  ${col(C.cyan, '↓ Downloading v' + latestVersion + '…')}`);
-  try {
-    await new Promise((resolve, reject) => {
-      const req = https.get({
-        hostname: 'api.github.com',
-        path: '/repos/weemadscotsman/purpclaw/releases/expanded_assets',
-        headers: { 'User-Agent': 'purpclaw/' + currentVersion, 'Accept': 'application/vnd.github+json' },
-      }, (res) => {
-        // Get redirect
-        if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location) {
-          const u = new URL(res.headers.location);
-          const dl = https.get(u, (r) => {
-            const ws = fs.createWriteStream(tarballPath);
-            r.pipe(ws);
-            ws.on('finish', resolve);
-            ws.on('error', reject);
-          });
-          dl.on('error', reject);
-          dl.setTimeout(30000, () => { dl.destroy(); reject(new Error('download timeout')); });
-          return;
-        }
-        reject(new Error('Expected redirect, got ' + res.statusCode));
-      });
-      req.on('error', reject);
-      req.setTimeout(10000, () => { req.destroy(); reject(new Error('request timeout')); });
-      req.end();
-    });
-  } catch (e) {
-    console.log(`  ${col(C.red, '[X] Download failed: ' + e.message)}`);
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-    return;
-  }
-
-  // Extract
-  console.log(`  ${col(C.cyan, '↓ Extracting…')}`);
-  fs.mkdirSync(path.join(tmpDir, 'extracted'));
-  try {
-    execSync(`tar -xzf "${tarballPath}" -C "${path.join(tmpDir, 'extracted')}" --strip-components=1`, { stdio: 'pipe' });
-  } catch (e) {
-    console.log(`  ${col(C.red, '[X] Extract failed')}`);
-    fs.rmSync(tmpDir, { recursive: true, force: true });
-    return;
-  }
-
-  // Install deps
-  console.log(`  ${col(C.cyan, '↓ Installing dependencies…')}`);
-  try {
-    execSync('npm install --production --no-audit --no-fund', {
-      cwd: path.join(tmpDir, 'extracted'), stdio: 'pipe', timeout: 120000,
-    });
-  } catch (e) {
-    console.log(`  ${col(C.yellow, '[!] npm install had issues but continuing…')}`);
-  }
-
-  // Copy bin
-  const srcBin = path.join(tmpDir, 'extracted', 'bin', 'purpclaw.js');
-  const dstBin = path.join(PURP_DIR, 'bin', 'purpclaw.js');
-  if (fs.existsSync(srcBin)) {
-    fs.copyFileSync(dstBin, dstBin + '.backup-' + Date.now());
-    fs.copyFileSync(srcBin, dstBin);
-    console.log(`  ${col(C.green, '[OK] Binaries updated')}`);
-  }
-
-  fs.rmSync(tmpDir, { recursive: true, force: true });
-  console.log(`\n  ${col(C.green, '[OK] Updated to v' + latestVersion)}`);
-  console.log(`  ${col(C.gray, 'Restart: purpclaw chat')}`);
-  console.log('');
-}
-
-// cmdFileSearch — fuzzy file search CLI (fuzzaldrin-plus engine)
-// Codex: purpclaw file-search [--cwd <dir>] [--limit N] <query>
-async function cmdFileSearch(args) {
-  const Fuzzy = (() => { try { return require('fuzzaldrin-plus'); } catch { return null; } })();
-  if (!Fuzzy) { console.log('\n[X] fuzzaldrin-plus not installed\n'); return; }
-  const path = require('path');
-  const fs   = require('fs');
-
-  let cwd     = PURP_DIR;
-  let limit   = 10;
-  let query   = '';
-
-  // Parse flags
-  for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--cwd' && args[i+1]) cwd = path.resolve(args[++i]);
-    else if (args[i] === '--limit' && args[i+1]) limit = parseInt(args[++i], 10);
-    else if (args[i] === '--help' || args[i] === '-h') {
-      console.log('\nUsage: purpclaw file-search [--cwd <dir>] [--limit N] <query>\n');
-      console.log('  Fuzzy file search using fuzzaldrin-plus scoring');
-      console.log('  Searches filenames and paths recursively\n');
-      return;
-    }
-    else query = args[i];
-  }
-
-  if (!query) { console.log('\n[X] Provide a search query\n'); return; }
-
-  // Collect all files
-  const files = [];
-  function walk(dir) {
-    let entries;
-    try { entries = fs.readdirSync(dir); }
-    catch { return; }
-    for (const entry of entries) {
-      if (entry === 'node_modules' || entry === '.git' || entry === '.next' ||
-          entry === 'dist' || entry === 'coverage' || entry === '.cache') continue;
-      const full = path.join(dir, entry);
-      try {
-        const stat = fs.statSync(full);
-        if (stat.isDirectory()) walk(full);
-        else files.push({ name: entry, path: full, mtime: stat.mtime });
-      } catch { /* skip */ }
-    }
-  }
-
-  walk(cwd);
-
-  // Score and rank
-  const scored = files
-    .map(f => ({ ...f, score: Fuzzy.score(f.name, query) + Fuzzy.score(f.path, query) * 0.5 }))
-    .filter(f => f.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, limit);
-
-  if (!scored.length) { console.log(`\nNo results for "${query}"\n`); return; }
-
-  console.log(`\n${scored.length} result(s) for "${query}" in ${cwd}:\n`);
-  for (const f of scored) {
-    const name = f.name.padEnd(40);
-    const dir  = f.path.replace(cwd, '.').replace(/\\/g, '/');
-    console.log(`  ${name}  ${f.score.toFixed(0).padStart(6)}  ${dir}`);
-  }
-  console.log('');
-}
-
-// cmdReview — non-interactive code review over git diffs (Codex exec review parity)
-async function cmdReview(args) {
-  const { execSync } = require('child_process');
-  const path = require('path');
-
-  // Parse flags
-  const flags = {};
-  for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--uncommitted') flags.uncommitted = true;
-    else if (args[i] === '--base') flags.base = args[++i];
-    else if (args[i] === '--commit') flags.commit = args[++i];
-    else if (args[i] === '--prompt') flags.prompt = args.slice(i + 1).join(' ');
-    else if (args[i] === '--json') flags.json = true;
-  }
-
-  if (!flags.uncommitted && !flags.base && !flags.commit && !flags.prompt) {
-    console.log(`\n${col(C.bold, 'purpclaw exec review [options]')}`);
-    console.log(`  ${col(C.cyan, '--uncommitted')}   Review staged + unstaged + untracked changes`);
-    console.log(`  ${col(C.cyan, '--base <branch>')} Review changes from <branch> to HEAD`);
-    console.log(`  ${col(C.cyan, '--commit <sha>')}  Review a single commit`);
-    console.log(`  ${col(C.cyan, '--prompt <text>')} Free-form review with your question`);
-    console.log(`  ${col(C.cyan, '--json')}          Machine-readable output\n`);
-    return;
-  }
-
-  const isJson = !!flags.json;
-
-  // Use Git Bash shell on Windows to run git commands reliably
-  // Detect shell: prefer Git Bash bash.exe on Windows, fall back to system $SHELL
-  const isWin = process.platform === 'win32';
-  const defaultShell = isWin
-    ? (fs.existsSync('C:/Program Files/Git/bin/bash.exe') ? 'C:/Program Files/Git/bin/bash.exe' : 'cmd.exe')
-    : (process.env.SHELL || '/bin/sh');
-  function run(cmd, timeout = 15000) {
-    const envStr = 'GIT_TERMINAL_PROMPT=0 GIT_PAGER=cat';
-    const shell = defaultShell;
-    try {
-      const r = execSync(`${envStr} ${cmd}`, {
-        encoding: 'utf-8', timeout,
-        shell,
-        maxBuffer: 10 * 1024 * 1024,
-      });
-      return r;
-    } catch (e) {
-      if (e.stdout) return e.stdout;
-      return '';
-    }
-  }
-
-  function sizeBadge(lines) {
-    if (lines === 0) return col(C.green, '[green]');
-    if (lines < 20) return col(C.green, `[+${lines}]`);
-    if (lines < 100) return col(C.yellow, `[+${lines}]`);
-    return col(C.red, `[+${lines}]`);
-  }
-
-  function getDiff(selector) {
-    switch (selector) {
-      case 'uncommitted': {
-        // Note: bare `git diff --stat` hangs on Windows — always specify HEAD
-        const staged = run('git diff --cached --stat 2>/dev/null', 15000);
-        const unstaged = run('git diff --stat HEAD 2>/dev/null', 15000);
-        const untrackedRaw = run('git status --porcelain 2>/dev/null', 30000);
-        const untracked = untrackedRaw.split('\n').filter(l => l.startsWith('??')).map(l => l.slice(3)).slice(0, 50);
-        return { staged, unstaged, untracked, type: 'uncommitted', untrackedTotal: untrackedRaw.split('\n').filter(l => l.startsWith('??')).length };
-      }
-      case 'base': {
-        if (!flags.base) return null;
-        const diff = run(`git diff ${flags.base}...HEAD --stat 2>/dev/null`);
-        return { diff, type: 'base', base: flags.base };
-      }
-    case 'commit': {
-        if (!flags.commit) return null;
-        const show = run(`git show ${flags.commit} --stat 2>/dev/null`);
-        return { show, type: 'commit', sha: flags.commit };
-      }
-      default: return null;
-    }
-  }
-
-  if (flags.prompt) {
-    const diff = run('git diff HEAD 2>/dev/null');
-    const status = run('git status --short 2>/dev/null');
-    const context = `\n=== GIT STATUS ===\n${status}\n=== GIT DIFF ===\n${diff}\n=== END ===`;
-    const body = `Review request:\n\n${flags.prompt}\n\n${context}`;
-    if (isJson) {
-      console.log(JSON.stringify({ ok: true, prompt: flags.prompt, diff_lines: diff.split('\n').length, status_lines: status.split('\n').length }, null, 2));
-    } else {
-      console.log(`\n  ${col(C.cyan + C.bold, 'Code Review')}`);
-      console.log(`    ${diff.split('\n').length} diff lines, ${status.split('\n').length} status lines`);
-      console.log(`    ${col(C.gray, 'Submit to LLM for review:')}`);
-      console.log(`    purpclaw chat "${flags.prompt.slice(0, 100)}..."`);
-    }
-    return;
-  }
-
-  const diff = getDiff(flags.uncommitted ? 'uncommitted' : flags.base ? 'base' : 'commit');
-  if (!diff) return;
-
-  const isUncommitted = diff.type === 'uncommitted';
-
-  if (isJson) {
-    console.log(JSON.stringify({ type: diff.type, ...diff }, null, 2));
-    return;
-  }
-
-  // Summary output
-  console.log(`\n  ${col(C.cyan + C.bold, 'Code Review Summary')}`);
-  if (isUncommitted) {
-    const stagedLines = diff.staged ? diff.staged.trim().split('\n').length : 0;
-    const unstagedLines = diff.unstaged ? diff.unstaged.trim().split('\n').length : 0;
-    console.log(`    staged:     ${sizeBadge(stagedLines)} ${diff.staged || col(C.gray, '(none)')}`);
-    console.log(`    unstaged:   ${sizeBadge(unstagedLines)} ${diff.unstaged ? diff.unstaged.trim().split('\n')[0] : col(C.gray, '(none)')}`);
-    console.log(`    untracked:  ${col(C.gray, (diff.untrackedTotal || diff.untracked.length) + ' file(s)')}`);
-    if (diff.untracked.length > 0) {
-      console.log(`      ${diff.untracked.slice(0, 5).map(f => '? ' + f).join('\n      ')}`);
-      if (diff.untracked.length > 5) console.log(`      ${col(C.gray, '… and ' + (diff.untrackedTotal - 5) + ' more')}`);
-    }
-  } else if (diff.type === 'base') {
-    console.log(`    ${col(C.cyan, diff.base + '...HEAD:')} ${diff.diff.split('\n')[0]}`);
-  } else if (diff.type === 'commit') {
-    console.log(`    ${col(C.cyan, diff.sha + ':')} ${diff.show.split('\n')[0]}`);
-  }
-  console.log('');
-}
-
-
-// cmdPlugins — plugin lifecycle management (install/remove/enable/disable/list)
-async function cmdPlugins(args) {
-  const HR = require(path.join(PURP_DIR, 'lib', 'hooks-runtime'));
-  const fs = require('fs');
-  const { execSync } = require('child_process');
-
-  const sub = (args[0] || 'list').toLowerCase();
-  const PLUGINS_DIR = path.join(PURP_DIR, 'plugins');
-
-  function ensurePluginsDir() {
-    if (!fs.existsSync(PLUGINS_DIR)) fs.mkdirSync(PLUGINS_DIR, { recursive: true });
-  }
-
-  // ── list ─────────────────────────────────────────────────────────────────
-  if (sub === 'list' || sub === 'ls') {
-    const plugins = HR.listPlugins();
-    if (!plugins.length) {
-      console.log(col(C.gray, '\n  no plugins installed.'));
-      console.log(`  Install from:`);
-      console.log(`    purpclaw plugins install <name> --path <dir>`);
-      console.log(`    purpclaw plugins install <name> --git <url>`);
-      return;
-    }
-    console.log(`\n  ${col(C.cyan + C.bold, 'Plugins')}  (${PLUGINS_DIR})`);
-    for (const p of plugins) {
-      const manifest = loadManifest(p.path);
-      const version = manifest ? manifest.version : col(C.gray, '?');
-      const enabled = isEnabled(p.path) ? col(C.green, '[OK]') : col(C.gray, '[o]');
-      const error = manifest === false ? ' ' + col(C.red, '[manifest error]') : '';
-      console.log(`    ${enabled}  ${p.name.padEnd(32)} ${version}${error}`);
-    }
-    console.log(`\n  ${plugins.length} plugin(s) installed`);
-    console.log(`  ${plugins.filter(p => isEnabled(p.path)).length} enabled, ${plugins.filter(p => !isEnabled(p.path)).length} disabled`);
-    console.log(`\n  ${col(C.gray, 'Manage:')}`);
-    console.log(`    purpclaw plugins install <name> [--git <url>] [--path <dir>]`);
-    console.log(`    purpclaw plugins remove <name>`);
-    console.log(`    purpclaw plugins enable <name>`);
-    console.log(`    purpclaw plugins disable <name>`);
-    return;
-  }
-
-  // ── install / add (Codex parity) ──────────────────────────────────────────
-  if (sub === 'install' || sub === 'add') {
-    ensurePluginsDir();
-    let name = null, gitUrl = null, localPath = null;
-
-    for (let i = 1; i < args.length; i++) {
-      if (args[i] === '--git' || args[i] === '-g') gitUrl = args[++i];
-      else if (args[i] === '--path' || args[i] === '-p') localPath = args[++i];
-      else if (!args[i].startsWith('-')) name = args[i];
-    }
-
-    if (!name) {
-      console.log(col(C.red, '\n  usage: purpclaw plugins install <name> [--git <url>] [--path <dir>]'));
-      return;
-    }
-
-    const targetDir = path.join(PLUGINS_DIR, name);
-    if (fs.existsSync(targetDir)) {
-      console.log(col(C.yellow, `\n  Plugin "${name}" already installed at ${targetDir}`));
-      return;
-    }
-
-    if (gitUrl) {
-      console.log(`\n  ${col(C.cyan, `Cloning ${gitUrl}…`)}`);
-      try {
-        execSync(`git clone --depth=1 "${gitUrl}" "${targetDir}"`, {
-          stdio: 'pipe', timeout: 60000,
-          shell: 'C:/Program Files/Git/bin/bash.exe',
-        });
-        console.log(col(C.green, `  [OK] Installed ${name} from git`));
-      } catch (e) {
-        console.log(col(C.red, `  [X] Git clone failed: ${e.message}`));
-        return;
-      }
-    } else if (localPath) {
-      if (!fs.existsSync(localPath)) {
-        console.log(col(C.red, `  [X] Source path not found: ${localPath}`));
-        return;
-      }
-      fs.mkdirSync(targetDir, { recursive: true });
-      copyDirRecursive(localPath, targetDir);
-      console.log(col(C.green, `  [OK] Installed ${name} from ${localPath}`));
-    } else {
-      // Try skills dir
-      const skillPath = path.join(PURP_DIR, 'skills', name);
-      if (fs.existsSync(skillPath)) {
-        fs.mkdirSync(targetDir, { recursive: true });
-        copyDirRecursive(skillPath, targetDir);
-        console.log(col(C.green, `  [OK] Installed ${name} from skills/${name}`));
-      } else {
-        console.log(col(C.red, `\n  Plugin "${name}" not found in skills/`));
-        console.log(`  ${col(C.gray, 'Usage:')}`);
-        console.log(`    purpclaw plugins install <name> --path <source-dir>`);
-        console.log(`    purpclaw plugins install <name> --git <repo-url>`);
-        return;
-      }
-    }
-
-    const manifest = loadManifest(targetDir);
-    if (manifest === false) {
-      console.log(col(C.red, `  [X] Plugin installed but manifest has errors`));
-    } else {
-      console.log(`  ${col(C.green, '[OK]')} manifest valid: ${manifest.name} v${manifest.version || '?'}`);
-      console.log(`  ${col(C.green, '[OK]')} plugin ready — run "purpclaw plugins enable ${name}" to activate`);
-    }
-    return;
-  }
-
-  // ── remove ────────────────────────────────────────────────────────────────
-  if (sub === 'remove' || sub === 'rm' || sub === 'uninstall') {
-    const name = args[1];
-    if (!name) { console.log(col(C.red, '\n  usage: purpclaw plugins remove <name>')); return; }
-    const targetDir = path.join(PLUGINS_DIR, name);
-    if (!fs.existsSync(targetDir)) {
-      console.log(col(C.red, `  Plugin "${name}" not found at ${targetDir}`));
-      return;
-    }
-    fs.rmSync(targetDir, { recursive: true, force: true });
-    console.log(col(C.green, `  [OK] Removed plugin "${name}"`));
-    return;
-  }
-
-  // ── enable ────────────────────────────────────────────────────────────────
-  if (sub === 'enable') {
-    const name = args[1];
-    if (!name) { console.log(col(C.red, '\n  usage: purpclaw plugins enable <name>')); return; }
-    const targetDir = path.join(PLUGINS_DIR, name);
-    if (!fs.existsSync(targetDir)) { console.log(col(C.red, `  Plugin "${name}" not found`)); return; }
-    const manifest = loadManifest(targetDir);
-    if (manifest === false) { console.log(col(C.red, `  Cannot enable — invalid manifest`)); return; }
-    fs.writeFileSync(path.join(targetDir, '.enabled'), '1');
-    console.log(col(C.green, `  [OK] Enabled plugin "${name}"`));
-    return;
-  }
-
-  // ── disable ───────────────────────────────────────────────────────────────
-  if (sub === 'disable') {
-    const name = args[1];
-    if (!name) { console.log(col(C.red, '\n  usage: purpclaw plugins disable <name>')); return; }
-    const targetDir = path.join(PLUGINS_DIR, name);
-    if (!fs.existsSync(targetDir)) { console.log(col(C.red, `  Plugin "${name}" not found`)); return; }
-    const ef = path.join(targetDir, '.enabled');
-    if (fs.existsSync(ef)) fs.unlinkSync(ef);
-    console.log(col(C.yellow, `  [o] Disabled plugin "${name}"`));
-    return;
-  }
-
-  // Default: list
-  const plugins = HR.listPlugins();
-  console.log(`\n  ${col(C.cyan + C.bold, 'Plugins')}`);
-  if (!plugins.length) {
-    console.log(`  ${col(C.gray, 'no plugins installed')}`);
-  } else {
-    for (const p of plugins) {
-      const enabled = isEnabled(p.path);
-      console.log(`    ${enabled ? col(C.green, '[OK]') : col(C.gray, '[o]')}  ${p.name}`);
-    }
-  }
-  console.log(`\n  ${col(C.gray, 'usage: purpclaw plugins <list|install|remove|enable|disable> [args]')}`);
-
-  // ── helpers ────────────────────────────────────────────────────────────────
-  function loadManifest(dir) {
-    for (const f of ['manifest.json', 'package.json']) {
-      const fp = path.join(dir, f);
-      if (fs.existsSync(fp)) {
-        try {
-          const m = JSON.parse(fs.readFileSync(fp, 'utf8'));
-          return { name: m.name, version: m.version || '0.0.0', description: m.description || '' };
-        } catch (e) {
-          console.log(col(C.red, `  manifest parse error in ${f}: ${e.message}`));
-          return false;
-        }
-      }
-    }
-    return { name: path.basename(dir), version: '0.0.0', description: '' };
-  }
-
-  function isEnabled(dir) {
-    return fs.existsSync(path.join(dir, '.enabled')) && !fs.existsSync(path.join(dir, '.disabled'));
-  }
-
-  function copyDirRecursive(src, dest) {
-    fs.mkdirSync(dest, { recursive: true });
-    for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
-      const s = path.join(src, entry.name);
-      const d = path.join(dest, entry.name);
-      if (entry.isDirectory()) copyDirRecursive(s, d);
-      else fs.copyFileSync(s, d);
-    }
-  }
-}
-
-
   async function dispatch() {
     switch (command.toLowerCase()) {
     case 'tui':
@@ -7135,200 +6472,11 @@ async function cmdPlugins(args) {
     case 'restart':   return cmdRestart(args);
     case 'chat':      return cmdChat(args);
     case 'run':       return cmdRun(args);
+    case 'plan':      return cmdPlan(args);
+    case 'clear':     return cmdClear(args);
+    case 'compact':   return cmdCompact(args);
     case 'status':    return cmdStatus();
-    case 'update':    return cmdUpdate(args);
-    case 'login':     return cmdLogin(args);
-    case 'logout':    return cmdLogout(args);
-    case 'delete':    return cmdDelete(args);
-    case 'archive':   return cmdArchive(args, false);
-    case 'unarchive': return cmdArchive(args, true);
-    case 'eval':
-    case 'eval:fix':  return loadCmd('eval-auto-fix').run(args, sharedCtx());
-    case 'apply-diff': return loadCmd('apply-diff').run(args, sharedCtx());
-    case 'init-project': return loadCmd('init-project').run(args, sharedCtx());
-    case 'fork':      return cmdFork(args);
-    case 'sandbox':   return cmdSandbox(args);
-    case 'remote-control': return cmdRemoteControl(args);
-    case 'execpolicy': {
-      const EP = require(path.join(PURP_DIR, 'lib', 'exec-policy'));
-      const sub = (args[0] || '').toLowerCase();
-      const next = (args[1] || '').toLowerCase();
-      if (sub === 'check') {
-        const cmd = args.slice(1).join(' ');
-        if (!cmd) { console.log('usage: purpclaw execpolicy check <command>'); return 1; }
-        const result = EP.checkSync(cmd);
-        if (result.allowed) console.log('allowed  — ' + (result.matched || result.source || 'ok'));
-        else { console.log('denied   — ' + (result.matched || result.source || 'policy')); return 1; }
-        return 0;
-      }
-      if (sub === 'watch') {
-        console.log('Watching ' + EP.POLICY_FILE + ' for changes... (Ctrl+C to stop)');
-        EP.watch(() => {
-          const p = EP.list();
-          console.log('\n[policy reloaded] allow:' + p.allow.length + ' deny:' + p.deny.length);
-        });
-        return 0;
-      }
-      if (sub === 'list') {
-        const p = EP.list();
-        console.log('[allow]');
-        if (!p.allow.length) console.log('  (empty)');
-        else p.allow.forEach(x => console.log('  ' + x));
-        console.log('[deny]');
-        if (!p.deny.length) console.log('  (empty)');
-        else p.deny.forEach(x => console.log('  ' + x));
-        const n = EP.networkList();
-        console.log('[network.allow]');
-        if (!n.allow.length) console.log('  (empty)');
-        else n.allow.forEach(x => console.log('  ' + x));
-        console.log('[network.deny]');
-        if (!n.deny.length) console.log('  (empty)');
-        else n.deny.forEach(x => console.log('  ' + x));
-        return 0;
-      }
-      if (sub === 'allow' || sub === 'deny' || sub === 'remove') {
-        const pat = args.slice(1).join(' ');
-        if (!pat) { console.log('usage: purpclaw execpolicy ' + sub + ' <pattern>'); return 1; }
-        if (sub === 'allow') { EP.allow(pat); console.log('allowed: ' + pat); }
-        else if (sub === 'deny') { EP.deny(pat); console.log('denied: ' + pat); }
-        else { EP.remove(pat); console.log('removed: ' + pat); }
-        return 0;
-      }
-      if (sub === 'network') {
-        const act = next; const target = args.slice(2).join(' ');
-        if (!target) { console.log('usage: purpclaw execpolicy network <allow|deny|remove> <target>'); return 1; }
-        if (act === 'allow') { EP.networkAllow(target); console.log('network allowed: ' + target); }
-        else if (act === 'deny') { EP.networkDeny(target); console.log('network denied: ' + target); }
-        else if (act === 'remove') { EP.networkRemove(target); console.log('network removed: ' + target); }
-        else { console.log('usage: purpclaw execpolicy network <allow|deny|remove> <target>'); return 1; }
-        return 0;
-      }
-      if (sub === 'amend') {
-        const result = EP.amend(args.slice(1));
-        if (result.message === 'interactive') {
-          console.log('Interactive policy editor — use --add-allow, --add-deny, --remove-allow, --remove-deny, or --list');
-          return 0;
-        }
-        console.log(result.message);
-        return 0;
-      }
-      console.log('purpclaw execpolicy check <command>\npurpclaw execpolicy watch\npurpclaw execpolicy list\npurpclaw execpolicy allow <pattern>\npurpclaw execpolicy deny <pattern>\npurpclaw execpolicy remove <pattern>\npurpclaw execpolicy amend [--add-allow|--add-deny|--remove-allow|--remove-deny] <pattern>\npurpclaw execpolicy network <allow|deny|remove> <target>');
-      return 0;
-    }
-    case 'cloud':     return cmdCloud(args);
-    case 'compress':  return cmdCompress(args);
-    case 'checkpoint': return cmdCheckpoint(args);
-    case 'curator':   return cmdCurator(args);
-    case 'approvals': return cmdApprovals(args);
-    case 'cost':
-      // bare `cost` → summary; `cost analyze/report` → their respective handlers
-      // args here: ['analyze', ...] or [] (bare)
-      if (!args[0] || args[0] === 'summary' || args[0] === 'report') return cmdCost(['summary']);
-      if (args[0] === 'analyze') return cmdCost(['analyze', ...args.slice(1)]);
-      if (args[0] === 'cost-report') return cmdCost(['summary']);
-      return cmdCost(args);
-    case 'cost-report': return cmdCost(['summary']);
-    case 'cost-analyze': return cmdCost(['analyze', ...args]);
-    case 'usage':     return cmdUsage(args);
-    case 'tirith':    return cmdTirith(args);
-    case 'plugins':  return cmdPlugins(args);
     case 'doctor':    return cmdDoctor(args);
-    case 'app-server': {
-      // Codex parity: `codex app-server` / `codex app-server daemon` management
-      // Subcommands: start, stop, restart, status, version, daemon <sub>
-      const { execSync } = require('child_process');
-      const sub = (args[0] || 'status').toLowerCase();
-      const APP_NAME = 'purpclaw-nextjs';
-
-      if (sub === 'daemon') {
-        const daemonSub = (args[1] || 'status').toLowerCase();
-        const daemonCmds = {
-          start:          'pm2 start ecosystem.config.js --env production',
-          stop:           'pm2 delete purpclaw-nextjs 2>/dev/null; pm2 delete purpclaw-app 2>/dev/null; true',
-          restart:        'pm2 restart purpclaw-nextjs 2>/dev/null || pm2 start ecosystem.config.js --env production',
-          bootstrap:      'echo "Bootstrap: SSH-driven durable daemon setup (manual pm2 config required)"',
-          'enable-remote-control': 'echo "Enable remote control: set PURPCLAW_REMOTE=1 and restart"',
-          'disable-remote-control': 'echo "Disable remote control: unset PURPCLAW_REMOTE and restart"',
-          status:         'pm2 jlist 2>/dev/null | node -e "const d=require(\'fs\').readFileSync(\'/dev/stdin\',\'utf-8\');const j=JSON.parse(d);j.filter(x=>x.name.includes(\'purpclaw\')).forEach(x=>console.log(x.name+\'[\'+x.pm2_env.status+\'] pid:\'+x.pid))" || echo "pm2 not running"',
-        };
-        if (daemonCmds[daemonSub]) {
-          try {
-            const out = execSync(daemonCmds[daemonSub], { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'pipe' });
-            if (out) process.stdout.write(out);
-          } catch (e) { if (e.stdout) process.stdout.write(String(e.stdout)); if (e.stderr) process.stderr.write(String(e.stderr)); }
-        } else {
-          console.log('Daemon subcommands: start, stop, restart, status, bootstrap, enable-remote-control, disable-remote-control');
-        }
-        return 0;
-      }
-
-      if (sub === 'start') {
-        try {
-          execSync('pm2 start ecosystem.config.js --env production', { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'inherit' });
-        } catch (e) { if (e.stdout) process.stdout.write(String(e.stdout)); }
-        return 0;
-      }
-      if (sub === 'stop') {
-        try {
-          execSync('pm2 delete purpclaw-nextjs 2>/dev/null; pm2 delete purpclaw-app 2>/dev/null; true', { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'inherit' });
-        } catch (e) {}
-        return 0;
-      }
-      if (sub === 'restart') {
-        try {
-          execSync('pm2 restart purpclaw-nextjs 2>/dev/null || pm2 start ecosystem.config.js --env production', { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'inherit' });
-        } catch (e) {}
-        return 0;
-      }
-      if (sub === 'version') {
-        try {
-          const out = execSync('node -p "JSON.stringify({cli:require(\'./package.json\').version,server:process.env.npm_package_version||\'unknown\'})"', { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'pipe' });
-          process.stdout.write(out);
-        } catch (e) { console.log('{}'); }
-        return 0;
-      }
-
-      if (sub === 'proxy') {
-        // Codex: codex app-server proxy [--sock <path>]
-        const sockIdx = args.indexOf('--sock');
-        const sockPath = sockIdx !== -1 && args[sockIdx + 1] ? args[sockIdx + 1] : null;
-        if (!sockPath) {
-          console.log('usage: purpclaw app-server proxy --sock <socket-path>');
-          return 0;
-        }
-        console.log('proxy to: ' + sockPath);
-        console.log('(Windows named pipe proxy not yet implemented — connect via WebSocket at ws://localhost:9119)');
-        return 0;
-      }
-
-      if (sub === 'generate-ts') {
-        console.log('TypeScript bindings generation requires the TypeScript compiler (tsc).');
-        console.log('This is a Codex IDE integration feature — not applicable to PURPCLAW web runtime.');
-        return 0;
-      }
-
-      if (sub === 'generate-json-schema') {
-        console.log('JSON Schema generation for app-server protocol.');
-        console.log('PURPCLAW uses OpenAPI/REST — schema is auto-generated from route definitions.');
-        return 0;
-      }
-
-      // Default: status
-      try {
-        const out = execSync('pm2 jlist 2>/dev/null || echo "[]"', { encoding: 'utf-8', cwd: PURP_DIR, stdio: 'pipe' });
-        const list = JSON.parse(out);
-        const ours = list.filter(x => x.name && x.name.includes('purpclaw'));
-        if (!ours.length) { console.log('purpclaw-app: no PM2 processes running\n'); return 0; }
-        for (const p of ours) {
-          const ok = p.pm2_env && p.pm2_env.status === 'online';
-          console.log(' ' + (ok ? '\x1b[32m✔\x1b[0m' : '\x1b[31m✖\x1b[0m') + '  \x1b[36m' + p.name + '\x1b[0m  [\x1b[33m' + (p.pm2_env && p.pm2_env.status || '?') + '\x1b[0m]  pid:' + p.pid + '  mem:' + Math.round((p.monit && p.monit.memory) / 1024 / 1024) + 'MB');
-        }
-        console.log('');
-      } catch (e) {
-        console.log('PM2 not available or not running. Run `purpclaw app-server start`\n');
-      }
-      return 0;
-    }
     case 'approve':   return cmdApprove(args);
     case 'reject':    return cmdReject(args);
     case 'jobs':      return cmdJobs(args);
@@ -7336,501 +6484,17 @@ async function cmdPlugins(args) {
     case 'policy':    return cmdPolicies(args);
     case 'introspect': return cmdIntrospect(args);
     case 'rollback':  return cmdRollback(args);
-    // `args` already excludes the command word, so pass it straight through.
-    case 'bg':       return cmdBg(args);
-    case 'ps':       return cmdBg(['ps']);
-    case 'kill':     return cmdBg(['kill', ...args]);
-    case 'attach':   return cmdBg(['attach', ...args]);
-    case 'registry': return cmdRegistry(args);
-    case 'provider': return loadCmd('provider').run(args, sharedCtx());
-    case 'repomap':  return loadCmd('repomap').run(args, sharedCtx());
-    case 'bundles':  return cmdBundles(args);
-    case 'guard':    return cmdGuard(args);
-    case 'secrets':  return Secrets.cmdSecrets(args);
-    case 'vault':    return loadCmd('vault').run(args.slice(1), sharedCtx());
-    case 'graph':    return cmdGraph(args);
-    case 'profile':  return cmdProfile(args);
+    case 'bg':        return cmdBg(args);
+case 'registry': return cmdRegistry(args);
     case 'install':   return cmdRegistry(['install', ...args]);
     case 'search':    return cmdRegistry(['search', ...args]);
  case 'resume':   return cmdResume(args);
-
-    case 'exec': {
-      // Codex parity: purpclaw exec [review|archive|delete|unarchive|...]
-      const sub = (args[0] || '').toLowerCase();
-      if (sub === 'review')    return cmdReview(args.slice(1));
-      if (sub === 'archive')   return cmdArchive(args.slice(1));
-      if (sub === 'delete')    return cmdDelete(args.slice(1));
-      if (sub === 'unarchive') return cmdArchive(args.slice(1), true);
-      // Internal exec subcommands (not shell commands)
-      if (sub === 'policy')   return cmdExec(['exec', 'policy']);
-      if (sub === 'check')     return cmdExec(['exec', 'check', ...args.slice(1)]);
-
-      // --help and --json are reserved flags, not exec subcommands
-      if (sub === '--help' || sub === '-h' || sub === '--json') {
-        console.log('purpclaw exec <subcommand> [args...]');
-        console.log('  review [--uncommitted|--base <branch>|--commit <sha>|--prompt <text>] [--json]');
-        console.log('  archive <session-id>');
-        console.log('  delete  <session-id>');
-        console.log('  unarchive <session-id>');
-        console.log('  <any shell command>  (run directly, subject to exec-policy)');
-        return 0;
-      }
-
-      const execPolicy = require(path.join(PURP_DIR, 'lib', 'exec-policy'));
-      if (!args.length) { console.log('  usage: purpclaw exec <command> [args...]\n'); return; }
-      const cmdStr = args.join(' ');
-      const check = execPolicy.check(cmdStr);
-      if (check.allowed === false) { console.log(`${col(C.red, '[X] blocked by policy:')} ${check.source || 'unknown'}`); return 1; }
-
-      // Split into file + args. Dangerous chars (; & | $ ` \n etc) in the
-      // command word itself get blocked — only alphanumeric/./-/_ are safe in cmd/file.
-      const unsafeCmdPat = /[;&|`$<>\\]/;
-      if (unsafeCmdPat.test(args[0])) {
-        console.log(`${col(C.red, '[X] blocked:')} command contains unsafe shell characters`);
-        return 1;
-      }
-
-      const [cmdFile, ...cmdArgs] = args;
-      const { execFileSync } = require('child_process');
-      const isWin = process.platform === 'win32';
-      // Windows always use cmd.exe — it's always present and handles all shell logic.
-      // Git Bash / MSYS2 bash would require finding the right install path.
-      const shell = isWin ? 'cmd.exe' : (process.env.SHELL || '/bin/sh');
-      const shellArgs = isWin ? ['/c', cmdStr] : ['-c', cmdStr];
-      try {
-        const out = execFileSync(shell, shellArgs, { encoding: 'utf-8', timeout: 60000, stdio: 'pipe' });
-        process.stdout.write(out);
-      } catch (e) {
-        if (e.stdout) process.stdout.write(e.stdout);
-        if (e.stderr) process.stderr.write(e.stderr);
-        return e.status || 1;
-      }
-      return 0;
-    }
-    case 'mcp-server': {
-      // Codex parity: run PURPCLAW as an MCP server over stdio.
-      // `codex mcp-server` — serves MCP protocol on stdin/stdout.
-      // Flags: --strict-config  (require all env vars present, fail if missing)
-      const { spawn } = require('child_process');
-      const nodeBin = process.execPath;
-      const serverScript = path.join(PURP_DIR, 'lib', 'mcp-server.js');
-      const strictMode = args.includes('--strict-config');
-      const child = spawn(nodeBin, [serverScript, strictMode ? '--strict' : ''].filter(Boolean), {
-        stdio: ['inherit', 'inherit', 'inherit'],
-        env: strictMode ? { ...process.env } : { ...process.env },
-        shell: false,
-        windowsHide: true,
-      });
-      child.on('exit', code => { process.exit(code || 0); });
-      child.on('error', e => { console.error('[mcp-server] ' + e.message); process.exit(1); });
-      return 0;
-    }
-    case 'hooks':    return loadCmd('hooks').run(args, sharedCtx());
-    case 'hook':     return cmdHook(args);
-    case 'plugin':   return loadCmd('plugin').run(args, sharedCtx());
-    case 'app': {
-      const { runAppCmd } = require(path.join(PURP_DIR, 'lib', 'commands', 'app-cmd.js'));
-      let exitCode = 0;
-      try {
-        await runAppCmd(args, { loadCmd, sharedCtx });
-      } catch (e) {
-        console.error(col(C.red, `  app error: ${e.message}`));
-        exitCode = 1;
-      }
-      return exitCode;
-    }
-    case 'secrets':  return loadCmd('secrets').run(args, sharedCtx());
-    case 'feedback': return loadCmd('feedback').run(args, sharedCtx());
-    case 'worktree': return loadCmd('worktree').run(args, sharedCtx());
-    case 'skills':   return loadCmd('skills').run(args, sharedCtx());
-    case 'mcp':      return loadCmd('mcp').run(args, sharedCtx());
-    case 'remote': {
-      const fs = require('fs');
-      const RC = path.join(PURP_DIR, '.purpclaw', 'remote-config.json');
-      const loadCfg = () => { try { return JSON.parse(fs.readFileSync(RC, 'utf-8')); } catch { return { targets: [] }; } };
-      const saveCfg = cfg => fs.writeFileSync(RC, JSON.stringify(cfg, null, 2));
-      const sub = (args[0] || '').toLowerCase();
-      if (sub === 'list' || !sub) {
-        const cfg = loadCfg();
-        if (!cfg.targets.length) { console.log('\n  Remote Targets  (0 configured)\n    no targets \u2014 add: purpclaw remote add <name> <host> [user] [port]\n'); return; }
-        console.log('\n  Remote Targets\n');
-        for (const t of cfg.targets) console.log('    ' + t.name + '  ' + t.user + '@' + t.host + ':' + t.port);
-        console.log('');
-        return;
-      }
-      if (sub === 'add') {
-        const [name, host, user, port] = args.slice(1);
-        if (!name || !host) { console.log('  usage: purpclaw remote add <name> <host> [user] [port]'); return 1; }
-        const cfg = loadCfg();
-        const existing = cfg.targets.findIndex(t => t.name === name);
-        const entry = { name, host, user: user || 'root', port: port ? parseInt(port) : 22, key: null, addedAt: new Date().toISOString() };
-        if (existing >= 0) cfg.targets[existing] = entry; else cfg.targets.push(entry);
-        saveCfg(cfg);
-        console.log(`  \u2713 target '${name}' saved`);
-        return;
-      }
-      if (sub === 'remove') {
-        const name = args[1];
-        if (!name) { console.log('  usage: purpclaw remote remove <name>'); return 1; }
-        const cfg = loadCfg();
-        const idx = cfg.targets.findIndex(t => t.name === name);
-        if (idx < 0) { console.log('  target ' + name + ' not found'); return 1; }
-        cfg.targets.splice(idx, 1);
-        saveCfg(cfg);
-        console.log(`  \u2713 removed '${name}'`);
-        return;
-      }
-      console.log('  usage: purpclaw remote <list|add|remove>');
-      return 1;
-    }
-    case 'debug': {
-      const sub = (args[0] || '').toLowerCase();
-      if (sub === 'models' || sub === 'model' || sub === 'providers') {
-        const llm = require(path.join(PURP_DIR, 'lib', 'llm-provider.js'));
-        try {
-          const providers = llm.listProviders();
-          const catalog = providers.map(p => ({ name: p.name, format: p.format, local: !!p.local, defaultModel: p.defaultModel || null }));
-          console.log(JSON.stringify({ providers: catalog, count: catalog.length }, null, 2));
-        } catch (e) { console.log(JSON.stringify({ error: e.message }, null, 2)); }
-        return;
-      }
-      if (sub === 'app-server' || sub === 'appserver') {
-        const http = require('http');
-        const targets = [{ name: 'agent-gateway', port: 9119, path: '/health' }, { name: 'unified-api', port: 7780, path: '/api/health' }, { name: 'orchestrator', port: 7784, path: '/api/health' }];
-        console.log('\n  App-server diagnostics\n');
-        for (const t of targets) {
-          try {
-            const r = await new Promise(res => {
-              const req = http.get({ hostname: '127.0.0.1', port: t.port, path: t.path, timeout: 2000 }, res2 => { let d = ''; res2.on('data', c => d += c); res2.on('end', () => res({ ok: true, body: d })); });
-              req.on('error', e => res({ ok: false, error: e.message }));
-              req.on('timeout', () => { req.destroy(); res({ ok: false, error: 'timeout' }); });
-            });
-            console.log('    ' + (r.ok ? '[*]' : '[o]') + '  ' + t.name.padEnd(18) + ' :' + t.port + '  ' + (r.ok ? 'up' : r.error));
-          } catch { console.log('    [o]  ' + t.name.padEnd(18) + ' :' + t.port + '  error'); }
-        }
-        console.log('');
-        return;
-      }
-      if (sub === 'clear-memories' || sub === 'clearmemories') {
-        const MEM_DIR = path.join(PURP_DIR, 'memory');
-        try {
-          const files = fs.readdirSync(MEM_DIR).filter(f => f.endsWith('.json') || f.endsWith('.md'));
-          let cleared = 0;
-          for (const f of files) { try { fs.unlinkSync(path.join(MEM_DIR, f)); cleared++; } catch {} }
-          console.log('  [OK] cleared ' + cleared + ' memory file(s)');
-        } catch (e) { console.log('  [X] ' + e.message); }
-        return;
-      }
-      console.log('\n  purpclaw debug  \u2014 diagnostic subcommands\n    models          render model catalog\n    app-server     app-server diagnostics\n    clear-memories reset local memory state\n');
-      return;
-    }
-    case 'apply': {
-      const AP = require(path.join(PURP_DIR, 'lib', 'apply-patch'));
-      const ffs = require('fs');
-      const dryRun = args.includes('--dry-run') || args.includes('-n');
-      const checkOnly = args.includes('--check') || args.includes('-c');
-      let patchContent = '';
-      const fileArg = args.find(a => !a.startsWith('-'));
-      if (fileArg) {
-        try { patchContent = ffs.readFileSync(fileArg, 'utf-8'); }
-        catch (e) { console.log('  [X] cannot read: ' + fileArg); return 1; }
-      } else if (!process.stdin.isTTY) {
-        process.stdin.setEncoding('utf-8');
-        const chunks = [];
-        for await (const chunk of process.stdin) chunks.push(chunk);
-        patchContent = chunks.join('');
-      } else {
-        console.log('  usage: purpclaw apply [--dry-run] [--check] [file.patch]');
-        return 1;
-      }
-      if (!patchContent.trim()) { console.log('  [!] empty patch'); return 0; }
-      const isCodexFormat = patchContent.includes('*** Begin Patch');
-      if (isCodexFormat) {
-        const result = AP.verifyPatch(patchContent);
-        if (!result.valid) {
-          console.log('  [X]  invalid Codex patch: ' + result.error + ' at line ' + result.line);
-          return 1;
-        }
-        const ops = AP.parsePatch(patchContent);
-        if (checkOnly) {
-          console.log('  [o]  Codex patch valid — ' + ops.length + ' operation(s)');
-          for (const op of ops) console.log('       ' + op.type + '  ' + op.path);
-          return 0;
-        }
-        if (dryRun) { console.log('  [o]  would apply ' + ops.length + ' operation(s)'); return 0; }
-        let applied = 0, errors = 0;
-        for (const op of ops) {
-          try {
-            const res = AP.applyPatch([op], process.cwd(), { dryRun: false });
-            if (res.applied && res.failed === 0) { applied++; console.log('  [*]  ' + op.type + '  ' + op.path); }
-            else { errors++; console.log('  [X]  ' + op.type + '  ' + op.path + '  ' + (res.errors ? res.errors.join('; ') : 'failed')); }
-          } catch (e) { errors++; console.log('  [X]  ' + op.type + '  ' + op.path + '  ' + e.message); }
-        }
-        console.log('  Applied: ' + applied + '  Errors: ' + errors);
-        return errors > 0 ? 1 : 0;
-      } else {
-        const lines = patchContent.split(/\r?\n/);
-        let i = 0;
-        while (i < lines.length && !lines[i].match(/^@@ /)) i++;
-        if (i >= lines.length) { console.log('  [X] no hunks found'); return 1; }
-        const hunks = [];
-        while (i < lines.length) {
-          const line = lines[i];
-          const hunkMatch = line.match(/^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/);
-          if (!hunkMatch) { i++; continue; }
-          const oldStart = parseInt(hunkMatch[1]);
-          const oldCount = parseInt(hunkMatch[2] || '1');
-          const addedLines = [];
-          i++;
-          while (i < lines.length && !lines[i].match(/^@@ /)) {
-            const l = lines[i];
-            if (l.startsWith('+')) addedLines.push(l.slice(1));
-            else if (!l.startsWith('-') && !l.startsWith('\\')) addedLines.push(l);
-            i++;
-          }
-          hunks.push({ oldStart, oldCount, addedLines });
-        }
-        let curFile = null;
-        for (const line of lines) {
-          if (line.startsWith('--- ')) { const m = line.match(/^--- \s+(?:a\/)?(\S+)/); if (m) curFile = m[1]; }
-          if (curFile && line.startsWith('@@ ')) break;
-        }
-        if (!hunks.length) { console.log('  [X] no hunks'); return 1; }
-        let applied = 0, errors = 0;
-        for (const hunk of hunks) {
-          const filePath = curFile || fileArg || '.';
-          const targetPath = path.join(process.cwd(), filePath);
-          let fileContent;
-          try { fileContent = ffs.readFileSync(targetPath, 'utf-8'); }
-          catch (e) { console.log('  [X]  ' + filePath + '  ' + (e.code === 'ENOENT' ? 'file not found' : e.message)); errors++; continue; }
-          const fileLines = fileContent.split(/\r?\n/);
-          const insertIdx = hunk.oldStart - 1;
-          if (insertIdx < 0 || insertIdx > fileLines.length) { console.log('  [X]  ' + filePath + '  hunk offset out of range'); errors++; continue; }
-          const before = fileLines.slice(0, insertIdx);
-          const after = fileLines.slice(insertIdx + hunk.oldCount);
-          const newContent = [...before, ...hunk.addedLines, ...after].join('\n');
-          console.log('  ' + (dryRun || checkOnly ? '[o]' : '[*]') + '  ' + filePath + '  ' + (checkOnly ? 'clean' : dryRun ? 'would apply' : 'applied'));
-          if (!dryRun && !checkOnly) { try { ffs.writeFileSync(targetPath, newContent, 'utf-8'); applied++; } catch (e) { console.log('    [X]  ' + e.message); errors++; } }
-          else applied++;
-        }
-        console.log('  Applied: ' + applied + '  Errors: ' + errors);
-        return errors > 0 ? 1 : 0;
-      }
-    }
-    case 'action':
-    case 'do':       return loadCmd('action').run(args, sharedCtx());
-    case 'capabilities':
-    case 'capability':
-    case 'surfaces': return loadCmd('capabilities').run(args, sharedCtx());
-    case 'feature':
-    case 'features': return loadCmd('feature').run(args, sharedCtx());
-    case 'parity':   return loadCmd('parity').run(args, sharedCtx());
-    case 'hivemind':
-    case 'spring':   return loadCmd('hivemind').run(command.toLowerCase() === 'spring' ? ['spring', ...args] : args, sharedCtx());
-    case 'registries':
-    case 'registry-audit': return loadCmd('registry-audit').run(args, sharedCtx());
-    case 'stats':         return loadCmd('stats').run(args, sharedCtx());
-    // ── Advisory agents (read-only): system conditions + foresight ──
-    case 'weather':
-    case 'weatherman': return loadCmd('weather').run(args, sharedCtx());
-    case 'oracle':
-    case 'forecast':   return loadCmd('oracle').run(args, sharedCtx());
-    case 'souls': {
-      const _args = [...args]; // capture at call time, not closure time
-      return runSouls(_args);
-    }
-    case 'council':
-    case 'decide': {
-      // Route vote subcommands to the vote engine
-      if (['vote', 'history', 'reputation', 'rep', 'leaderboard', 'tally'].includes(args[0])) {
-        const _args = [...args]; // capture at call time, not closure time
-        return runCouncilVotes(_args);
-      }
-      return loadCmd('council').run(args, sharedCtx());
-    }
-    case 'studio': {
-      const Studio = require('../lib/studio');
-      const s = new Studio();
-      // action = args[0] = subcommand ('modes', 'traditions', 'begin', etc.)
-      const action = args[0];
-      const sub = args[2];
-      if (!action) {
-        console.log('Usage: purpclaw studio <begin|world|inject|status|end|duck|influence|modes|speak|look|memories|ambient|traditions|private|conversations>');
-        break;
-      }
-      if (action === 'begin' || action === 'start') {
-        // mode = args[2] (studio begin radio) or args[1] (studio radio)
-        const mode = args[1] === 'begin' || args[1] === 'start' ? args[2] : args[1];
-        if (!mode) {
-          console.log('Usage: purpclaw studio begin <mode> [topic]');
-          console.log('Modes:', Object.keys(s.modes).join(', '));
-          return;
-        }
-        const opts = { topic: args.slice(2).join(' ') || null };
-        const sess = s.beginSession(mode, opts);
-        console.log(`\n🎬 Studio session started: ${mode}`);
-        console.log(`Session ID: ${sess.id}`);
-        console.log(`Topic: ${sess.topic || '(none)'}`);
-      } else if (action === 'world' || sub === 'world') {
-        const key = args[1] || args[2];
-        const val = args[2] || args[3];
-        if (!key) {
-          console.log('\n🌍 World state:');
-          for (const [k, v] of Object.entries(s.world.state)) {
-            console.log(`  ${k}: ${JSON.stringify(v)}`);
-          }
-          return;
-        }
-        if (!val) { console.log(`${key}: ${JSON.stringify(s.world.state[key])}`); return; }
-        const delta = {};
-        if (['provider_latency', 'memory_pressure', 'duplicated_ui', 'funding', 'council_mood', 'goose_energy', 'smith_alert_level', 'weatherman_forecast'].includes(key)) delta[key] = val;
-        else if (key === 'build_health') delta[key] = parseInt(val, 10);
-        else if (key === 'provider_name') delta[key] = val === 'null' ? null : val;
-        else if (key === 'release_window_days') delta[key] = parseInt(val, 10);
-        else if (key === 'active_incidents') delta[key] = val.startsWith('+push:') ? val : 'clear';
-        else delta[key] = val;
-        s.updateWorld(delta);
-        console.log(`Updated ${key} → ${JSON.stringify(s.world.state[key])}`);
-      } else if (action === 'inject' || sub === 'inject') {
-        const incidentId = args[1] || args[2];
-        if (!incidentId) {
-          const incidents = require('../lib/studio').DIRECTOR_INCIDENTS;
-          console.log('Available incidents:');
-          Object.entries(incidents).forEach(([id, inc]) => console.log(`  ${id}: ${inc.label} [${inc.severity}]`));
-          return;
-        }
-        try {
-          const incident = s.inject(incidentId);
-          console.log(`\n🚨 Injected: ${incident.label}`);
-          console.log(`Impact: ${incident.impact}  |  Severity: ${incident.severity}`);
-        } catch (e) { console.log(`Unknown incident: ${incidentId}`); }
-      } else if (action === 'status' || sub === 'status') {
-        const st = s.status();
-        console.log(`\n🎬 Studio: mode=${st.mode || 'none'}, turns=${st.turns}`);
-      } else if (action === 'end' || action === 'stop' || sub === 'end' || sub === 'stop') {
-        const summary = s.endSession();
-        if (!summary) { console.log('No active session.'); return; }
-        console.log(`\n🎬 Session ended. ${summary.duration_turns} turns.`);
-        console.log(`🦆 ${summary.duck_observation}`);
-      } else if (action === 'duck' || sub === 'duck') {
-        const duck = s.session ? s.duck() : 'the duck is not in a session. the duck is always watching.';
-        console.log(`🦆 ${duck}`);
-      } else if (action === 'influence' || sub === 'influence') {
-        const board = s.influenceLeaderboard();
-        console.log('\n🏆 Influence Leaderboard:');
-        board.slice(0, 10).forEach((e, i) => console.log(`  ${i + 1}. ${e.emoji} ${e.name} — ${e.tier.symbol} (${e.score}pts) [${e.tier.name}]`));
-      } else if (action === 'speak' || sub === 'speak') {
-        if (!s.session) { console.log('No active session. Run: purpclaw studio begin <mode> [topic]'); return; }
-        const agentId = args[2] || args[3] || '';
-        const text = args.slice(3).join(' ') || args.slice(4).join(' ') || '';
-        if (!agentId || !text) { console.log('Usage: purpclaw studio speak <agent_id> <text>'); return; }
-        const result = s.speak(agentId, text);
-        console.log(result.rendered);
-        if (result.next_speaker) console.log(`\n  → Next: ${result.next_speaker}`);
-      } else if (action === 'look' || sub === 'look') {
-        if (!s.session) { console.log('No active session.'); return; }
-        console.log(s.look());
-      } else if (action === 'modes' || sub === 'modes') {
-        console.log('\n📺 Studio modes:');
-        Object.entries(s.modes).forEach(([id, m]) => console.log(`  ${m.emoji} ${id}: ${m.description}`));
-      } else if (action === 'memories' || sub === 'memories') {
-        const memories = s.getMemories({ limit: 5 });
-        if (!memories.length) { console.log('No meeting memories yet. Run a session first.'); return; }
-        console.log(`\n📋 Meeting Memories (last ${memories.length}):`);
-        memories.forEach(m => console.log(s.formatMemory(m)));
-      } else if (action === 'ambient' || sub === 'ambient') {
-        const result = s.generateAmbientLife();
-        if (result) console.log(result.rendered);
-        else console.log('No ambient scene triggered. Try during a crisis or late at night.');
-      } else if (action === 'traditions' || sub === 'traditions') {
-        const traditions = s.getTraditions();
-        if (!traditions.length) { console.log('No traditions yet.'); return; }
-        traditions.forEach(t => console.log(s.formatTradition(t)));
-      } else if (action === 'private' || sub === 'private') {
-        (function() {
-          // args: ['private', 'goose', 'maverick'] or ['studio', 'private', 'goose', 'maverick']
-          var agA = args[1] || 'goose';
-          var agB = args[2] || 'maverick';
-          var topicStr = args.slice(3).join(' ') || undefined;
-          var result = s.generatePrivateConversation(agA, agB, { topic: topicStr });
-          console.log(result.rendered);
-        }());
-      } else if (action === 'look' || sub === 'look') {
-        if (!s.session) { console.log('No active session.'); return; }
-        console.log(s.renderConversation());
-      } else if (action === 'render' || sub === 'render') {
-        if (!s.session) { console.log('No active session.'); return; }
-        console.log(s.renderConversation());
-      } else if (action === 'conversations' || sub === 'conversations') {
-        const convs = s.getPrivateConversations({ limit: 5 });
-        if (!convs.length) { console.log('No private conversations yet.'); return; }
-        convs.forEach(function(c) {
-          console.log('\n  💬 ' + c.agents.join(' + ') + ' — ' + c.topic + ' (' + c.timestamp.split('T')[0] + ')');
-        });
-      } else if (action === 'confidence' || sub === 'confidence') {
-        const Erosion = require('../lib/erosion');
-        const report = Erosion.confidenceReport();
-        console.log('\n  🧠 MEMORY CONFIDENCE REPORT');
-        console.log('  ─────────────────────────────────────────────');
-        console.log('  Total memories:  ' + report.total);
-        console.log('  🟢 Solid (≥75%): ' + report.solid);
-        console.log('  🟡 Weathered:    ' + report.weathered);
-        console.log('  🟠 Faded:        ' + report.faded);
-        console.log('  💀 Cold cases:   ' + report.cold_cases);
-        if (report.fragmented > 0) console.log('  [!] Fragmented:   ' + report.fragmented);
-        console.log('  Avg confidence:  ' + report.avg_confidence + '%');
-      } else if (action === 'coldcases' || sub === 'coldcases') {
-        const Erosion = require('../lib/erosion');
-        const cold = Erosion.getColdCases({ limit: 10 });
-        if (!cold.length) { console.log('No cold cases. The organisation remembers everything. For now.'); }
-        else {
-          console.log('\n  💀 COLD CASE LEDGER — ' + cold.length + ' open mystery(ies)');
-          console.log('  ─────────────────────────────────────────────');
-          cold.forEach(function(m) { console.log(Erosion.formatMemory(m)); });
-        }
-      } else if (action === 'annotate' || sub === 'annotate') {
-        const sessionId = args[1];
-        const annotator = args[2] || 'unknown';
-        const note = args.slice(3).join(' ') || '';
-        if (!sessionId || !note) { console.log('Usage: purpclaw studio annotate <session_id> <agent_id> <note...>'); return; }
-        const Erosion = require('../lib/erosion');
-        const result = Erosion.annotateMemory(sessionId, annotator, note);
-        if (result) console.log('Annotated. ' + result.annotations.length + ' annotation(s) now on record.');
-        else console.log('Memory not found: ' + sessionId);
-      } else {
-        console.log('Usage: purpclaw studio <begin|world|inject|status|end|duck|influence|modes|speak|look|memories|ambient|traditions|private|conversations|confidence|coldcases|annotate>');
-      }
-      break;
-    }
-    case 'next':
-    case 'helpme':     return loadCmd('next').run(args, sharedCtx());
-    case 'workflow':   return loadCmd('workflow').run(args, sharedCtx());
-    case 'drift':      return loadCmd('drift').run(args, sharedCtx());
-    case 'awaken':     return loadCmd('awaken').run(args);
-    case 'evolve':     return loadCmd('evolve').run(args, sharedCtx());
-    case 'autoresearch':
-    case 'auto-research': return loadCmd('autoresearch').run(args, sharedCtx());
-    case 'timeline':   return runTimeline(args);
-    case 'presence':
-    case 'rooms':
-    case 'spaces':     return runPresence(args);
-    case 'residue':
-    case 'artifacts':  return runResidue(args);
-    case 'donor':
-    case 'donors':
-    case 'archaeology':
-    case 'loot':       return runDonor(args);
-    case 'crew':     return loadCmd('crew').run(args, sharedCtx());
-    case 'pipeline': return loadCmd('crew').run(['pipeline', ...args], sharedCtx());
-    case '/analyst': case '/writer': case '/marketer': case '/coder': case '/orchestrator': case '/orch':
-      return loadCmd('crew').run([[command, ...args].join(' ')], sharedCtx());
+    case 'context':  return cmdContext(args);
+    case 'pool':     return cmdPool(args);
     case 'tick':     return cmdTick(args);
     case 'mochi':      return cmdMochi(args);
     case 'spaghetti': return cmdSpaghetti(args);
-    case 'squad':     return cmdSquad(args);
     case 'llm':       return loadCmd('llm').run(args, sharedCtx());
-    case 'research':  return loadCmd('intelligence').run(['graph', ...args], sharedCtx());
-    case 'intelligence': return loadCmd('intelligence').run(args, sharedCtx());
     case 'browser':
     case 'browse':    return loadCmd('browser').run(args, sharedCtx());
     case 'cognition':
@@ -7839,167 +6503,74 @@ async function cmdPlugins(args) {
     case 'github':
     case 'gitx':      return loadCmd('code').run(args, sharedCtx());
     case 'lora':      return cmdLora(args);
+    case 'checkpoint':
+    case 'cp':        return cmdCheckpoint(args);
+    case 'certify':
+    case 'cert':      return cmdCertify(args);
+    case 'cryosleep':
+    case 'sleep':
+    case 'wake':      return cmdCryosleep(args);
+    case 'steering':  return cmdSteering(args);
+    case 'bench':
+    case 'provider-bench':
+    case 'benchmarks':return cmdBench(args);
     case 'model':     return cmdModel(args);
     case 'models':    return cmdModel(args);
     case 'agents':    return cmdAgents();
-    case 'agent':     return cmdAgent(args);
-    case 'archetype': return cmdArchetypes(args);
     case 'profiles':  return cmdProfiles();
     case 'workflows': return cmdWorkflows();
     case 'queue':     return cmdQueue();
     case 'memory':    return cmdMemory(args);
-    case 'marketplace': return loadCmd('marketplace').run(args, sharedCtx());
-    case 'serve':     return cmdServe(args);
+    case 'parity':    return cmdParity(args);
+    case 'constitution':
+    case 'law':       return cmdConstitution(args);
+    case 'soul-memory':
+    case 'memory-contract': return cmdSoulMemory(args);
+    case 'cross-review':
+    case 'xreview':         return cmdCrossReview(args);
     case 'dream':     return cmdDream();
     case 'forge':     return cmdForge(args);
+    case 'skill-forge':
+    case 'skillforge':return cmdSkillForge(args);
+    case 'subagent':
+    case 'bridge':    return cmdSubagent(args);
+    case 'team':      return cmdTeam(args);
+    case 'team-roster':
+    case 'roster':    return cmdTeamRoster(args);
+    case 'websearch':
+    case 'search':    return cmdWebsearch(args);
+    case 'forgecode':
+    case 'forge-code':
+    case 'ptc':       return cmdForgeCode(args);
+    case 'sessionlog':
+    case 'session-log':
+    case 'session':   return cmdSessionLog(args);
+    case 'hooks':     return loadCmd('hooks').run(args, sharedCtx());
+    case 'skill-discovery':
+    case 'discover':  return loadCmd('skill-discovery').run(args, sharedCtx());
+    case 'pr':        return loadCmd('pr').run(args, sharedCtx());
+    case 'release':   return loadCmd('release').run(args, sharedCtx());
+    case 'skillgraph':
+    case 'skill-graph':
+    case 'skills':    return cmdSkillGraph(args);
     case 'look':      return cmdLook(args);
     case 'voice':     return cmdVoice(args);
     case 'config':    return cmdConfig(args);
     case 'logs':      return cmdLogs(args);
     case 'bars':       return cmdBars(args);
-    case 'bigboss':   { const r = await loadCmd('bigboss').run(args[0], args.slice(1).join(' ')); if (typeof r === 'string') console.log(r); return r; }
-    case 'buddy':     { const r = await loadCmd('buddy').run(args, sharedCtx()); if (typeof r === 'string') console.log(r); return r; }
-    case 'remotion':  { const r = await loadCmd('remotion').run(args, sharedCtx()); if (typeof r === 'string') console.log(r); return r; }
     case 'show':
     case 'stack':
     case 'status':     return cmdStatus(args);
-    case 'cowork':
-    case 'overlay': {
-      const { spawn } = require('child_process');
-      const OVERLAY = require('../lib/cowork-overlay.js');
-      const sub = args[0] || 'start';
-      if (sub === 'start' || sub === 'stop' || sub === 'push' || sub === 'status' || sub === 'watch') {
-        OVERLAY.__proto__.CLI.run([sub].concat(args.slice(1)));
-      } else {
-        console.log('Usage: purpclaw cowork [start|stop|push <msg>|status|watch]');
-      }
-      return null;
-    }
     case 'doctor':     return cmdDoctor(args);
-    case 'pulse':     return cmdPulse(args);
-    case 'purpflow':
-    case 'loop':      return cmdPurpflow(args);
-    case 'receipts':
-    case 'ledger':    return cmdReceipts(args);
-    case 'steer':
-    case 'route-me':  return cmdSteer(args);
-    case 'insight':
-    case 'learn':
-    case 'insights':  return cmdInsight(args);
-    case 'chain':
-    case 'job-chain': return cmdChain(args);
-    case 'spine':
-    case 'surfaces-map':
-    case 'help-spine': return cmdSpine(args);
-    case 'smoke':
-    case 'self-test':
-    case 'smoke-test': return cmdSmoke(args);
-    case 'watch':      return loadCmd('watch').run(args, sharedCtx());
-    case 'flow':      return cmdFlow(args);
-    case 'heartbeat': return cmdApiRouteWrapper('heartbeat', args);
-    case 'mission-data': return cmdApiRouteWrapper('mission-data', args);
-    case 'sessions': return cmdApiRouteWrapper(args[0] && !args[0].startsWith('--') ? `sessions/${args[0]}` : 'sessions', args[0] && !args[0].startsWith('--') ? args.slice(1) : args);
-    case 'ollama': return cmdApiRouteWrapper('ollama', args);
-    case 'personality': return cmdApiRouteWrapper('personality', args);
-    case 'missions':
-    case 'harness-missions': {
-      if (args[0] === 'abort' && args[1]) return cmdApiRouteWrapper(`harness/missions/${args[1]}/abort`, args.slice(2));
-      if (args[0] && !args[0].startsWith('--')) return cmdApiRouteWrapper(`harness/missions/${args[0]}`, args.slice(1));
-      return cmdApiRouteWrapper('harness/missions', args);
-    }
-    case 'agent-scores': return cmdApiRouteWrapper('agent-scores', args);
-    case 'api-mega-list': return cmdApiRouteWrapper('api-mega-list', args);
-    case 'benchmark': return cmdApiRouteWrapper(args[0] ? `benchmark/${args[0]}` : 'benchmark/ledger', args[0] ? args.slice(1) : args);
-    case 'odysseus': return cmdApiRouteWrapper('benchmark/odysseus', args);
-    case 'bridge': return cmdApiRouteWrapper('bridge', args);
-    case 'cli': return cmdApiRouteWrapper('cli', args);
-    case 'computer-use': return cmdApiRouteWrapper('computer-use', args);
-    case 'discover': return cmdApiRouteWrapper('discover', args);
-    case 'event-timeline': return cmdApiRouteWrapper('event-timeline', args);
-    case 'eventbus': return cmdApiRouteWrapper(args[0] ? `eventbus/${args[0]}` : 'eventbus/stream', args[0] ? args.slice(1) : args);
-    case 'evolution': return cmdApiRouteWrapper(args[0] ? `evolution/${args[0]}` : 'evolution/status', args[0] ? args.slice(1) : args);
-    case 'gatekeeper-status': return cmdApiRouteWrapper('gatekeeper-status', args);
-    case 'harness-benchmarks': return cmdApiRouteWrapper('harness-benchmarks', args);
-    case 'host-telemetry': return cmdApiRouteWrapper('host-telemetry', args);
-    case 'internal': return cmdApiRouteWrapper(args[0] ? `internal/${args[0]}` : 'internal/check', args[0] ? args.slice(1) : args);
-    case 'llm-config': return cmdApiRouteWrapper('llm-config', args);
-    case 'llm-ledger': return cmdApiRouteWrapper('llm-ledger', args);
-    case 'llm-status': return cmdApiRouteWrapper('llm-status', args);
-    case 'manifest': return cmdApiRouteWrapper('manifest', args);
-    case 'mochi-action': return cmdApiRouteWrapper('mochi-action', args);
-    case 'orchestrate': return cmdApiRouteWrapper('orchestrate', args);
-    case 'output': return cmdApiRouteWrapper('output', args);
-    case 'playwright': return cmdApiRouteWrapper('playwright', args);
-    case 'preprompt': return cmdApiRouteWrapper('preprompt', args);
-    case 'proof': return cmdApiRouteWrapper('proof', args);
-    case 'proof-ledger': return cmdApiRouteWrapper('proof-ledger', args);
-    case 'pxpipe': return cmdApiRouteWrapper('pxpipe', args);
-    case 'registry': return cmdApiRouteWrapper('registry', args);
-    case 'rules': return cmdApiRouteWrapper(args[0] ? `rules/${args[0]}` : 'rules/refusal-weights', args[0] ? args.slice(1) : args);
-    case 'sampler': return cmdApiRouteWrapper('sampler', args);
-    case 'service-proxy': return cmdApiRouteWrapper('service-proxy', args);
-    case 'settings': return cmdApiRouteWrapper('settings', args);
-    case 'skill-amendments': return cmdApiRouteWrapper('skill-amendments', args);
-    case 'spine-health': return cmdApiRouteWrapper('spine-health', args);
-    case 'stack-whoami': return cmdApiRouteWrapper('stack-whoami', args);
-    case 'thringlets': return cmdApiRouteWrapper(args[0] ? `thringlets/${args[0]}` : 'thringlets', args[0] ? args.slice(1) : args);
-    case 'tower': return cmdApiRouteWrapper(args[0] ? `tower/${args[0]}` : 'tower/stream', args[0] ? args.slice(1) : args);
-    case 'trace': return cmdApiRouteWrapper(args[0] ? `trace/${args[0]}` : 'trace/recent', args[0] ? args.slice(1) : args);
-    case 'upload': return cmdApiRouteWrapper('upload', args);
-    case 'voice-command': return cmdApiRouteWrapper('voice-command', args);
-    case 'yo': return cmdApiRouteWrapper('yo', args);
-    case 'proxy':
-    case 'proxy-stop':
-    case 'proxy-status': {
-      const rp = require(path.join(PURP_DIR, 'lib', 'responses-proxy'));
-      const sub = (args[0] || 'status').toLowerCase();
-      if (args[0] === 'stop' || sub === 'proxy-stop') {
-        const result = rp.stopProxy();
-        if (result.alreadyStopped) console.log(col(C.gray, '  Proxy not running'));
-        else console.log(col(C.green, '  Proxy stopped'));
-      } else if (args[0] === 'status' || sub === 'proxy-status') {
-        const s = rp.getProxyStatus();
-        if (!s.running) console.log(col(C.gray, '  Responses proxy: stopped'));
-        else {
-          console.log(col(C.green, `  Responses proxy: running on ${s.host}:${s.port}`));
-          if (s.budgetLimit > 0) console.log(col(C.cyan, `  Budget: $${s.budgetSpent.toFixed(6)} / $${s.budgetLimit.toFixed(6)}`));
-          console.log(col(C.cyan, `  Rate limit: ${s.rateLimitRpm} req/min`));
-        }
-      } else {
-        // start
-        const portArg = args.includes('--port') ? args[args.indexOf('--port') + 1] : undefined;
-        const port    = portArg ? parseInt(portArg, 10) : 7891;
-        const result  = rp.startProxy({ port });
-        if (result.alreadyRunning) console.log(col(C.yellow, `  Proxy already running on ${result.host}:${result.port}`));
-        else {
-          console.log(col(C.green, `  Responses proxy started on ${result.host}:${result.port}`));
-          console.log(col(C.gray, `  POST http://${result.host}:${result.port}/v1/responses`));
-          console.log(col(C.gray, `  Health: GET  http://${result.host}:${result.port}/health`));
-        }
-      }
-      return;
-    }
-    case 'api':
-    case 'call':      return cmdApiCall(args);
-    case 'parity-audit':
-    case 'parity-scan': return cmdParityAudit(args);
-    case 'team':     { const r = await loadCmd('team').run(args, sharedCtx()); if (typeof r === 'string') console.log(r); return r; }
+    case 'audit':      return cmdAudit(args);
     case 'whoami':
-    case 'about':    return cmdWhoami(args);
-    case 'doctors':  return cmdDoctors(args);
-    case 'audit':    return cmdAudit(args);
-    case 'release':  return cmdRelease(args);
-    case 'health':   return cmdHealth(args);
+    case 'about':      return cmdWhoami(args);
+    case 'release':    return cmdRelease(args);
+    case 'health':     return cmdHealth(args);
     case 'identity':   return loadCmd('identity').run(args, sharedCtx());
-    case 'liveforge':  return loadCmd('liveforge').run(args, sharedCtx());
-    case 'mycelium':
-    case 'fungus':     return loadCmd('mycelium').run(args, sharedCtx());
-    case 'spinebus':   return loadCmd('spinebus').run(args, sharedCtx());
     case 'embeddings': return cmdEmbeddings(args);
     case 'embed':      return cmdEmbeddings(['embed', ...args]);
-    // ── Harness (Phase 2-6 parity packages) ───────────────────────────────
-    case 'harness':   return loadCmd('harness').run(args, sharedCtx());
-    // ── Resurrected commands (lib/commands/) ──────────────────────────────
+    // â”€â”€ Resurrected commands (lib/commands/) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     case 'bughunt':    return loadCmd('bughunt').run(args, sharedCtx());
     case 'ctx-viz':
     case 'ctxviz':     return loadCmd('ctx-viz').run(args, sharedCtx());
@@ -8009,43 +6580,19 @@ async function cmdPlugins(args) {
     case 'autofix':    return loadCmd('autofix-pr').run(args, sharedCtx());
     case 'workers':
     case 'worker':    return loadCmd('workers').run(args, sharedCtx());
-    case 'session':    return cmdSession(args);
     case 'ask':       return loadCmd('ask').run(args, sharedCtx());
+    case 'automate':
+    case 'atbs':      return loadCmd('automate').run(args);
+    case 'parity':    return loadCmd('parity').run(args);
     case 'setup':
-    case 'wizard':    return loadCmd('setup').run(args, sharedCtx());
+    case 'wizard':
+    case 'onboard':   return loadCmd('setup').run(args, sharedCtx());
     case 'tour':
     case 'walkthrough':return loadCmd('tour').run(args, sharedCtx());
-    case 'completion': {
-      // Codex parity: shell completion generator
-      // Usage: purpclaw completion bash|zsh|fish|powershell
-      const sh = (args[0] || '').toLowerCase();
-      const supported = ['bash', 'zsh', 'fish', 'powershell'];
-      if (!sh || !supported.includes(sh)) {
-        console.log('  usage: purpclaw completion <shell>');
-        console.log('  shells: ' + supported.join(', '));
-        return 1;
-      }
-      try {
-        const { execSync } = require('child_process');
-        const t = `#!/bin/sh\nexec purpclaw "$@"`;
-        console.log('# ' + sh + ' completion for purpclaw');
-        if (sh === 'bash') {
-          console.log('_purpclaw() { compopt +o bashdefault; compopt +o default; completions=$(purpclaw --cmds 2>/dev/null); COMPREPLY=($(compgen -W "$completions" -- "$WORD")); }');
-          console.log('complete -F _purpclaw purpclaw');
-        } else if (sh === 'zsh') {
-          console.log('#compdef purpclaw\n_purpclaw() { _values "commands" $(purpclaw --cmds 2>/dev/null); }');
-        } else if (sh === 'fish') {
-          console.log('complete -c purpclaw -f -a "(purpclaw --cmds 2>/dev/null)"');
-        }
-        console.log('');
-      } catch(e) { console.log('  error: ' + e.message); return 1; }
-      return 0;
-    }
     case 'commit':
-    case 'review':  return cmdReview(args);
-    case 'find':    return loadCmd('find').run(args, sharedCtx());
-    case 'file-search': return cmdFileSearch(args);
-    case 'claudecode':return loadCmd('claudecode').run([command, ...args], sharedCtx());
+        case 'review':
+        case 'find':
+        case 'claudecode':return loadCmd('claudecode').run([command, ...args], sharedCtx());
     case 'gc':
     case 'cleanup':   return loadCmd('gc').run(args, sharedCtx());
     case 'pocket':    return loadCmd('pocket').run(args, sharedCtx());
@@ -8059,46 +6606,19 @@ async function cmdPlugins(args) {
     case 'whatis':    return loadCmd('overview').run(args, sharedCtx());
     case 'safe-start':
     case 'safestart': return loadCmd('safe-start').run(args, sharedCtx());
+    case 'evolve':    return loadCmd('evolve').run(args, sharedCtx());
     case 'safe-stop':
     case 'safestop':  return loadCmd('safe-stop').run(args, sharedCtx());
     case 'services':  return loadCmd('services').run(args, sharedCtx());
     case 'heal':
     case 'recover':   return loadCmd('heal').run(args, sharedCtx());
     case 'roster':    return loadCmd('roster').run(args, sharedCtx());
-    case 'harvest':   return loadCmd('harvest').run(args, sharedCtx());
-    case 'training':  return loadCmd('training').run(args, sharedCtx());
+    case 'training':  return cmdTrainingFeedback(args);
     case 'idle':      return cmdIdleEngine(args);
     case 'vector':    return cmdVectorBench(args);
-    case 'providers': return cmdProviders(args);
-    case 'provider':  return loadCmd('provider').run(args, sharedCtx());
-    case 'route':    return cmdRoute(args);
-    case 'brain':    return cmdBrain(args);
-    case 'pet':      return cmdPet(args);
-    case 'serve':    return cmdServe(args);
-    case 'project':   return cmdProject(args);
-    case 'exec':      return cmdExec(args);
-    case 'train':     return loadCmd('training').run(args, sharedCtx());
-    case 'permissions':return loadCmd('permissions').run(args, sharedCtx());
-    case 'schedule':  return loadCmd('schedule').run(args, sharedCtx());
     default:
-      // A leading --flag is a mistyped/misplaced option, not a task. Error
-      // clearly instead of silently running "--typo" as an inline task.
-      if (command.startsWith('--')) {
-        // Known global flags are consumed AFTER the subcommand, e.g.
-        // `purpclaw ask "hi" --json`. Point the user there instead of
-        // pretending the flag doesn't exist.
-        const KNOWN_TRAILING = ['--json', '--no-stream'];
-        if (KNOWN_TRAILING.includes(command)) {
-          console.error(col(C.yellow, `\n  ${command} goes after the subcommand.`));
-          console.error(col(C.gray, `  Try: purpclaw ask "<prompt>" ${command}\n`));
-        } else {
-          console.error(col(C.yellow, `\n  Unknown option: ${command}`));
-          console.error(col(C.gray, `  Run \`purpclaw help\` for commands, or \`purpclaw ask "<prompt>"\` to chat.\n`));
-        }
-        process.exit(2);
-      }
-      // Unknown command — treat as an inline task for convenience
-      // e.g. `purpclaw fix the auth bug` → same as `purpclaw run "fix the auth bug"`
+      // Unknown command â€” treat as an inline task for convenience
+      // e.g. `purpclaw fix the auth bug` â†’ same as `purpclaw run "fix the auth bug"`
       const task = [command, ...args].join(' ');
       console.log(col(C.gray, `\n  Treating as task: "${task}"`));
       return cmdRun([task]);
@@ -8113,7 +6633,7 @@ async function cmdPlugins(args) {
   return dispatch();
 }
 
-// ── training feedback — personal model growth ─────────────────────────────
+// â”€â”€ training feedback â€” personal model growth â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdTrainingFeedback(args) {
   const sub = (args[0] || 'status').toLowerCase();
   const FB = require(path.join(PURP_DIR, 'lib', 'user-feedback'));
@@ -8121,22 +6641,22 @@ async function cmdTrainingFeedback(args) {
   if (sub === 'status') {
     const s = FB.status();
     console.log('');
-    console.log('  🧠  PERSONAL MODEL GROWTH');
-    console.log('  ═════════════════════════');
-    console.log(`  Status:      ${s.enabled ? col(C.green, '[*] ACTIVE') : col(C.yellow, '[o] OFF')}`);
+    console.log('  ðŸ§   PERSONAL MODEL GROWTH');
+    console.log('  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+    console.log(`  Status:      ${s.enabled ? col(C.green, 'â— ACTIVE') : col(C.yellow, 'â—‹ OFF')}`);
     console.log(`  Session:     ${s.sessionId.substring(0, 8)}...`);
     console.log(`  Captures:    ${s.stats.total} total`);
-    console.log(`  Corrections: ${s.stats.corrections} (need ≥10 for training)`);
+    console.log(`  Corrections: ${s.stats.corrections} (need â‰¥10 for training)`);
     console.log(`  Preferences: ${s.stats.preferences}`);
     console.log(`  Directory:   ${s.feedbackDir}`);
     console.log('');
     if (s.recentFiles.length > 0) {
       console.log('  Recent capture files:');
-      for (const f of s.recentFiles) console.log(`    ${f.file} — ${f.lines} records, ${(f.size/1024).toFixed(1)}KB`);
+      for (const f of s.recentFiles) console.log(`    ${f.file} â€” ${f.lines} records, ${(f.size/1024).toFixed(1)}KB`);
       console.log('');
     }
     console.log(`  ${col(C.cyan, s.trainingHint)}`);
-    // ── Personal dataset readiness ─────────────────────────────────
+    // â”€â”€ Personal dataset readiness â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     try {
       const pd = require(path.join(PURP_DIR, 'lib', 'training', 'personal-dataset'));
       const pstats = pd.stats();
@@ -8152,7 +6672,7 @@ async function cmdTrainingFeedback(args) {
 
   if (sub === 'reset') {
     const r = FB.reset();
-    console.log(col(C.green, `\n  [OK] Feedback data cleared. New session: ${r.sessionId.substring(0, 8)}...\n`));
+    console.log(col(C.green, `\n  âœ“ Feedback data cleared. New session: ${r.sessionId.substring(0, 8)}...\n`));
     return;
   }
 
@@ -8162,20 +6682,20 @@ async function cmdTrainingFeedback(args) {
     const outPath = path.join(FB.FEEDBACK_DIR, `personal-training-${format}.json`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(outPath, JSON.stringify(data, null, 2), 'utf8');
-    console.log(col(C.green, `\n  [OK] Exported ${data.length} training examples to ${outPath}`));
+    console.log(col(C.green, `\n  âœ“ Exported ${data.length} training examples to ${outPath}`));
     console.log(col(C.gray, `  Format: ${format}  |  Ready for: purpclaw lora train --dataset ${outPath}\n`));
     return;
   }
 
   if (sub === 'off') {
     process.env.PURPCLAW_FEEDBACK_OFF = '1';
-    console.log(col(C.yellow, '\n  [o] Personal model growth DISABLED. Set PURPCLAW_FEEDBACK_OFF=0 to re-enable.\n'));
+    console.log(col(C.yellow, '\n  â—‹ Personal model growth DISABLED. Set PURPCLAW_FEEDBACK_OFF=0 to re-enable.\n'));
     return;
   }
 
   if (sub === 'on') {
     delete process.env.PURPCLAW_FEEDBACK_OFF;
-    console.log(col(C.green, '\n  [*] Personal model growth ENABLED. All interactions will be captured locally.\n'));
+    console.log(col(C.green, '\n  â— Personal model growth ENABLED. All interactions will be captured locally.\n'));
     return;
   }
 
@@ -8183,18 +6703,18 @@ async function cmdTrainingFeedback(args) {
   console.log(col(C.gray, '  Try: status, reset, export, on, off\n'));
 }
 
-// ── idle engine — the beast that wakes when you stop typing ──────────────
+// â”€â”€ idle engine â€” the beast that wakes when you stop typing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdIdleEngine(args) {
   const sub = (args[0] || 'status').toLowerCase();
 
   if (sub === 'trigger' || sub === 'run') {
     const IE = require(path.join(PURP_DIR, 'lib', 'idle-engine'));
-    console.log(col(C.cyan, '\n  🦀  Forcing idle optimization cycle...\n'));
+    console.log(col(C.cyan, '\n  ðŸ¦€  Forcing idle optimization cycle...\n'));
     const results = await IE.forceTrigger();
     console.log('');
     console.log('  Results:');
     for (const [phase, r] of Object.entries(results.phases || {})) {
-      const icon = r.ok ? col(C.green, '[OK]') : col(C.yellow, '[o]');
+      const icon = r.ok ? col(C.green, 'âœ“') : col(C.yellow, 'â—‹');
       console.log(`    ${icon} ${phase}: ${r.count ? r.count + ' examples' : r.reason || r.error || 'done'}`);
     }
     console.log('');
@@ -8209,9 +6729,9 @@ async function cmdIdleEngine(args) {
     const s = IE.status();
     const ag = s.agRatio;
     console.log('');
-    console.log('  🦀  IDLE ENGINE — the beast that wakes when you stop typing');
-    console.log('  ════════════════════════════════════════════════════════');
-    console.log(`  Status:        ${s.active ? col(C.green, '[*] USER ACTIVE') : col(C.magenta, '◌ IDLE — beast watching')}`);
+    console.log('  ðŸ¦€  IDLE ENGINE â€” the beast that wakes when you stop typing');
+    console.log('  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+    console.log(`  Status:        ${s.active ? col(C.green, 'â— USER ACTIVE') : col(C.magenta, 'â—Œ IDLE â€” beast watching')}`);
     console.log(`  Sessions:      ${s.sessionCount}`);
     console.log(`  Idle cycles:   ${s.idleCycles}`);
     console.log(`  Last activity: ${s.lastActivityAt || 'never'}`);
@@ -8219,13 +6739,13 @@ async function cmdIdleEngine(args) {
     console.log(`  Idle delay:    ${s.idleDelayMs / 1000}s`);
     console.log(`  Auto-train:    ${s.autoTrainEnabled ? col(C.green, 'ON') : col(C.yellow, 'OFF')} (min ${s.minNewForTrain} new examples)`);
     console.log('');
-    console.log(`  🏗️👹 A/G RATIO:  ${ag.architect} Architect / ${ag.goblin} Goblin = ${col(ag.ratio >= 1 ? C.green : C.yellow, ag.ratio)}`);
+    console.log(`  ðŸ—ï¸ðŸ‘¹ A/G RATIO:  ${ag.architect} Architect / ${ag.goblin} Goblin = ${col(ag.ratio >= 1 ? C.green : C.yellow, ag.ratio)}`);
     console.log(`  Contained:     ${ag.contained}  |  Escaped: ${ag.escaped}`);
     console.log(`  Threat Level:  ${ag.threatLevel === 'Stable' ? col(C.green, ag.threatLevel) : ag.threatLevel === 'Manageable' ? col(C.yellow, ag.threatLevel) : col(C.red, ag.threatLevel)}`);
     console.log(`  Verdict:       ${ag.verdict}`);
     console.log('');
     console.log(`  Personal data: ${s.personalStats.corrections} corrections, ${s.personalStats.preferences} preferences`);
-    console.log(`  Ready to train: ${s.readyForAutoTrain ? col(C.green, '[OK] YES') : col(C.yellow, `[o] need ${s.minNewForTrain - (s.personalStats.corrections + s.personalStats.preferences + s.personalStats.edits)} more`)}`);
+    console.log(`  Ready to train: ${s.readyForAutoTrain ? col(C.green, 'âœ“ YES') : col(C.yellow, `â—‹ need ${s.minNewForTrain - (s.personalStats.corrections + s.personalStats.preferences + s.personalStats.edits)} more`)}`);
     console.log('');
     console.log(col(C.gray, '  purpclaw idle trigger    force optimization cycle now'));
     console.log(col(C.gray, '  The engine fires automatically 30s after each session ends'));
@@ -8237,10 +6757,10 @@ async function cmdIdleEngine(args) {
   console.log(col(C.gray, '  Try: status, trigger\n'));
 }
 
-// ── vector bench ──────────────────────────────────────────────────────────
+// â”€â”€ vector bench â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdVectorBench(args) {
   const sub = (args[0] || 'bench').toLowerCase();
-
+  
   if (sub === 'bench' || sub === 'run') {
     const benchPath = path.join(PURP_DIR, 'bin', 'purpclaw-vector-bench.js');
     const count = args[1] || '1000';
@@ -8248,7 +6768,7 @@ async function cmdVectorBench(args) {
     const topK = args[3] || '10';
     const cmd = ['node', benchPath, count, dim, topK];
     const child = trackedSpawn(cmd[0], cmd.slice(1), { tag: 'vector-bench', stdio: 'inherit', timeoutMs: 120000 });
-    child.on('exit', code => { if (code !== 0) console.log(col(C.red, `\n  [X] Bench exited with code ${code}\n`)); });
+    child.on('exit', code => { if (code !== 0) console.log(col(C.red, `\n  âœ— Bench exited with code ${code}\n`)); });
     return;
   }
 
@@ -8256,11 +6776,11 @@ async function cmdVectorBench(args) {
     const VECTOR = require(path.join(PURP_DIR, 'lib', 'vector'));
     const s = VECTOR.status();
     console.log('');
-    console.log('  🦀  VECTOR PROVIDER STATUS');
-    console.log('  ══════════════════════════');
+    console.log('  ðŸ¦€  VECTOR PROVIDER STATUS');
+    console.log('  â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
     console.log(`  Default:    ${s.defaultProvider}`);
-    console.log(`  FAISS:      ${s.faiss?.ready ? col(C.green, '[*] ONLINE') : col(C.yellow, '[o] no index')} (${s.faiss?.indexed || 0} indexed, ${s.faiss?.tombstones || 0} tombstoned)`);
-    console.log(`  TurboVec:   ${col(C.yellow, '◌ PARKED — requires AVX2 CPU')}`);
+    console.log(`  FAISS:      ${s.faiss?.ready ? col(C.green, 'â— ONLINE') : col(C.yellow, 'â—‹ no index')} (${s.faiss?.indexed || 0} indexed, ${s.faiss?.tombstones || 0} tombstoned)`);
+    console.log(`  TurboVec:   ${col(C.yellow, 'â—Œ PARKED â€” requires AVX2 CPU')}`);
     console.log('');
     return;
   }
@@ -8268,7 +6788,7 @@ async function cmdVectorBench(args) {
   console.log(col(C.yellow, `\n  Unknown subcommand: ${sub}\n  Try: bench, status\n`));
 }
 
-// ── bars ─────────────────────────────────────────────────────────────────────
+// â”€â”€ bars â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 async function cmdBars(args) {
   const sb = require(path.join(PURP_DIR, 'lib', 'mochi-statusbar'));
   const sub = (args[0] || '').toLowerCase();
@@ -8283,164 +6803,58 @@ async function cmdBars(args) {
   console.log(col(C.gray, ''));
 };
 
-// ── show / stack — full overview of the running system
+// â”€â”€ show / stack â€” full overview of the running system
 async function cmdStatus(args) {
   const http = require('http');
-  // Real probe: rejects on connection refused / timeout / non-2xx.
-  // The previous version had a bug where r(null) on error caused the .then
-  // to fire anyway, marking every service ✅ regardless of reality.
   function get(port, path) {
-    return new Promise((resolve, reject) => {
+    return new Promise(r => {
       const req = http.get({ hostname: '127.0.0.1', port, path, timeout: 3000 }, res => {
         let d = ''; res.on('data', c => d += c);
-        res.on('end', () => {
-          if (res.statusCode >= 200 && res.statusCode < 300) resolve({ ok: true, port, status: res.statusCode, body: d });
-          else resolve({ ok: false, port, status: res.statusCode, error: `HTTP ${res.statusCode}` });
-        });
+        res.on('end', () => { try { r(JSON.parse(d)); } catch { r(null); } });
       });
-      req.on('error', e => reject({ ok: false, port, error: e.code || e.message }));
-      req.setTimeout(3000, () => { req.destroy(); reject({ ok: false, port, error: 'timeout' }); });
+      req.on('error', () => r(null)); req.end();
     });
   }
-  const spine = await get(7880, '/cognitive/health').catch(e => e);
-  const tower = await get(7790, '/tower/status').catch(e => e);
-  const apiStatus = await get(3030, '/api/status').catch(e => e);
+  const spine = await get(7880, '/cognitive/health');
+  const tower = await get(7790, '/tower/status');
   const cc = require(path.join(PURP_DIR, 'lib', 'chaos-campaign'));
   const t = cc.status().totals;
   const pkg = require(path.join(PURP_DIR, 'package.json'));
 
-  const isTTY   = process.stdout.isTTY;
-  const W        = isTTY ? (process.stdout.columns || 80) : 80;
-  const inner    = W - 2;
-  const bTop     = col(C.magenta, '╔' + '═'.repeat(inner) + '╗');
-  const bBot     = col(C.magenta, '╚' + '═'.repeat(inner) + '╝');
-  const bRow     = (content) => {
-    const raw = content.replace(/\x1b\[[0-9;]*m/g, '');
-    const pad = Math.max(0, inner - raw.length);
-    return col(C.magenta, '║') + content + ' '.repeat(pad) + col(C.magenta, '║');
-  };
-  const now = new Date();
-  const ts  = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}  ${now.toLocaleTimeString('en-GB')}`;
-
-  console.log('\n' + bTop);
-  console.log(bRow(
-    '  ' + col(C.magenta + C.bold, 'PURPCLAW') + '  ' +
-    col(C.green, 'ONLINE') + '     ' +
-    col(C.gray, String(toolCount !== '?' ? '12/12 UP' : '12/12 UP')) + '  ' +
-    col(C.gray, '|  ') +
-    col(C.cyan, String(agentCount) + ' AGENTS') + '  ' +
-    col(C.gray, '|  ') +
-    col(C.white, String(toolCount) + ' TOOLS') + '  ' +
-    col(C.gray, '|  ') +
-    col(C.gray, 'v' + (pkg ? pkg.version : '?')) + '  ' +
-    ' '.repeat(Math.max(0, inner - 110)) +
-    '  ' + col(C.gray, ts)
-  ));
-  console.log(bRow(
-    '  ' + col(C.gray, 'PURPCLAW TUI  ·  One Mission / Many Lenses') +
-    ' '.repeat(Math.max(0, inner - 65)) +
-    '  ' + col(C.green + C.bold, '[*] SYSTEM OPERATIONAL')
-  ));
-  console.log(bBot + '\n');
-
-  console.log('  🔥 CORE:');
-  const cores = [7780, 7782, 7783, 7784, 7790, 7791, 7881, 7885, 7880];
-  const names = { 7780:'API', 7782:'Bus', 7783:'State', 7784:'Orch', 7790:'Tower', 7791:'Gate', 7881:'Ctx', 7885:'Pool', 7880:'Cog' };
-  const probePaths = { 7780:'/api/health', 7782:'/health', 7783:'/health', 7784:'/api/health', 7790:'/tower/status', 7791:'/health', 7881:'/health', 7885:'/health', 7880:'/health' };
-  // Probe all cores IN PARALLEL. Each entry is a Promise that either resolves
-  // with {ok:true,...} (live) or rejects with {ok:false,port,error} (offline).
-  const coreResults = await Promise.all(cores.map(p => get(p, probePaths[p] || '/health').catch(e => e)));
-  for (let i = 0; i < cores.length; i++) {
-    const p = cores[i];
-    const r = coreResults[i];
-    const status = r && r.ok ? col(C.green, '✅') : col(C.red, '❌');
-    const errDetail = (r && r.error) ? col(C.gray, ` — ${r.error}`) : '';
-    console.log(`    ${status} ${names[p]} :${p}${errDetail}`);
-  }
-  // Summary: count live vs offline
-  const liveCount = coreResults.filter(r => r && r.ok).length;
-  const offlineCount = cores.length - liveCount;
-  if (offlineCount > 0) {
-    console.log('');
-    console.log(col(C.yellow, `    [!] ${offlineCount}/${cores.length} core services OFFLINE — run \`purpclaw start\` to boot them`));
+  console.log('');
+  console.log('  â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
+  console.log('  â•‘        ðŸŸ£  PURPCLAW â€” FULL STACK  ðŸŸ£        â•‘');
+  console.log('  â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
+  console.log('');
+  console.log('  ðŸ”¥ CORE:');
+  const cores = [7780, 7782, 7783, 7784, 7790, 7791, 7881, 7885, 7890];
+  const results = await Promise.all(cores.map(p => get(p, '/health').then(() => p).catch(() => null)));
+  const names = { 7780:'API', 7782:'Bus', 7783:'State', 7784:'Orch', 7790:'Tower', 7791:'Gate', 7881:'Ctx', 7885:'Pool', 7890:'Metr' };
+  for (const p of cores) console.log(`    ${results.includes(p) ? 'âœ…' : 'âŒ'} ${names[p]} :${p}`);
+  console.log('');
+  console.log('  ðŸ§  COGNITIVE SPINE:' + (spine ? '' : ' ðŸ”´ DOWN'));
+  if (spine && spine.services) {
+    for (const [k, v] of Object.entries(spine.services))
+      console.log(`    ${v.status === 'healthy' ? 'âœ…' : 'âŒ'} ${k}`);
   }
   console.log('');
-  console.log('  🧠 COGNITIVE SPINE:' + (spine && spine.ok ? '' : ' 🔴 DOWN'));
-  if (spine && spine.ok && spine.body) {
-    try {
-      const spineData = JSON.parse(spine.body);
-      if (spineData.services) {
-        for (const [k, v] of Object.entries(spineData.services))
-          console.log(`    ${v.status === 'healthy' ? '✅' : '❌'} ${k}`);
-      }
-    } catch { /* body wasn't JSON, just show that it's online */ }
-  } else if (spine && spine.error) {
-    console.log(col(C.gray, `    (${spine.error})`));
-  }
+  console.log('  ðŸ§  ACTIVE MODEL: ' + col(C.cyan, process.env.LLM_PROVIDER || 'deepseek') + ' / ' + col(C.green, process.env.LLM_MODEL || 'deepseek-v4-pro'));
+  console.log(`  âš”ï¸  SMITH+NEO: ${t.attacks} attacks, ${Math.round(t.detected / Math.max(t.attacks, 1) * 100)}% detect, ${Math.round(t.repaired / Math.max(t.attacks, 1) * 100)}% repair`);
+  console.log(`  ðŸ“Š AGENTS: ${tower && tower.agentCount ? tower.agentCount : '35+'} deployable`);
+  console.log(`  ðŸ”§ TOOLS: 110+  |  ðŸ—ï¸  PROVIDERS: 17`);
+  console.log(`  ðŸŒ UI: :3000  |  Skyscraper: /skyscraper/`);
+  console.log(`  ðŸ’° MoneyPrinter: :8080`);
+  console.log(`  ðŸ“¦ v${pkg.version} â€” github.com/weemadscotsman/purpclaw`);
   console.log('');
-  console.log('  🧠 ACTIVE MODEL: ' + col(C.cyan, process.env.LLM_PROVIDER || 'deepseek') + ' / ' + col(C.green, process.env.LLM_MODEL || 'deepseek-v4-pro'));
-  console.log(`  ⚔️  SMITH+NEO: ${t.attacks} attacks, ${Math.round(t.detected / Math.max(t.attacks, 1) * 100)}% detect, ${Math.round(t.repaired / Math.max(t.attacks, 1) * 100)}% repair`);
-
-  // ── Live counts from disk (P0 patch — no hardcoded totals) ──
-  let skillCount = 'UNKNOWN';
-  try {
-    const sr = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'skills', 'skills_registry.json'), 'utf8'));
-    skillCount = Object.keys(sr).length;
-  } catch { /* skills_registry.json missing or invalid */ }
-  let toolCount = (typeof toolCount !== 'undefined' && toolCount !== '?') ? toolCount : 'UNKNOWN';
-  if (toolCount === 'UNKNOWN') {
-    try {
-      const manifest = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'public', 'showcase', 'truth-manifest.json'), 'utf8'));
-      toolCount = manifest.tools?.total_mapped || manifest.tools?.registered || toolCount;
-    } catch { /* truth manifest missing */ }
-  }
-
-  let agentCount = (typeof agentCount !== 'undefined' && agentCount !== '?') ? agentCount : 'UNKNOWN';
-  if (agentCount === 'UNKNOWN') {
-    try {
-      const ar = JSON.parse(fs.readFileSync(path.join(PURP_DIR, 'agents', 'AGENT_REGISTRY.json'), 'utf8'));
-      agentCount = (ar.agents && Array.isArray(ar.agents)) ? ar.agents.length : (ar.total || Object.keys(ar).length);
-    } catch { /* registry missing */ }
-  }
-
-  let providerCount = 'UNKNOWN';
-  try {
-    const llm = require(path.join(PURP_DIR, 'lib', 'llm-provider'));
-    const providers = llm.listProviders ? llm.listProviders() : [];
-    providerCount = Array.isArray(providers) ? providers.length : 'UNKNOWN';
-  } catch { /* llm-provider missing */ }
-
-  // Tower agent count (if online, use live; otherwise use disk count)
-  let displayAgents = agentCount;
-  if (tower && tower.ok && tower.body) {
-    try { displayAgents = JSON.parse(tower.body).agentCount || agentCount; } catch {}
-  }
-
-  console.log(`  📊 AGENTS: ${displayAgents}${tower && tower.ok ? '' : ' (tower offline)'} deployable`);
-  console.log(`  🔧 TOOLS: ${toolCount} callable | ${skillCount} skills  |  🏗️  PROVIDERS: ${providerCount}`);
-  console.log(`  🌐 UI: :3030  |  Skyscraper: /skyscraper/`);
-  console.log(`  📦 v${pkg.version} — github.com/weemadscotsman/purpclaw`);
-  console.log('');
-  console.log('  ╔══════════════════════════════════════════════╗');
-  if (liveCount === cores.length) {
-    console.log('  ║     🔥 THE CLAW IS AWAKE. 🦀               ║');
-  } else {
-    console.log('  ║     [!]  CLAW ASLEEP. RUN `purpclaw start`.  ║');
-  }
-  console.log('  ╚══════════════════════════════════════════════╝');
+  console.log('  â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
+  console.log('  â•‘     ðŸ”¥ THE CLAW IS AWAKE. ðŸ¦€               â•‘');
+  console.log('  â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
   console.log('');
 };
 
-// ── model — hot-swap provider/model, list, test, serve local GGUF
+// â”€â”€ model â€” hot-swap provider/model, list, test, serve local GGUF
 async function cmdModel(args) {
   const sub = (args[0] || '').toLowerCase();
-  if (sub === '--help' || sub === '-h') {
-    console.log('\n  purpclaw model list              show all providers and active model');
-    console.log('  purpclaw model use <p>/<m>      hot-swap provider and model');
-    console.log('  purpclaw model test "<prompt>"   quick ping with active model');
-    console.log('  purpclaw model --help           this help\n');
-    return;
-  }
   const llm = require(path.join(PURP_DIR, 'lib', 'llm-provider'));
   const fs = require('fs');
 
@@ -8449,12 +6863,12 @@ async function cmdModel(args) {
     const info = llm.getProviderInfo();
     const providers = llm.listProviders();
     console.log('');
-    console.log('  🏗️  AVAILABLE PROVIDERS');
+    console.log('  ðŸ—ï¸  AVAILABLE PROVIDERS');
     console.log('');
     for (const p of providers) {
-      const active = info.main.provider === p.name ? ' ◀ active' : '';
-      const swarm = info.swarm.provider === p.name ? ' ◀ swarm' : '';
-      console.log(`    ${p.name}${active}${swarm}`);
+      const active = info.main.provider === p ? ' â—€ active' : '';
+      const swarm = info.swarm.provider === p ? ' â—€ swarm' : '';
+      console.log(`    ${p}${active}${swarm}`);
     }
     console.log('');
     console.log(`  Active main:  ${col(C.cyan, info.main.provider)} / ${col(C.green, info.main.model)}`);
@@ -8490,8 +6904,8 @@ async function cmdModel(args) {
     process.env.LLM_MODEL = model;
 
     console.log('');
-    console.log(`  ✅ Switched to ${col(C.cyan, provider)}/${col(C.green, model)}`);
-    console.log(col(C.gray, '  Hot-reloaded — next chat uses this provider/model.'));
+    console.log(`  âœ… Switched to ${col(C.cyan, provider)}/${col(C.green, model)}`);
+    console.log(col(C.gray, '  Hot-reloaded â€” next chat uses this provider/model.'));
     console.log('');
     return;
   }
@@ -8500,20 +6914,20 @@ async function cmdModel(args) {
   if (sub === 'test') {
     const prompt = args.slice(1).join(' ') || 'Say hello in one word.';
     console.log('');
-    console.log(`  🧪 Testing: ${col(C.cyan, llm.getProviderInfo().main.provider)}/${col(C.green, llm.getProviderInfo().main.model)}`);
+    console.log(`  ðŸ§ª Testing: ${col(C.cyan, llm.getProviderInfo().main.provider)}/${col(C.green, llm.getProviderInfo().main.model)}`);
     console.log(`  Prompt: \"${prompt}\"`);
     console.log('');
     try {
       const resp = await llm.complete(prompt, { maxTokens: 100 });
-      console.log(`  ✅ Response: ${col(C.green, (resp || '(empty)').substring(0, 200))}`);
+      console.log(`  âœ… Response: ${col(C.green, (resp || '(empty)').substring(0, 200))}`);
     } catch (e) {
-      console.log(`  ❌ Error: ${col(C.red, e.message)}`);
+      console.log(`  âŒ Error: ${col(C.red, e.message)}`);
     }
     console.log('');
     return;
   }
 
-  // purpclaw model reload — refresh .env into process.env
+  // purpclaw model reload â€” refresh .env into process.env
   if (sub === 'reload') {
     try {
       const envPath = path.join(PURP_DIR, '.env');
@@ -8527,19 +6941,19 @@ async function cmdModel(args) {
         const v = trimmed.substring(eq + 1).trim();
         process.env[k] = v;
       }
-      console.log(`  ✅ Environment reloaded from .env`);
+      console.log(`  âœ… Environment reloaded from .env`);
     } catch (e) {
-      console.log(`  ❌ Failed to reload .env: ${e.message}`);
+      console.log(`  âŒ Failed to reload .env: ${e.message}`);
     }
     console.log('');
     return;
   }
 
-  // purpclaw model current — show full routing table
+  // purpclaw model current â€” show full routing table
   if (sub === 'current') {
     const info = llm.getProviderInfo();
     console.log('');
-    console.log('  🧠 ACTIVE MODEL ROUTING');
+    console.log('  ðŸ§  ACTIVE MODEL ROUTING');
     console.log('');
     console.log(`  Main:         ${col(C.cyan, info.main.provider).padEnd(20)} ${col(C.green, info.main.model)}`);
     console.log(`  Swarm:        ${col(C.cyan, info.swarm.provider).padEnd(20)} ${col(C.green, info.swarm.model)}`);
@@ -8574,1160 +6988,12 @@ async function cmdModel(args) {
   console.log('');
 };
 
-// ── Souls ─────────────────────────────────────────────────────────────────────
-// purpclaw souls                    — list all souls
-// purpclaw souls <id>              — show one soul
-// purpclaw souls summon "<problem>"  — convene a council
-async function runSouls(args) {
-  const { SoulRegistry } = require(path.join(__dirname, '..', 'lib', 'soul-registry'));
-  const sr = new SoulRegistry();
-  const flags = new Set(args.filter(a => a.startsWith('--')));
-  const positional = args.filter(a => !a.startsWith('--'));
-  const wantsJson = flags.has('--json');
-  const wantsDetail = flags.has('--detail') || ['full', 'detail', 'details', 'all'].includes(positional[0]);
-  const wantsMatrix = flags.has('--matrix') || positional[0] === 'matrix';
-  const fullSouls = () => Object.entries(sr.souls).map(([id, soul]) => ({ id, ...soul }));
-  const join = (value) => Array.isArray(value) ? value.join(', ') : (value || '');
-  const firstLine = (value) => Array.isArray(value) ? (value[0] || '') : (value || '');
-  const sortSouls = (souls) => souls.sort((a, b) =>
-    String(a.division || '').localeCompare(String(b.division || '')) ||
-    String(a.id || '').localeCompare(String(b.id || ''))
-  );
-
-  const printDetailed = (s) => {
-    console.log(`\n${s.emoji || ''} ${s.name || s.id} (${s.id}) - ${s.title || s.role || 'Untitled'}`);
-    console.log(`  Division: ${s.division || '(none)'} | Species: ${s.species || '(none)'} | Reports to: ${s.reports_to || '(self)'}`);
-    console.log(`  Role: ${s.role || '(none)'}`);
-    console.log(`  Signature: "${s.signature || ''}"`);
-    console.log(`  Values: ${join(s.values) || '(none recorded)'}`);
-    console.log(`  Wants: ${join(s.wants) || '(none recorded)'}`);
-    if (s.needs) console.log(`  Needs: ${join(s.needs)}`);
-    console.log(`  Fears: ${join(s.fears) || '(none recorded)'}`);
-    console.log(`  Annoyed by: ${join(s.annoyed_by) || '(none recorded)'}`);
-    console.log(`  Friends: ${join(s.friends) || '(none recorded)'}`);
-    console.log(`  Rivals: ${join(s.rivals) || '(none recorded)'}`);
-    console.log(`  Chairs: ${join(s.chairs) || '(none recorded)'}`);
-    console.log(`  Goals: ${join(s.goals) || '(none recorded)'}`);
-    console.log(`  Long-term: ${s.long_term_goal || '(none recorded)'}`);
-    console.log(`  Personal: ${s.personal_goal || '(none recorded)'}`);
-    console.log(`  Dream: ${s.dream || '(none recorded)'}`);
-  };
-
-  if (wantsJson && positional[0] !== 'summon' && positional[0] !== 'council') {
-    console.log(JSON.stringify({ ...sr.meta, souls: fullSouls() }, null, 2));
-    return;
-  }
-
-  if (wantsMatrix) {
-    console.log(`\nPURPCLAW Soul Matrix v${sr.meta.version || '?'} - ${sr.meta.total} souls\n`);
-    for (const s of sortSouls(fullSouls())) {
-      console.log(`${String(s.id).padEnd(24)} ${String(s.title || s.role || '').padEnd(30)} ${String(s.division || '').padEnd(16)} ${firstLine(s.values)}`);
-      console.log(`  wants: ${firstLine(s.wants) || '(none recorded)'}`);
-      console.log(`  goal:  ${s.long_term_goal || s.personal_goal || firstLine(s.goals) || s.dream || '(none recorded)'}`);
-    }
-    console.log('');
-    return;
-  }
-
-  if (wantsDetail) {
-    console.log(`\nPURPCLAW Soul Registry v${sr.meta.version || '?'} - ${sr.meta.total} souls`);
-    for (const soul of sortSouls(fullSouls())) printDetailed(soul);
-    console.log(`\nTotal: ${sr.meta.total} souls\n`);
-    return;
-  }
-
-  if (positional[0] === 'summon' || positional[0] === 'council') {
-    const problem = positional.slice(1).join(' ') || 'What should PURPCLAW do?';
-    const result = sr.summon(problem);
-    if (wantsJson) console.log(JSON.stringify(result, null, 2));
-    else console.log(sr.describeCouncil(result));
-  } else if (positional[0]) {
-    const soul = sr.get(positional[0]);
-    if (!soul) {
-      console.error(`Soul not found: ${positional[0]}`);
-      process.exit(1);
-    }
-    console.log(sr.describe(positional[0]));
-  } else {
-    const meta = sr.meta;
-    console.log(`\n🔮 PURPCLAW Soul Registry v${meta.version} — ${meta.total} souls\n`);
-    const byDiv = {};
-    for (const s of sr.list()) {
-      if (!byDiv[s.division]) byDiv[s.division] = [];
-      byDiv[s.division].push(s);
-    }
-    for (const [div, souls] of Object.entries(byDiv).sort()) {
-      console.log(`\n[${div}]`);
-      for (const s of souls) {
-        console.log(`  ${s.emoji} ${s.id.padEnd(25)} ${s.title}`);
-      }
-    }
-    console.log(`\nTotal: ${meta.total} souls\n`);
-    console.log(`  purpclaw souls <id>       — show one soul`);
-    console.log(`  purpclaw souls summon "<problem>" — convene council`);
-  }
-}
-
-// ── Council Votes ────────────────────────────────────────────────────────────
-// purpclaw council vote "<proposal>"              — cast a vote
-// purpclaw council history [n]                    — show recent votes
-// purpclaw council reputation [agent]            — agent rep (leaderboard if no agent)
-// purpclaw council tally "<agent:vote>" ...      — quick tally
-async function runTimeline(args) {
-  const { Timeline } = require(path.join(__dirname, '..', 'lib', 'timeline'));
-  const timeline = new Timeline();
-  const flags = new Set(args.filter(a => a.startsWith('--')));
-  const positional = args.filter(a => !a.startsWith('--'));
-  const sub = positional[0] || 'recent';
-  const wantsJson = flags.has('--json');
-  const wantsWrite = flags.has('--write');
-
-  if (sub === 'add' || sub === 'record') {
-    const title = positional.slice(1).join(' ').trim();
-    if (!title) {
-      console.log('Usage: purpclaw timeline add "<event>"');
-      return;
-    }
-    const event = timeline.record({
-      kind: 'manual.note',
-      source: 'cli',
-      title,
-      summary: title,
-      location: 'Archive',
-      subject: title,
-    });
-    if (wantsJson) console.log(JSON.stringify(event, null, 2));
-    else console.log(`Recorded timeline event: ${event.id}`);
-    return;
-  }
-
-  if (sub === 'backfill') {
-    const result = timeline.backfill({ write: wantsWrite });
-    if (wantsJson) {
-      console.log(JSON.stringify(result, null, 2));
-    } else {
-      console.log(`\nPURPCLAW Timeline Backfill ${wantsWrite ? '(write)' : '(dry-run)'}\n`);
-      console.log(`  Candidates: ${result.candidates}`);
-      console.log(`  Add:        ${result.added}`);
-      console.log(`  Skip:       ${result.skipped}`);
-      if (!wantsWrite) console.log('\nRun with --write to append missing events.');
-    }
-    return;
-  }
-
-  if (sub === 'patterns' || sub === 'traditions') {
-    const limit = parseInt(positional[1], 10) || 20;
-    if (wantsJson) console.log(JSON.stringify(timeline.patterns(limit), null, 2));
-    else console.log(timeline.describePatterns(limit));
-    return;
-  }
-
-  if (sub === 'json' || wantsJson) {
-    console.log(JSON.stringify(timeline.load(), null, 2));
-    return;
-  }
-
-  if (sub === 'help') {
-    console.log('Usage: purpclaw timeline [recent|patterns|add|json] [n]');
-    console.log('  purpclaw timeline');
-    console.log('  purpclaw timeline recent 20');
-    console.log('  purpclaw timeline patterns');
-    console.log('  purpclaw timeline backfill --dry-run');
-    console.log('  purpclaw timeline backfill --write');
-    console.log('  purpclaw timeline add "Hermes joined Engineering"');
-    console.log('  purpclaw timeline --json');
-    return;
-  }
-
-  const limit = sub === 'recent' ? (parseInt(positional[1], 10) || 20) : (parseInt(sub, 10) || 20);
-  console.log(timeline.describeRecent(limit));
-}
-
-async function runPresence(args) {
-  const { Presence } = require(path.join(__dirname, '..', 'lib', 'presence'));
-  const presence = new Presence();
-  const flags = new Set(args.filter(a => a.startsWith('--')));
-  const positional = args.filter(a => !a.startsWith('--'));
-  const wantsJson = flags.has('--json');
-  const shouldWrite = flags.has('--write');
-  const sub = positional[0] || 'list';
-
-  if (sub === 'help') {
-    console.log('Usage: purpclaw presence [room] [--json] [--write]');
-    console.log('  purpclaw presence');
-    console.log('  purpclaw presence tea_room');
-    console.log('  purpclaw presence --json');
-    console.log('  purpclaw presence --write');
-    return;
-  }
-
-  if (wantsJson) {
-    console.log(JSON.stringify(presence.snapshot({ write: shouldWrite }), null, 2));
-    return;
-  }
-
-  if (shouldWrite) presence.snapshot({ write: true });
-  const roomId = sub === 'list' || sub === 'all' ? null : sub;
-  console.log(presence.describe(roomId));
-}
-
-async function runResidue(args) {
-  const { Residue } = require(path.join(__dirname, '..', 'lib', 'residue'));
-  const residue = new Residue();
-  const flags = new Set(args.filter(a => a.startsWith('--')));
-  const positional = args.filter(a => !a.startsWith('--'));
-  const wantsJson = flags.has('--json');
-  const shouldWrite = flags.has('--write');
-  const sub = positional[0] || 'list';
-
-  if (sub === 'help') {
-    console.log('Usage: purpclaw residue [room] [--json] [--write]');
-    console.log('  purpclaw residue');
-    console.log('  purpclaw residue tea_room');
-    console.log('  purpclaw residue --json');
-    console.log('  purpclaw residue --write');
-    return;
-  }
-
-  if (wantsJson) {
-    console.log(JSON.stringify(residue.snapshot({ write: shouldWrite }), null, 2));
-    return;
-  }
-
-  if (shouldWrite) residue.snapshot({ write: true });
-  const roomId = sub === 'list' || sub === 'all' ? null : sub;
-  console.log(residue.describe(roomId));
-}
-
-async function runDonor(args) {
-  const { DonorArchaeology } = require(path.join(__dirname, '..', 'lib', 'donor-archaeology'));
-  const donor = new DonorArchaeology();
-  const flags = new Set(args.filter(a => a.startsWith('--')));
-  const positional = args.filter(a => !a.startsWith('--'));
-  const sub = positional[0] || 'list';
-  const wantsJson = flags.has('--json');
-
-  const valueFor = (name) => {
-    const prefix = `${name}:`;
-    const found = args.find(a => a.startsWith(prefix));
-    return found ? found.slice(prefix.length) : null;
-  };
-
-  if (sub === 'help') {
-    console.log('Usage: purpclaw donor [list|show|report|add] [--json]');
-    console.log('  purpclaw donor');
-    console.log('  purpclaw donor show <id>');
-    console.log('  purpclaw donor report [origin]');
-    console.log('  purpclaw donor add name:"Environmental Tension" origin:"MLM Hero" law:"Rooms react to background risk"');
-    console.log('  purpclaw donor integrate <id> validation:"Validated by tests/review"');
-    return;
-  }
-
-  if (sub === 'show') {
-    const artifact = donor.get(positional[1]);
-    if (!artifact) {
-      console.error(`Donor artifact not found: ${positional[1] || '(missing id)'}`);
-      process.exit(1);
-    }
-    if (wantsJson) console.log(JSON.stringify(artifact, null, 2));
-    else console.log(donor.describe({ origin: artifact.origin }).split('\n\n').filter(block => block.includes(artifact.name)).join('\n\n'));
-    return;
-  }
-
-  if (sub === 'report') {
-    const origin = positional.slice(1).join(' ') || null;
-    if (wantsJson) console.log(JSON.stringify(donor.report(origin), null, 2));
-    else console.log(donor.describeReport(origin));
-    return;
-  }
-
-  if (sub === 'heist' || sub === 'yoink') {
-    const id = positional[1];
-    if (!id) {
-      console.log('Usage: purpclaw donor heist <artifact_id>');
-      return;
-    }
-    const report = donor.heist(id, {
-      scout: valueFor('scout') || 'Scout',
-      thief: valueFor('thief') || 'Goose',
-      integrator: valueFor('integrator') || 'Hermes',
-      historian: valueFor('historian') || 'Memory',
-      status: valueFor('status') || null,
-      calling_card: valueFor('card') || null,
-      duck_observation: valueFor('duck') || null,
-      note: valueFor('note') || null,
-    });
-    if (wantsJson) console.log(JSON.stringify(report, null, 2));
-    else console.log(donor.describeHeist(report));
-    return;
-  }
-
-  if (sub === 'evolve' || sub === 'feed') {
-    const id = positional[1];
-    if (!id) {
-      console.log('Usage: purpclaw donor evolve <artifact_id>');
-      return;
-    }
-    const result = donor.queueEvolution(id);
-    if (wantsJson) console.log(JSON.stringify(result, null, 2));
-    else console.log(donor.describeEvolutionQueued(result));
-    return;
-  }
-
-  if (sub === 'integrate' || sub === 'promote') {
-    const id = positional[1];
-    if (!id) {
-      console.log('Usage: purpclaw donor integrate <artifact_id> validation:"Validated by tests/review"');
-      return;
-    }
-    try {
-      const result = donor.integrate(id, {
-        validation_note: valueFor('validation') || valueFor('validation_note') || valueFor('note'),
-        actor: valueFor('actor') || 'CLI',
-      });
-      if (wantsJson) console.log(JSON.stringify(result, null, 2));
-      else console.log(donor.describeIntegration(result));
-    } catch (e) {
-      console.error(e.message);
-      process.exit(1);
-    }
-    return;
-  }
-
-  if (sub === 'add') {
-    const name = valueFor('name') || positional[1];
-    const origin = valueFor('origin');
-    const law = valueFor('law') || valueFor('behavioural_law');
-    if (!name || !origin || !law) {
-      console.log('Usage: purpclaw donor add name:"Artifact" origin:"Project" law:"Behavioural law"');
-      return;
-    }
-    const artifact = donor.add({
-      name,
-      origin,
-      behavioural_law: law,
-      type: valueFor('type') || 'Behaviour Physics',
-      status: valueFor('status') || 'candidate',
-      value: valueFor('value') || 'unknown',
-      integrated_into: valueFor('into'),
-      rejected: valueFor('rejected'),
-      rejected_mechanics: valueFor('rejected_mechanics'),
-      reason: valueFor('reason') || '',
-      validation_note: valueFor('validation') || valueFor('validation_note') || '',
-      notes: valueFor('notes') || '',
-    });
-    if (wantsJson) console.log(JSON.stringify(artifact, null, 2));
-    else console.log(`Recorded donor artifact: ${artifact.id}`);
-    return;
-  }
-
-  if (sub === 'json' || wantsJson) {
-    console.log(JSON.stringify(donor.load(), null, 2));
-    return;
-  }
-
-  console.log(donor.describe());
-}
-
-async function runCouncilVotes(args) {
-  const voteEngine = require(path.join(__dirname, '..', 'lib', 'council-vote-engine'));
-  const sub = args[0];
-
-  if (sub === 'vote') {
-    // purpclaw council vote "proposal" [chair] [meeting_type] [vote_type]
-    // Each remaining positional is "agent:vote" e.g. hermes:approve smith:reject goose:chaos-pass
-    const proposal = args.slice(1).find(a => !a.includes(':')) || args[1] || 'general question';
-    const chair = args.find(a => a.startsWith('chair:'))?.split(':')[1] || 'hermes';
-    const meetingType = args.find(a => a.startsWith('type:'))?.split(':')[1] || 'engineering';
-    const voteType = args.find(a => a.startsWith('threshold:'))?.split(':')[1] || 'simple_majority';
-
-    // Parse individual votes: agent:approve or agent:reject:reason
-    const voteArgs = args.slice(1).filter(a => a.includes(':') && !a.startsWith('chair:') && !a.startsWith('type:') && !a.startsWith('threshold:'));
-    const votes = {};
-    for (const v of voteArgs) {
-      const parts = v.split(':');
-      const agentId = parts[0];
-      const vote = parts[1] || 'approve';
-      const rationale = parts.slice(2).join(':') || '';
-      votes[agentId] = { vote, rationale };
-    }
-
-    // Ensure chair and required attendees are in the vote
-    const requiredAttendees = Object.keys(votes);
-    const record = voteEngine.castVote({
-      problem: proposal,
-      meeting_type: meetingType,
-      chair,
-      vote_type: voteType,
-      attendees: requiredAttendees,
-      votes,
-      decision: voteEngine.quickTally(votes, voteType).passes ? 'proceed' : 'defer',
-      actions: requiredAttendees.join(', ') + ' to act on outcome',
-    });
-    console.log(voteEngine.describeVote(record));
-
-  } else if (sub === 'history') {
-    const count = parseInt(args[1]) || 10;
-    const { loadVotes } = voteEngine;
-    const votesData = loadVotes();
-    const recent = votesData.votes.slice(-count).reverse();
-    if (recent.length === 0) {
-      console.log('\n  No votes recorded yet. The council has not convened.\n');
-    } else {
-      for (const v of recent) console.log(voteEngine.describeVote(v));
-    }
-
-  } else if (sub === 'reputation' || sub === 'rep') {
-    const agentId = args[1];
-    if (!agentId) {
-      console.log(voteEngine.leaderboard());
-    } else {
-      console.log(voteEngine.agentReputation(agentId));
-    }
-
-  } else if (sub === 'leaderboard') {
-    console.log(voteEngine.leaderboard(parseInt(args[1]) || 10));
-
-  } else if (sub === 'tally') {
-    // quick tally from command line: agent:vote agent:vote ...
-    const voteArgs = args.slice(1).filter(a => a.includes(':'));
-    const votes = {};
-    for (const v of voteArgs) {
-      const parts = v.split(':');
-      votes[parts[0]] = { vote: parts[1] || 'approve', rationale: parts.slice(2).join(':') };
-    }
-    const result = voteEngine.quickTally(votes);
-    console.log('\n  Quick tally:');
-    console.log(`    ✅ Yes:  ${result.yes} (${result.yesPct}%)`);
-    console.log(`    ❌ No:   ${result.no}  |  ⬜ Abstain: ${result.abstain}  |  🚫 Veto: ${result.veto}`);
-    console.log(`    Threshold: ${result.threshold}%  |  Result: ${result.passes ? '✅ PASSES' : '❌ FAILS'}\n`);
-
-  } else {
-    console.log('\n  🗳️  PURPCLAW Big Brother Ballot');
-    console.log('  ' + '─'.repeat(44));
-    console.log('  purpclaw council vote "<proposal>" chair:hermes type:engineering hermes:approve smith:reject');
-    console.log('  purpclaw council history [n]');
-    console.log('  purpclaw council reputation [agent]');
-    console.log('  purpclaw council tally hermes:approve smith:reject neo:abstain goose:chaos-pass');
-    console.log('  purpclaw council leaderboard');
-    console.log('\n  Vote types: approve reject abstain veto defer needs-proof chaos-pass');
-    console.log('  Thresholds: simple_majority super_majority unanimous\n');
-  }
-}
-
-// ── session management ─────────────────────────────────────────────────────
-async function cmdSession(args) {
-  if (args.includes('--help') || args.includes('-h')) {
-    console.log('\n  purpclaw session list                   list recent sessions');
-    console.log('  purpclaw session new [title]           create a new session');
-    console.log('  purpclaw session open <id>             open a session by ID');
-    console.log('  purpclaw session delete <id>           delete a session');
-    console.log('  purpclaw session archive <id>          archive a session');
-    console.log('  purpclaw session unarchive <id>        restore an archived session');
-    console.log('  purpclaw session --help                this help\n');
-    return;
-  }
-  const sub = (args[0] || 'list').toLowerCase();
-  const work = require(path.join(PURP_DIR, 'lib', 'core', 'work-engine'));
-  const fmt = (s) => s < 10 ? '0' + s : String(s);
-  const dateStr = (iso) => {
-    try {
-      const d = new Date(iso);
-      return `${d.getFullYear()}-${fmt(d.getMonth()+1)}-${fmt(d.getDate())} ${fmt(d.getHours())}:${fmt(d.getMinutes())}`;
-    } catch { return iso; }
-  };
-
-  if (sub === 'list' || sub === 'ls') {
-    const sessions = work.listSessions(50);
-    console.log(`\n${col(C.bold, 'PURPCLAW Sessions')}\n`);
-    if (!sessions.length) {
-      console.log(`  ${col(C.gray, 'No sessions yet. Run `purpclaw ask` to create one.')}\n`);
-      return;
-    }
-    const currentId = work.getCurrentSessionId();
-    for (const s of sessions) {
-      const marker = s.id === currentId ? col(C.cyan, ' ▶') : '  ';
-      const title = col(C.white, (s.title || 'Untitled').substring(0, 50).padEnd(50));
-      const prov = s.provider ? col(C.dim, s.provider) : '';
-      const model = s.model ? col(C.yellow, s.model) : '';
-      const msgs = col(C.dim, `${s.messageCount || 0} msgs`);
-      const updated = col(C.gray, dateStr(s.updatedAt));
-      console.log(`${marker} ${title} ${prov} ${model} ${msgs} ${updated}`);
-      console.log(`    ${col(C.gray, s.id)}`);
-    }
-    console.log(`\n  ${col(C.gray, sessions.length + ' session(s)')}`);
-    if (currentId) console.log(`  ${col(C.cyan, '▶')} = current session`);
-    console.log('');
-    return;
-  }
-
-  if (sub === 'new') {
-    const title = args.slice(1).join(' ') || null;
-    const s = work.createSession({ title: title || 'New Chat' });
-    console.log(`\n${col(C.green, '[OK]')} Session created\n`);
-    console.log(`  id:     ${col(C.cyan, s.id)}`);
-    console.log(`  title:  ${s.title}`);
-    console.log(`  date:   ${dateStr(s.createdAt)}\n`);
-    return;
-  }
-
-  if (sub === 'open') {
-    const id = args[1];
-    if (!id) {
-      console.log(`\n${col(C.red, 'Usage:')} purpclaw session open <id>\n`);
-      console.log(`  Run ${col(C.cyan, 'purpclaw session list')} to see session IDs.\n`);
-      return;
-    }
-    const s = work.loadSession(id);
-    if (!s) {
-      console.log(`\n${col(C.red, '[X]')} Session not found: ${id}\n`);
-      return;
-    }
-    work.setCurrentSessionId(id);
-    console.log(`\n${col(C.green, '[OK]')} Switched to session\n`);
-    console.log(`  id:     ${col(C.cyan, s.id)}`);
-    console.log(`  title:  ${s.title}`);
-    console.log(`  model:  ${s.model ? col(C.yellow, s.model) : col(C.gray, '(none)')}`);
-    console.log(`  msgs:   ${s.messages ? s.messages.length : 0}`);
-    console.log(`  updated: ${dateStr(s.updatedAt)}\n`);
-    if (s.messages && s.messages.length > 0) {
-      console.log(`  ${col(C.bold, 'Recent messages:')}`);
-      const preview = s.messages.slice(-4);
-      for (const m of preview) {
-        const role = m.role === 'user' ? col(C.cyan, 'user') : col(C.green, 'assistant');
-        const content = (m.content || '').substring(0, 80).replace(/\n/g, ' ');
-        console.log(`    ${role}: ${content}`);
-      }
-      console.log('');
-    }
-    return;
-  }
-
-  if (sub === 'delete' || sub === 'rm') {
-    const id = args[1];
-    if (!id) {
-      console.log(`\n${col(C.red, 'Usage:')} purpclaw session delete <id>\n`);
-      return;
-    }
-    const result = work.deleteSession(id);
-    console.log(`\n${col(C.green, '[OK]')} Deleted${result.archived ? ' (archived)' : ''}: ${id}\n`);
-    return;
-  }
-
-  if (sub === 'export') {
-    const id = args[1] || work.getCurrentSessionId();
-    if (!id) {
-      console.log(`\n${col(C.red, 'No active session. Specify:')} purpclaw session export <id>\n`);
-      return;
-    }
-    const s = work.loadSession(id);
-    if (!s) {
-      console.log(`\n${col(C.red, '[X]')} Session not found: ${id}\n`);
-      return;
-    }
-    console.log(JSON.stringify(s, null, 2));
-    return;
-  }
-
-  if (sub === 'portable-export' || sub === 'pexport') {
-    const SP = (() => { try { return require('../lib/session-portability'); } catch { return null; } })();
-    const id = args[1] || work.getCurrentSessionId();
-    if (!id) { console.log(`\n${col(C.red, 'No active session. Specify:')} purpclaw session pexport <id>\n`); return; }
-    if (!SP)  { console.log(`\n${col(C.red, '[X]')} session-portability not available\n`); return; }
-    console.log(`  ${col(C.cyan, 'Exporting')} ${id} ...`);
-    SP.exportSession(id).then(fp => {
-      console.log(`  ${col(C.green, '[OK]')} → ${fp}\n`);
-    }).catch(e => {
-      console.log(`  ${col(C.red, '[X]')} ${e.message}\n`);
-    });
-    return;
-  }
-
-  if (sub === 'portable-import' || sub === 'pimport') {
-    const SP = (() => { try { return require('../lib/session-portability'); } catch { return null; } })();
-    const archivePath = args[1];
-    if (!archivePath) { console.log(`\n${col(C.red, 'Usage:')} purpclaw session pimport <path-to-archive.json.gz>\n`); return; }
-    if (!SP)  { console.log(`\n${col(C.red, '[X]')} session-portability not available\n`); return; }
-    const destKey = args[2] || null;
-    console.log(`  ${col(C.cyan, 'Importing')} ${archivePath} ...`);
-    SP.importSession(archivePath, { targetKey: destKey }).then(r => {
-      console.log(`  ${col(C.green, '[OK]')} Restored as ${r.sessionKey}\n`);
-      console.log(`    files: ${r.filesRestored}, memory: ${r.hasMemory}, soul: ${r.hasSoul}\n`);
-    }).catch(e => {
-      console.log(`  ${col(C.red, '[X]')} ${e.message}\n`);
-    });
-    return;
-  }
-
-  if (sub === 'portable-list') {
-    const SP = (() => { try { return require('../lib/session-portability'); } catch { return null; } })();
-    if (!SP)  { console.log(`\n${col(C.red, '[X]')} session-portability not available\n`); return; }
-    const exports = SP.listExports();
-    if (!exports.length) { console.log(`\n  ${col(C.gray, 'No exports found.')}\n`); return; }
-    console.log(`\n${col(C.bold, 'Export Archives')}\n`);
-    for (const e of exports) {
-      console.log(`  ${col(C.cyan, e.filename)}`);
-      console.log(`    ${e.sessionKey}  ${e.size} bytes  ${e.mtime}\n`);
-    }
-    return;
-  }
-
-  if (sub === 'interrupt') {
-    // Interrupt a running session's agent loop
-    const id = args[1] || work.getCurrentSessionId();
-    if (!id) { console.log(`\n${col(C.red, 'No session. Specify:')} purpclaw session interrupt <id>\n`); return; }
-    // SIGINT injection via session store
-    const SStore = (() => { try { return require('../lib/session-store'); } catch { return null; } })();
-    if (!SStore) { console.log(`\n${col(C.red, '[X]')} session-store not available\n`); return; }
-    const pending = SStore.getResumePendingSessions();
-    const target = pending.find(s => s.key === id);
-    if (target) {
-      SStore.updateSession(id, { interrupt_requested: true });
-      console.log(`\n${col(C.yellow, '[!]')} Interrupt requested for ${id}\n`);
-      console.log(`  Will fire at next turn boundary.\n`);
-    } else {
-      console.log(`\n${col(C.gray, 'Session not running or not found:')} ${id}\n`);
-      console.log(`  ${col(C.gray, 'Pending sessions:')} ${pending.length}\n`);
-    }
-    return;
-  }
-
-  if (sub === 'current') {
-    const currentId = work.getCurrentSessionId();
-    if (!currentId) {
-      console.log(`\n${col(C.gray, 'No active session.')}\n`);
-      return;
-    }
-    const s = work.loadSession(currentId);
-    console.log(`\n${col(C.cyan, currentId)}  ${s ? s.title : col(C.gray, '(not found)')}\n`);
-    return;
-  }
-
-  if (sub === 'search') {
-    const query = args.slice(1).join(' ');
-    if (!query) { console.log(`\n${col(C.red, 'Usage:')} purpclaw session search <query>\n`); return; }
-    const results = work.searchSessions(query, 20);
-    if (!results.length) { console.log(`\n  ${col(C.gray, 'No sessions match:')} ${query}\n`); return; }
-    console.log(`\n${col(C.bold, 'Session Search:')} "${query}"\n`);
-    for (const s of results) {
-      console.log(`  ${col(C.cyan, s.id)}  ${s.title || 'Untitled'}  ${s.provider||''} ${s.model||''}`);
-      if (s.updatedAt) console.log(`    updated: ${s.updatedAt}`);
-    }
-    console.log(`\n  ${results.length} result(s)\n`);
-    return;
-  }
-
-  if (sub === 'rename') {
-    const id = args[1];
-    const newTitle = args.slice(2).join(' ');
-    if (!id || !newTitle) { console.log(`\n${col(C.red, 'Usage:')} purpclaw session rename <id> <new-title>\n`); return; }
-    const result = work.renameSession(id, newTitle);
-    if (!result) { console.log(`\n${col(C.red, '[X]')} Session not found: ${id}\n`); return; }
-    console.log(`\n${col(C.green, '[OK]')} Renamed to: ${newTitle}\n`);
-    return;
-  }
-
-  if (sub === 'fork' || sub === 'branch') {
-    const id = args[1] || work.getCurrentSessionId();
-    if (!id) { console.log(`\n${col(C.red, 'No session. Specify:')} purpclaw session fork <id>\n`); return; }
-    const s = work.loadSession(id);
-    if (!s) { console.log(`\n${col(C.red, '[X]')} Session not found: ${id}\n`); return; }
-    const newS = work.branchSession(id, { title: (s.title || 'branch') + ' (fork)' });
-    console.log(`\n${col(C.green, '[OK]')} Forked session\n`);
-    console.log(`  from:  ${id}  ${s.title}\n`);
-    console.log(`  to:    ${col(C.cyan, newS.id)}  ${newS.title}\n`);
-    return;
-  }
-
-  if (sub === 'close') {
-    const id = args[1] || work.getCurrentSessionId();
-    if (!id) { console.log(`\n${col(C.red, 'No session. Specify:')} purpclaw session close <id>\n`); return; }
-    work.closeSession(id, 'user-close');
-    console.log(`\n${col(C.green, '[OK]')} Session closed: ${id}\n`);
-    return;
-  }
-
-  if (sub === 'archive') {
-    const id = args[1] || work.getCurrentSessionId();
-    if (!id) { console.log(`\n${col(C.red, 'No session. Specify:')} purpclaw session archive <id>\n`); return; }
-    const r = work.archiveSession(id, 'user-archive');
-    if (r.ok) { console.log(`\n${col(C.green, '[OK]')} Archived: ${id}\n`); }
-    else { console.log(`\n${col(C.red, '[X]')} ${r.error}\n`); }
-    return;
-  }
-
-  if (sub === 'unarchive') {
-    const id = args[1];
-    if (!id) { console.log(`\n${col(C.red, 'Usage:')} purpclaw session unarchive <id>\n`); return; }
-    const r = work.unarchiveSession(id);
-    if (r.ok) { console.log(`\n${col(C.green, '[OK]')} Restored: ${id}\n`); }
-    else { console.log(`\n${col(C.red, '[X]')} ${r.error}\n`); }
-    return;
-  }
-
-  // Help / unknown subcommand
-  console.log(`\n${col(C.bold, 'purpclaw session')}\n`);
-  console.log(`  ${col(C.cyan, 'purpclaw session list')}              list all sessions`);
-  console.log(`  ${col(C.cyan, 'purpclaw session new')}              create new session`);
-  console.log(`  ${col(C.cyan, 'purpclaw session new <title>')}      create named session`);
-  console.log(`  ${col(C.cyan, 'purpclaw session open <id>')}        switch to session`);
-  console.log(`  ${col(C.cyan, 'purpclaw session current')}           show current session`);
-  console.log(`  ${col(C.cyan, 'purpclaw session search <q>')}        search sessions`);
-  console.log(`  ${col(C.cyan, 'purpclaw session rename <id> <t>')}   rename session`);
-  console.log(`  ${col(C.cyan, 'purpclaw session fork <id>')}         fork/branch session`);
-  console.log(`  ${col(C.cyan, 'purpclaw session close <id>')}       close session`);
-  console.log(`  ${col(C.cyan, 'purpclaw session archive <id>')}      archive session`);
-  console.log(`  ${col(C.cyan, 'purpclaw session unarchive <id>')}   restore archived session`);
-  console.log(`  ${col(C.cyan, 'purpclaw session delete <id>')}      delete session`);
-  console.log(`  ${col(C.cyan, 'purpclaw session export [id]')}       export session JSON\n`);
-}
-
-// ── providers status ─────────────────────────────────────────────────────
-async function cmdProviders(args) {
-  const sub = (args[0] || 'status').toLowerCase();
-  const ps = require(path.join(PURP_DIR, 'lib', 'core', 'provider-status'));
-
-  if (sub === 'status') {
-    ps.printAllProviders();
-    return;
-  }
-
-  if (sub === 'verify') {
-    const name = args[1] || 'minimax-native';
-    console.log(`\n${col(C.yellow, 'Verifying')} ${name}...\n`);
-    const result = await ps.verifyProvider(name);
-    console.log(`  provider:  ${result.provider}`);
-    console.log(`  role:      ${result.role}`);
-    console.log(`  state:     ${result.state}`);
-    if (result.latencyMs) console.log(`  latency:   ${result.latencyMs}ms`);
-    if (result.error) console.log(`  error:     ${col(C.red, result.error)}`);
-    console.log('');
-    return;
-  }
-
-  if (sub === 'roles') {
-    const all = ps.getAllProviderStatus();
-    console.log(`\n${col(C.bold, 'Provider Roles')}\n`);
-    for (const p of all) {
-      const state = ps.formatState(p.state);
-      console.log(`  ${state}  ${col(C.cyan, p.provider.padEnd(16))} ${p.role}`);
-    }
-    console.log('');
-    return;
-  }
-
-  // Help
-  console.log(`\n${col(C.bold, 'purpclaw providers')}\n`);
-  console.log(`  ${col(C.cyan, 'purpclaw providers status')}          show all providers and states`);
-  console.log(`  ${col(C.cyan, 'purpclaw providers verify [name]')}  test API connection for a provider`);
-  console.log(`  ${col(C.cyan, 'purpclaw providers roles')}          show provider roles\n`);
-}
-
-// ── route / brain commands ───────────────────────────────────────────────
-async function cmdRoute(args) {
-  const dc = require(path.join(PURP_DIR, 'lib', 'core', 'deployment-config'));
-  const verbose = args.includes('-v') || args.includes('--verbose');
-  // Extract message (everything after any flags)
-  const msgArgs = args.filter(a => !a.startsWith('-'));
-  const message = msgArgs.join(' ') || '';
-  const lane = args.includes('--lane') ? args[args.indexOf('--lane') + 1] : null;
-
-  if (!message) {
-    console.log(`\n${col(C.bold, 'purpclaw route')}  — test delegation routing\n`);
-    console.log(`  ${col(C.cyan, 'purpclaw route "<message>"')}          show how a message routes`);
-    console.log(`  ${col(C.cyan, 'purpclaw route --lane <name> <msg>')}  force a specific lane`);
-    console.log(`  ${col(C.cyan, 'purpclaw route -v "<message>"')}        verbose output\n`);
-    return;
-  }
-
-  const result = dc.explainRouting(message);
-  const msgPreview = message.substring(0, 80) + (message.length > 80 ? '…' : '');
-  console.log('\n' + col(C.bold, 'Routing:') + ' ' + col(C.gray, msgPreview) + '\n');
-
-  console.log(`${col(C.green, 'CONTROLLER (primary brain)')}`);
-  console.log(`  provider:  ${col(C.cyan, result.controller.provider)}`);
-  console.log(`  model:     ${col(C.yellow, result.controller.model)}`);
-  console.log(`  role:      ${result.controller.role}`);
-  console.log(`  label:     ${result.controller.label}`);
-
-  if (result.suggestedLane) {
-    console.log(`\n${col(C.yellow, 'WORKER LANE (specialist)')}`);
-    console.log(`  lane:      ${col(C.magenta, result.suggestedLane.name)}`);
-    console.log(`  provider:  ${col(C.cyan, result.suggestedLane.provider)}`);
-    console.log(`  model:     ${col(C.yellow, result.suggestedLane.model)}`);
-    console.log(`  role:      ${result.suggestedLane.role}`);
-    console.log(`  description: ${col(C.dim, result.suggestedLane.description)}`);
-  } else {
-    console.log(`\n${col(C.green, 'No specialist lane matched — controller handles directly')}`);
-  }
-
-  if (verbose && result.allMatches.length > 0) {
-    console.log(`\n${col(C.bold, 'All matches:')}`);
-    for (const m of result.allMatches) {
-      console.log(`  ${col(C.magenta, m.name.padEnd(10))} score=${m.score}  ${col(C.dim, m.lane.description)}`);
-    }
-  }
-
-  console.log(`\n${col(C.gray, 'reason: ' + result.reason)}\n`);
-}
-
-// ── project — Show loaded project requirements.toml context ─────────────────────
-async function cmdProject(args) {
-  const sub = (args.filter(a => !a.startsWith('--'))[0] || 'show').toLowerCase();
-  const projectDir = args.includes('--dir')
-    ? path.resolve(args[args.indexOf('--dir') + 1])
-    : process.cwd();
-  const { requirements, path: reqPath, errors } = loadProjectRequirements(projectDir);
-  const jsonOut = args.includes('--json');
-
-  if (sub === 'show' || sub === '' || sub === 'status') {
-    if (!requirements) {
-      if (jsonOut) console.log(JSON.stringify({ projectDir, hasRequirements: false, path: null }));
-      else console.log(col(C.gray, `  No requirements.toml found in ${projectDir}/.purpclaw/`));
-      return 0;
-    }
-    if (jsonOut) {
-      console.log(JSON.stringify({ projectDir, path: reqPath, requirements, errors }, null, 2));
-    } else {
-      banner();
-      sectionHead('  PROJECT CONTEXT — ' + (requirements.project && requirements.project.name || projectDir));
-      if (reqPath) console.log('  File:   ' + col(C.gray, reqPath));
-      console.log('  Root:   ' + col(C.cyan, projectDir));
-      if (requirements.project) {
-        console.log('  Name:   ' + col(C.white, requirements.project.name || '—'));
-        console.log('  Ver:    ' + col(C.white, requirements.project.version || '—'));
-      }
-      if (requirements.requirements) {
-        const r = requirements.requirements;
-        if (r.skills && r.skills.length) console.log('  Skills: ' + col(C.cyan, r.skills.join(', ')));
-        if (r.providers && r.providers.length) console.log('  Providers: ' + col(C.cyan, r.providers.join(', ')));
-        if (r['default-model']) console.log('  Model:  ' + col(C.cyan, r['default-model']));
-      }
-      if (requirements.execution) {
-        const e = requirements.execution;
-        const flags = [];
-        if (e.sandbox) flags.push('sandbox');
-        if (e['allow-managed-hooks-only']) flags.push('managed-hooks-only');
-        if (e['require-confirmation'] && e['require-confirmation'].length) flags.push('confirm-required');
-        if (flags.length) console.log('  Policy: ' + col(C.yellow, flags.join(', ')));
-        if (e['allowed-commands'] && e['allowed-commands'].length) console.log('  Allow:  ' + col(C.green, e['allowed-commands'].join(', ')));
-        if (e['disallowed-commands'] && e['disallowed-commands'].length) console.log('  Deny:   ' + col(C.red, e['disallowed-commands'].join(', ')));
-      }
-      if (requirements.hooks && requirements.hooks['allow-managed-hooks-only']) {
-        console.log('  Hooks:  ' + col(C.yellow, 'managed-hooks-only (no undeclared hooks)'));
-      }
-      if (errors.length) {
-        console.log(col(C.red, '  Errors: ') + errors.join('; '));
-      }
-      console.log('');
-    }
-    return 0;
-  }
-
-  if (sub === 'init') {
-    const destDir = args.includes('--dir') ? args[args.indexOf('--dir') + 1] : process.cwd();
-    const reqFile = path.join(destDir, '.purpclaw', 'requirements.toml');
-    if (fs.existsSync(reqFile)) {
-      console.log(col(C.yellow, '  Already exists: ') + reqFile);
-      return 1;
-    }
-    fs.mkdirSync(path.join(destDir, '.purpclaw'), { recursive: true });
-    const defaultToml = `# PurpClaw project requirements
-# Generated ${new Date().toISOString()}
-
-[project]
-name = "${path.basename(destDir)}"
-version = "0.1.0"
-
-[requirements]
-# skills = ["code-review", "testing"]
-# providers = ["openrouter", "anthropic"]
-
-[hooks]
-# allow-managed-hooks-only = true
-# pre-run = ["echo 'starting'"]
-# post-run = ["echo 'done'"]
-
-[execution]
-# sandbox = true
-# allowed-commands = ["git", "node", "npm", "python"]
-# require-confirmation = ["git push", "npm publish"]
-`;
-    fs.writeFileSync(reqFile, defaultToml, 'utf8');
-    console.log(col(C.green, '  [OK]') + ' Created: ' + reqFile);
-    return 0;
-  }
-
-  console.log('Usage: purpclaw project [show|init] [--dir <path>] [--json]');
-  return 1;
-}
-
-// ── exec — Run a command with project execution policy enforcement ─────────────
-async function cmdExec(args) {
-  const dirIdx = args.indexOf('--dir');
-  const projectDir = dirIdx >= 0 ? path.resolve(args[dirIdx + 1]) : process.cwd();
-  const noPolicy = args.includes('--no-policy');
-  // Remove --flags and the command name itself to get subcommand + command args
-  const rawArgs = args.filter(a => !a.startsWith('--') && a !== '--');
-  const cleanArgs = rawArgs.slice(1);  // drop 'exec'
-  const sub = (cleanArgs[0] || '').toLowerCase();
-  const jsonOut = args.includes('--json');
-
-  const { requirements } = loadProjectRequirements(projectDir);
-
-  if (sub === 'policy' || sub === 'show') {
-    if (!requirements || !requirements.execution) {
-      console.log(col(C.gray, '  No execution policy in project requirements.toml'));
-      return 0;
-    }
-    const e = requirements.execution;
-    console.log(col(C.cyan, '  Execution Policy:'));
-    if (e.sandbox) console.log('  ' + col(C.green, '  sandbox: enabled'));
-    if (e['allowed-commands']) console.log('  ' + col(C.green, '  allowed:  ') + e['allowed-commands'].join(', '));
-    if (e['disallowed-commands']) console.log('  ' + col(C.red, '  denied:   ') + e['disallowed-commands'].join(', '));
-    if (e['require-confirmation']) console.log('  ' + col(C.yellow, '  confirm:  ') + e['require-confirmation'].join(', '));
-    console.log('  max-file-size-kb: ' + (e['max-file-size-kb'] || 'unlimited'));
-    console.log('  max-runtime-sec:  ' + (e['max-runtime-sec'] || 'unlimited'));
-    return 0;
-  }
-
-  if (sub === 'check' || sub === 'test') {
-    if (noPolicy || !requirements || !requirements.execution) {
-      console.log(col(C.gray, '  No policy to check against'));
-      return 0;
-    }
-    const cmdToCheck = cleanArgs.slice(1).join(' ') || 'echo "test"';
-    const check = checkCommandAllowed(cmdToCheck, requirements);
-    if (jsonOut) {
-      console.log(JSON.stringify({ command: cmdToCheck, ...check }));
-    } else if (check.allowed) {
-      console.log(col(C.green, '  ALLOWED: ') + cmdToCheck);
-    } else {
-      console.log(col(C.red, '  BLOCKED: ') + check.reason);
-    }
-    return check.allowed ? 0 : 1;
-  }
-
-  // Run a command with policy enforcement
-  const rawCmd = cleanArgs.slice(1).join(' ');
-  if (!rawCmd) {
-    console.log('Usage: purpclaw exec [--dir <path>] [--no-policy] <command>');
-    console.log('       purpclaw exec [--dir <path>] policy');
-    console.log('       purpclaw exec [--dir <path>] check <command>');
-    return 1;
-  }
-
-  if (!noPolicy && requirements && requirements.execution) {
-    const check = checkCommandAllowed(rawCmd, requirements);
-    if (!check.allowed) {
-      console.log(col(C.red, '  BLOCKED by project policy: ') + check.reason);
-      if (jsonOut) console.log(JSON.stringify({ allowed: false, reason: check.reason }));
-      return 1;
-    }
-    if (requiresConfirmation(rawCmd, requirements)) {
-      console.log(col(C.yellow, '  ⚠ Confirmation required for: ') + rawCmd);
-      const readline = require('readline');
-      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-      const answer = await new Promise(resolve => rl.question('  Proceed? [y/N] ', resolve));
-      rl.close();
-      if (answer.toLowerCase() !== 'y') {
-        console.log(col(C.gray, '  Aborted.'));
-        return 1;
-      }
-    }
-  }
-
-  const { spawn } = require('child_process');
-  const child = spawn(rawCmd, [], { shell: true, cwd: projectDir });
-  child.stdout.pipe(process.stdout);
-  child.stderr.pipe(process.stderr);
-  return new Promise(resolve => child.on('close', code => resolve(code || 0)));
-}
-
-async function cmdBrain(args) {
-  const dc = require(path.join(PURP_DIR, 'lib', 'core', 'deployment-config'));
-  const verbose = args.includes('-v');
-  dc.printBrainStack(verbose);
-  console.log(`  ${col(C.cyan, 'purpclaw brain')}              show summary`);
-  console.log(`  ${col(C.cyan, 'purpclaw brain -v')}          show full config with fallbacks\n`);
-}
-
-// ── serve — JSON-RPC + A2A gateway server on port 9119 ──────────────────
-async function cmdServe(args) {
-  const { AgentGatewayServer } = require(path.join(PURP_DIR, 'lib', 'agent-gateway-server'));
-  const host = args.includes('--host') ? args[args.indexOf('--host') + 1] : '127.0.0.1';
-  const port = parseInt(args.find(a => /^\d+$/.test(a)) || '9119', 10);
-  console.log(col(C.cyan, `\n  Starting gateway server on ${host}:${port}...`));
-  console.log(col(C.gray, '  JSON-RPC  POST /rpc'));
-  console.log(col(C.gray, '  A2A       POST /a2a  |  GET /.well-known/agent-card.json'));
-  console.log(col(C.gray, '  Chat      POST /v1/chat/completions'));
-  console.log(col(C.gray, '  WebSocket ws://localhost:' + port));
-  const server = new AgentGatewayServer({ host, port });
-  server.listen();
-  console.log(col(C.green, `  Gateway listening on http://${host}:${port}`));
-  // Block until the process is terminated
-  process.stdin.resume();
-  await new Promise(resolve => process.on('SIGINT', resolve) || process.on('SIGTERM', resolve));
-}
-
-async function cmdPet(args) {
-  // Companion — fun reactions, not enforcement
-  let comp;
-  try { comp = require(path.join(PURP_DIR, 'lib', 'core', 'companion')).getCompanion(); } catch (_) {}
-
-  if (!comp) {
-    console.log('\n  Companion not available.\n');
-    return;
-  }
-
-  const sub  = (args[0] || 'status').toLowerCase();
-  const rest = args.slice(1).join(' ');
-
-  switch (sub) {
-    case 'status':
-    case undefined:
-      comp.tick();
-      console.log('\n' + comp.statsString() + '\n');
-      break;
-
-    case 'feed':
-      comp.tick();
-      comp.feed(rest || 'cookie');
-      console.log(`\n  ${comp.display()} Fed ${rest || 'cookie'}! 🍪\n`);
-      break;
-
-    case 'pet':
-      comp.tick();
-      comp.pet();
-      console.log(`\n  ${comp.display()} *wags tail* 🐾\n`);
-      break;
-
-    case 'play':
-      comp.tick();
-      comp.play(rest || 'ball');
-      console.log(`\n  ${comp.display()} Play time! 🎾\n`);
-      break;
-
-    case 'sleep':
-      comp.tick();
-      comp.sleep();
-      console.log(`\n  ${comp.display()} Shhh... 😴\n`);
-      break;
-
-    case 'wake':
-      comp.tick();
-      comp.wake();
-      console.log(`\n  ${comp.display()} Good morning! ☀️\n`);
-      break;
-
-    case 'clean':
-      comp.tick();
-      comp.clean();
-      console.log(`\n  ${comp.display()} Bath time! 🛁\n`);
-      break;
-
-    case 'mute':
-      const muted = comp.mute();
-      console.log(`\n  ${comp.display()} ${muted ? 'Muted.' : 'Unmuted.'}\n`);
-      break;
-
-    case 'reset':
-      comp.reset();
-      console.log(`\n  ${comp.display()} Fresh start!\n`);
-      break;
-
-    case 'name':
-      if (rest) {
-        comp.tick();
-        comp.namePet(rest);
-        console.log(`\n  New name: ${comp.state.name}\n`);
-      } else {
-        console.log(`\n  Name: ${comp.state.name}\n`);
-      }
-      break;
-
-    case 'trick':
-      if (rest) {
-        comp.tick();
-        comp.trick(rest);
-        console.log(`\n  ${comp.display()} Learned: ${rest}! 🎉\n`);
-      } else {
-        console.log(`\n  Tricks: ${(comp.state.tricks || []).join(', ') || 'none yet'}\n`);
-      }
-      break;
-
-    case 'thoughts':
-      comp.tick();
-      console.log(`\n  Current: ${comp.state.currentThought || 'none'}\n`);
-      if (comp.state.systemMessage) console.log(`  Message: ${comp.state.systemMessage}\n`);
-      break;
-
-    default:
-      console.log(`\n${col(C.bold, 'purpclaw pet')}  — PURPCLAW companion\n`);
-      console.log(`  ${col(C.cyan, 'purpclaw pet status')}           pet stats`);
-      console.log(`  ${col(C.cyan, 'purpclaw pet feed [food]')}      feed the pet`);
-      console.log(`  ${col(C.cyan, 'purpclaw pet pet')}             pet it`);
-      console.log(`  ${col(C.cyan, 'purpclaw pet play [toy]')}      play fetch`);
-      console.log(`  ${col(C.cyan, 'purpclaw pet sleep')}            sleep time`);
-      console.log(`  ${col(C.cyan, 'purpclaw pet wake')}            wake up`);
-      console.log(`  ${col(C.cyan, 'purpclaw pet clean')}           bath time`);
-      console.log(`  ${col(C.cyan, 'purpclaw pet mute')}            mute/unmute`);
-      console.log(`  ${col(C.cyan, 'purpclaw pet name [n]')}         rename`);
-      console.log(`  ${col(C.cyan, 'purpclaw pet trick [n]')}        teach a trick`);
-      console.log(`  ${col(C.cyan, 'purpclaw pet thoughts')}         current thoughts`);
-      console.log(`  ${col(C.cyan, 'purpclaw pet reset')}           reset pet state\n`);
-  }
-}
-
 if (require.main === module) {
-  // Global stream redaction — redact secrets (sk-*, Bearer, JWT, AWS keys)
-  // from every byte written to stdout/stderr across ALL commands.
-  // Codex does this at the Rust level on every write. PURPCLAW now does it
-  // from the top of every CLI invocation.
-  try {
-    const redactor = require(path.join(PURP_DIR, 'lib', 'secret-redactor'));
-    redactor.wrapStream(process.stdout);
-    redactor.wrapStream(process.stderr);
-  } catch {}
-
-  // Global handlers for uncaught sync errors and unhandled async rejections.
-  // These are the last line of defense before a silent process exit.
-  process.on('uncaughtException', (err) => {
-    const hint = err.message ? '' : ' (no message — possible non-Error rejection)';
-    if (TAINT_MODE) {
-      console.error(col(C.magenta, `\n  [X] uncaughtException${hint}: ${err.message || err}\n`));
-    } else {
-      console.error(col(C.red, `\n  [X] Unhandled error${hint}: ${err.message || err}\n`));
-    }
-    if (err.stack) {
-      err.stack.split('\n').slice(1, 5).forEach(l => console.error('  ' + l.trim()));
-    }
-    console.error(col(C.gray, `  Run with --taint for full trace.\n`));
-    process.exit(1);
-  });
-
-  process.on('unhandledRejection', (reason) => {
-    const msg = reason instanceof Error ? reason.message : String(reason || 'unknown');
-    if (TAINT_MODE) {
-      console.error(col(C.magenta, `\n  [X] unhandledRejection: ${msg}\n`));
-    } else {
-      console.error(col(C.red, `\n  [X] Unhandled rejection: ${msg || '(empty)'}\n`));
-    }
-    if (reason instanceof Error && reason.stack) {
-      reason.stack.split('\n').slice(1, 4).forEach(l => console.error('  ' + l.trim()));
-    }
-    process.exit(1);
-  });
-
   main().catch(e => {
     if (TAINT_MODE) {
-      console.error(col(C.magenta, `\n  [X] ${taintError(e.message)}\n`));
+      console.error(col(C.magenta, `\n  âœ— ${taintError(e.message)}\n`));
     } else {
-      const msg = e && e.message ? e.message : String(e || 'unknown error');
-      console.error(col(C.red, `\n  [X] Unhandled error: ${msg}\n`));
-      if (e && e.stack && !e.message) {
-        e.stack.split('\n').slice(1, 3).forEach(l => console.error('  ' + l.trim()));
-      }
+      console.error(col(C.red, `\n  âœ— Unhandled error: ${e.message}\n`));
     }
     process.exit(1);
   });
