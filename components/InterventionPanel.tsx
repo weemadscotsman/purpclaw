@@ -344,6 +344,8 @@ export default function InterventionPanel() {
                             <button
                               onClick={() => handleInterrupt(agent.id, 'kill')}
                               className="text-xs text-rose-500 hover:text-rose-400 ml-1"
+                              aria-label={`Kill agent ${agent.name || 'unnamed'}`}
+                              title={`Kill agent ${agent.name || 'unnamed'}`}
                             >✕</button>
                           </div>
                         </div>
