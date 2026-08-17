@@ -1,0 +1,31 @@
+{
+  "schema": "purpclaw.cert-gate.duplicate-reconcile.v1",
+  "cert_id": "agent_work/cert_gates/duplicate_reconcile/",
+  "verdict": "PASS",
+  "date": "2026-08-17T13:56:26.589572+00:00",
+  "reason": "all 8/8 tests green",
+  "tests_total": 8,
+  "tests_pass": 8,
+  "tests_fail": 0,
+  "reconciled_files": [
+    "task_decomposer.js",
+    "agent_routing_matrix.js"
+  ],
+  "canonical_home": "project root",
+  "shim_home": "services/swarm/",
+  "regression_checks": [
+    {
+      "path": "tests\\coordinator_decomposer\\test_wire.js",
+      "status": "PASS (8/8)"
+    },
+    {
+      "path": "tests\\coordinator_lib_wire\\test_wire.js",
+      "status": "PASS (10/10)"
+    }
+  ],
+  "no_regression_required": [
+    "coordinator_lib_wire",
+    "coordinator_decomposer"
+  ],
+  "honest_label": "duplicates reconciled as shims; both coordinator files (root swarm_coordinator.js + services/swarm/coordinator.js) still exist separately \u2014 that's a bigger cleanup"
+}

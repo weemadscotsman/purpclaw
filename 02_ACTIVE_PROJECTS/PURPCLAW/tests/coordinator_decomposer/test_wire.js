@@ -23,16 +23,17 @@ const DECOMPOSER = path.join(SWARM_DIR, 'task_decomposer.js');
 const ROUTING    = path.join(SWARM_DIR, 'agent_routing_matrix.js');
 const COORD      = path.join(SWARM_DIR, 'coordinator.js');
 
-test('T01: services/swarm/task_decomposer.js exists', () => {
+test('T01: services/swarm/task_decomposer.js exists (shim after T07 reconciliation)', () => {
   assert.ok(fs.existsSync(DECOMPOSER), `expected file at ${DECOMPOSER}`);
   const stat = fs.statSync(DECOMPOSER);
-  assert.ok(stat.size > 1000, `file too small (${stat.size} bytes), probably a stub`);
+  // After T07 reconciliation, this is a shim (< 1.5KB) that re-exports root canonical
+  assert.ok(stat.size < 1500, `services/swarm/task_decomposer.js is ${stat.size}B — should be a shim, not a copy`);
 });
 
-test('T02: services/swarm/agent_routing_matrix.js exists', () => {
+test('T02: services/swarm/agent_routing_matrix.js exists (shim after T07 reconciliation)', () => {
   assert.ok(fs.existsSync(ROUTING), `expected file at ${ROUTING}`);
   const stat = fs.statSync(ROUTING);
-  assert.ok(stat.size > 1000, `file too small (${stat.size} bytes)`);
+  assert.ok(stat.size < 1500, `services/swarm/agent_routing_matrix.js is ${stat.size}B — should be a shim, not a copy`);
 });
 
 test('T03: task_decomposer is requireable from coordinator location', () => {
@@ -97,11 +98,13 @@ test('T05: coordinator can now load the decomposer (the missing-organ fix)', () 
   }
 });
 
-test('T06: root task_decomposer.js is preserved (source of truth, copied not moved)', () => {
-  // The file still exists at the project root — we COPIED to services/swarm/
-  // so the integration is non-destructive
+test('T06: root task_decomposer.js is the canonical home (T07 reconciliation)', () => {
+  // After T07, root is canonical. The services/swarm/ copy is a shim.
+  // The full logic copy lives at the project root.
   const ROOT_DECOMP = path.resolve(__dirname, '..', '..', 'task_decomposer.js');
-  assert.ok(fs.existsSync(ROOT_DECOMP), `expected source at ${ROOT_DECOMP}`);
+  assert.ok(fs.existsSync(ROOT_DECOMP), `expected canonical at ${ROOT_DECOMP}`);
+  const stat = fs.statSync(ROOT_DECOMP);
+  assert.ok(stat.size > 5000, `root canonical too small (${stat.stat}B) — should be the real logic, not a shim`);
 });
 
 test('T07: lib/context-packet.js and friends exist (next slice will wire them)', () => {
