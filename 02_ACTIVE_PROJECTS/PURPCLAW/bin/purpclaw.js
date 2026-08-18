@@ -6381,14 +6381,15 @@ async function main() {
     return;
   }
 
-  // No args â€” first-run experience. Auto-detect keys, show menu, launch.
+  // No args — first-run experience. Auto-detect keys, show menu, launch.
   if (!command) {
     const setup = require(path.join(PURP_DIR, 'lib', 'commands', 'setup'));
     const found = setup.scanForKeys();
     const ready = Object.keys(found).length;
+    const pkgVersion = require(path.join(PURP_DIR, 'package.json')).version || '0.0.0';
 
     console.log('');
-    console.log(col(C.cyan + C.bold, '  ðŸŸ£ PURPCLAW v0.1.1 â€” AI Workstation OS'));
+    console.log(col(C.cyan + C.bold, `  ðŸŸ£ PURPCLAW v${pkgVersion} â€” AI Workstation OS`));
     console.log(col(C.gray, '  â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€'));
 
     if (ready > 0) {
@@ -6537,8 +6538,7 @@ case 'registry': return cmdRegistry(args);
     case 'team':      return cmdTeam(args);
     case 'team-roster':
     case 'roster':    return cmdTeamRoster(args);
-    case 'websearch':
-    case 'search':    return cmdWebsearch(args);
+    case 'websearch':  return cmdWebsearch(args);
     case 'forgecode':
     case 'forge-code':
     case 'ptc':       return cmdForgeCode(args);
@@ -6559,13 +6559,10 @@ case 'registry': return cmdRegistry(args);
     case 'logs':      return cmdLogs(args);
     case 'bars':       return cmdBars(args);
     case 'show':
-    case 'stack':
-    case 'status':     return cmdStatus(args);
-    case 'doctor':     return cmdDoctor(args);
+    case 'stack':     return cmdStatus();
     case 'audit':      return cmdAudit(args);
     case 'whoami':
     case 'about':      return cmdWhoami(args);
-    case 'release':    return cmdRelease(args);
     case 'health':     return cmdHealth(args);
     case 'identity':   return loadCmd('identity').run(args, sharedCtx());
     case 'embeddings': return cmdEmbeddings(args);
@@ -6583,10 +6580,8 @@ case 'registry': return cmdRegistry(args);
     case 'ask':       return loadCmd('ask').run(args, sharedCtx());
     case 'automate':
     case 'atbs':      return loadCmd('automate').run(args);
-    case 'parity':    return loadCmd('parity').run(args);
     case 'setup':
-    case 'wizard':
-    case 'onboard':   return loadCmd('setup').run(args, sharedCtx());
+    case 'wizard':    return loadCmd('setup').run(args, sharedCtx());
     case 'tour':
     case 'walkthrough':return loadCmd('tour').run(args, sharedCtx());
     case 'commit':
@@ -6612,7 +6607,6 @@ case 'registry': return cmdRegistry(args);
     case 'services':  return loadCmd('services').run(args, sharedCtx());
     case 'heal':
     case 'recover':   return loadCmd('heal').run(args, sharedCtx());
-    case 'roster':    return loadCmd('roster').run(args, sharedCtx());
     case 'training':  return cmdTrainingFeedback(args);
     case 'idle':      return cmdIdleEngine(args);
     case 'vector':    return cmdVectorBench(args);
@@ -6804,54 +6798,6 @@ async function cmdBars(args) {
 };
 
 // â”€â”€ show / stack â€” full overview of the running system
-async function cmdStatus(args) {
-  const http = require('http');
-  function get(port, path) {
-    return new Promise(r => {
-      const req = http.get({ hostname: '127.0.0.1', port, path, timeout: 3000 }, res => {
-        let d = ''; res.on('data', c => d += c);
-        res.on('end', () => { try { r(JSON.parse(d)); } catch { r(null); } });
-      });
-      req.on('error', () => r(null)); req.end();
-    });
-  }
-  const spine = await get(7880, '/cognitive/health');
-  const tower = await get(7790, '/tower/status');
-  const cc = require(path.join(PURP_DIR, 'lib', 'chaos-campaign'));
-  const t = cc.status().totals;
-  const pkg = require(path.join(PURP_DIR, 'package.json'));
-
-  console.log('');
-  console.log('  â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
-  console.log('  â•‘        ðŸŸ£  PURPCLAW â€” FULL STACK  ðŸŸ£        â•‘');
-  console.log('  â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
-  console.log('');
-  console.log('  ðŸ”¥ CORE:');
-  const cores = [7780, 7782, 7783, 7784, 7790, 7791, 7881, 7885, 7890];
-  const results = await Promise.all(cores.map(p => get(p, '/health').then(() => p).catch(() => null)));
-  const names = { 7780:'API', 7782:'Bus', 7783:'State', 7784:'Orch', 7790:'Tower', 7791:'Gate', 7881:'Ctx', 7885:'Pool', 7890:'Metr' };
-  for (const p of cores) console.log(`    ${results.includes(p) ? 'âœ…' : 'âŒ'} ${names[p]} :${p}`);
-  console.log('');
-  console.log('  ðŸ§  COGNITIVE SPINE:' + (spine ? '' : ' ðŸ”´ DOWN'));
-  if (spine && spine.services) {
-    for (const [k, v] of Object.entries(spine.services))
-      console.log(`    ${v.status === 'healthy' ? 'âœ…' : 'âŒ'} ${k}`);
-  }
-  console.log('');
-  console.log('  ðŸ§  ACTIVE MODEL: ' + col(C.cyan, process.env.LLM_PROVIDER || 'deepseek') + ' / ' + col(C.green, process.env.LLM_MODEL || 'deepseek-v4-pro'));
-  console.log(`  âš”ï¸  SMITH+NEO: ${t.attacks} attacks, ${Math.round(t.detected / Math.max(t.attacks, 1) * 100)}% detect, ${Math.round(t.repaired / Math.max(t.attacks, 1) * 100)}% repair`);
-  console.log(`  ðŸ“Š AGENTS: ${tower && tower.agentCount ? tower.agentCount : '35+'} deployable`);
-  console.log(`  ðŸ”§ TOOLS: 110+  |  ðŸ—ï¸  PROVIDERS: 17`);
-  console.log(`  ðŸŒ UI: :3000  |  Skyscraper: /skyscraper/`);
-  console.log(`  ðŸ’° MoneyPrinter: :8080`);
-  console.log(`  ðŸ“¦ v${pkg.version} â€” github.com/weemadscotsman/purpclaw`);
-  console.log('');
-  console.log('  â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
-  console.log('  â•‘     ðŸ”¥ THE CLAW IS AWAKE. ðŸ¦€               â•‘');
-  console.log('  â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
-  console.log('');
-};
-
 // â”€â”€ model â€” hot-swap provider/model, list, test, serve local GGUF
 async function cmdModel(args) {
   const sub = (args[0] || '').toLowerCase();

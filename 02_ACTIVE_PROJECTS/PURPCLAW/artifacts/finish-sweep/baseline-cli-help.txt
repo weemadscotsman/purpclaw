@@ -1,0 +1,202 @@
+
+â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—
+â•‘                                                                              â•‘
+â•‘  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ•—   â–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•—      â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•— â–ˆâ–ˆâ•—    â–ˆâ–ˆâ•—â•‘
+â•‘  â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•”â•â•â•â•â•â–ˆâ–ˆâ•‘     â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘    â–ˆâ–ˆâ•‘â•‘
+â•‘  â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•”â•â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•‘     â–ˆâ–ˆâ•‘     â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘ â–ˆâ•— â–ˆâ–ˆâ•‘â•‘
+â•‘  â–ˆâ–ˆâ•”â•â•â•â• â–ˆâ–ˆâ•‘   â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•—â–ˆâ–ˆâ•”â•â•â•â• â–ˆâ–ˆâ•‘     â–ˆâ–ˆâ•‘     â–ˆâ–ˆâ•”â•â•â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘â–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘â•‘
+â•‘  â–ˆâ–ˆâ•‘     â•šâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•”â•â–ˆâ–ˆâ•‘  â–ˆâ–ˆâ•‘â–ˆâ–ˆâ•‘     â•šâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ–ˆâ•—â–ˆâ–ˆâ•‘  â–ˆâ–ˆâ•‘â•šâ–ˆâ–ˆâ–ˆâ•”â–ˆâ–ˆâ–ˆâ•”â•â•‘
+â•‘  â•šâ•â•      â•šâ•â•â•â•â•â• â•šâ•â•  â•šâ•â•â•šâ•â•      â•šâ•â•â•â•â•â•â•šâ•â•â•â•â•â•â•â•šâ•â•  â•šâ•â• â•šâ•â•â•â•šâ•â•â•â•‘
+â•‘                                                                              â•‘
+â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£
+â•‘  ðŸ¦ž  PURPCLAW  â€”  TINY HAUNTED WORKSHOP  ðŸ¦ž                            â•‘
+â• â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•£
+â•‘  Agent Orchestration Runtime  Â·  2026-08-18  12:37:58                       â•‘
+â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+
+  ðŸš€  LIFECYCLE
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ purpclaw init                                                      Audit env, keys, and services â”‚
+  â”‚ purpclaw init --wizard                                  Interactive first-run setup (60 seconds) â”‚
+  â”‚ purpclaw start                                                Boot the harness (bounded profile) â”‚
+  â”‚ purpclaw start --all                                                      Boot every PM2 service â”‚
+  â”‚ purpclaw start --profile=voice                                       Boot harness + voice bridge â”‚
+  â”‚ purpclaw stop                                                               Shut down gracefully â”‚
+  â”‚ purpclaw restart [service]                                            Restart all or one service â”‚
+  â”‚ purpclaw doctor                                                Quick health check â€” reads only â”‚
+  â”‚ purpclaw status                                         Dashboard: services + leaderboard + pool â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  ðŸ’¬  CHAT WITH THE STACK  (front door)
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ purpclaw                               No args â†’ drop into chat REPL (stack-aware, persistent) â”‚
+  â”‚ purpclaw ask "<question>"                 One-shot LLM query â€” answers from live stack context â”‚
+  â”‚ purpclaw ask                            REPL mode â€” /exit /clear /help /status, sessions saved â”‚
+  â”‚ purpclaw ask --session <name>                Named session (separate context, persisted on disk) â”‚
+  â”‚ purpclaw ask --fresh                                   Clear the current session and start clean â”‚
+  â”‚ purpclaw ask --status                                        Show provider + active session info â”‚
+  â”‚ purpclaw chat                                    NanoClaw REPL â€” swarm-aware (uses claude CLI) â”‚
+  â”‚ purpclaw mochi                                   Chat with your companion (animated, LLM-backed) â”‚
+  â”‚ purpclaw architecture                  Live runtime overview: services + flow + files + concepts â”‚
+  â”‚ purpclaw architecture services                                             Service topology only â”‚
+  â”‚ purpclaw architecture flow                                                Task-flow diagram only â”‚
+  â”‚ purpclaw overview                   Canonical doc â€” what PURPCLAW is + philosophy (the README) â”‚
+  â”‚ purpclaw overview --raw                                                  Raw markdown for piping â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  âš¡  THE WORK LOOP
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ purpclaw tui                                    ðŸŽ›  LIVE cockpit â€” full-screen TUI dashboard â”‚
+  â”‚ purpclaw run "<task>"                                      Dispatch + stream agent progress live â”‚
+  â”‚ purpclaw bg "<task>"                                     Background dispatch â€” fire and forget â”‚
+  â”‚ purpclaw code status                        Repo/GitHub tools: status, diff, issues, PRs, checks â”‚
+  â”‚ purpclaw llm                               Provider status: Claude, Gemini, OpenAI, Kimi, Ollama â”‚
+  â”‚ purpclaw browser smoke [url]                        Playwright open/read/screenshot tool surface â”‚
+  â”‚ purpclaw cognition smoke               Neuro-symbolic/modal/rules/diagnostics health + lift test â”‚
+  â”‚ purpclaw workflows                                              Show active and recent workflows â”‚
+  â”‚ purpclaw queue                                                        Task queue depth and items â”‚
+  â”‚ purpclaw jobs                                                  Job surfaces and governance holds â”‚
+  â”‚ purpclaw approve <id>                                               Approve a held high-risk job â”‚
+  â”‚ purpclaw reject <id>                                                           Reject and cancel â”‚
+  â”‚ purpclaw resume <id>                                        Reload a previous session checkpoint â”‚
+  â”‚ purpclaw bg                                                          List active background jobs â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  ðŸ§   KNOWLEDGE POOL  (:7885)
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ purpclaw pool query "<text>"                                      Keyword-search the skill index â”‚
+  â”‚ purpclaw pool show <name>                                                  Full SKILL.md content â”‚
+  â”‚ purpclaw pool routing "<task>"                                     Routing hints for a task type â”‚
+  â”‚ purpclaw pool stats                                           How many skills and agents indexed â”‚
+  â”‚ purpclaw pool reindex                                                    Rebuild index from disk â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  ðŸ“¦  REGISTRY  (139 skills  Â·  38 Claude-agent definitions)
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ purpclaw registry browse                             See all skills + agents with install status â”‚
+  â”‚ purpclaw install <name>                                  Install a skill from the local registry â”‚
+  â”‚ purpclaw search "<text>"                                    Keyword-search across all 139 skills â”‚
+  â”‚ purpclaw registry publish <n>                     Publishing guide (step-by-step PR walkthrough) â”‚
+  â”‚ purpclaw registry update                                           Rebuild local index from disk â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  ðŸ§¬  MEMORY + DREAM
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ purpclaw memory [query]                                 Recall matching memories from the matrix â”‚
+  â”‚ purpclaw memory ingest "<text>"                                      Store a new memory manually â”‚
+  â”‚ purpclaw memory forget "<q>"                                            Remove matching memories â”‚
+  â”‚ purpclaw memory stats                                               Detailed memory matrix stats â”‚
+  â”‚ purpclaw dream                                            Trigger AutoDream memory consolidation â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  ðŸ¤–  AGENTS + FORGE
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ purpclaw agents                               List swarm agents (44 in tower), divisions, scores â”‚
+  â”‚ purpclaw roster                                        Compare tower swarm vs disk persona files â”‚
+  â”‚ purpclaw roster --missing            Show animals lacking persona files (Codex migration target) â”‚
+  â”‚ purpclaw forge [name]                                     Draw a gacha soul + create a new agent â”‚
+  â”‚ purpclaw look [1 2 3]                                          Capture screens + vision analysis â”‚
+  â”‚ purpclaw look --list                                                      List detected monitors â”‚
+  â”‚ purpclaw look --workspace                                          Show remembered monitor roles â”‚
+  â”‚ purpclaw voice "<command>"                                       Send command via voice pipeline â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  ðŸ”§  CONFIG + GOVERNANCE
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ purpclaw config                                    Interactive config editor (â†‘â†“ arrow keys) â”‚
+  â”‚ purpclaw config show                                Print current config values (secrets masked) â”‚
+  â”‚ purpclaw config set KEY val                                    Set a config key in .env directly â”‚
+  â”‚ purpclaw policies                                                Show active governance policies â”‚
+  â”‚ purpclaw introspect                                                        Runtime state summary â”‚
+  â”‚ purpclaw introspect risks                                               Live risk classification â”‚
+  â”‚ purpclaw rollback list                                                 Available rollback points â”‚
+  â”‚ purpclaw rollback undo <id>                                          Restore state from snapshot â”‚
+  â”‚ purpclaw spaghetti audit                                    Code health scores (lower = cleaner) â”‚
+  â”‚ purpclaw spaghetti diff A B                            Compare code health before/after refactor â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  ðŸ”  DIAGNOSTICS + DEVOPS
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ purpclaw bughunt                               Full stack scan â€” syntax, ports, health, smells â”‚
+  â”‚ purpclaw bughunt --json                                             Machine-readable JSON output â”‚
+  â”‚ purpclaw ctx-viz                                       Visualise the live service mesh as a tree â”‚
+  â”‚ purpclaw ctx-viz --json                                             JSON dump of all node states â”‚
+  â”‚ purpclaw ctx-viz --html                             Write HTML report to agent_work/ctx-viz.html â”‚
+  â”‚ purpclaw onboard                                                   First-run guided setup wizard â”‚
+  â”‚ purpclaw onboard --yes                                                Non-interactive onboarding â”‚
+  â”‚ purpclaw teleport create [name]                         Bundle current state for handoff/restore â”‚
+  â”‚ purpclaw teleport list                                                     List teleport bundles â”‚
+  â”‚ purpclaw teleport resume <id>                             Restore a bundle + reload instructions â”‚
+  â”‚ purpclaw autofix-pr plan                                    Scan for build/PR issues (read-only) â”‚
+  â”‚ purpclaw autofix-pr run <plan>                          Execute a repair plan (governance-gated) â”‚
+  â”‚ purpclaw autofix-pr verify                                                Confirm repairs landed â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  ðŸ§¹  HOUSEKEEPING  (keep the workshop tidy)
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ purpclaw gc --stats                                     Show disk usage breakdown of agent_work/ â”‚
+  â”‚ purpclaw gc                                                  Dry-run: list what would be cleaned â”‚
+  â”‚ purpclaw gc --apply                    Sweep proof-test scratch, age-out sessions, compact tasks â”‚
+  â”‚ purpclaw gc --apply --aggressive             Shorter TTLs (1d sessions, 3d workspaces, 6h tasks) â”‚
+  â”‚ purpclaw smoke                   End-to-end self-test: services + LLM + pool + memory + dispatch â”‚
+  â”‚ purpclaw smoke --quick                                 Skip the orchestrator workflow round-trip â”‚
+  â”‚ purpclaw smoke --json                                                    Machine-readable for CI â”‚
+  â”‚ purpclaw safe-start --core                   Wake the 16-service stable baseline (one at a time) â”‚
+  â”‚ purpclaw safe-start --dark    Sequentially wake defined-but-dark services (no Windows cmd flood) â”‚
+  â”‚ purpclaw safe-start <name>          Start one service with circuit breaker + stabilisation watch â”‚
+  â”‚ purpclaw safe-stop --dark                        Sequentially put the dark cluster back to sleep â”‚
+  â”‚ purpclaw safe-stop <name>                                               Stop one service cleanly â”‚
+  â”‚ purpclaw heal                           Diagnose stack state, print recovery plan (no execution) â”‚
+  â”‚ purpclaw heal --execute                                   Apply the recovery plan via safe-start â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  â˜  CLOUD / SCALE  (worker pool)
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ purpclaw workers status                                 Health check all registered worker nodes â”‚
+  â”‚ purpclaw workers list                                 Show worker registry (IDs, types, targets) â”‚
+  â”‚ purpclaw workers add --type http --url <url>                         Register remote HTTP worker â”‚
+  â”‚ purpclaw workers add --type ssh --host <h>                            Register remote SSH worker â”‚
+  â”‚ purpclaw workers remove <id>                                                 Deregister a worker â”‚
+  â”‚ purpclaw workers jobs                                           Show recent worker dispatch jobs â”‚
+  â”‚ purpclaw workers test <id>                                          Smoke-test a specific worker â”‚
+  â”‚ purpclaw workers secret                         Generate a fresh HMAC worker secret (copy/paste) â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  ðŸ¦†  GOOSE COMMANDS  (for the unhinged)
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚ purpclaw mochi                                   Chat with your companion (animated, LLM-backed) â”‚
+  â”‚ purpclaw mochi hatch [seed]                                            Hatch a new mochi species â”‚
+  â”‚ purpclaw mochi card                                                          Show companion card â”‚
+  â”‚ purpclaw logs [service]                                                            Tail PM2 logs â”‚
+  â”‚ purpclaw profiles                                                   List bounded launch profiles â”‚
+  â”‚ purpclaw bars                                     Mochi status bars preview (opt-in with --bars) â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  ðŸ—º  PORTS
+  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+  â”‚   3000  Next.js Mission Control UI                            â”‚
+  â”‚   7780  unified-api   â€” main HTTP API + MCP tools           â”‚
+  â”‚   7781  voice-coord   â€” intent parsing + TTS                â”‚
+  â”‚   7782  eventbus      â€” central pub/sub broker              â”‚
+  â”‚   7783  state-store   â€” shared state namespaces             â”‚
+  â”‚   7784  orchestrator  â€” priority queue + governance         â”‚
+  â”‚   7790  agent-tower   â€” 44 swarm agents (animals), spawning â”‚
+  â”‚   7791  gatekeeper    â€” pre-merge validation                â”‚
+  â”‚   7881  context-bus   â€” cross-agent context propagation     â”‚
+  â”‚   7884  neuro-symbolic bridge (Python)                        â”‚
+  â”‚   7885  pool          â€” knowledge pool (skills + agents)    â”‚
+  â”‚   7889  vision-monitor â€” webcam + YOLO                      â”‚
+  â”‚   7890  metrics       â€” health polling + SSE heartbeat      â”‚
+  â”‚   7895  autodream     â€” memory consolidation                â”‚
+  â”‚   7897  worker-pool   â€” overflow lane (HTTP/SSH workers)    â”‚
+  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+
+  purpclaw tui   â€” launch the live cockpit
+  Web UI        â€”  http://localhost:3000
+  Pool          â€”  http://localhost:7885
+
+  The hammers walk. The tickets file themselves. The pool is open.
+  â€” Built by Eddie Cannon. Maintained by the goose. Watched by the mochi.
+    append --taint to any command. you'll know.
+

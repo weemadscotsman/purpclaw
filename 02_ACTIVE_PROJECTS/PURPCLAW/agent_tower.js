@@ -11,49 +11,16 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 const LLM = require('./lib/llm-provider');
-const { AgentGateway } = require('./lib/agent-gateway');
+const { complete: llmComplete } = LLM;
+// Real tool-calling brain: the same agent-loop that powers ask/chat
+let agentLoopTools = null;
+try {
+  agentLoopTools = require('./lib/agent-loop');
+} catch {}
 
 // Environment Constants
 const PURP_DIR = __dirname;
 const AGENT_TOWER_PORT = process.env.AGENT_TOWER_PORT || 7790;
-
-async function* runAgentThroughGateway({ prompt, provider, model, role, opts = {} }) {
-  const gateway = new AgentGateway({ cwd: PURP_DIR, provider, model });
-  const events = [];
-  gateway.on('tool.start', event => events.push({
-    type: 'tool-call',
-    tool: event.tool,
-    args: event.arguments,
-  }));
-  gateway.on('tool.complete', event => events.push({
-    type: 'tool-result',
-    tool: event.tool,
-    ok: event.ok,
-    result: event.result,
-    error: event.error,
-  }));
-  const result = await gateway.submit({
-    prompt,
-    provider,
-    model,
-    title: `Agent Tower: ${role}`,
-    source: 'agent-tower',
-    platform: 'agent-tower',
-    role,
-    auto_route: true,
-    max_turns: opts.maxTurns || 10,
-    max_tokens: opts.maxTokens,
-    temperature: opts.temperature,
-    permission_profile: opts.permissionProfile || 'autonomous',
-    operator_initiated: false,
-    cwd: PURP_DIR,
-    // no_spine removed: Tower runs governed autonomous agent work, which is
-    // exactly the work that must participate in the memory lifecycle.
-  });
-  for (const event of events) yield event;
-  yield { type: 'token', content: result.message };
-  yield { type: 'done', totalContent: result.message, turns: result.turns };
-}
 
 // Import companion_swarm for personality-enhanced prompts
 let companionSwarm = null;
@@ -84,18 +51,10 @@ const DIVISIONS = {
 const AGENT_TOWER = {
   registry: {
     duck:     { name: 'DUCK',     emoji: '🦆', division: 'MEDIA_OPS',    role: 'Research Accelerant',    tier: 1, skills: ['research', 'data_analysis', 'content_creation'], status: 'idle' },
-    dragon:   { name: 'DRAGON',   emoji: '🐉', division: 'ENGINEERING',   role: 'Chief Architect',        tier: 3, skills: ['architecture', 'planning'], status: 'idle',
-                // Multi-model pool binding: top-tier planning brain (Step 4)
-                provider: 'nvidia', model: 'deepseek-ai/deepseek-v4-pro' },
-    ghost:    { name: 'GHOST',    emoji: '👻', division: 'INTELLIGENCE',  role: 'Quality Guardian',        tier: 2, skills: ['qa', 'security'], status: 'idle',
-                // GLM review via NVIDIA NIM (z-ai/glm-5.1) — uses the rotating NIM
-                // key pool per "all agents/workers = NIM". z.ai-native GLM 5.2 was
-                // 429ing on the coding-plan rate limit; NIM avoids that + gets fallback.
-                provider: 'nvidia', model: 'z-ai/glm-5.1' },
+    ghost:    { name: 'GHOST',    emoji: '👻', division: 'INTELLIGENCE',  role: 'Quality Guardian',        tier: 2, skills: ['qa', 'security'], status: 'idle' },
+    dragon:   { name: 'DRAGON',   emoji: '🐉', division: 'ENGINEERING',   role: 'Chief Architect',        tier: 3, skills: ['architecture', 'planning'], status: 'idle' },
     octopus:  { name: 'OCTOPUS',  emoji: '🐙', division: 'SECURITY',      role: 'Edge Case Hunter',       tier: 2, skills: ['security', 'testing'], status: 'idle' },
-    robot:    { name: 'ROBOT',    emoji: '🤖', division: 'ENGINEERING',   role: 'Precision Engineer',     tier: 1, skills: ['coding', 'automation'], status: 'idle',
-                // Multi-model pool binding: code writing = MiniMax M3 via NIM (Step 4)
-                provider: 'nvidia', model: 'minimaxai/minimax-m3' },
+    robot:    { name: 'ROBOT',    emoji: '🤖', division: 'ENGINEERING',   role: 'Precision Engineer',     tier: 1, skills: ['coding', 'automation'], status: 'idle' },
     mushroom: { name: 'MUSHROOM', emoji: '🍄', division: 'ENGINEERING',   role: 'Organic Refactorer',     tier: 1, skills: ['refactoring', 'code_health'], status: 'idle' },
     chonk:    { name: 'CHONK',    emoji: '🐈', division: 'ENGINEERING',   role: 'Simplification Expert',  tier: 1, skills: ['optimization', 'cleanup'], status: 'idle' },
     owl:      { name: 'OWL',      emoji: '🦉', division: 'SECURITY',      role: 'Security Auditor',       tier: 2, skills: ['security', 'analysis'], status: 'idle' },
@@ -162,32 +121,6 @@ function broadcast(event) {
   AGENT_TOWER.eventEmitter.emit('broadcast', event);
 }
 
-function publishEventBus(topic, payload = {}) {
-  try {
-    const event = JSON.stringify({
-      topic,
-      type: payload.type || topic,
-      timestamp: new Date().toISOString(),
-      ...payload
-    });
-    const req = http.request({
-      hostname: 'localhost',
-      port: 7782,
-      path: '/publish',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(event)
-      }
-    }, () => {});
-    req.on('error', (e) => console.error('[AGENT_TOWER] EventBus error:', e.message));
-    req.write(event);
-    req.end();
-  } catch (e) {
-    console.error('[AGENT_TOWER] EventBus publish failed:', e.message);
-  }
-}
-
 function createAgentId(name) {
   return `${name}-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
 }
@@ -241,7 +174,6 @@ async function spawnAgent(agentName, task, options = {}) {
     pid: null,
     teamId: options.teamId || null,
     parentId: options.parentId || null,
-    workflowId: options.workflowId || null,
     logFile,
     workDir: agentWorkDir
   };
@@ -257,318 +189,104 @@ async function spawnAgent(agentName, task, options = {}) {
     division: agentInfo.division,
     role: agentInfo.role,
     task: task.substring(0, 100),
-    workflowId: options.workflowId || null,
     teamId: options.teamId,
-    status: 'working'
-  });
-  publishEventBus('agent.spawned', {
-    agentId,
-    name: agentName,
-    division: agentInfo.division,
-    role: agentInfo.role,
-    task: task.substring(0, 200),
-    workflowId: options.workflowId || null,
-    teamId: options.teamId || null,
     status: 'working'
   });
 
   // Execute agent via llm-provider.js — single gateway, no Kimi/stub fallback
   const agentPrompt = prompt;
   const providerInfo = LLM.getProviderInfo();
-
-  // ── Per-agent model override (Step 4 of multi-model pool wiring) ──────────
-  // If the agent's registry entry declares `provider` and/or `model`, those
-  // win over the global LLM_PROVIDER/LLM_MODEL. Lets each agent division pick
-  // the best brain for its job (DeepSeek Pro for planning, GLM for review,
-  // Flash for quick ops, Kimi for long-context research, MiniMax for chat).
-  // Falls through cleanly when no override is set — agent uses the global cfg.
-  // Override source: the agent's own registry declaration wins; otherwise fall
-  // back to the per-agent/division map in agent_routing_matrix.js (modelForAgent).
-  let matrixModel = null;
-  try { matrixModel = require('./agent_routing_matrix').modelForAgent(agentInfo.name || agentInfo.id); } catch (_) { /* matrix optional */ }
-  const overrideProvider = agentInfo.provider || (matrixModel && matrixModel.provider) || null;
-  const overrideModel = agentInfo.model || (matrixModel && matrixModel.model) || null;
-  const llmOverride = {};
-  if (overrideProvider) llmOverride.provider = overrideProvider;
-  if (overrideModel) llmOverride.model = overrideModel;
-
-  const providerName = overrideProvider || providerInfo?.main?.provider || 'unknown';
-  const modelName = overrideModel || providerInfo?.main?.model || 'unknown';
-
-  console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} executing via ${providerName}/${modelName}${overrideProvider || overrideModel ? ' (per-agent override)' : ''}...`);
-
-  // Execute every Tower agent through the canonical AgentGateway.
+  const providerName = providerInfo?.main?.provider || 'unknown';
+  const modelName = providerInfo?.main?.model || 'unknown';
   
+  console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} executing via ${providerName}/${modelName}...`);
+  
+  // Use the real tool-calling brain (same as ask/chat) if available.
+  // Falls back to one-shot llmComplete for backwards compat.
   // All result variables initialized to non-undefined defaults.
   // In JavaScript, `let x;` is `let x = undefined;` — that's a bug waiting to happen.
   let result = { content: '(empty response — no agent output captured)', toolCalls: [] };
+  let toolCalls = [];
   let totalTokens = 0;
-  const fullPrompt = `${agentPrompt}\n\nTASK: ${task}\n\nEXECUTION RULES (critical): You have REAL tools — file read/write/edit, shell, code search, and more (the full list is in your system prompt). Complete the task by EMITTING TOOL CALLS in the exact format {"tool":"<name>","args":{...}} and acting directly. Do NOT ask whether tools exist, request setup/confirmation, or merely describe what you would do — perform the work now with your tools, then report what you did.`;
 
-    // ── Agent execution mode (PURPCLAW_AGENT_MODE) ───────────────────────────
-    // 'fork' (default) — spawn tower-agent-child.js as separate Node process.
-    //   Full isolation, real tool execution, true parallelism.
-    // 'inline' — run via LLM.chat() in the tower process.
-    //   Zero fork overhead. Tool calls are NOT executed (text-only response).
-    //   Suitable for lightweight tasks where full tool execution is not needed.
-    // 'worker-pool' — reserved for future bounded pool (max N concurrent agents).
-    const AGENT_MODE = (process.env.PURPCLAW_AGENT_MODE || 'fork').toLowerCase();
+  if (agentLoopTools) {
+    const { runAgent, AGENT_TOOLS } = agentLoopTools;
+    const fullPrompt = `${agentPrompt}\n\nTASK: ${task}`;
+    const agentState = { toolCalls: [] };
+    let finalText = '';
 
     try {
-      if (AGENT_MODE === 'inline') {
-        // Inline: in-process LLM call, no child fork. Result is text only.
-        console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} inline mode`);
-        try {
-          const LLM = require('./lib/llm-provider');
-          const messages = [{ role: 'user', content: fullPrompt }];
-          const llmOpts = { ...llmOverride, agent: agentId, bypassSpendGate: false };
-          const llmResult = await LLM.chat(messages, llmOpts);
-          if (llmResult.blocked) {
-            result = { content: '', toolCalls: [], error: llmResult.error || 'SpendGate blocked' };
-          } else {
-            result = { content: llmResult.content || '', toolCalls: [], error: llmResult.error || null };
-          }
-        } catch (inlineErr) {
-          result = { content: '', toolCalls: [], error: `Inline error: ${inlineErr.message}` };
-        }
-        activeAgent.status = result.error ? 'error' : 'complete';
-        activeAgent.pid = null;
-        result.totalTokens = 0;
-      } else {
-        // Default fork path: spawn tower-agent-child.js as separate Node process
-        const { fork } = require('child_process');
-        const childPath = path.join(__dirname, 'lib', 'tower-agent-child.js');
-        const child = fork(childPath, [], {
-          cwd: PURP_DIR,
-          stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
-        });
-
-        // Track PID
-        const pid = child.pid;
-        fs.writeFileSync(pidFile, String(pid), 'utf8');
-        activeAgent.pid = pid;
-        console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} forked pid=${pid}`);
-
-        // Handle events streamed back from the child
-        const agentState = { toolCalls: [], text: '' };
-        let runDone = false;
-
-        child.on('message', (msg) => {
-          if (msg.type === 'event') {
-            const ev = msg.event;
-            if (ev.type === 'token') {
-              agentState.text += ev.content || '';
-            } else if (ev.type === 'tool-call') {
-              agentState.toolCalls.push({ name: ev.tool, args: ev.args, result: undefined });
-              broadcast({ type: 'agent_tool_call', agentId, agentName, emoji: agentInfo.emoji, tool: ev.tool, args: ev.args });
-            } else if (ev.type === 'tool-result') {
-              const pending = agentState.toolCalls.filter(tc => tc.result === undefined);
-              const target = pending.length ? pending[0] : null;
-              if (target) target.result = ev.result;
-              else agentState.toolCalls.push({ name: ev.tool, args: ev.args, result: ev.result });
-              broadcast({ type: 'agent_tool_result', agentId, agentName, emoji: agentInfo.emoji, tool: ev.tool, result: ev.result, ok: ev.ok });
-            }
-          } else if (msg.type === 'done') {
-            runDone = true;
-            const { content, error, turns } = msg.result;
-            const toolSummary = agentState.toolCalls.map(tc =>
-              `[${tc.name}] ${JSON.stringify(tc.args || {}).substring(0, 100)} → ${String(tc.result ?? '').substring(0, 200)}`
-            ).join('\n');
-            result = {
-              content: [agentState.text.trim(), toolSummary].filter(Boolean).join('\n\n') || 'Task completed.',
-              toolCalls: agentState.toolCalls,
-              error,
-            };
-            totalTokens = agentState.toolCalls.length;
-            console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} completed (${agentState.toolCalls.length} tool calls, pid=${pid})`);
-            child.disconnect();
-          }
-        });
-
-        child.on('exit', (code, signal) => {
-          if (!runDone) {
-            result = { error: `Child exited unexpectedly code=${code} signal=${signal}`, toolCalls: agentState.toolCalls };
-            console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} child exit unexpected code=${code} signal=${signal}`);
-          }
-          try { if (fs.existsSync(pidFile)) fs.unlinkSync(pidFile); } catch (_) {}
-        });
-
-        child.on('error', (e) => {
-          result = { error: `Child fork error: ${e.message}`, toolCalls: agentState.toolCalls };
-          console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} fork error: ${e.message}`);
-        });
-
-        child.send({
-          type: 'run',
-          id: agentId,
-          prompt: fullPrompt,
-          provider: overrideProvider || undefined,
-          model: overrideModel || undefined,
-          role: agentInfo.name,
-          opts: {
-            maxTokens: 4096,
-            temperature: 0.7,
-            maxTurns: options.maxTurns || 10,
-            permissionProfile: options.permissionProfile || 'autonomous',
-            ...llmOverride,
-          },
-        });
-
-        // Store the child ref so killAgent can abort it
-        activeAgent._child = child;
-
-        // Promise that resolves when the child sends 'done' or 'error'
-        let resolveResult, rejectResult;
-        const resultPromise = new Promise((resolve, reject) => {
-          resolveResult = resolve;
-          rejectResult = reject;
-        });
-        activeAgent._resultPromise = resultPromise;
-        activeAgent._resolveResult = resolveResult;
-        activeAgent._rejectResult = rejectResult;
-
-        child.on('message', (msg) => {
-          if (msg.type === 'event') {
-            const ev = msg.event;
-            if (ev.type === 'token') {
-              agentState.text += ev.content || '';
-            } else if (ev.type === 'tool-call') {
-              agentState.toolCalls.push({ name: ev.tool, args: ev.args, result: undefined });
-              broadcast({ type: 'agent_tool_call', agentId, agentName, emoji: agentInfo.emoji, tool: ev.tool, args: ev.args });
-            } else if (ev.type === 'tool-result') {
-              const pending = agentState.toolCalls.filter(tc => tc.result === undefined);
-              const target = pending.length ? pending[0] : null;
-              if (target) target.result = ev.result;
-              else agentState.toolCalls.push({ name: ev.tool, args: ev.args, result: ev.result });
-              broadcast({ type: 'agent_tool_result', agentId, agentName, emoji: agentInfo.emoji, tool: ev.tool, result: ev.result, ok: ev.ok });
-            }
-          } else if (msg.type === 'done') {
-            runDone = true;
-            const { content, error, turns } = msg.result;
-            const toolSummary = agentState.toolCalls.map(tc =>
-              `[${tc.name}] ${JSON.stringify(tc.args || {}).substring(0, 100)} → ${String(tc.result ?? '').substring(0, 200)}`
-            ).join('\n');
-            result = {
-              content: [agentState.text.trim(), toolSummary].filter(Boolean).join('\n\n') || 'Task completed.',
-              toolCalls: agentState.toolCalls,
-              error,
-            };
-            totalTokens = agentState.toolCalls.length;
-            console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} completed (${agentState.toolCalls.length} tool calls, pid=${pid})`);
-            resolveResult({ content: result.content, toolCalls: result.toolCalls, error: result.error });
-            child.disconnect();
-          }
-        });
-
-        child.on('exit', (code, signal) => {
-          if (!runDone) {
-            result = { error: `Child exited unexpectedly code=${code} signal=${signal}`, toolCalls: agentState.toolCalls };
-            console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} child exit unexpected code=${code} signal=${signal}`);
-            rejectResult(new Error(`Child exited: code=${code} signal=${signal}`));
-          }
-          try { if (fs.existsSync(pidFile)) fs.unlinkSync(pidFile); } catch (_) {}
-        });
-
-        child.on('error', (e) => {
-          result = { error: `Child fork error: ${e.message}`, toolCalls: agentState.toolCalls };
-          console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} fork error: ${e.message}`);
-          rejectResult(e);
-        });
-
-        child.send({
-          type: 'run',
-          id: agentId,
-          prompt: fullPrompt,
-          provider: overrideProvider || undefined,
-          model: overrideModel || undefined,
-          role: agentInfo.name,
-          opts: {
-            maxTokens: 4096,
-            temperature: 0.7,
-            maxTurns: options.maxTurns || 10,
-            permissionProfile: options.permissionProfile || 'autonomous',
-            ...llmOverride,
-          },
-        });
-
-        // Wait for the child to complete before returning from spawnAgent
-        try {
-          await resultPromise;
-        } catch (err) {
-          // error already set in result above
+      for await (const ev of runAgent({
+        prompt: fullPrompt,
+        opts: { maxTokens: 4096, temperature: 0.7, tools: AGENT_TOOLS },
+      })) {
+        if (ev.type === 'tool-call' && ev.tool) {
+          agentState.toolCalls.push({ name: ev.tool, args: ev.args });
+        } else if (ev.type === 'tool-result') {
+          const pending = agentState.toolCalls.find(tc => tc.name === ev.tool && tc.result === undefined);
+          if (pending) pending.result = ev.ok ? (ev.content || '') : `error: ${ev.error}`;
+        } else if (ev.type === 'turn-done') {
+          // The last turn's text is the agent's answer; later turns win.
+          if (ev.fullContent) finalText = ev.fullContent;
         }
       }
-    } finally {
-    // Post-child cleanup: always runs regardless of fork success or error
-    const output = typeof result === 'string' ? result :
-      result?.content || result?.output || result?.text || result?.error || '(empty response)';
-    const exitCode = result?.error ? 1 : 0;
-    activeAgent.status = exitCode === 0 ? 'completed' : 'error';
-    activeAgent.result = output;
-    activeAgent.toolCalls = (result && Array.isArray(result.toolCalls)) ? result.toolCalls : [];
-    activeAgent.endTime = new Date().toISOString();
-    agentInfo.status = 'idle';
 
+      // Reasoning models (MiniMax-M3) inline <think> blocks — the answer is
+      // what remains after stripping them. Never validate against reasoning
+      // noise; if only reasoning was produced, fall back to the tool digest.
+      const answer = finalText.replace(/<think>[\s\S]*?<\/think>\s*/gi, '').trim();
+      const digest = agentState.toolCalls.map(tc =>
+        `[${tc.name}] ${JSON.stringify(tc.args).substring(0, 100)} → ${String(tc.result ?? '').substring(0, 200)}`
+      ).join('\n');
+      result = {
+        content: answer || digest || '(agent produced no output)',
+        toolCalls: agentState.toolCalls,
+      };
+      totalTokens = agentState.toolCalls.length;
+      console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} completed (${agentState.toolCalls.length} tool calls)`);
+    } catch (e) {
+      console.log(`[TOWER] Agent-loop fell back to one-shot: ${e.message}`);
+      result = await llmComplete(
+        `${agentPrompt}\n\nTASK: ${task}`,
+        { maxTokens: 4096, temperature: 0.7 }
+      );
+      if (typeof result === 'string') result = { content: result };
+    }
+  } else {
+    try {
+      const raw = await llmComplete(
+        `${agentPrompt}\n\nTASK: ${task}`,
+        { maxTokens: 4096, temperature: 0.7 }
+      );
+      result = typeof raw === 'string' ? { content: raw } : raw;
+    } catch (e) {
+      result = { error: e.message };
+    }
+  }
+  
+  const output = typeof result === 'string' ? result :
+    result?.content || result?.output || result?.text || result?.error || '(empty response)';
     fs.appendFileSync(logFile, `[${new Date().toISOString()}] LLM RESPONSE:\n${output}\n`);
     broadcast({ type: 'agent_output', agentId, agentName, emoji: agentInfo.emoji, output, timestamp: new Date().toISOString() });
-    broadcast({
-      type: 'agent_complete',
-      agentId,
-      agentName,
-      emoji: agentInfo.emoji,
-      code: exitCode,
-      output,
-      timestamp: new Date().toISOString(),
-      provider: providerName,
-      model: modelName,
-      status: activeAgent.status
-    });
-    publishEventBus(exitCode === 0 ? 'agent.completed' : 'agent.failed', {
-      agentId,
-      name: agentName,
-      division: agentInfo.division,
-      role: agentInfo.role,
-      task: task.substring(0, 200),
-      workflowId: options.workflowId || null,
-      teamId: options.teamId || null,
-      code: exitCode,
-      provider: providerName,
-      model: modelName,
-      output: String(output || '').substring(0, 500),
-      status: activeAgent.status
-    });
-
-    AGENT_TOWER.activeAgents.delete(agentId);
-    if (options.teamId) removeAgentFromTeam(agentId, options.teamId);
+    broadcast({ type: 'agent_complete', agentId, agentName, emoji: agentInfo.emoji, code: 0, output, timestamp: new Date().toISOString(), provider: providerName, model: modelName });
+    
+    activeAgent.status = 'completed';
+    activeAgent.result = output;
     console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} completed via ${providerName}/${modelName} (${agentId})`);
 
-    // ── Memory Matrix: persist this spawn via the existing memory-client ──
-    try {
-      const memory = require('./lib/memory-client');
-      const memId = await memory.postTask(task, output, agentName, true);
-      if (memId) {
-        console.log(`[TOWER] ${agentInfo.emoji} ${agentInfo.name} → Memory ${memId}`);
-      }
-    } catch (e) {
-      console.log(`[TOWER] Memory postTask failed: ${e.message}`);
-    }
+  // Notify EventBus
+  try {
+    const ebPayload = JSON.stringify({ topic: 'agent.spawned', agentId, name: agentName, division: agentInfo.division, role: agentInfo.role, task: task.substring(0, 100), pid: activeAgent.pid });
+    const ebReq = http.request({ hostname: 'localhost', port: 7782, path: '/publish', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(ebPayload) } }, () => {});
+    ebReq.on('error', (e) => console.error('[AGENT_TOWER] Error:', e.message));
+    ebReq.write(ebPayload);
+    ebReq.end();
+  } catch (e) {}
 
-    return { success: true, agent: activeAgent, output, toolCalls: activeAgent.toolCalls, provider: providerName, model: modelName };
-  }
+  // The coordinator's spawn/await consumer validates `output`, `toolCalls`,
+  // `provider` and `model` at the TOP level of this result — keep them there.
+  return { success: true, agent: activeAgent, output, toolCalls: Array.isArray(result?.toolCalls) ? result.toolCalls : [], provider: providerName, model: modelName };
 }
-// ^ spawnAgent's closing brace. It was missing, and because the file still
-// parsed, spawnAgent silently swallowed the entire rest of the module —
-// lines 195 to 1225, confirmed with acorn: one top-level FunctionDeclaration
-// containing 67 statements including every other function, the SSE server,
-// the `require.main === module` guard and `module.exports`.
-//
-// The consequences all looked like unrelated bugs:
-//   - `node agent_tower.js` exited 0 without listening, because the main guard
-//     was inside a function nobody called. PM2 restarted it forever.
-//   - `require('./agent_tower.js')` returned {} — module.exports never ran —
-//     so every consumer got an empty object instead of the tower.
-// Neither surfaced as an error, because a missing brace before a run of
-// function declarations is still valid JavaScript.
 
 function sanitizeForCli(text) {
   // Remove supplementary-plane characters (most emojis) that crash Windows console
@@ -654,17 +372,7 @@ function killAgent(agentId) {
   const agent = AGENT_TOWER.activeAgents.get(agentId);
   if (!agent) return { success: false, error: 'Agent not found' };
 
-  // Use the forked child ref for proper IPC kill
-  if (agent._child) {
-    try {
-      agent._child.send({ type: 'abort', id: agentId });
-      agent._child.kill('SIGTERM');
-      console.log(`[TOWER] Child process killed for agent ${agent.name} (pid=${agent.pid})`);
-    } catch (e) {
-      console.log(`[TOWER] Failed to kill child for agent ${agent.name}: ${e.message}`);
-    }
-  } else if (agent.pid) {
-    // Fallback for pre-fork legacy agents
+  if (agent.pid) {
     try {
       process.kill(agent.pid);
       console.log(`[TOWER] Process ${agent.pid} killed for agent ${agent.name}`);
@@ -689,17 +397,11 @@ function killAgent(agentId) {
 
   AGENT_TOWER.activeAgents.delete(agentId);
 
-  publishEventBus('agent.failed', {
-    agentId,
-    name: agent.name,
-    division: agent.division,
-    role: agent.role,
-    task: agent.task,
-    workflowId: agent.workflowId || null,
-    teamId: agent.teamId || null,
-    status: 'killed',
-    error: 'Agent killed manually'
-  });
+  const ebPayload = JSON.stringify({ topic: 'agent.completed', agentId, name: agent.name, division: agent.division, role: agent.role, task: agent.task });
+  const ebReq = http.request({ hostname: 'localhost', port: 7782, path: '/publish', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(ebPayload) } }, () => {});
+  ebReq.on('error', (e) => console.error('[AGENT_TOWER] Error:', e.message));
+  ebReq.write(ebPayload);
+  ebReq.end();
 
   if (agent.teamId) {
     removeAgentFromTeam(agentId, agent.teamId);
@@ -1051,36 +753,7 @@ function createSseServer() {
     } else if (req.url === '/tower/health') {
       res.writeHead(200, { 'Content-Type': 'application/json', ...CORS_HEADERS });
       res.end(JSON.stringify({ status: 'healthy', timestamp: new Date().toISOString(), uptime: Date.now() - new Date(AGENT_TOWER.stats.startTime).getTime(), activeAgents: AGENT_TOWER.activeAgents.size }));
-    } else if (req.url === '/api/spawn/await' && req.method === 'POST') {
-      // Synchronous spawn for the Swarm Coordinator: runs the agent to
-      // completion and surfaces its output top-level as { success, output }.
-      let body = '';
-      req.on('data', chunk => body += chunk);
-      req.on('end', async () => {
-        try {
-          const { agentName, task, options } = JSON.parse(body);
-          if (!agentName || !task) {
-            res.writeHead(400, { 'Content-Type': 'application/json', ...CORS_HEADERS });
-            res.end(JSON.stringify({ success: false, error: 'agentName and task required' }));
-            return;
-          }
-          const result = await spawnAgent(agentName, task, options || {});
-          res.writeHead(result.success ? 200 : 500, { 'Content-Type': 'application/json', ...CORS_HEADERS });
-          res.end(JSON.stringify({
-            success: !!result.success,
-            agentId: result.agent?.id,
-            output: result.agent?.result ?? result.output ?? '',
-            toolCalls: result.toolCalls || [],
-            provider: result.provider,
-            model: result.model,
-            error: result.error
-          }));
-        } catch (e) {
-          res.writeHead(500, { 'Content-Type': 'application/json', ...CORS_HEADERS });
-          res.end(JSON.stringify({ success: false, error: e.message }));
-        }
-      });
-    } else if (req.url === '/api/spawn' && req.method === 'POST') {
+    } else if ((req.url === '/api/spawn' || req.url === '/api/spawn/await') && req.method === 'POST') {
       let body = '';
       req.on('data', chunk => body += chunk);
       req.on('end', async () => {
@@ -1138,14 +811,6 @@ function createSseServer() {
     } else {
       res.writeHead(404);
       res.end();
-    }
-  });
-
-  server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.error(`[TOWER] Port ${AGENT_TOWER_PORT} already in use — tower may already be running or a zombie holds the port`);
-    } else {
-      console.error(`[TOWER] Server error:`, err.message);
     }
   });
 

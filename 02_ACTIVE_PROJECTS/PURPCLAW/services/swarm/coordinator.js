@@ -59,7 +59,7 @@ function createMissionSandbox(missionId) {
 }
 
 function finalizeMissionSandbox(sandbox, missionId, success) {
-  if (!sandbox || !sandbox.path) return;
+  if (!sandbox || !sandbox.path) return { applied: false, reason: 'no-sandbox' };
   try {
     if (success) {
       log(missionId, `[SANDBOX] passed — checking for changes in sandbox: ${sandbox.path}`);
@@ -71,23 +71,39 @@ function finalizeMissionSandbox(sandbox, missionId, success) {
       }
 
       if (statusOut && statusOut.trim()) {
+        // Worktree checkout can rewrite line endings (CRLF↔LF via autocrlf or
+        // .gitattributes), which makes every touched file show as "modified"
+        // with identical insert/delete counts. Stage, then compare ignoring
+        // CR-at-EOL: if nothing real changed, there is nothing to merge back.
+        execSync('git add -A', { ...GIT_OPTS, cwd: sandbox.path });
+        let realChanges = true;
+        try {
+          execSync('git diff --cached --ignore-cr-at-eol --quiet', { ...GIT_OPTS, cwd: sandbox.path, stdio: 'ignore' });
+          realChanges = false; // --quiet exits 0 when the diff is empty
+        } catch { /* non-zero exit = real diff present */ }
+        if (!realChanges) {
+          log(missionId, `[SANDBOX] only line-ending churn — no real changes. Removing sandbox worktree...`);
+          execSync(`git worktree remove --force "${sandbox.path}"`, GIT_OPTS);
+          return { applied: false, reason: 'eol-only-changes' };
+        }
+
         log(missionId, `[SANDBOX] changes detected. Committing in sandbox...`);
         try {
-          execSync('git add -A', { ...GIT_OPTS, cwd: sandbox.path });
           execSync(`git commit -m "synthesis: completed mission ${missionId}"`, { ...GIT_OPTS, cwd: sandbox.path });
           const commitHash = execSync('git rev-parse HEAD', { ...GIT_OPTS, cwd: sandbox.path }).trim();
           log(missionId, `[SANDBOX] committed changes (hash: ${commitHash}). Removing sandbox worktree...`);
-          
+
           try {
             execSync(`git worktree remove --force "${sandbox.path}"`, GIT_OPTS);
           } catch (wtRemoveErr) {
             log(missionId, `[SANDBOX] warning removing worktree: ${wtRemoveErr.message}`);
           }
-          
+
           log(missionId, `[SANDBOX] cherry-picking commit ${commitHash} to main repo (no-commit)...`);
           try {
             execSync(`git cherry-pick --no-commit ${commitHash}`, GIT_OPTS);
             log(missionId, `[SANDBOX] cherry-pick successful. Changes are staged/unstaged in main working tree.`);
+            return { applied: true, commit: commitHash };
           } catch (cpErr) {
             log(missionId, `[SANDBOX] cherry-pick conflict or error: ${cpErr.message}`);
             log(missionId, `[SANDBOX] aborting cherry-pick...`);
@@ -96,7 +112,12 @@ function finalizeMissionSandbox(sandbox, missionId, success) {
             } catch (abortErr) {
               log(missionId, `[SANDBOX] error aborting cherry-pick: ${abortErr.message}`);
             }
-            throw new Error(`Git transactional sandbox merge conflict during cherry-pick: ${cpErr.message}`);
+            // The mission's validated work is preserved as ${commitHash} in the
+            // object store — recoverable with `git cherry-pick <hash>`. A dirty
+            // main tree is an delivery obstacle, not a mission failure; the
+            // subtasks already passed their validation gates.
+            log(missionId, `[SANDBOX] work preserved as commit ${commitHash}; NOT applied (conflict). Recover with: git cherry-pick ${commitHash}`);
+            return { applied: false, commit: commitHash, conflict: true, reason: 'cherry-pick-conflict' };
           }
         } catch (innerErr) {
           try {
@@ -109,6 +130,7 @@ function finalizeMissionSandbox(sandbox, missionId, success) {
       } else {
         log(missionId, `[SANDBOX] no changes detected in sandbox. Removing sandbox worktree...`);
         execSync(`git worktree remove --force "${sandbox.path}"`, GIT_OPTS);
+        return { applied: false, reason: 'no-changes' };
       }
     } else {
       log(missionId, `[SANDBOX] failed — discarding sandbox; working tree untouched.`);
@@ -117,6 +139,7 @@ function finalizeMissionSandbox(sandbox, missionId, success) {
       } catch (wtErr) {
         log(missionId, `[SANDBOX] error removing worktree: ${wtErr.message}`);
       }
+      return { applied: false, reason: 'mission-failed' };
     }
   } catch (e) {
     log(missionId, `[SANDBOX] cleanup error: ${e.message}`);
@@ -1033,9 +1056,9 @@ Synthesize the contributions into the final cohesive answer.`;
     mission.metrics.durationMs = Date.now() - mission.metrics.startedAtMs;
     log(missionId, 'Mission completed successfully!');
 
-    // Finalize the sandbox on success. If this throws (e.g. cherry-pick merge conflict),
-    // it will bubble to the catch block and mark the mission as failed.
-    finalizeMissionSandbox(mission.sandbox, missionId, true);
+    // Finalize the sandbox on success. Conflicts no longer fail the mission —
+    // the validated work is preserved as a commit and reported in sandboxResult.
+    mission.sandboxResult = finalizeMissionSandbox(mission.sandbox, missionId, true);
 
     publishEvent('swarm.coordinator.complete', { missionId, synthesis: mission.synthesis });
 

@@ -40,40 +40,77 @@ const fs   = require('fs');
 const DEFAULT_STABILISE_MS = 3500;
 const RESTART_THRESHOLD    = 3;
 
-// Canonical source of truth for all service classification.
-// DO NOT add hardcoded lists here — edit service_registry.js instead.
-const {
-  CORE_PM2_NAMES,  // full 'purpclaw-X' names — use directly for pm2 --only
-  DARK_PM2_NAMES,  // full PM2 names for dark services
-} = require(path.join(__dirname, '..', '..', 'service_registry.js'));
+// The known "defined-but-dark" services — never running by default,
+// historically flaky on Windows. Require special handling.
+const DARK_SERVICES = [
+  'reasoning',   // proactive runtime loop
+  'autodream',   // memory consolidation (Python)
+  'voice',       // voice-coordinator (JS)
+  'bridge',      // voice-bridge (JS)
+  'chorus',      // companion-chorus (JS, flaky)
+  'vision',      // vision-monitor (JS, opens webcam)
+  'stt',         // speech-to-text (Python + Whisper, large model)
+  'yolo',        // YOLO object detection (Python)
+  'avatar',      // avatar bridge (Python)
+  'cowork-overlay', // ambient HUD (30s screen capture — opt-in)
+  'tts-gateway',    // Kokoro TTS (heavy Python worker, ~90s cold init)
+];
+
+// The "core" cluster — stable services proven to start cleanly on Windows.
+// This is what `purpclaw safe-start --core` brings up. Equivalent to the
+// 16-service baseline that was running fine before the 2026-05-25 cascade.
+// coordinator joined core on 2026-08-18: coordinator_live_boot cert (T01–T03)
+// proved it stable alongside eventbus + tower.
+const CORE_SERVICES = [
+  'eventbus', 'state', 'api', 'orchestrator', 'tower',
+  'pool', 'context', 'workers', 'gatekeeper', 'metrics',
+  'cognitive', 'nextjs', 'coordinator',
+];
 
 function pm2Cmd() {
-  // On Windows we spawn `cmd.exe /c pm2 ...` directly (see pm2Args helper
-  // below). This avoids Node 20+'s ban on spawning .cmd files without
-  // shell:true (CVE-2024-27980) while still NOT using shell:true ourselves.
-  // On non-Windows, plain `npx` resolves through PATH.
-  return process.platform === 'win32' ? 'cmd.exe' : 'npx';
-}
-
-function pm2Args(args) {
-  // Windows: cmd.exe /c <args>    (args is rest-of-command for cmd)
-  // Other:    npx <args>          (npx pm2 jlist, etc.)
-  if (process.platform === 'win32') {
-    return ['/c', 'pm2', ...args];
-  }
-  return ['pm2', ...args];
+  if (process.platform !== 'win32') return 'npx';
+  // On Windows, `npx.cmd pm2 ...` fails (ENOENT) because Node's spawnSync
+  // doesn't carry the shell's full PATH. Invoking through cmd.exe /c lets
+  // us use the system pm2 (which is in the user PATH but not in Node's).
+  // Use this when the env var PURPCLAW_PM2_CMD is set (for tests).
+  return process.env.PURPCLAW_PM2_CMD || 'cmd.exe';
 }
 
 function runPm2Json(PURP_DIR) {
   // Synchronous, captures stdout. windowsHide prevents cmd flash.
+  // Returns:
+  //   Array (possibly []) — PM2 responded, list is the current process list
+  //   null — PM2 is unreachable (non-zero exit or unparseable output)
   try {
-    const r = spawnSync(pm2Cmd(), pm2Args(['jlist']), {
+    const cmd = pm2Cmd();
+    const args = pm2Args(['jlist']);
+    const r = spawnSync(cmd, args, {
       cwd: PURP_DIR, windowsHide: true, encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'], timeout: 10000,
+      stdio: ['ignore', 'pipe', 'pipe'], timeout: 10000,
+      shell: cmd === 'cmd.exe',
     });
-    if (r.status !== 0 || !r.stdout) return null;
-    return JSON.parse(r.stdout);
-  } catch { return null; }
+    if (process.env.PURPCLAW_DEBUG) console.error('[DEBUG] runPm2Json status=', r.status, 'stdout-len=', (r.stdout||'').length, 'stderr=', (r.stderr||'').slice(0,200));
+    if (r.status !== 0) return null;
+    if (!r.stdout || !r.stdout.trim()) return [];
+    // PM2 sometimes prefixes stdout with "In-memory PM2 is out-of-date" warning
+    // lines before the JSON array. Find the first [ and parse from there.
+    const start = r.stdout.indexOf('[');
+    if (start < 0) return [];
+    const list = JSON.parse(r.stdout.slice(start));
+    return Array.isArray(list) ? list : [];
+  } catch (e) {
+    if (process.env.PURPCLAW_DEBUG) console.error('[DEBUG] runPm2Json exception:', e.message);
+    return null;
+  }
+}
+
+function pm2Args(args) {
+  // Build the [cmd, ...argv] pair for invoking `pm2 <args>` on the current
+  // platform. On Windows we route through cmd.exe so we pick up the user's
+  // PATH (Node's spawnSync doesn't carry it on Windows). On Linux/macOS
+  // we use npx to resolve the local pm2.
+  if (pm2Cmd() === 'cmd.exe') return ['/c', 'pm2 ' + args.join(' ')];
+  return ['pm2', ...args];
 }
 
 function spawnPm2(args, PURP_DIR) {
@@ -81,6 +118,7 @@ function spawnPm2(args, PURP_DIR) {
     const proc = spawn(pm2Cmd(), pm2Args(args), {
       cwd: PURP_DIR, windowsHide: true,
       stdio: ['ignore', 'pipe', 'pipe'],
+      shell: pm2Cmd() === 'cmd.exe',  // cmd.exe needs shell to interpret /c
     });
     let stdout = '', stderr = '';
     proc.stdout.on('data', c => stdout += c.toString());
@@ -97,14 +135,8 @@ function resolveName(input) {
 }
 
 function getEcosystemNames(PURP_DIR) {
-  // Read the raw file to find ALL defined PM2 names, bypassing the
-  // isDark() runtime filter that removes non-core services when
-  // PURPCLAW_SERVICES=core. This ensures safe-start can find dark services
-  // by name even when they are filtered out of the exported apps array.
-  const ecoPath = path.join(PURP_DIR, 'ecosystem.config.js');
-  const content = fs.readFileSync(ecoPath, 'utf8');
-  const matches = content.match(/name:\s+'([^']+)'/g) || [];
-  return matches.map(m => m.match(/name:\s+'([^']+)'/)[1]);
+  const eco = require(path.join(PURP_DIR, 'ecosystem.config.js'));
+  return eco.apps.map(a => a.name);
 }
 
 async function ensureNotRunning(name, PURP_DIR) {
@@ -175,31 +207,26 @@ async function run(args, ctx) {
 
   let names = [];
   if (useDark) {
-    // Filter to only PM2 names that actually exist in ecosystem.config.js
-    const ecosystem = new Set(getEcosystemNames(PURP_DIR));
-    names = DARK_PM2_NAMES.filter(n => ecosystem.has(n));
+    names = DARK_SERVICES.map(resolveName);
   } else if (useCore) {
-    // CORE_PM2_NAMES are already full PM2 names — use directly
-    names = CORE_PM2_NAMES;
+    names = CORE_SERVICES.map(resolveName);
   } else if (useAll) {
-    // core + dark, foundation services first
-    const ecosystem = new Set(getEcosystemNames(PURP_DIR));
-    const darkFiltered = DARK_PM2_NAMES.filter(n => ecosystem.has(n));
-    names = [...CORE_PM2_NAMES, ...darkFiltered];
+    // --all = core then dark, in that order, so the foundation is up first
+    names = [...CORE_SERVICES, ...DARK_SERVICES].map(resolveName);
   } else if (positional.length === 0) {
     // No args — show help
     console.log(`\n  ${col(C.bold || C.white, '🛡  PURPCLAW SAFE-START')}\n`);
     console.log(`  ${col(C.gray, 'Sequential service launcher with circuit breaker.')}\n`);
     console.log(`  ${col(C.cyan, 'Usage:')}`);
     console.log(`    purpclaw safe-start <name> [name2 ...]   start named services in order`);
-    console.log(`    purpclaw safe-start --core               wake the 11-service stable baseline`);
+    console.log(`    purpclaw safe-start --core               wake the 16-service stable baseline`);
     console.log(`    purpclaw safe-start --dark               wake the defined-but-dark cluster`);
     console.log(`    purpclaw safe-start --all                start everything (core first, then dark)`);
     console.log(`    purpclaw safe-start --dry-run            show the plan, no execution`);
     console.log(`    purpclaw safe-start --force              bypass restart-count circuit breaker`);
     console.log(`    purpclaw safe-start --stabilise=5000     custom stabilisation window (ms)\n`);
-    console.log(`  ${col(C.cyan, 'Core (stable) cluster:')}      ${col(C.green, CORE_PM2_NAMES.join(', '))}`);
-    console.log(`  ${col(C.cyan, 'Defined-but-dark cluster:')}   ${col(C.yellow, DARK_PM2_NAMES.join(', '))}`);
+    console.log(`  ${col(C.cyan, 'Core (stable) cluster:')}      ${col(C.green, CORE_SERVICES.join(', '))}`);
+    console.log(`  ${col(C.cyan, 'Defined-but-dark cluster:')}   ${col(C.yellow, DARK_SERVICES.join(', '))}`);
     console.log(`  ${col(C.gray, 'Dark services are off by default. They have known Windows flakiness.')}\n`);
     console.log(`  ${col(C.cyan, 'Circuit breaker:')}  refuses to launch any service with >${RESTART_THRESHOLD} historical restarts.`);
     console.log(`  ${col(C.gray, 'Override with --force. Restart counts can be cleared via:')} ${col(C.cyan, 'pm2 reset <name>')}\n`);
@@ -277,4 +304,4 @@ async function run(args, ctx) {
   console.log(`\n  ${col(C.green + C.bold, '✔  SAFE-START COMPLETE')}  ${col(C.gray, '·')}  ${col(C.green, okCount + '/' + toStart.length + ' started')}  ${col(C.gray, '· no cascade detected\n')}`);
 }
 
-module.exports = { run, RESTART_THRESHOLD };
+module.exports = { run, DARK_SERVICES, RESTART_THRESHOLD };

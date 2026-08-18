@@ -4,6 +4,33 @@ Curated record of meaningful changes. Append at the bottom; never rewrite histor
 
 ---
 
+## 2026-08-18 — Phase 1: Stabilize (Finish-Line Sweep)
+
+### Boot repaired — 5 dead PM2 paths + 3 missing entries
+- `ecosystem.config.js`: chorus bridge → `apps/companion-chorus/bridge.js`; avatar → `services/gateway/simple_bridge.py`; stt → `services/voice/stt.py`; cognitive → `services/cognitive/spine.py` (module form, see below); yolo → `services/vision/yolo.py`. All 26 defined apps now resolve to real files (validated by script).
+- New PM2 entries: `purpclaw-coordinator` (:7898), `purpclaw-cowork-overlay` (:7791), `purpclaw-tts-gateway` (:7799) per `.purpclaw/COWORK_TODO.md` TODO-1.
+- **cognitive spine module form**: `services/cognitive/spine.py` uses package-relative imports (`from .memory_matrix import ...`), so it must run as `python -m services.cognitive.spine` from the repo root. PM2 entry + `services/cognitive/gateway.js` spawn both converted. Running it as a bare script crash-loops with `ImportError: attempted relative import with no known parent package`.
+- `lib/commands/safe-start.js`: coordinator added to CORE_SERVICES (proven live-stable by coordinator_live_boot cert); cowork-overlay + tts-gateway added to DARK_SERVICES (opt-in ambient layer).
+- Live boot verified: `safe-start --core` → 13/13 online, zero dead-path errors.
+
+### CLI correctness (narrow fixes, no refactor yet)
+- 7 duplicate case labels removed from `bin/purpclaw.js` (`status`, `doctor`, `parity`, `release`, `roster`, `search`, `onboard`) — JS kept the first of each pair; the seconds were unreachable dead code.
+- Shadowed `cmdStatus` (chaos-campaign view, hardcoded port list + marketing numbers) deleted; the registry-driven dashboard is now the single authority.
+- Hardcoded "v0.1.1" in the first-run banner now reads `package.json`.
+- `"undefined": "^0.1.0"` dependency removed from `package.json`, lockfile, and `node_modules` (nothing required it).
+
+### Coordinator lane closed end-to-end (T08 root causes)
+Three real defects were found behind the "output-too-short" validation failure; none was fixed by lowering thresholds:
+1. **`agent_tower.js` listened for a `tool-exec` event the agent-loop never emits** (it yields `tool-call`/`tool-result`), so recorded tool calls were always empty and the agent's final text was discarded — output collapsed to the literal `'Task completed.'` (17 chars). Fixed event handling; final answer is now the post-`<think>`-stripped last turn, with the tool digest as fallback.
+2. **`spawnAgent` returned `{ success, agent }` but the coordinator validated `result.output`** — the field never existed at the top level, so every mission's output arrived as `undefined` → guaranteed `output-too-short`. Return contract now carries `output`, `toolCalls`, `provider`, `model`.
+3. **Mission sandbox committed line-ending churn as "changes"** (worktree checkout rewrites CRLF↔LF; 3,828 ins/3,848 del across 9 untouched files) and a cherry-pick conflict failed the whole mission. Sandbox now stages with `--ignore-cr-at-eol` detection (EOL-only churn → no commit, no merge) and a merge conflict no longer fails a validated mission — the commit hash is preserved and reported via `mission.sandboxResult`.
+
+**Result**: `tests/coordinator_live_boot` 8/8 PASS with T08 a genuine full round-trip (request → decomposition → execution → validated output → response; mission `decompose-1787054446740` completed, sandbox clean).
+
+### Retirement record
+- None. All previously-dead services were recovered via their relocated `services/` homes; nothing was removed.
+
+
 ## 2026-08-17 — Parity Gap Fill + Legacy Reintegration + Live Coordinator Revival
 
 ### Big moves

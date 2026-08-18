@@ -1,0 +1,3860 @@
+ M 02_ACTIVE_PROJECTS/GOTHAM_3077/GOTHAM_CAPABILITIES.md
+ M 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-3077-system.js
+ M 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-init.js
+ M 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-roads.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/.donors/DO_NOT_INSTALL_HERE.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/.donors/cann.on.ai-yaweegit/DO_NOT_INSTALL_HERE.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/.gitattributes
+ M 02_ACTIVE_PROJECTS/PURPCLAW/.gitignore
+ M 02_ACTIVE_PROJECTS/PURPCLAW/AGENT.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/ARCHITECTURE.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/DOCS_INDEX.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/QUICKSTART.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/README.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/STATUS.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/agent_tower.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/_document.tsx.bak
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/agents/page.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/agent-scores/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/bridge/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/companion-chorus/roster/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/event-timeline/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/gatekeeper-status/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/harness-benchmarks/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/harness/_shared.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/harness/missions/[id]/abort/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/harness/missions/[id]/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/harness/start/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/harness/status/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/health/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/llm-ledger/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/mission-data/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/mochi-action/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/mochi/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/playwright/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/sampler/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/service-proxy/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/setup/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/skill-amendments/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/thringlets/[id]/interact/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/thringlets/[id]/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/thringlets/_shared.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/thringlets/colony-mood/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/thringlets/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/upload/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/api/whoami/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/awaken/page.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/bridge/page.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/AbliteratorPanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/AgentCard.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/AgentList.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/AgentTower.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/AutonomousHarnessPanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/BridgePanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/CockpitShell.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/CognitivePanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/CommandPanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/DataAnalysisPanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/DivisionActivityPanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/ErrorBoundary.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/EventTimelinePanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/GatekeeperPanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/LiveSystemMap.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/LoadingSpinner.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/LogFeed.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/MissionControl.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/Onboarding.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/OverviewPanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/PipelinePanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/PurpClawLogo.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/SamplerPanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/ServiceHealthGrid.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/SessionSidebar.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/SwarmOrchestrationView.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/SwarmPanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/Toast.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/TowerPanel.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/composer/ComposerInput.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/composer/index.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/composer/types.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/components/composer/utils.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/globals.css
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/hooks/useAgentEvents.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/hooks/useAgentTower.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/hooks/useApi.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/hooks/useCognitiveServices.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/hooks/useEPSHistory.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/hooks/useEventTimeline.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/hooks/useGatekeeperStatus.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/hooks/useMissionData.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/hooks/useSSE.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/inline/inline/page.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/inline/page.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/layout.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/lib/route-registry.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/mochi/page.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/not-found.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/page.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/pipeline/page.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/app.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/chat.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/cinematic.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/command-palette.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/data-hooks.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/extras.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/index.html
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/panels.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/screen-cockpit.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/screen-goop.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/screen-mission.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/screen-orchestration.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/screen-settings.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/shell.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/skyscraper.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/styles.css
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/three-viz.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/tweaks-panel.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/widgets.jsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/swarm/page.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/ui-shells/03-purple-dawn/DawnControlRoom.tsx
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/ui/[...path]/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/app/ui/route.ts
+ M 02_ACTIVE_PROJECTS/PURPCLAW/apps/companion-chorus/SPEC.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/apps/companion-chorus/bridge.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/apps/companion-chorus/main.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/apps/companion-chorus/src/constants.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/apps/companion-chorus/src/gacha.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/apps/companion-chorus/src/sprites.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/apps/companion-chorus/src/voice.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/apps/companion-chorus/test-ai.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/apps/companion-chorus/test-api.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/archive/DO_NOT_INSTALL_HERE.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/cognitive_gateway.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/cognitive_spine.py
+ M 02_ACTIVE_PROJECTS/PURPCLAW/data/migrations/import-graph.json
+ M 02_ACTIVE_PROJECTS/PURPCLAW/data/migrations/lib-classification.json
+ M 02_ACTIVE_PROJECTS/PURPCLAW/data/migrations/path-crosswalk.json
+ M 02_ACTIVE_PROJECTS/PURPCLAW/data/migrations/recovery-log-runtime.json
+ D 02_ACTIVE_PROJECTS/PURPCLAW/divisions/engineering/memory/handoff-engineering.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/AGENT_RESOURCE_POLICY.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/AGENT_ROOT_INDEX.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/BILLING_LIFECYCLE_IMPL.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/CANONICAL_PARITY_PRIORITY.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/CHANGELOG.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/CODEX_PARITY_GAP_DECISION.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/CODEX_PARITY_MATRIX.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/CODEX_PARITY_REAL_GAP.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/CODEX_PARITY_STATUS.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/CODEX_PARITY_TEAM.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/CODEX_PARITY_TODO.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/DELEGATION_ROUTING.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/DOCS_INDEX.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/FIRST_RUN.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/HARNESS_CONTRACT.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/HERMES_PARITY_ARCHITECTURE.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/INDEX.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/INDEX_SPEC.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/INSTALL.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/LOOP.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/NIM_KEEPER_LIST.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/ONBOARDING_FLOW.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/PARITY_MATRIX.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/PARITY_PRIORITY.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/PONYTAIL_INTEGRATION.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/POOL_SERVICE_STATE_CONTRACT.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/PROVIDER_ARCHITECTURE.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/PURPCLAW_AGENT_HARNESS_PARITY_BLUEPRINT.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/PURPCLAW_COMPANION.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/PURPCLAW_MEMORY_INTEGRATION_AUDIT_2026-08-04.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/PURPCLAW_MULTI_CLI_GAUNTLET_BOOTSTRAP.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/README.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/ROUTING_AND_BUILD_SPEC.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/RUNBOOK.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/RUNTIME_SAFETY.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/Router.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/SERVICE_RUNTIME_INDEX.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/SKILL.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/SPRING_DOCTRINE_RUNTIME.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/STARTUP_OPERATING_PLAN.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/STUDIO_CANONICAL.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/SURFACE_PARITY_SPEC.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/SURFACE_PARITY_STEP2.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/SYSTEM_TRUTH.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/TROUBLESHOOTING.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/VERSIONING_PLAN.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/WHERE_THINGS_GO.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/WINDOWS_SERVICE.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/WIRING.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/architecture/FILESYSTEM_MIGRATION_MANIFEST.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/artifacts/README.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/boundaries.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/codex-parity-gap-report.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/corrections.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/current/CANONICAL_OVERVIEW.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/current/INTELLIGENCE_SPINE.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/current/README.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/current/RECOVERY.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/current/SYSTEM_OVERVIEW.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/current/TROUBLESHOOTING.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/current/token-optimization.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/experimental/KILL_LIST.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/experimental/NORTH_STAR.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/experimental/README.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/failure_modes.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/heartbeat-rules.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/heartbeat-state.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/launch_readiness_checklist.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/learning.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/longform-guide.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/memory-template.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/operations.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/AGENT_NOTES_HOOKS_DOUBLEFIRE.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/AGENT_NOTES_LIFECYCLE_CONTRACT.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/AGENT_NOTES_P2-8b.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/AGENT_NOTES_SLASH_COMMANDS.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/AGENT_NOTES_SLASH_COMMANDS_PARITY.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/AGENT_NOTES_TOOL_GATE_BYPASSES.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/AUDIT_WAVE1_UNIFIED_RUNTIME.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/specifications/SPEC-001_VERIFY_BLOCKS.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/persona-forge/avatar-style.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/persona-forge/boundary-rules.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/persona-forge/error-handling.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/persona-forge/identity-tension.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/persona-forge/naming-system.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/persona-forge/output-template.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/purpclaw-service-map.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/reflections.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/releases/1.8.0/linkedin-post.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/releases/1.8.0/reference-attribution.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/releases/1.8.0/release-notes.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/releases/1.8.0/x-quote-eval-skills.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/releases/1.8.0/x-quote-plankton-deslop.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/releases/1.8.0/x-thread.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/scaling.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/security-guide.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/setup.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/shipped/AGENT_ROUTING_MATRIX.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/shipped/FEATURE_ROADMAP.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/shipped/ODYSSEUS_BEAT_PLAN.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/shipped/PARITY_TARGET.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/shipped/PURPCLAW_AGENT_DELEGATION_BOARD.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/shipped/PURPCLAW_OMNICODE_CONTRACT.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/docs/shipped/README.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/shortform-guide.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/smoke_test_runbook.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/docs/spine-self-healing.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/ecosystem.config.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/eslint.config.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/legacy/reintegrate-2026-08-17/README.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/accuracy-fish.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-gateway.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-loop.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-personas.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-sync.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/agents/archetypes.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/api-harness-kernel.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/autotune.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/awaken/awaken-preflight.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/billing-lifecycle.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/chaos-campaign.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/chat-agent.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/checkpoint-manager.mjs
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/child-registry.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/cloud-sync.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/code-interpreter.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/cognitive-client.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/architecture.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/ask.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/autofix-pr.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/bigboss.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/browser.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/bughunt.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/claudecode.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/code.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/cognition.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/ctx-viz.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/deploy.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/eval-auto-fix.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/evolve.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/gc.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/grow.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/harness.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/heal.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/intelligence.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/llm.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/mcp.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/onboard.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/open.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/overview.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/parity.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/plan.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/provider.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/registry-audit.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/roster.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/safe-start.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/safe-stop.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/schedule.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/services.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/setup.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/skills.js.debug
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/smoke.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/teleport.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/thringlets.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/tour.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/training.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/vault.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/workers.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/workflow.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/context-bus.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/context-packet.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/core/work-engine.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/deep-audit.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/deep-research-group.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/doctor.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/eval-manager.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/evolution/mutator.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/evolution/skill-forge.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/feature-parity.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/governance.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/harness/benchmark.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/harness/engine.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/harness/result-schema.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/harness/task-schema.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/identity.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/idle-engine.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/imagegen/video_engine.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/job-contract.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/llm-provider.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/mcp-server.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/mcp.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/memory-client.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/memory-consistency.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/memory-gateway.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/mochi-sprites.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/mochi.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/omnicode-bridge.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/parseltongue.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/persona-forge.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/pipeline-registry.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/pocket-updater.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/pocket-vault.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/proactive-maintenance.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/profile-router.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/program-optimizer.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/proof-ledger.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/purpflow.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/rate-limiter.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/release-sign.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/provider-config.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/settings-registry.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/scheduler/nl-cron.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/screen-look.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/secret-vault.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/self-context.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/self-evolution-loop.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/session-portability.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/session-repository.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/session-store.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/skill-usage.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/skills-hub.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/smith-neo.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/soul-registry.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/spaghetti-audit.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/spend-gate.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/stm.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/system-manifest.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/telemetry.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/tool-runtime.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/tools-pc.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/tools/index.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/tools/skills-registry.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/tower-agent-child.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/trace-store.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/training-buffer.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/tts/gateway.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/tts/kokoro_worker.py
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/usage-pricing.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/user-feedback.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/whoami.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/lib/workspace-awareness.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/memory_matrix_v2.py
+ M 02_ACTIVE_PROJECTS/PURPCLAW/next.config.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/package-lock.json
+ M 02_ACTIVE_PROJECTS/PURPCLAW/package.json
+ M 02_ACTIVE_PROJECTS/PURPCLAW/packages/harness-claude/index.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/packages/harness-codex/index.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/packages/harness-hermes/index.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/packages/harness-minimax/index.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/packages/index.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/package.json
+ M 02_ACTIVE_PROJECTS/PURPCLAW/packages/result-schema/index.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/packages/task-schema/index.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/parity/hooks/engine.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/README.md
+ M 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/config.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/llm_service.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/podcast_runner.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/run_episode.py
+ M 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/turn_manager.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/pool_service.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/references/chatgpt-codex-parity.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/PARITY_GAPS.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/PURPCLAW_VS_ALL_CLI_PARITY.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/01_aws_bedrock_agents.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/02_google_vertex_ai_agent_engine.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/03_anthropic_claude_agent_sdk.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/04_langgraph.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/05_openai_agents_sdk.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/06_microsoft_autogen.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/07_crewai.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/08_microsoft_semantic_kernel.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/09_google_adk.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/10_smolagents.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/11_pydantic_ai.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/12_llamaindex.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/13_dspy.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/14_haystack.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/15_agentops.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/16_helicone.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/17_flowise.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/18_langflow.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/19_activepieces.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/20_composio.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/21_vercel_ai_sdk.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/22_browser_use.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/23_metagpt.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/24_openhands.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/25_autogpt.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/26_agentgpt.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/27_letta.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/28_mem0.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/29_elizaos.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/30_fixpoint.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/31_rasa.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/32_sglang.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/33_ultravox.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/34_pyspur.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/35_google_agent_starter_pack.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/36_agent_protocol.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/37_awesome_ai_agents.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/38_mistral_agents.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/39_anthropic_robust_agents.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/MISSION_REPORT.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/PURPCLAW_VS_TIER_S_PARITY_MATRIX.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/README.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/_ROBOT_MISSION_BRIEF.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/ai-agent-frameworks-2025-2026.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/ai-agent-frameworks-2026-Q1.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/ai_frameworks_2026/ai-agent-frameworks-2026-Q2-update.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/experiments/from-docs/benchmark/round-1/quill-pre-baseline/registry-audit.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/experiments/from-docs/benchmark/round-1/quill-pre-baseline/registry-audit.test.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/experiments/from-docs/gauntlet/P0_RUNTIME_PROGRESS.html
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/experiments/from-docs/generated/push.py
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/experiments/from-docs/generated/push2.py
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/experiments/from-docs/generated/push_github.py
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/experiments/from-docs/generated/push_github2.py
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/experiments/from-docs/smoke_test.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/research/references/everything-claude-code/PROVENANCE.md
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/audit-parity.mjs
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/autoDream.py
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/autonomous_diagnostics.py
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/cognitive/memory_matrix.py
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/docs-gate.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/install-skill-from-github.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/modal_logic_engine.py
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/neuro_symbolic_bridge.py
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/parity-authority-check.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/spring_doctrine.py
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/start-web.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/symbolic_rules_engine.py
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-approval-resume-bridge.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-workflow-approval.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/scripts/tui-ask.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/tui-capture.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/scripts/tui-ng.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/tui-rich.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/tui-test.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/scripts/tui.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/ui-shot.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/scripts/validate-docs.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/service_registry.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/swarm_coordinator.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/contract/harness-honest-status.test.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/contract/p0a-session-persistence.test.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/contract/p0b-permission-enforcement.test.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/contract/p0c-provider-routing.test.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/contract/spine-default.test.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/cowork-overlay.smoke.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/cross-surface/memory-gateway.test.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/parity/contract-suite.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/parity/harness-claude-contract.test.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/parity/harness-codex-contract.test.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/parity/harness-hermes-contract.test.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/parity/harness-minimax-contract.test.js
+ D 02_ACTIVE_PROJECTS/PURPCLAW/tests/parity/harness-parity.test.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/unified_api.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/unified_eventbus.js
+ M 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/candidates/.gitkeep
+ M 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/events/.gitkeep
+ M 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/quarantine/.gitkeep
+ M 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/snapshots/.gitkeep
+?? -dreamforge-spine-main.zip
+?? .api_keys
+?? .claude.json
+?? .claude.json.backup
+?? .companion-context.json
+?? .devcontainer/
+?? .emulator_console_auth_token
+?? .git-for-windows-updater
+?? .gitconfig
+?? .github/
+?? .gitignore
+?? .idea/
+?? .omnicode-db/
+?? .zshrc
+?? 00898c357dc649c18d0574ff55bcfddc.jpeg
+?? 00_scratch/
+?? 01_ARCHIVE_OLDS/
+?? 01_BOOKS/
+?? "02_ACTIVE_PROJECTS/# CANN.ON.AI - Next Gen Asset Generator/"
+?? 02_ACTIVE_PROJECTS/.gitignore
+?? 02_ACTIVE_PROJECTS/.omnicode/
+?? 02_ACTIVE_PROJECTS/.purpclaw/
+?? 02_ACTIVE_PROJECTS/00898c357dc649c18d0574ff55bcfddc.jpeg
+?? 02_ACTIVE_PROJECTS/0_0(1).png
+?? 02_ACTIVE_PROJECTS/0_0.png
+?? 02_ACTIVE_PROJECTS/192.168.1.180.html
+?? 02_ACTIVE_PROJECTS/20230803_192514.heif
+?? 02_ACTIVE_PROJECTS/20250301_161916.jpg
+?? 02_ACTIVE_PROJECTS/20250424_133131.jpg
+?? 02_ACTIVE_PROJECTS/20250424_133131.png
+?? "02_ACTIVE_PROJECTS/2025_05_23_CapitalOne_Statement (1).pdf"
+?? 02_ACTIVE_PROJECTS/2025_05_23_CapitalOne_Statement.pdf
+?? 02_ACTIVE_PROJECTS/2025_08_08_CapitalOne_Statement.pdf
+?? 02_ACTIVE_PROJECTS/236871-168415e4-4000-45ac-8882-a718e2a6deb8.jpeg
+?? 02_ACTIVE_PROJECTS/236871-49e7d930-a8ce-4ae6-aadd-39e74ed7abdd.jpeg
+?? 02_ACTIVE_PROJECTS/236871-6b590d6d-cd7e-4307-b7a2-4fb571d21113.jpeg
+?? 02_ACTIVE_PROJECTS/236871-6eee4651-11e9-4eae-b8b7-178a3c6eeb1d.jpeg
+?? 02_ACTIVE_PROJECTS/236871-72382277-756b-433c-bf01-6fbaae57800f.jpeg
+?? 02_ACTIVE_PROJECTS/236871-79fc082a-c20f-4697-90c7-f8eb2a196d7e.jpeg
+?? 02_ACTIVE_PROJECTS/236871-7a4d326d-e382-4690-95ad-742ab36d3932.jpeg
+?? 02_ACTIVE_PROJECTS/236871-aec6f7b5-59ec-4a1b-a743-7528c522e233.jpeg
+?? 02_ACTIVE_PROJECTS/236871-b957a9ca-1f38-4189-9623-b2f2b5efd010.jpeg
+?? 02_ACTIVE_PROJECTS/236871-d45064b7-eb06-40f5-bc09-2a7fcfb09e6f.jpeg
+?? 02_ACTIVE_PROJECTS/236871-fb5ea4b1-3752-4417-b303-f3d110fb16cc.jpeg
+?? 02_ACTIVE_PROJECTS/476658231_1364707141212531_1771797085559583523_n.jpg
+?? 02_ACTIVE_PROJECTS/480569520_657643266612654_6166389537889231658_n.jpg
+?? 02_ACTIVE_PROJECTS/482429921_626472276758815_4834940674657259423_n.jpg
+?? 02_ACTIVE_PROJECTS/483598245_935883552085721_3150111253144940324_n.jpg
+?? 02_ACTIVE_PROJECTS/484299082_9439384092786893_1932200234611860508_n.jpg
+?? 02_ACTIVE_PROJECTS/4MeKey.lnk
+?? 02_ACTIVE_PROJECTS/4eda69d6-bbc3-4cbc-a942-ec369cc6f489.png
+?? "02_ACTIVE_PROJECTS/4exchange god/"
+?? 02_ACTIVE_PROJECTS/557422309-African-Cookbook-2nd-Edition.pdf
+?? 02_ACTIVE_PROJECTS/727a04b6-5080-48ff-8127-cc23416310bb.png
+?? "02_ACTIVE_PROJECTS/86&#39;&#39; Touch Screen Smart Board(RZ)1(2025-06-26 03_57_46).pdf"
+?? 02_ACTIVE_PROJECTS/9f27d7b473c6670487e6553173d2a0bd17373caac88d4510b882d01b81840eec_en_usd(1).pdf
+?? 02_ACTIVE_PROJECTS/9f27d7b473c6670487e6553173d2a0bd17373caac88d4510b882d01b81840eec_en_usd.pdf
+?? 02_ACTIVE_PROJECTS/ADB_DEBLOAT_COMPLETE_SET/
+?? 02_ACTIVE_PROJECTS/AE0_Operation_Manual-EN-V1.0-IREU.pdf
+?? 02_ACTIVE_PROJECTS/AFD-170419-208-007.pdf
+?? "02_ACTIVE_PROJECTS/AGENTS_ORIGINAL scrubber/"
+?? "02_ACTIVE_PROJECTS/AIGES PRIVACY GAURD/"
+?? 02_ACTIVE_PROJECTS/AIO-Launcher/
+?? 02_ACTIVE_PROJECTS/ANDROID_ADB_MASS_DEBLOAT_BATS/
+?? 02_ACTIVE_PROJECTS/API-mega-list-main.zip
+?? "02_ACTIVE_PROJECTS/ASSET MWAKER/"
+?? 02_ACTIVE_PROJECTS/AddDefenderExceptions.ps1
+?? "02_ACTIVE_PROJECTS/Aikun Office Wireless mouse Quotation July07 2025(2025-07-06 20_34_30).pdf"
+?? 02_ACTIVE_PROJECTS/Antigravity.exe
+?? 02_ACTIVE_PROJECTS/Antigravity.lnk
+?? 02_ACTIVE_PROJECTS/AnyDesk.exe
+?? "02_ACTIVE_PROJECTS/Auto-Deploy System Architecture_ Zero-Friction Multi-Platform Deployment Pipeline.pdf"
+?? 02_ACTIVE_PROJECTS/AutoKen/
+?? 02_ACTIVE_PROJECTS/Avateering-XNA/
+?? 02_ACTIVE_PROJECTS/BEAST_MARKET_UNIFIED/
+?? 02_ACTIVE_PROJECTS/BLOCKY_KART/
+?? 02_ACTIVE_PROJECTS/BROWSER_DASHBOARD/
+?? 02_ACTIVE_PROJECTS/BUILD_SUMMARY.md
+?? 02_ACTIVE_PROJECTS/Backup-codes-weemadscotsman38.txt
+?? 02_ACTIVE_PROJECTS/Batocera-V40-Reaper-Patch.zip
+?? "02_ACTIVE_PROJECTS/BlueStacks 5.lnk"
+?? "02_ACTIVE_PROJECTS/BlueStacks Multi-Instance Manager.lnk"
+?? "02_ACTIVE_PROJECTS/BlueStacks X.lnk"
+?? 02_ACTIVE_PROJECTS/BrainrotAutopipe/
+?? 02_ACTIVE_PROJECTS/CAAL-main/
+?? 02_ACTIVE_PROJECTS/CAL/
+?? "02_ACTIVE_PROJECTS/CANN.ON.AI MOVIES MAKER/"
+?? 02_ACTIVE_PROJECTS/CANN.ON.AI-STUDIOS-MASTER/
+?? "02_ACTIVE_PROJECTS/CANNON AI OS/"
+?? 02_ACTIVE_PROJECTS/CANNONVERSE_SHOWCASE/
+?? 02_ACTIVE_PROJECTS/CANN_WORKFLOW_MANAGER_MASTER/
+?? 02_ACTIVE_PROJECTS/CHAOS_TOWN/
+?? 02_ACTIVE_PROJECTS/CLAYMORE/
+?? 02_ACTIVE_PROJECTS/CLI-Anything/
+?? 02_ACTIVE_PROJECTS/COMFY_CLAUDE_CODE/
+?? 02_ACTIVE_PROJECTS/COPLAUDIO_NATIVE/
+?? 02_ACTIVE_PROJECTS/COZY_LIFE_GAME/
+?? 02_ACTIVE_PROJECTS/COZY_LIFE_GAME_DREAMFORGE_UPGRADE.zip
+?? "02_ACTIVE_PROJECTS/COZY_LIFE_GAME_MINTED_HOLLOW_2_0 (1).zip"
+?? 02_ACTIVE_PROJECTS/COZY_LIFE_GAME_MINTED_HOLLOW_2_0.zip
+?? 02_ACTIVE_PROJECTS/COZY_LIFE_GAME_MINTED_HOLLOW_2_1_DEEP_BUILD.zip
+?? 02_ACTIVE_PROJECTS/COZY_LIFE_GAME_MINTED_HOLLOW_2_2_GO_GETTER_BUILD.zip
+?? "02_ACTIVE_PROJECTS/Cartoon Network - Punch Time Explosion XL (USA).nkit.iso"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Feb 7, 2026, 01_30_25 PM.png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jan 31, 2026, 01_52_16 AM.png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jan 31, 2026, 01_53_10 AM.png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jan 31, 2026, 01_53_22 AM.png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jan 31, 2026, 01_53_25 AM.png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jun 11, 2026, 03_10_34 PM.png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jun 11, 2026, 03_10_34 PM.png.octet-stream"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jun 11, 2026, 10_51_29 PM.png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jun 11, 2026, 12_25_35 AM (1).png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jun 11, 2026, 12_25_35 AM (2).png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jun 11, 2026, 12_25_35 AM (3).png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jun 11, 2026, 12_25_35 AM (4).png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jun 11, 2026, 12_25_35 AM (5).png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jun 11, 2026, 12_25_36 AM (6).png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jun 11, 2026, 12_25_36 AM (7).png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image Jun 4, 2026, 06_44_16 PM.png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image May 20, 2026, 07_27_21 PM.png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image May 22, 2026, 01_49_28 PM.png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image May 23, 2026, 10_02_58 AM.png"
+?? "02_ACTIVE_PROJECTS/ChatGPT Image May 4, 2025, 11_05_49 AM.png"
+?? "02_ACTIVE_PROJECTS/Checkm8.info Software.exe"
+?? 02_ACTIVE_PROJECTS/Chrona.md
+?? "02_ACTIVE_PROJECTS/Claude Setup.exe"
+?? 02_ACTIVE_PROJECTS/Claude.lnk
+?? 02_ACTIVE_PROJECTS/Claw3D-main.zip
+?? "02_ACTIVE_PROJECTS/Codex (1).dmg"
+?? 02_ACTIVE_PROJECTS/Codex-CLI/
+?? 02_ACTIVE_PROJECTS/Codex.dmg
+?? "02_ACTIVE_PROJECTS/Contract Summary.pdf"
+?? "02_ACTIVE_PROJECTS/DG Home 1 Server Manual V1.0.0_1733715752759_1.pdf"
+?? "02_ACTIVE_PROJECTS/DOC SHITE.zip"
+?? 02_ACTIVE_PROJECTS/DTEMP.BAT
+?? 02_ACTIVE_PROJECTS/DeWindows-Vanilla-Bundle/
+?? 02_ACTIVE_PROJECTS/DemulShooter-master.zip
+?? 02_ACTIVE_PROJECTS/DemulShooter_v14.1.zip
+?? "02_ACTIVE_PROJECTS/Device Credit Agreement.pdf"
+?? 02_ACTIVE_PROJECTS/Digital_Twin_Parser_v1.0/
+?? "02_ACTIVE_PROJECTS/Direct Debit.pdf"
+?? "02_ACTIVE_PROJECTS/DivX Movies.lnk"
+?? "02_ACTIVE_PROJECTS/DivX Player.lnk"
+?? "02_ACTIVE_PROJECTS/Docker Desktop Installer.exe"
+?? "02_ACTIVE_PROJECTS/Docker Desktop.lnk"
+?? "02_ACTIVE_PROJECTS/Dolphin Pack.zip"
+?? "02_ACTIVE_PROJECTS/Donkey Kong Country Returns.zip"
+?? "02_ACTIVE_PROJECTS/Drakons Media.zip"
+?? 02_ACTIVE_PROJECTS/DreamForge_Business_Plan_Full.pdf
+?? 02_ACTIVE_PROJECTS/DreamForge_Full_NDA_1.pdf
+?? 02_ACTIVE_PROJECTS/DreamForge_Full_NDA_2-1.pdf
+?? 02_ACTIVE_PROJECTS/DreamForge_Full_NDA_2-2.pdf
+?? 02_ACTIVE_PROJECTS/DreamForge_Full_NDA_2.pdf
+?? 02_ACTIVE_PROJECTS/DreamForge_NDA_Copy_1.pdf
+?? 02_ACTIVE_PROJECTS/DreamForge_NDA_Copy_2.pdf
+?? 02_ACTIVE_PROJECTS/DreamForge_Studios_Pitch.pdf
+?? "02_ACTIVE_PROJECTS/E DEMO SMS APPS/"
+?? "02_ACTIVE_PROJECTS/EAAGLE MODE CHAOS ENGINE/"
+?? 02_ACTIVE_PROJECTS/E_DRIVE_FULL_INVENTORY_2026-06-25.md
+?? 02_ACTIVE_PROJECTS/E_DRIVE_PROJECTS_FROM_C/
+?? 02_ACTIVE_PROJECTS/E_DRIVE_PROJECT_INVENTORY_2026-06-25.md
+?? 02_ACTIVE_PROJECTS/Eddie-Finance-Premium-v1.apk
+?? 02_ACTIVE_PROJECTS/Eddie-Finance-v1.apk
+?? 02_ACTIVE_PROJECTS/Eddie-Finance-v2-Clean.apk
+?? "02_ACTIVE_PROJECTS/Edward (Work) - Chrome.lnk"
+?? "02_ACTIVE_PROJECTS/Edward AE1 LITE 300M 1pcs invoice 20250423.xlsx"
+?? 02_ACTIVE_PROJECTS/ElphapexTool_1.0.0(20240618)_Release_CN.zip
+?? 02_ACTIVE_PROJECTS/Emergence-World-main.zip
+?? 02_ACTIVE_PROJECTS/EmergenceWorldLite/
+?? 02_ACTIVE_PROJECTS/Enhanced_Monthly_Cleaning_Schedule_for_Chloe.pdf
+?? 02_ACTIVE_PROJECTS/Eula.txt
+?? "02_ACTIVE_PROJECTS/Extras + Info.lnk"
+?? 02_ACTIVE_PROJECTS/FAKEFLASHTEST_v1.1.5.exe
+?? 02_ACTIVE_PROJECTS/FAQs-for-the-Endurance-Fund-FINAL.pdf
+?? 02_ACTIVE_PROJECTS/FEATURES.md
+?? 02_ACTIVE_PROJECTS/FEELING-OS/
+?? 02_ACTIVE_PROJECTS/FLATBACK_CHROME_FINAL/
+?? "02_ACTIVE_PROJECTS/FORGE DREAM/"
+?? 02_ACTIVE_PROJECTS/FamilyForge/
+?? 02_ACTIVE_PROJECTS/Final_Cleaning_Schedule_for_Chloe.pdf
+?? 02_ACTIVE_PROJECTS/Final_Cleaning_Schedule_for_Chloe_Updated.pdf
+?? 02_ACTIVE_PROJECTS/Final_Enhanced_Cleaning_Schedule_for_Chloe.pdf
+?? "02_ACTIVE_PROJECTS/Firmware 18.0.0.zip"
+?? 02_ACTIVE_PROJECTS/Firmware.17.0.1.Rebootless.Update.zip
+?? 02_ACTIVE_PROJECTS/Firmware.17.0.1.zip
+?? 02_ACTIVE_PROJECTS/Firmware.19.0.0.zip
+?? "02_ACTIVE_PROJECTS/Fly-By-Comics (1).pdf"
+?? 02_ACTIVE_PROJECTS/Fly-By-Comics.pdf
+?? 02_ACTIVE_PROJECTS/Full_Transaction_Audit_PVX.csv
+?? 02_ACTIVE_PROJECTS/G0DM0D3-main.zip
+?? 02_ACTIVE_PROJECTS/G0DM0D3/
+?? "02_ACTIVE_PROJECTS/GET CHILDERN.txt"
+?? "02_ACTIVE_PROJECTS/GLI  GAMER LEGACY INDEX/"
+?? 02_ACTIVE_PROJECTS/GOOP_ENGINE/
+?? 02_ACTIVE_PROJECTS/GOOP_GATE/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/.claude/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/.env
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/.env.example
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/.env.gotham
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/.eslintrc
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/BUILD_LOG.md
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/CURRENT_STATE.md
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/NEXT_FEATURES.md
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/PRODUCT.md
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/RELEASE_CHECKLIST.md
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/START_GOTHAM.cmd
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/STOP_GOTHAM.cmd
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/TEST_REPORT.md
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/_RESTORATION_MANIFEST.md
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/apify_actors_registry.json
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/backend/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/cctv.db
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/config/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/data/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/doc/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/docs/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/e2e/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/fonts/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/frontend/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham-anpr.html
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham-bundle.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham-bundle.min.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham-bundle.min.js.map
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham-data.db
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham-data.db-shm
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham-data.db-wal
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham-security.cjs
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham-shaders.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham-streetview.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham-sw.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/cameras.json
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/docs/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/flights_fallback.json
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-agent-registry.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-agent-system-upgrade.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-airspace-manager.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-api-adapter.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-api-router.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-cctv-projector.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-credits.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-decepticon-bridge.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-demo-director.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-emotional-engine.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-evaluator.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-evidence-store.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-fixed-point-coords.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-hud-enhanced.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-meta-agent.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-news-panel.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-nlp-manager.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-omni-eye-status.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-panels-expanded.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-parallax.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-permission-gate.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-sequential-loader.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-shaders-v40.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-standalone-fetcher.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-state-bridge.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-state-diffing.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-tile-persistence.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-tile-worker.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-timeline-engine.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-tool-adapter.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-trade-economy.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-visual-effects.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/gotham-world-export.js
+?? "02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/index (2).html"
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/index.bundled.html
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/manifest.webmanifest
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/project-decepticon-gotham-integration.md
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/satellites_fallback.json
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/service-worker.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/ships_fallback.json
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/test-performance.html
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/ui/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/worldmonitor_integration.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham/worldview-bridge.js
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/gotham_screenshots/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/helm/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/images/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/js/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/la_text.txt
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/package-lock.json
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/package.json
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/proxy.py
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/red-team-panel.html
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/scss/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/server.cjs
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/shadowbroker/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/start-gotham.ps1
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/static-server.cjs
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/tasks/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077/tools/
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077_CLAUDE_MASTER_BRIEF.md
+?? 02_ACTIVE_PROJECTS/GOTHAM_3077_CLAUDE_MASTER_BRIEF_REAL_INVENTORY.md
+?? 02_ACTIVE_PROJECTS/GUIDE.md
+?? 02_ACTIVE_PROJECTS/GameStudio/
+?? 02_ACTIVE_PROJECTS/GhostFace/
+?? "02_ACTIVE_PROJECTS/Git Extensions.lnk"
+?? 02_ACTIVE_PROJECTS/Git-2.52.0-64-bit.exe
+?? "02_ACTIVE_PROJECTS/Gmail - Your Ganja Blaze order has been received!.PDF"
+?? "02_ACTIVE_PROJECTS/Gmail - Your order from Ganja Blaze is on its way!.PDF"
+?? 02_ACTIVE_PROJECTS/Gold_5m_Scalper_Corrected.pine
+?? "02_ACTIVE_PROJECTS/Google Chrome.lnk"
+?? "02_ACTIVE_PROJECTS/H.E.R.  Sovereign Core/"
+?? 02_ACTIVE_PROJECTS/HDDLLF.4.50.exe
+?? 02_ACTIVE_PROJECTS/HER-Sovereign-Core
+?? 02_ACTIVE_PROJECTS/HER/
+?? "02_ACTIVE_PROJECTS/HER_AUDIT_REPORT (1).json"
+?? 02_ACTIVE_PROJECTS/HER_CORE_LEDGER_1769557483589.txt
+?? 02_ACTIVE_PROJECTS/HER_CORE_LEDGER_1769632783603.txt
+?? 02_ACTIVE_PROJECTS/HYPERPAWN/
+?? 02_ACTIVE_PROJECTS/Hermes-Setup.exe
+?? 02_ACTIVE_PROJECTS/Hf5234e259e2545f49a4fba711320205et.jpg_720x720q50.avif
+?? 02_ACTIVE_PROJECTS/Hotd3pc_ArcadeMod-main.zip
+?? 02_ACTIVE_PROJECTS/INSANO_x_ROUTER_INTEGRATION_MAP.docx
+?? 02_ACTIVE_PROJECTS/ISandEL.pdf
+?? 02_ACTIVE_PROJECTS/Insurance.pdf
+?? 02_ACTIVE_PROJECTS/Integrum-Retro-Lightgun-Assistant-main.zip
+?? 02_ACTIVE_PROJECTS/Intel_R_ME_SW_2553.8.58.0/
+?? "02_ACTIVE_PROJECTS/IronLink Packaging and Distribution.pdf"
+?? "02_ACTIVE_PROJECTS/Jenny Watson (4).pdf"
+?? 02_ACTIVE_PROJECTS/KAZ3000/
+?? 02_ACTIVE_PROJECTS/KDP_Image_Resizer.py
+?? 02_ACTIVE_PROJECTS/KRONOS/
+?? "02_ACTIVE_PROJECTS/Key Information.pdf"
+?? "02_ACTIVE_PROJECTS/Kindle Create.lnk"
+?? "02_ACTIVE_PROJECTS/Kindle Previewer 3.lnk"
+?? 02_ACTIVE_PROJECTS/Krita.lnk
+?? 02_ACTIVE_PROJECTS/LAUNCH_TRICORE.bat
+?? 02_ACTIVE_PROJECTS/LEWHIP/
+?? 02_ACTIVE_PROJECTS/LM-Studio-0.4.16-2-x64.exe
+?? 02_ACTIVE_PROJECTS/Local+Authority+tenants(1).pdf
+?? 02_ACTIVE_PROJECTS/Local+Authority+tenants(2).pdf
+?? 02_ACTIVE_PROJECTS/Local+Authority+tenants.pdf
+?? 02_ACTIVE_PROJECTS/LocalSend.lnk
+?? 02_ACTIVE_PROJECTS/MARKDOWN_FILES/
+?? 02_ACTIVE_PROJECTS/MASTER_DECK/
+?? 02_ACTIVE_PROJECTS/MILLIX_WALLET_BACKUP/
+?? "02_ACTIVE_PROJECTS/MLM HERO/"
+?? 02_ACTIVE_PROJECTS/MOSS-TTS-Nano/
+?? 02_ACTIVE_PROJECTS/MenuMochi/
+?? 02_ACTIVE_PROJECTS/MenuMochi_Retro_Browser_Pet_Extension_v1/
+?? 02_ACTIVE_PROJECTS/Microsoft.Services.Store.winmd
+?? 02_ACTIVE_PROJECTS/Mineforever.m4a
+?? "02_ACTIVE_PROJECTS/MiniMax Agent Setup 3.0.32.exe"
+?? "02_ACTIVE_PROJECTS/MiniMax Code Setup 3.0.37.exe"
+?? "02_ACTIVE_PROJECTS/MiniMax Code.lnk"
+?? 02_ACTIVE_PROJECTS/MoneyPrinterTurbo/
+?? 02_ACTIVE_PROJECTS/Monthly_Cleaning_Schedule_for_Chloe.pdf
+?? "02_ACTIVE_PROJECTS/New OpenDocument Drawing.odg"
+?? "02_ACTIVE_PROJECTS/New Text Document.html"
+?? "02_ACTIVE_PROJECTS/New folder/"
+?? 02_ACTIVE_PROJECTS/Nexo_term_deposit_interest_12705568.csv
+?? 02_ACTIVE_PROJECTS/Notepad.lnk
+?? "02_ACTIVE_PROJECTS/OBS-Studio-32.0.4-Windows-x64-Installer (1).exe"
+?? 02_ACTIVE_PROJECTS/OBS-Studio-32.0.4-Windows-x64-Installer.exe
+?? 02_ACTIVE_PROJECTS/OBS-Studio-32.1.2-Windows-x64-Installer.exe
+?? 02_ACTIVE_PROJECTS/OMNICITY/
+?? 02_ACTIVE_PROJECTS/OpenRoom-main.zip
+?? 02_ACTIVE_PROJECTS/OpenRoom-main/
+?? 02_ACTIVE_PROJECTS/OpenSpec-main/
+?? "02_ACTIVE_PROJECTS/Openreach Engineer Repair Visit.ics"
+?? "02_ACTIVE_PROJECTS/Other Information.pdf"
+?? 02_ACTIVE_PROJECTS/PHYSAI_ROBOTICS/
+?? 02_ACTIVE_PROJECTS/PROJECT_ARIA/
+?? "02_ACTIVE_PROJECTS/PROJECT_SUMMARY (1).pdf"
+?? 02_ACTIVE_PROJECTS/PROJECT_SUMMARY.pdf
+?? "02_ACTIVE_PROJECTS/PULSE ISLAND WORLD/"
+?? 02_ACTIVE_PROJECTS/PULSE_ISLAND_WORLD_UNIFIED_VR_FIRST.zip
+?? 02_ACTIVE_PROJECTS/PURGE_AI_CLAUDE/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/$null
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.cactus/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.codex-tmp/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.cowork_state.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.env.example
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.env.nvidia
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.eslintignore
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.eslintrc.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.github/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.harness-audit/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.hermes/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.inbox/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.machine-id
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.omnicode/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.purpclaw-upgrade-backups/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.purpclawrules
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.smoke_report.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.test-workspace/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.tmp-pm2g.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/.versioning/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/AGENTS.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/APPLY_REPLACEMENTS.ps1
+?? 02_ACTIVE_PROJECTS/PURPCLAW/AUDIT_PROOF.sh
+?? 02_ACTIVE_PROJECTS/PURPCLAW/CLAUDE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/CONTRIBUTING.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/FOUNDING_PRINCIPLES.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/GOOP_GATE/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/INSTALL_PURPCLAW.bat
+?? 02_ACTIVE_PROJECTS/PURPCLAW/LAUNCH.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/LICENSE
+?? 02_ACTIVE_PROJECTS/PURPCLAW/MEMORY.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/METRICS.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/NEXT_FEATURES.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/OVERWRITE_MANIFEST.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/PRODUCT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/PURPCLAW_AUTONOMOUS_EXECUTION_CONTRACT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/PURPCLAW_CONTROL_SURFACE_TEST_MATRIX.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/PURPCLAW_DRIVER_SDK_SPEC.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/PURPCLAW_EPHEMERAL_RUNTIME_SPEC.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/PURPCLAW_INTEGRATION_MANIFEST.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/PURPCLAW_MINIMAL_ALWAYS_ON_CORE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/PURPCLAW_PER_REPLY_LIFECYCLE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/PURPCLAW_STEERING_RESOLVER_CONTRACT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/RELEASE_CHECKLIST.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/SECURITY.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/SHA256SUMS.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/SOUL.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/USER.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/Windows-MCP-main.zip
+?? 02_ACTIVE_PROJECTS/PURPCLAW/_test_stream.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/active-profile
+?? 02_ACTIVE_PROJECTS/PURPCLAW/admin-orphan-cleanup.ps1
+?? 02_ACTIVE_PROJECTS/PURPCLAW/agent-compress.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/agent_profiles.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/agent_routing_matrix.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/agent_score.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/agent_score.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/_archive/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/agents/void/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/_cli-bridge.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/cli/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/cmd/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/doctor/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/flow/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/fungus/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/grok/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/harness/parity/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/insight/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/lifecycle/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/live/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/liveforge/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/llm/status/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/mycelium/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/proof-ledger/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/proofmesh/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/purpflow/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/pxpipe/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/self-test/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/smoke-test/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/smoke/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/spend/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/spine/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/spinebus/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/stack/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/steer/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/stream/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/api/watch/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/chat/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/components/AgentOutputStream.tsx
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/components/GrokBotShell.tsx
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/components/GrokComputerPane.tsx
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/components/GrokWidgetHost.tsx
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/components/ShellRouter.tsx
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/components/dawn/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/dawn/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/gallery/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/grok/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/liveforge/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/market-lab/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/mochi/page.tsx.bak
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/package.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/proof-ledger/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/public/ui/uploads/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/route.ts.disabled
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/sb/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/stream/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/ui-shells/03-purple-dawn/SkinToggle.tsx
+?? 02_ACTIVE_PROJECTS/PURPCLAW/app/ui-shells/README.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/approvals/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/apps/cli/cli/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/apps/desktop/desktop/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/apps/tui/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/apps/web/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/2026-08-17-cleanup/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/__init__.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/agent_profiles.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/agent_score.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/boston_analysis.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/cactus_dark_cluster_inventory.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/cactus_dark_cluster_inventory.yaml
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/companion/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/create_db.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/diagnostics/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/echo
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/evidence/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/hello.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/installers/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/legacy/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/memory/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/mimi_speak.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/one-shots/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/patches/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/purpclaw_connection_trace.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/purpclaw_health_latest.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/quarantine/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/replace.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/root-stubs/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/root-temp-diagnostic/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/scrape_stdu.ps1
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/scrape_stdu.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/scrape_stdu_news.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/scrape_zhihu.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/screenshot.png
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/screenshots/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/stress.cjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/toys/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/users.db
+?? 02_ACTIVE_PROJECTS/PURPCLAW/archive/xiaozhi-hardware/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/artifacts/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/audit-agents.mjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/audit-parity.mjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/audit-showcase-claims.mjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/backup-config.sh
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/AGENT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/MISSION.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/add-cases.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/coding-eval.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/fix-app-server.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/fix-completion.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/fix-mcp-server.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/fix_cases.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/harvester.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/purpclaw-vector-bench.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/purpclaw.js.debug
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/wire-app-server.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/wire-commands.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/wire-mcp-server.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/bin/wire-mcp.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/boot.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/buddy_TAMAGOTCHI/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/build-status.mjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/check_moved_tests.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/claude-code-tamagotchi/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/clean-foreign-logs.ps1
+?? 02_ACTIVE_PROJECTS/PURPCLAW/cloud-sync/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/companion-state.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/companion/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/companion_swarm.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/components/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/config.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/config/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/credentials.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/credentials.toml
+?? 02_ACTIVE_PROJECTS/PURPCLAW/data/grok-agents.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/data/migrations/lib-inventory-auto.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/data/proofmesh/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/data/registries/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/data/temp_orch_scan.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/data/training/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/data/transcript.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/debug-constitution.js.disabled
+?? 02_ACTIVE_PROJECTS/PURPCLAW/debug-rpg.js.disabled
+?? 02_ACTIVE_PROJECTS/PURPCLAW/delegation-status.cjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/deploy-checklist.sh
+?? 02_ACTIVE_PROJECTS/PURPCLAW/digital_shaman.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/do_root_moves.ps1
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/AUDIT_2026-08-16.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/AUDIT_PROOF_OUTPUT.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/CHANGELOG_24H.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/DESIGN_SYSTEM.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/DOC_CATALOG.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/DOC_STATUS_LEDGER.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/ENV_INVENTORY.yaml
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/EPHEMERAL_RUNTIME/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/HARNESS_COMPARISON.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/INTEGRATION_INVENTORY.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/NEXT_FEATURES.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/OVERWRITE_MANIFEST.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/PARITY_AUDIT.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/PRODUCT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/PURPCLAW_AS_KERNEL.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/PY_CROSS_REFERENCE.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/SHOWCASE_CLAIM_AUDIT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/STACK_AUDIT_2026-08-16.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/SYSTEM_PROMPT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/_audit/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/ai_frameworks_2026/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/architecture/ARCHITECTURE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/architecture/ARCHITECTURE_MAP.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/architecture/CANONICAL_MAP.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/architecture/CANONICAL_MIGRATION_CONTRACT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/architecture/CANONICAL_PARITY_PRIORITY.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/architecture/MEMORY_DOCTRINE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/AGENT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/AGENTS.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/AGENT_ROOT_INDEX.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/AGENT_TRUTH_AUDIT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/AUDIT_2026-06-10.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/AUDIT_2026-07-12.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/AUDIT_CLOSURE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/AUDIT_PROOF_OUTPUT.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/AUDIT_REPORT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/BILLING_LIFECYCLE_IMPL.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/COMPANION_EVENT_MAP.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/CONTRIBUTING.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/DELEGATION_ROUTING.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/DOCS_INDEX.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/DOC_CATALOG.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/DOC_STATUS_LEDGER.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/ENV_INVENTORY.yaml
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/FIRST_RUN.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/HARNESS_BEHAVIOR_STUDY.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/HARNESS_CONTRACT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/HEARTBEAT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/HERMES_PARITY_ARCHITECTURE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/HIVEMIND_RUNTIME_INTEGRATION.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/HIVEMIND_SIDE_FOLDER_AUDIT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/INDEX.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/INDEX_SPEC.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/INSTALL.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/LOOP.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/MEMORY.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/METRICS.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/MULTI_SYSTEM_PARITY_AUDIT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/NIM_KEEPER_LIST.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/ONBOARDING_FLOW.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PARITY_AUDIT.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PARITY_AUDIT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PARITY_GAP_ANALYSIS.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PARITY_MATRIX.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PARITY_PRIORITY.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PONYTAIL_INTEGRATION.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/POOL_SERVICE_STATE_CONTRACT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PROVIDER_ARCHITECTURE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PURPCLAW_AGENT_HARNESS_PARITY_BLUEPRINT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PURPCLAW_COMPANION.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PURPCLAW_FULL_AUDIT_2026-06-29.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PURPCLAW_HIVEMIND_LOOP_PROOF.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PURPCLAW_MONSTER_LAUNCH_LEDGER.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PURPCLAW_MULTI_CLI_GAUNTLET_BOOTSTRAP.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PY_CROSS_REFERENCE.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/PY_CROSS_REFERENCE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/README.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/REGISTRY_RECONCILIATION.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/ROOT_FILE_AUDIT_2026-06-30.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/ROUTE_INDEX.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/ROUTING_AND_BUILD_SPEC.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/RUNBOOK.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/RUNTIME_SAFETY.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/Router.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/SERVICE_INVENTORY.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/SERVICE_RUNTIME_INDEX.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/SHOWCASE_CLAIM_AUDIT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/SKILL.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/SOUL.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/SPRING_DOCTRINE_RUNTIME.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/STACK_MAP.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/STARTUP_OPERATING_PLAN.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/STUDIO_CANONICAL.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/SURFACE-AUDIT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/SURFACE_PARITY_SPEC.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/SURFACE_PARITY_STEP2.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/SYSTEM_TRUTH.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/TROUBLESHOOTING.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/UI_CONSOLIDATION_AUDIT_2026-07-29.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/USER.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/VERSIONING_PLAN.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/WHERE_THINGS_GO.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/WINDOWS_SERVICE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/WIRING.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/archive/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/artifacts/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/audit/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/benchmark/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/boundaries.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/business/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/campaign/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/codex-parity-gap-report.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/corrections.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/current/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/design/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/docs.zip
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/experimental/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/failure_modes.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/gauntlet/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/generated/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/handoff/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/heartbeat-rules.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/heartbeat-state.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/interactive_proof_plan.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/ja-JP/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/ko-KR/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/launch_readiness_checklist.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/learning.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/legacy/MEGA-PLAN-REPO-PROMPTS-2026-03-12.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/legacy/PR-QUEUE-TRIAGE-2026-03-13.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/legacy/SELECTIVE-INSTALL-ARCHITECTURE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/legacy/SKILL-DEVELOPMENT-GUIDE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/longform-guide.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/memory-template.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/openclaw-heartbeat.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/operations.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/operations/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/parity/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/persona-forge/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/pre-consolidation/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/pt-BR/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/purpclaw-service-map.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/purpclaw_routing_map.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/reference/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/reflections.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/releases/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/research/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/runbooks/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/runtime/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/scaling.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/security-guide.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/setup.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/shipped/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/shortform-guide.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/smoke_test.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/smoke_test_runbook.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/spec/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/spine-self-healing.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/subsystems/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/swarm_mission_robot_security_audit.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/tr/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/zh-CN/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/archive/zh-TW/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/artifacts/AI_Memory_Improvement_Log.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/artifacts/HARVEST_MANIFEST.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/artifacts/ai_complaint.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/artifacts/diag_log.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/artifacts/gacha_result.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/artifacts/music_analysis_instructions.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/audit/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/benchmark/PROMPT.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/benchmark/round-1/FAILURE_REPORT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/benchmark/round-1/claude-output.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/benchmark/round-1/codex-output.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/benchmark/round-1/quill-pre-baseline/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/business/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/campaign/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/docs.zip
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/experiments/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/fiverr_cookies.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/gauntlet/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/CLI_REFERENCE.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/DEEP_STACK_CONNECTION_AUDIT_2026-06-23-2.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/DEEP_STACK_CONNECTION_AUDIT_2026-06-23.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/FOLDER_INVENTORY.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/GITHUB_PUBLISH_AUDIT_2026-06-23.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/LOCAL_UI_STACK_AUDIT_2026-06-22.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/MISSION_UI_SMOKE.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/OPENCLAW_PURGE_REPORT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/TEST_CERTIFICATION_REPORT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/UI_REORG_AUDIT_PROPOSAL.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/VALIDATION_REPORT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/push.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/push2.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/push_github.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/generated/push_github2.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/gigs/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/ja-JP/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/ko-KR/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/legacy/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/market_research.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/operations/DEEP_AUDIT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/operations/DEEP_AUDIT_2026-07-29.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/operations/QUICKSTART.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/operations/STATUS.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/CODEX_PARITY_AUDIT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/CODEX_PARITY_FINAL_AUDIT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/CODEX_PARITY_GAP_DECISION.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/CODEX_PARITY_MATRIX.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/CODEX_PARITY_REAL_GAP.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/CODEX_PARITY_STATUS.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/CODEX_PARITY_TEAM.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/CODEX_PARITY_TODO.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/M1_PLAN_ATBS_PARITY.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/SURFACE_INVENTORY.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/parity/SURFACE_LOG.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/posted_gigs/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/product/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/pt-BR/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/references/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/releases/CHANGELOG.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/runtime/RUNTIME_AUDIT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/security/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/smoke_test.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/tr/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/zh-CN/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/docs/zh-TW/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/ecc.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/ecosystem-filter.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/engine.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/engine/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/eslint.config.mjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/find_pulse.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/findex/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/fix_inventory.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/fix_voice_ingress.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/format.sh
+?? 02_ACTIVE_PROJECTS/PURPCLAW/gatekeeper.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/generate-root-js-inventory.ps1
+?? 02_ACTIVE_PROJECTS/PURPCLAW/generate-root-js-inventory.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/harness-conformance.mjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/harness_service.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/harvested/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/harvester-manifest.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/harvester/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/hivemind/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/hooks/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/html-cloth/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/html-in-canvas/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/hustleos/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/hyperframes/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/inspect-souls.js.disabled
+?? 02_ACTIVE_PROJECTS/PURPCLAW/install-skill-from-github.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/install-targets/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/install.ps1
+?? 02_ACTIVE_PROJECTS/PURPCLAW/install.sh
+?? 02_ACTIVE_PROJECTS/PURPCLAW/install/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/kanban/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/keys.encrypted
+?? 02_ACTIVE_PROJECTS/PURPCLAW/keys/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/kokoro_send.bat
+?? 02_ACTIVE_PROJECTS/PURPCLAW/learning-graph.svg
+?? 02_ACTIVE_PROJECTS/PURPCLAW/legacy/reintegrate-2026-08-17/PURPCLAW_OLD/
+?? "02_ACTIVE_PROJECTS/PURPCLAW/legacy/reintegrate-2026-08-17/Samantha's Daily Log/"
+?? 02_ACTIVE_PROJECTS/PURPCLAW/legacy/reintegrate-2026-08-17/lib-lib-abandoned-installer-20260617/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/legacy/reintegrate-2026-08-17/root-orphans/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/AGENT.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/STANDARDS.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/__init__.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/__tests__/accuracy-fish/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/__tests__/context-engine.test.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/abliterator.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/acp-server.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/action-dispatcher.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-contract.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-gateway-server.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-gateway.js.orig
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-runtime.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-session.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/agent-tools-file.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/api-body-cap.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/api-cache.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/api-mega-list-assignments.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/api-mega-list.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/apply-patch.debug.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/apply-patch.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/approval-triage.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/ast-dependency-graph.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/auto-dream.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/auto-evolve.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/billing-lifecycle.test.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/bios/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/branding.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/capability-registry.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/cli/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/code-mode.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/code-tools.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/automate.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/pr.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/release.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/commands/skill-discovery.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/completion.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/constitution.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/control/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/controllers/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/core/companion-animations.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/core/companion-state.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/core/companion.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/core/deployment-config.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/council-vote-engine.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/credential-pool.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/credentials-store.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/cross-review-gate.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/cryosleep/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/curator.test.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/debug-curator.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/debug-extract.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/debug2.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/debug3.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/debug4.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/debug5.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/debug6.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/debug7.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/debug8.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/debug9.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/delegation-status.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/demo/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/deployment.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/device-control.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/diag-os.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/diag2.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/doctor_test.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/document-ingestion.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/driver-preflight.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/eval-auto-fix.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/evolution/skill-graph.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/file-watcher.stub.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/flow-builder.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/forge/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/gateways/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/git-pr.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/goop-playground/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/governance-audit.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/governor-bridge.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/handlers/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/harness/__tests__/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/harness/context-spine.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/harness/memory-audit.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/harness/verification-core.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/hivemind-test-rank1.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/hivemind-test.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/hivemind.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/hivemind/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/hooks-runtime.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/hooks/execution-envelope.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/imagegen/gateway.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/intelligence-spine.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/kanban/dispatcher-lock.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/kanban/dispatcher.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/kanban/index.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/kernel.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/keyring.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/learning-graph.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/lib/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/llm-status.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/magentic-manager.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/mallory/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/mcp-resources.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/memory-tool.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/message-envelope.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/middleware/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/mochi-state.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/mochi-statusbar.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/model-sentinel.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/nvidia/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/odysseus-scorecard.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/omni/feature-registry.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/omni/generate-agent-docs.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/omni/patch-governor.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/omni/provider-integrity.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/omni/queue-action-required.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/orchestrator-hardening.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/per-reply-supervisor.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/photon-imessage.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/plugin-worker.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/presence.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/prompt-cache.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/proofmesh/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/provider-benchmarks.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/provider-parliament.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/provider_health.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/providers/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/proxy.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/puppeteer.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/raft-agent-network.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/rate-limit.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/realtime_bridge.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/reasoning-loop.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/reasoning-tick.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/recursive/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/release-artifact.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/remote-approvals.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/reports/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/residue.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/responses-proxy.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/routes/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime-certification.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/policy-engine.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/ports.d.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/preprompt-compiler.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/project-paths.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/project-paths.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/provider-router.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/runtime/voice-router.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/sampler.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/sandbox-windows.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/sandbox.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/scheduler/calendar.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/scheduler/runner.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/sdk-query.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/secret-redactor.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/secrets-bitwarden.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/services/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/session-archiver.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/session-log.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/session-persistence.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/skill-bridge.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/skill-bundles.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/skill-discovery.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/skills-graph.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/skills-hub.test.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/snapshot.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/soul-interview.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/soul-memory.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/soul-rpg.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/space-governor.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/squad.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/steering-registry.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/steering-resolver.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/stt/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/subagent-bridge.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/supervisor.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/survivor_router.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/swarm-verify.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/team-coordinator.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/team-formation.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/team-roster.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/test_jsyaml.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/thringlets/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/tirith-security.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/tirith.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/tools-cli-anything.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/tools/skill-marketplace.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/training-ingest.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/training/adapter-gate.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/tui/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/ui-tokens.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/unified-checkpoint.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/util/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/utils.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/vendor/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/verification.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/verify-tools.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/vision-lane.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/voice-client.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/web-search-rate-limit.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/worker-auth.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/worker-pool.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/workers/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/lib/xiaozhi_bridge.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/liveforge/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/llm/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/locked_interfaces.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/manifest.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/marketplace/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/mcp-contract.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/mcp.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/metrics_aggregator.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/model-registry.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/model_registry.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/mycelium/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/nanoclaw.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/next-env.d.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/next.config.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/observer-sessions.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/orchestration-session.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/orchestrator.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/p2p_no_servers_agent_skill_pack.zip
+?? 02_ACTIVE_PROJECTS/PURPCLAW/package-manager.d.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/package-manager.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/__tests__/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/api-client/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/arbitration/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/context-spine/context-spine/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/context-spine/package.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/orchestration/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/permissions/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/a2a-runtime.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/agent-runtime.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/capability-registry.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/child-registry.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/context-bus.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/events.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/execution-runtime.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/graph-runtime.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/hooks-runtime.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/kernel.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/lifecycle-actions.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/messaging-registry.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/messaging-runtime.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/paths.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/plugin-manager.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/schema-validator.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/skill-registry.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/soul-registry.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/steering-registry.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/telemetry.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/tool-runtime.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/runtime/workflow-state.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/core/workflows/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/event-client/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/event-contract/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/harness-claude/harness-claude/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/harness-codex/harness-codex/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/harness-core/harness-core/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/harness-hermes/harness-hermes/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/harness-minimax/harness-minimax/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/harnesses.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory-audit/memory-audit/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory-audit/package.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/README.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/adapters.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/adapters/agent-session.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/adapters/session-archiver.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/adapters/session-persistence.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/adapters/session-portability.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/adapters/session-repository.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/adapters/session-state-service.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/adapters/session-store.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/canonical-memory-sync.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/cognitive-client.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/cognitive-spine/README.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/cognitive-spine/index.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/context/README.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/context/assembler.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/context/budgeter.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/context/contradiction-detector.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/context/deduplicator.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/context/ranker.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/contract/envelope.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/contract/memory-envelope.schema.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/contract/query.schema.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/memory-client.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/memory-consistency.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/memory-retention.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/memory-tool.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/policy/README.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/policy/permissions.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/policy/redaction.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/policy/retention.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/policy/sensitivity.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/memory/scoped-memory.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/no-spaghett/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/organisation/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/parity-matrix/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/permissions/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/proof-contract/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/result-schema/result-schema/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/router/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/schemas/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/session-runtime/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/shared/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/studio/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/task-schema/task-schema/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/task-store/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/tool-registry/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/tools/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/vector/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/verification-core/package.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/packages/verification-core/verification-core/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/parity-build-status.mjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/phoenix_smoke.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/phoenix_smoke.sh
+?? 02_ACTIVE_PROJECTS/PURPCLAW/pipelines/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/plugins.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/plugins/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/pnpm-lock.yaml
+?? 02_ACTIVE_PROJECTS/PURPCLAW/pocket/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/episode_manager.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/index.html
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/kokoro_tail.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/kokoro_voices.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/launch.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/out/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/out_research/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/podcast_research.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/podcast_send.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/shared_log.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/shared_log.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/ship_existing.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/topic_picker.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/tts.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/podcast_studio/utils.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/policies.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/policy.toml
+?? 02_ACTIVE_PROJECTS/PURPCLAW/pool-state.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/postcss.config.mjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/profiles/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/project-detect.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/proof/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/proofmesh-smoke.mjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/provider-config.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/public/brand/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/public/enthea.html
+?? 02_ACTIVE_PROJECTS/PURPCLAW/public/favicon.ico
+?? 02_ACTIVE_PROJECTS/PURPCLAW/public/skyscraper/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/purpclaw-watchdog.ps1
+?? 02_ACTIVE_PROJECTS/PURPCLAW/purpclaw.config.example.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/pyvenv.cfg
+?? 02_ACTIVE_PROJECTS/PURPCLAW/quality-gate.sh
+?? 02_ACTIVE_PROJECTS/PURPCLAW/reference/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/registry/control-inventory.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/registry/control-surfaces.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/registry/index.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/remote-config.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/remotion-mcp-server/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/remotion-projects/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/remotion-test/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/requirements.skills.media.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/requirements.skills.ml.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/requirements.skills.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/requirements.toml
+?? 02_ACTIVE_PROJECTS/PURPCLAW/resolve-ecc-root.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/resolve-formatter.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/responses-proxy.pid
+?? 02_ACTIVE_PROJECTS/PURPCLAW/restore-personas.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/robot_calibration.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/robot_parity_report.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scopes/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/screen-manager.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/.purpclaw-upgrade-backups/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/Activate.ps1
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/__init__.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/_cert-runtime-bridge.cjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/accelerate-config.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/accelerate-estimate-memory.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/accelerate-launch.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/accelerate-merge-weights.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/accelerate.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/activate
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/activate.bat
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/admin-orphan-cleanup.ps1
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/benchmark-providers.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/build-binary-index.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/certify-ephemeral-runtime.mjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/certify-ephemeral-runtime.mjs.bak
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/clean-foreign-logs.ps1
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/code-index-fast.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/datasets-cli.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/deactivate.bat
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/delegation-status.cjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/demo-spine.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/ecc.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/f2py.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/get_gprof
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/get_objgraph
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/hf.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/httpx.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/huggingface-cli.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/idna.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/init-undefined.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/install.ps1
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/install.sh
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/install/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/isympy.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/lora-train.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/markdown-it.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/nanoclaw.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/normalizer.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/numpy-config.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/panic-stop.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/pip.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/pip3.11.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/pip3.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/pm2-names.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/pygmentize.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/python.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/pythonw.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/run-harness-benchmark.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/sample-metric.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-audio-checksum.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-burrow.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-e2e.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-release-gate.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-signed-update.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-skill-deps.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-spend-gate-parallel.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-vault-chaos.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/test-worker-lane.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/tiny-agents.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/torchfrtrace.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/torchrun.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/tqdm.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/training/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/transformers.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/trl.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/typer.exe
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/undill
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/verify-api-spine.cjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/scripts/verify-llm-fallback.cjs
+?? 02_ACTIVE_PROJECTS/PURPCLAW/security-audit.sh
+?? 02_ACTIVE_PROJECTS/PURPCLAW/services/__init__.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/services/audio/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/services/bridge/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/services/cognitive/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/services/display/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/services/gateway/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/services/swarm/agent_score.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/services/vision/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/services/voice/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/session-adapters/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/session-aliases.d.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/session-aliases.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/session-manager.d.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/session-manager.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/settings.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/shaman_evaluator.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/share/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/skills-main.zip
+?? 02_ACTIVE_PROJECTS/PURPCLAW/skills-main/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/skills/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/slash_command_library_for_sam.zip
+?? 02_ACTIVE_PROJECTS/PURPCLAW/smoke_test.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/socket_companion.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/socket_state.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/spinUpAgent.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/start-web.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/start_purpclaw.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/state-store/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/state.db
+?? 02_ACTIVE_PROJECTS/PURPCLAW/state.db-shm
+?? 02_ACTIVE_PROJECTS/PURPCLAW/state.db-wal
+?? 02_ACTIVE_PROJECTS/PURPCLAW/swarm/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/sync-agents.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/sync-registry.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/task_decomposer.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tasks/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/test-router-shim.js.disabled
+?? 02_ACTIVE_PROJECTS/PURPCLAW/test-router.js.disabled
+?? 02_ACTIVE_PROJECTS/PURPCLAW/test-tool-call.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tests/arbitration/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tests/coordinator_live_boot/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tests/identity/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tests/observation/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tests/root-misplaced/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tests/smoke/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tests/test_audio_pipeline.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tests/test_blender_shim.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/thringlet_bridge.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tmux-worktree-orchestrator.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tool-cache/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tools/atbs/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tools/deployment/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tools/diagnostics/autonomous_diagnostics.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tools/diagnostics/debug_wrap.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tools/diagnostics/diagnose_service_registry.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tools/diagnostics/tool_diagnostic.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tools/eval/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tools/migrations/fix_sqlite_warnings.py
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tools/parity/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tools/scripts/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/trace/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tsconfig.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/tui.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/unified_bridge.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/unified_state.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/utils.d.ts
+?? 02_ACTIVE_PROJECTS/PURPCLAW/utils.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/validate-docs.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/agent-work/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/artifacts/incident-2026-08-04/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/artifacts/recovery-source-pristine-20260804_145006/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/audit/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/donors/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/hivemind/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/README.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/episodic/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/indexes/affective/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/indexes/counterfactual/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/indexes/procedural/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/indexes/semantic/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/indexes/symbolic/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/indexes/temporal/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/memory/semantic/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/omnicode/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/reports/docs-audit.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/reports/from-docs/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/reports/phase0-truth.txt
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/reports/security-audit-owl-20260622.md
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/reports/smoke/smoke_report.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/reports/stale-generated/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/state-store.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/tmp/claude/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/tmp/codex/next-e2e-18352-52142/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/tmp/pm2g.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/tmp/tmp_diag_s5.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/var/work-log/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/verified-learning/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/vision_monitor.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/voice_bridge_7792.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/voice_coordinator.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/void-init.sh
+?? 02_ACTIVE_PROJECTS/PURPCLAW/windows/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/worker_service.js
+?? 02_ACTIVE_PROJECTS/PURPCLAW/workspace/
+?? 02_ACTIVE_PROJECTS/PURPCLAW/workspaces.json
+?? 02_ACTIVE_PROJECTS/PURPCLAW_RELEASE_20260816.zip
+?? 02_ACTIVE_PROJECTS/PVX_BLOCKCHAIN/
+?? "02_ACTIVE_PROJECTS/Pasted text(60).txt"
+?? "02_ACTIVE_PROJECTS/Pasted text.txt"
+?? 02_ACTIVE_PROJECTS/Photos.zip
+?? 02_ACTIVE_PROJECTS/Pictures.lnk
+?? 02_ACTIVE_PROJECTS/Pinokio.exe
+?? 02_ACTIVE_PROJECTS/Pinokio.lnk
+?? 02_ACTIVE_PROJECTS/PixelBrainrotHatchLab_Integrated/
+?? 02_ACTIVE_PROJECTS/PixelBrainrotHatchLab_ScriptPack/
+?? 02_ACTIVE_PROJECTS/PixelVaultWalletV2-main/
+?? 02_ACTIVE_PROJECTS/Pixel_Dynasty_High_Level_Overview.pdf
+?? 02_ACTIVE_PROJECTS/PowerShell/
+?? "02_ACTIVE_PROJECTS/Pre-Contract Credit Information.pdf"
+?? "02_ACTIVE_PROJECTS/Pre-Contract Information (1).pdf"
+?? "02_ACTIVE_PROJECTS/Pre-Contract Information.pdf"
+?? 02_ACTIVE_PROJECTS/ProdKeys.net-v18.-1-0.zip
+?? 02_ACTIVE_PROJECTS/ProdkKeys.net-V17.0.0.zip
+?? 02_ACTIVE_PROJECTS/Prodkeys.net_v19.0.0.zip
+?? 02_ACTIVE_PROJECTS/ProjectDemonicus/
+?? 02_ACTIVE_PROJECTS/Proof_of_Purchase.pdf
+?? 02_ACTIVE_PROJECTS/PurpClaw_Animated_Logo.mp4
+?? 02_ACTIVE_PROJECTS/RAMMap.exe
+?? 02_ACTIVE_PROJECTS/RAMMap64.exe
+?? 02_ACTIVE_PROJECTS/RAMMap64a.exe
+?? "02_ACTIVE_PROJECTS/README (1).md"
+?? 02_ACTIVE_PROJECTS/README.md
+?? 02_ACTIVE_PROJECTS/README.pdf
+?? 02_ACTIVE_PROJECTS/README_LARRY_MARKETING_MINE.md
+?? 02_ACTIVE_PROJECTS/ReconstructMeSDK_64bit_2.5.1034.msi
+?? 02_ACTIVE_PROJECTS/ReconstructMe_64bit_2.5.1034.msi
+?? 02_ACTIVE_PROJECTS/Retro-Shooter-User-Manual-2025.pdf
+?? 02_ACTIVE_PROJECTS/Retrobat_Lightgun_v2/
+?? 02_ACTIVE_PROJECTS/Rising.Lords.01008770162FA000.v0.US.nsp
+?? 02_ACTIVE_PROJECTS/Rockstar-Games-Launcher.exe
+?? "02_ACTIVE_PROJECTS/Rookie Offline.cmd"
+?? "02_ACTIVE_PROJECTS/Runaway Brain (Short Film Version).mp4"
+?? 02_ACTIVE_PROJECTS/RyuSAK-1.6.2.Setup.exe
+?? 02_ACTIVE_PROJECTS/RyuSAK-win32-x64-1.6.2.zip
+?? 02_ACTIVE_PROJECTS/SAAP-V2-FULLY-TYPESET.pdf
+?? 02_ACTIVE_PROJECTS/SAAP-V2-GENESIS-PACK/
+?? 02_ACTIVE_PROJECTS/SAAP-V2-OPERATIONAL-PACKAGE.zip
+?? 02_ACTIVE_PROJECTS/SAAP-V2-OPERATOR-HANDBOOK-PACKAGE.pdf
+?? 02_ACTIVE_PROJECTS/SAFETY.pdf
+?? 02_ACTIVE_PROJECTS/SAK-master.zip
+?? "02_ACTIVE_PROJECTS/SO THIS IS CHRISTMAS ___ (1).mp4"
+?? "02_ACTIVE_PROJECTS/SO THIS IS CHRISTMAS ___.mp3"
+?? "02_ACTIVE_PROJECTS/SO THIS IS CHRISTMAS ___.mp4"
+?? "02_ACTIVE_PROJECTS/SPOOKY WOOKIE/"
+?? 02_ACTIVE_PROJECTS/STRESS/
+?? "02_ACTIVE_PROJECTS/SUB CORE/"
+?? 02_ACTIVE_PROJECTS/Sa8fd4f183b6a4506befed6a059405c33D.pdf
+?? "02_ACTIVE_PROJECTS/Scene_\342\200\223_Loud_chaotic_inter.mp4"
+?? 02_ACTIVE_PROJECTS/ScrCpy.lnk
+?? 02_ACTIVE_PROJECTS/Screencast_2017-09-15-02-05-08.mp4
+?? 02_ACTIVE_PROJECTS/ShaderGlass-1.0.2-win-x64.zip
+?? 02_ACTIVE_PROJECTS/Shadowbroker-main.zip
+?? "02_ACTIVE_PROJECTS/Sideloader Launcher.exe"
+?? 02_ACTIVE_PROJECTS/Skydimo.lnk
+?? 02_ACTIVE_PROJECTS/SocketShowcase/
+?? 02_ACTIVE_PROJECTS/Socket_Demo_Assets/
+?? 02_ACTIVE_PROJECTS/Socket_Showcase_2026/
+?? "02_ACTIVE_PROJECTS/Spend Cap.pdf"
+?? 02_ACTIVE_PROJECTS/Statement_12_2024_241223_162045.pdf
+?? 02_ACTIVE_PROJECTS/StoryLearn.zip
+?? "02_ACTIVE_PROJECTS/TAC COM STUD/"
+?? 02_ACTIVE_PROJECTS/TECH_STACK.md
+?? "02_ACTIVE_PROJECTS/TEDDY OS 2/"
+?? "02_ACTIVE_PROJECTS/TITLE_SSHHH_VPN_\342\200\223_Privacy_Sil.mp4"
+?? 02_ACTIVE_PROJECTS/TRICORE_MASTER_v6.0.zip
+?? 02_ACTIVE_PROJECTS/TROUBLESHOOTING.pdf
+?? 02_ACTIVE_PROJECTS/TTC_CANONICAL_SPEC.md
+?? 02_ACTIVE_PROJECTS/TURZX_FACE/
+?? "02_ACTIVE_PROJECTS/Telegram Desktop/"
+?? 02_ACTIVE_PROJECTS/Telegram.lnk
+?? "02_ACTIVE_PROJECTS/The Digital Civilization Toolkit_ An Architectural Overview.pdf"
+?? 02_ACTIVE_PROJECTS/ThreatMapper/
+?? 02_ACTIVE_PROJECTS/Time_Allocated_Cleaning_Schedule_for_Chloe.pdf
+?? 02_ACTIVE_PROJECTS/Transaction_Audit_FINAL(1).csv
+?? 02_ACTIVE_PROJECTS/Transaction_Audit_FINAL.csv
+?? 02_ACTIVE_PROJECTS/Transaction_Audit_FINAL.zip
+?? 02_ACTIVE_PROJECTS/ULTRA_CHEATSHEET.md
+?? 02_ACTIVE_PROJECTS/ULTRA_MODE_GUIDE.md
+?? "02_ACTIVE_PROJECTS/Unconfirmed 827189.crdownload"
+?? 02_ACTIVE_PROJECTS/VPN_Ad_Script_Generation.mp4
+?? 02_ACTIVE_PROJECTS/Vexel.md
+?? "02_ACTIVE_PROJECTS/WHY EXE/"
+?? 02_ACTIVE_PROJECTS/WIRING-INSTRUCTIONS.md
+?? 02_ACTIVE_PROJECTS/WinRAR.lnk
+?? "02_ACTIVE_PROJECTS/YOU FUCKING GOONER/"
+?? "02_ACTIVE_PROJECTS/YOUR LIFE/"
+?? "02_ACTIVE_PROJECTS/Your Device Agreement Documents.zip"
+?? "02_ACTIVE_PROJECTS/Your Plan Documents.zip"
+?? "02_ACTIVE_PROJECTS/Your benefits report-1.pdf"
+?? "02_ACTIVE_PROJECTS/Your benefits report.pdf"
+?? 02_ACTIVE_PROJECTS/__init__.py
+?? 02_ACTIVE_PROJECTS/_ui-backup-stash-20260605-065227/
+?? "02_ACTIVE_PROJECTS/agent router v2/"
+?? 02_ACTIVE_PROJECTS/agent-dashboard/
+?? 02_ACTIVE_PROJECTS/agent-frameworks/
+?? 02_ACTIVE_PROJECTS/agent-office-integration/
+?? 02_ACTIVE_PROJECTS/agent_router_v2_PATCHED.zip
+?? 02_ACTIVE_PROJECTS/agent_router_v2_fixed.zip
+?? 02_ACTIVE_PROJECTS/agent_work/
+?? "02_ACTIVE_PROJECTS/ai apps  pre builds/"
+?? 02_ACTIVE_PROJECTS/ai-bundle-sale/
+?? 02_ACTIVE_PROJECTS/ai-image-sale/
+?? 02_ACTIVE_PROJECTS/ai-town/
+?? 02_ACTIVE_PROJECTS/ai-venting-machine.zip
+?? 02_ACTIVE_PROJECTS/ai-venting-machine/
+?? "02_ACTIVE_PROJECTS/ai_studio_code (1).txt"
+?? 02_ACTIVE_PROJECTS/ai_studio_code.txt
+?? 02_ACTIVE_PROJECTS/alien-soundboard-builder/
+?? 02_ACTIVE_PROJECTS/animate_my_agent_stack_icon_fo.mp4
+?? 02_ACTIVE_PROJECTS/app-decompiled/
+?? "02_ACTIVE_PROJECTS/arbitrage-cannon (1).zip"
+?? 02_ACTIVE_PROJECTS/arbitrage-cannon-audit.md
+?? 02_ACTIVE_PROJECTS/arbitrage-cannon-patch-manifest.json
+?? 02_ACTIVE_PROJECTS/arbitrage-cannon-safe-paper-patched.zip
+?? 02_ACTIVE_PROJECTS/arbitrage-cannon-src/
+?? 02_ACTIVE_PROJECTS/arbitrage-cannon.zip
+?? 02_ACTIVE_PROJECTS/arbitrage_500_latency_buckets_2026-06-13.csv
+?? 02_ACTIVE_PROJECTS/arbitrage_500_new_delta_loss_routes_2026-06-13.csv
+?? 02_ACTIVE_PROJECTS/arbitrage_500_new_delta_pair_breakdown_2026-06-13.csv
+?? 02_ACTIVE_PROJECTS/arbitrage_500_pair_breakdown_2026-06-13.csv
+?? 02_ACTIVE_PROJECTS/arbitrage_500_status_summary_2026-06-13.csv
+?? 02_ACTIVE_PROJECTS/arbitrage_500_trade_audit_report_2026-06-13.md
+?? 02_ACTIVE_PROJECTS/arbitrage_500_trade_window_trend_2026-06-13.csv
+?? 02_ACTIVE_PROJECTS/arbitrage_HONEST_audit_2026-06-14.md
+?? 02_ACTIVE_PROJECTS/arbitrage_REAL_livefeed_run_2026-06-14.md
+?? 02_ACTIVE_PROJECTS/arbitrage_audit_engine.cjs
+?? 02_ACTIVE_PROJECTS/arbitrage_cumulative_audit_report_2026-06-13.md
+?? 02_ACTIVE_PROJECTS/arbitrage_cumulative_audit_summary_2026-06-13.csv
+?? 02_ACTIVE_PROJECTS/arbitrage_cumulative_latency_buckets_2026-06-13.csv
+?? 02_ACTIVE_PROJECTS/arbitrage_cumulative_pair_breakdown_2026-06-13.csv
+?? 02_ACTIVE_PROJECTS/arbitrage_new_delta_loss_routes_2026-06-13.csv
+?? 02_ACTIVE_PROJECTS/arbitrage_new_delta_pair_breakdown_2026-06-13.csv
+?? 02_ACTIVE_PROJECTS/audio_2769065d-44ab-4882-80ff-15870e5d7848_0.mp3
+?? 02_ACTIVE_PROJECTS/audio_8c26d26a-a96e-4fc9-8500-eddb0dae4653_0.mp3
+?? 02_ACTIVE_PROJECTS/audio_a7931b68-ea71-4d35-b444-68b0eab6b543_0.mp3
+?? 02_ACTIVE_PROJECTS/audio_c16b8ab5-6498-48af-bcef-992eb967db2d_0.mp3
+?? 02_ACTIVE_PROJECTS/audio_c283a57e-36f5-4559-a365-eabf6fc6775b_0.mp3
+?? 02_ACTIVE_PROJECTS/audio_caedabcd-7594-46fd-8a0f-848141ff19e6_0.mp3
+?? 02_ACTIVE_PROJECTS/audio_e5701d50-8b7e-4b44-ae99-f04a1f4f3c22_0.mp3
+?? 02_ACTIVE_PROJECTS/audio_f066d8e1-2b72-41c0-bfdb-b150f2fb40a4_0.mp3
+?? 02_ACTIVE_PROJECTS/audio_f185bd2c-5f9f-40b1-8dbe-eb523d251da6_0.mp3
+?? 02_ACTIVE_PROJECTS/audit_engine_out/
+?? 02_ACTIVE_PROJECTS/azure-cli-2.82.0.msi
+?? 02_ACTIVE_PROJECTS/b2914950-795d-4851-a7ab-31297e1e7de0.png
+?? 02_ACTIVE_PROJECTS/backend/
+?? 02_ACTIVE_PROJECTS/batocera-x86_64-41-20250106.img.gz
+?? 02_ACTIVE_PROJECTS/benefit-guardian/
+?? 02_ACTIVE_PROJECTS/biosync-protocol/
+?? 02_ACTIVE_PROJECTS/blackglass.zip
+?? 02_ACTIVE_PROJECTS/blackglass/
+?? 02_ACTIVE_PROJECTS/build/
+?? 02_ACTIVE_PROJECTS/build_app.md
+?? 02_ACTIVE_PROJECTS/butterbot-passes-the-buter-to-make-smooth-code-works-like-butter.skill
+?? 02_ACTIVE_PROJECTS/buzplan/
+?? 02_ACTIVE_PROJECTS/caked-site/
+?? 02_ACTIVE_PROJECTS/campaigns/
+?? 02_ACTIVE_PROJECTS/cann-ai-productions/
+?? 02_ACTIVE_PROJECTS/cann-ai-studio-os/
+?? 02_ACTIVE_PROJECTS/cann-ai-studios-v7/
+?? 02_ACTIVE_PROJECTS/cann-ai-venting-machine/
+?? 02_ACTIVE_PROJECTS/cann-music-sale/
+?? 02_ACTIVE_PROJECTS/cann-on-ai-v5/
+?? 02_ACTIVE_PROJECTS/cann-on-ai/
+?? "02_ACTIVE_PROJECTS/cann.on.ai (1).zip"
+?? "02_ACTIVE_PROJECTS/cann.on.ai finance tracker/"
+?? "02_ACTIVE_PROJECTS/cann.on.ai music aka locus control/"
+?? "02_ACTIVE_PROJECTS/cann.on.ai-3dreamforge (5).zip"
+?? 02_ACTIVE_PROJECTS/cann.on.ai-3dreamforge/
+?? "02_ACTIVE_PROJECTS/cann.on.ai-__-h.e.r.-sovereign-core (2)/"
+?? 02_ACTIVE_PROJECTS/cann.on.ai-forge.finances.zip
+?? 02_ACTIVE_PROJECTS/cann.on.ai-forge.finances/
+?? 02_ACTIVE_PROJECTS/cann.on.ai-mirrorvale-systems/
+?? "02_ACTIVE_PROJECTS/cann.on.ai-spine (4)/"
+?? 02_ACTIVE_PROJECTS/cann.on.ai-studios.zip
+?? "02_ACTIVE_PROJECTS/cann.on.ai-turbo-terminal (1).zip"
+?? "02_ACTIVE_PROJECTS/cann.on.ai-turbo-terminal (2).zip"
+?? 02_ACTIVE_PROJECTS/cann.on.ai-turbo-terminal.zip
+?? 02_ACTIVE_PROJECTS/cann.on.ai-turbo-terminal/
+?? 02_ACTIVE_PROJECTS/cann.on.ai-yaweegit.zip
+?? 02_ACTIVE_PROJECTS/cann.on.ai.zip
+?? 02_ACTIVE_PROJECTS/cann.on.ai/
+?? 02_ACTIVE_PROJECTS/cann.on.ai_-grant-ready-programme-architect.zip
+?? 02_ACTIVE_PROJECTS/cann.on.ai_-grant-ready-programme-architect/
+?? 02_ACTIVE_PROJECTS/cann_grant_v2/
+?? 02_ACTIVE_PROJECTS/cannon-ai-turbo/
+?? 02_ACTIVE_PROJECTS/chandelier-bot/
+?? 02_ACTIVE_PROJECTS/chandelier_exit_pack.zip
+?? 02_ACTIVE_PROJECTS/chandelier_exit_pack_v2.zip
+?? "02_ACTIVE_PROJECTS/chronos-world-engine (6)/"
+?? 02_ACTIVE_PROJECTS/chronos-world-engine/
+?? 02_ACTIVE_PROJECTS/cinema-identity-rig/
+?? 02_ACTIVE_PROJECTS/claude.md
+?? 02_ACTIVE_PROJECTS/claw_espeak.wav
+?? 02_ACTIVE_PROJECTS/claw_speech_result.txt
+?? 02_ACTIVE_PROJECTS/claw_voice.wav
+?? 02_ACTIVE_PROJECTS/claw_voice_chat.html
+?? 02_ACTIVE_PROJECTS/claw_voice_interface.html
+?? 02_ACTIVE_PROJECTS/client/
+?? 02_ACTIVE_PROJECTS/codex/
+?? "02_ACTIVE_PROJECTS/complaint higher ups  (1).pdf"
+?? 02_ACTIVE_PROJECTS/components/
+?? "02_ACTIVE_PROJECTS/confession-weemadscotsman-purpclaw (master).md"
+?? 02_ACTIVE_PROJECTS/configure/
+?? 02_ACTIVE_PROJECTS/coplaudio_kiss.zip
+?? 02_ACTIVE_PROJECTS/copy-of-copy-of-copy-of-dreamforge-spine/
+?? 02_ACTIVE_PROJECTS/copy-of-pixelvault-dreamforge/
+?? 02_ACTIVE_PROJECTS/copy-of-taskforge-matrix_-gamified-quest-system/
+?? 02_ACTIVE_PROJECTS/cosylife-complete.html
+?? "02_ACTIVE_PROJECTS/crypto wallets screenshiots/"
+?? 02_ACTIVE_PROJECTS/cuckery-classes/.omnicode/
+?? 02_ACTIVE_PROJECTS/cuckery-classes/SPEC.md
+?? 02_ACTIVE_PROJECTS/cuckery-classes/about.html
+?? 02_ACTIVE_PROJECTS/cuckery-classes/ama.html
+?? 02_ACTIVE_PROJECTS/cuckery-classes/bad-actor-registry/
+?? 02_ACTIVE_PROJECTS/cuckery-classes/badactors.html
+?? 02_ACTIVE_PROJECTS/cuckery-classes/contact.html
+?? 02_ACTIVE_PROJECTS/cuckery-classes/cuckcon.html
+?? 02_ACTIVE_PROJECTS/cuckery-classes/episodes.html
+?? 02_ACTIVE_PROJECTS/cuckery-classes/news.html
+?? 02_ACTIVE_PROJECTS/cuckery-classes/piers-cuckery-classes.jpg
+?? 02_ACTIVE_PROJECTS/cuckery-classes/premium.html
+?? 02_ACTIVE_PROJECTS/cuckery-classes/privacy.html
+?? 02_ACTIVE_PROJECTS/cuckery-classes/terms.html
+?? 02_ACTIVE_PROJECTS/cyberpunk-city/
+?? 02_ACTIVE_PROJECTS/dad-mask-prototype/
+?? 02_ACTIVE_PROJECTS/daily_report_template.md
+?? 02_ACTIVE_PROJECTS/dash/
+?? 02_ACTIVE_PROJECTS/data/
+?? 02_ACTIVE_PROJECTS/debuglog.txt
+?? "02_ACTIVE_PROJECTS/deep-research-report (1).md"
+?? "02_ACTIVE_PROJECTS/deep-research-report (2).md"
+?? "02_ACTIVE_PROJECTS/deep-research-report (3).md"
+?? "02_ACTIVE_PROJECTS/deep-research-report (4).md"
+?? "02_ACTIVE_PROJECTS/deep-research-report (5).md"
+?? 02_ACTIVE_PROJECTS/deep-research-report.md
+?? 02_ACTIVE_PROJECTS/deepseek-harness/
+?? 02_ACTIVE_PROJECTS/deepseek-plugin/
+?? 02_ACTIVE_PROJECTS/deepseek_data-2026-02-24.zip
+?? 02_ACTIVE_PROJECTS/deepseek_html_20260204_965f1a.html
+?? 02_ACTIVE_PROJECTS/deepseek_mermaid_20260128_6eac98.png
+?? 02_ACTIVE_PROJECTS/deepseek_mermaid_20260611_406ac6.mermaid
+?? 02_ACTIVE_PROJECTS/deepseek_mermaid_20260611_7fa08d.png
+?? 02_ACTIVE_PROJECTS/deer-flow/
+?? "02_ACTIVE_PROJECTS/depresso hoodie ts/"
+?? 02_ACTIVE_PROJECTS/dewindows_fixed_bundle/
+?? 02_ACTIVE_PROJECTS/digital_twin_mirror_v2/
+?? 02_ACTIVE_PROJECTS/do-u-buddy---mvp-web/
+?? 02_ACTIVE_PROJECTS/docs/
+?? 02_ACTIVE_PROJECTS/document.pdf
+?? 02_ACTIVE_PROJECTS/documents/
+?? 02_ACTIVE_PROJECTS/dream3dforge/
+?? 02_ACTIVE_PROJECTS/dreamforge-os-prime/
+?? 02_ACTIVE_PROJECTS/dreamforge-soulchain-engine/
+?? 02_ACTIVE_PROJECTS/dreamforge/
+?? 02_ACTIVE_PROJECTS/dtm_v2/
+?? 02_ACTIVE_PROJECTS/duplicates_to_delete_20260226_123128.csv
+?? 02_ACTIVE_PROJECTS/easymame.zip
+?? 02_ACTIVE_PROJECTS/echohouse-control/
+?? 02_ACTIVE_PROJECTS/echohouse_rec_1768437578821.webm
+?? 02_ACTIVE_PROJECTS/eddie---autonomous-systems-builder/
+?? 02_ACTIVE_PROJECTS/eddie-extract/
+?? 02_ACTIVE_PROJECTS/eddie-merged-FINAL.zip
+?? 02_ACTIVE_PROJECTS/electron/
+?? 02_ACTIVE_PROJECTS/elite-longterm-memory-1.2.3.zip
+?? 02_ACTIVE_PROJECTS/elite-longterm-memory-1.2.3/
+?? 02_ACTIVE_PROJECTS/esp8266_deauther-2/
+?? 02_ACTIVE_PROJECTS/events-1780965991450.json
+?? "02_ACTIVE_PROJECTS/exe unpack/"
+?? 02_ACTIVE_PROJECTS/f8be987d88dd4a6f900566f0fd138971.pdf
+?? 02_ACTIVE_PROJECTS/family_seal_v2_black_on_white.png
+?? 02_ACTIVE_PROJECTS/family_sigil_white.svg
+?? 02_ACTIVE_PROJECTS/fdChargesAddProductTandC.pdf
+?? 02_ACTIVE_PROJECTS/finance-saas/
+?? 02_ACTIVE_PROJECTS/firmware-Goldshell-AEBox-2.2.10.cpb
+?? 02_ACTIVE_PROJECTS/flash-ui-local-llm-wired/
+?? 02_ACTIVE_PROJECTS/flash-ui/
+?? "02_ACTIVE_PROJECTS/flasihng shit/"
+?? 02_ACTIVE_PROJECTS/flip_book_hero_2026-01-21.fbh.json
+?? 02_ACTIVE_PROJECTS/forgeboard/
+?? 02_ACTIVE_PROJECTS/free-ride-1.0.5.zip
+?? 02_ACTIVE_PROJECTS/free-ride-1.0.5/
+?? 02_ACTIVE_PROJECTS/freedom-cut/
+?? 02_ACTIVE_PROJECTS/funds.only/
+?? "02_ACTIVE_PROJECTS/gamer-legacy-index-(gli) (1).zip"
+?? 02_ACTIVE_PROJECTS/gcapi.dll
+?? "02_ACTIVE_PROJECTS/geminiService (1).ts"
+?? 02_ACTIVE_PROJECTS/geminiService.ts
+?? 02_ACTIVE_PROJECTS/ghostlink-pro/
+?? 02_ACTIVE_PROJECTS/gitnexus/
+?? 02_ACTIVE_PROJECTS/god_dj_ufo_prompt_pack_v1.zip
+?? 02_ACTIVE_PROJECTS/god_dj_ufo_prompt_pack_v1/
+?? 02_ACTIVE_PROJECTS/gold-hybrid-execution-terminal/
+?? 02_ACTIVE_PROJECTS/gold-terminal/
+?? 02_ACTIVE_PROJECTS/gomining-academy-certificate-fe39538e-4b51-47ab-bd6a-5a7723ef912e.pdf
+?? 02_ACTIVE_PROJECTS/goop_playground_api_seed.zip
+?? 02_ACTIVE_PROJECTS/goose-trainer/
+?? 02_ACTIVE_PROJECTS/gotham-surgical-deck.zip
+?? "02_ACTIVE_PROJECTS/goths ham/"
+?? "02_ACTIVE_PROJECTS/greaseless pawn/"
+?? 02_ACTIVE_PROJECTS/grokbet.zip
+?? 02_ACTIVE_PROJECTS/grokbet/
+?? 02_ACTIVE_PROJECTS/groove/
+?? 02_ACTIVE_PROJECTS/h2testw.exe
+?? 02_ACTIVE_PROJECTS/hackingtool/
+?? 02_ACTIVE_PROJECTS/health_check.py
+?? 02_ACTIVE_PROJECTS/her-ai/
+?? 02_ACTIVE_PROJECTS/here_it_is_10_years_combo/
+?? 02_ACTIVE_PROJECTS/housing-ops.zip
+?? 02_ACTIVE_PROJECTS/iTunes.lnk
+?? 02_ACTIVE_PROJECTS/img-upscale-pro/
+?? 02_ACTIVE_PROJECTS/index.html
+?? 02_ACTIVE_PROJECTS/infinite-heroes/
+?? 02_ACTIVE_PROJECTS/insano/
+?? "02_ACTIVE_PROJECTS/installer (1).js"
+?? 02_ACTIVE_PROJECTS/italian-grandma-quiz/
+?? 02_ACTIVE_PROJECTS/jarvis_agent_framework_pack.zip
+?? 02_ACTIVE_PROJECTS/jcodemunch-mcp-main.zip
+?? 02_ACTIVE_PROJECTS/jdsp4rp5-main.zip
+?? 02_ACTIVE_PROJECTS/junkie-fx-reactor/
+?? "02_ACTIVE_PROJECTS/kayden cannon profile download - 2025_01_31_01_06_22.pdf"
+?? 02_ACTIVE_PROJECTS/kayden-protocol_-omega-edition/
+?? 02_ACTIVE_PROJECTS/kayserc/
+?? 02_ACTIVE_PROJECTS/keykidv2/
+?? 02_ACTIVE_PROJECTS/kimi-memory/
+?? 02_ACTIVE_PROJECTS/kimi.exe.lnk
+?? "02_ACTIVE_PROJECTS/kodi madhouse edition/"
+?? 02_ACTIVE_PROJECTS/land-grab/
+?? 02_ACTIVE_PROJECTS/laqzertag/
+?? 02_ACTIVE_PROJECTS/larry-1.0.0.zip
+?? 02_ACTIVE_PROJECTS/larry-1.0.0/
+?? "02_ACTIVE_PROJECTS/learning app v2/"
+?? 02_ACTIVE_PROJECTS/libskins2_plugin.dll
+?? 02_ACTIVE_PROJECTS/livetrade-pro-dashboard/
+?? 02_ACTIVE_PROJECTS/local-ops_-fracture-protocol/
+?? "02_ACTIVE_PROJECTS/luno-studios (1).zip"
+?? "02_ACTIVE_PROJECTS/luno-studios (1)/"
+?? 02_ACTIVE_PROJECTS/lunokio_v2/
+?? 02_ACTIVE_PROJECTS/lunokio_v2_spec.md
+?? "02_ACTIVE_PROJECTS/mantor  labs/"
+?? 02_ACTIVE_PROJECTS/master_7_day_launch_calendar.csv
+?? 02_ACTIVE_PROJECTS/master_seal_v2_black_on_white.png
+?? "02_ACTIVE_PROJECTS/memU bot.lnk"
+?? 02_ACTIVE_PROJECTS/memUbot.exe
+?? 02_ACTIVE_PROJECTS/meme-goldmine-server.cjs
+?? 02_ACTIVE_PROJECTS/meme-goldmine.html
+?? 02_ACTIVE_PROJECTS/mimi-tts-test.py
+?? 02_ACTIVE_PROJECTS/mining_stats_panel.html
+?? "02_ACTIVE_PROJECTS/mirrorvale (3)/"
+?? 02_ACTIVE_PROJECTS/moldyspot/
+?? 02_ACTIVE_PROJECTS/mtkclient/
+?? 02_ACTIVE_PROJECTS/neonstream-v-tuber-studio/
+?? 02_ACTIVE_PROJECTS/netlify.toml
+?? 02_ACTIVE_PROJECTS/neural-relay-v1.0/
+?? 02_ACTIVE_PROJECTS/neural-trade-deck/
+?? "02_ACTIVE_PROJECTS/neurosync-av-instrument (2)/"
+?? "02_ACTIVE_PROJECTS/new app/"
+?? "02_ACTIVE_PROJECTS/new cryypto app/"
+?? 02_ACTIVE_PROJECTS/nexo_account_confirmation_07-09-2025.pdf
+?? 02_ACTIVE_PROJECTS/nexo_current_balance_confirmation_01-10-2024.pdf
+?? 02_ACTIVE_PROJECTS/nexo_current_balance_confirmation_16-03-2025.pdf
+?? 02_ACTIVE_PROJECTS/nexo_loan_confirmation_07-09-2025.pdf
+?? 02_ACTIVE_PROJECTS/nexo_loan_confirmation_16-03-2025.pdf
+?? 02_ACTIVE_PROJECTS/nexo_savings_confirmation_01-01-2022_31-12-2022.pdf
+?? 02_ACTIVE_PROJECTS/nexo_savings_confirmation_01-01-2023_31-12-2023.pdf
+?? 02_ACTIVE_PROJECTS/nexo_savings_confirmation_01-01-2024_31-12-2024.pdf
+?? 02_ACTIVE_PROJECTS/nexo_savings_confirmation_01-01-2025_07-09-2025.pdf
+?? 02_ACTIVE_PROJECTS/nightly-learning/
+?? "02_ACTIVE_PROJECTS/no-spaghett (1).zip"
+?? "02_ACTIVE_PROJECTS/no-spaghett (2).zip"
+?? "02_ACTIVE_PROJECTS/no-spaghett (3).zip"
+?? 02_ACTIVE_PROJECTS/no-spaghett.zip
+?? 02_ACTIVE_PROJECTS/node-v24.13.0-x64.msi
+?? "02_ACTIVE_PROJECTS/nonna's-kitchen (1)/"
+?? "02_ACTIVE_PROJECTS/nonnas kitchen/"
+?? 02_ACTIVE_PROJECTS/noshort/
+?? 02_ACTIVE_PROJECTS/not-clawd-code-main/
+?? 02_ACTIVE_PROJECTS/npm_recovery_codes.txt
+?? "02_ACTIVE_PROJECTS/nvm-setup (1).exe"
+?? 02_ACTIVE_PROJECTS/nvm-setup.exe
+?? 02_ACTIVE_PROJECTS/nyx-control-node/
+?? 02_ACTIVE_PROJECTS/obsidian_vault/
+?? 02_ACTIVE_PROJECTS/offsitearchive/
+?? 02_ACTIVE_PROJECTS/omni-asset-scalper-bot/
+?? 02_ACTIVE_PROJECTS/omnicode-platform/
+?? 02_ACTIVE_PROJECTS/omnicode-staging-upload/
+?? 02_ACTIVE_PROJECTS/omnitown_-ai-agent-simulation/
+?? 02_ACTIVE_PROJECTS/oneweirdtrick.pdf
+?? 02_ACTIVE_PROJECTS/only-nans/
+?? 02_ACTIVE_PROJECTS/onlyfriends/
+?? 02_ACTIVE_PROJECTS/onlyscans/
+?? 02_ACTIVE_PROJECTS/op100-sxt-proof-of-sql/
+?? 02_ACTIVE_PROJECTS/openroom/
+?? 02_ACTIVE_PROJECTS/organise_pixelvault.ps1
+?? 02_ACTIVE_PROJECTS/other-projects/
+?? 02_ACTIVE_PROJECTS/owl_wms.commit
+?? 02_ACTIVE_PROJECTS/p5js-playground/
+?? 02_ACTIVE_PROJECTS/pappa_al_pomodoro_recipe.pdf
+?? 02_ACTIVE_PROJECTS/photo_2025-01-11_20-09-43.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-01-11_20-09-50.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-01-11_20-09-53.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-01-11_20-09-57.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-01-11_20-10-00.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-01-13_19-39-39.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-01-13_19-39-43.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-01-13_20-04-51.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-01-13_21-08-37.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-01-13_21-15-02.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-01-14_00-21-52.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-04-11_18-39-23.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-04-11_18-39-27.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-04-11_18-39-31.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-04-11_18-39-35.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-04-11_18-44-44.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-04-24_17-36-30.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-04-24_17-36-43.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-05-22_11-14-53.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-05-22_11-33-54.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-05-22_11-33-58.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-05-22_11-40-34.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-05-22_11-40-37.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-15_15-05-54.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_13-37-12.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_13-37-17.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_13-38-02.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_13-38-09.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_13-48-24.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_13-55-23.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_14-03-46.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_15-49-15.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_15-49-20.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_15-49-26.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_15-49-32.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_15-49-37.jpg
+?? 02_ACTIVE_PROJECTS/photo_2025-06-19_15-49-42.jpg
+?? "02_ACTIVE_PROJECTS/pics of letter for benifit/"
+?? "02_ACTIVE_PROJECTS/pilescope-installer (1).js"
+?? 02_ACTIVE_PROJECTS/pilescope-installer.js
+?? 02_ACTIVE_PROJECTS/pilescope.zip
+?? "02_ACTIVE_PROJECTS/ping---sms-protocol-(gambia-edition) (1)/"
+?? 02_ACTIVE_PROJECTS/ping-infrastructure/
+?? 02_ACTIVE_PROJECTS/pixel-dynasty/
+?? 02_ACTIVE_PROJECTS/platform-tools-latest-windows/
+?? 02_ACTIVE_PROJECTS/playmate_ai/
+?? 02_ACTIVE_PROJECTS/pnet/
+?? 02_ACTIVE_PROJECTS/pod-pipeline/
+?? 02_ACTIVE_PROJECTS/polymarket-farmer/
+?? 02_ACTIVE_PROJECTS/pray-date/
+?? 02_ACTIVE_PROJECTS/prod.keys
+?? 02_ACTIVE_PROJECTS/prodkeys.net-v17.0.1.zip
+?? 02_ACTIVE_PROJECTS/project-hope-fundraiser/
+?? "02_ACTIVE_PROJECTS/providerManager (1).ts"
+?? 02_ACTIVE_PROJECTS/providerManager.ts
+?? 02_ACTIVE_PROJECTS/purp-cache/
+?? 02_ACTIVE_PROJECTS/pvx-paper-wallet-17493796-2025-06-08T10-48-27-196Z.docx
+?? 02_ACTIVE_PROJECTS/pvx-paper-wallet-17493796-2025-06-08T10-48-27-196Z.txt
+?? 02_ACTIVE_PROJECTS/qwen3_tts/
+?? 02_ACTIVE_PROJECTS/realfakenews/
+?? 02_ACTIVE_PROJECTS/realtime_core/
+?? 02_ACTIVE_PROJECTS/red-queen-ai-dashboard/
+?? 02_ACTIVE_PROJECTS/red-queen-ai-trader/
+?? 02_ACTIVE_PROJECTS/red-queen-live/
+?? 02_ACTIVE_PROJECTS/repository.redwizard-1.1.9.zip
+?? 02_ACTIVE_PROJECTS/retrobat.exe.lnk
+?? 02_ACTIVE_PROJECTS/rig-ball-esphome/
+?? 02_ACTIVE_PROJECTS/rig-proxy/
+?? 02_ACTIVE_PROJECTS/rigs-gotchi/
+?? "02_ACTIVE_PROJECTS/riko_project-main (1).zip"
+?? "02_ACTIVE_PROJECTS/riko_project-main (1)/"
+?? 02_ACTIVE_PROJECTS/riko_project-main.zip
+?? 02_ACTIVE_PROJECTS/riko_project-main/
+?? 02_ACTIVE_PROJECTS/roland-r.a.t.-terminal/
+?? 02_ACTIVE_PROJECTS/rustup-init.exe
+?? "02_ACTIVE_PROJECTS/s=dektop backup.lnk"
+?? 02_ACTIVE_PROJECTS/saidit/
+?? 02_ACTIVE_PROJECTS/scam_gpu_cluster/
+?? "02_ACTIVE_PROJECTS/school app/"
+?? 02_ACTIVE_PROJECTS/screenshot-1748184451806.png
+?? 02_ACTIVE_PROJECTS/self-improving-1.2.16.zip
+?? 02_ACTIVE_PROJECTS/server/
+?? 02_ACTIVE_PROJECTS/sesame-companion-app-main/
+?? 02_ACTIVE_PROJECTS/settings.json
+?? 02_ACTIVE_PROJECTS/shhhhhh/
+?? 02_ACTIVE_PROJECTS/signal.lnk
+?? "02_ACTIVE_PROJECTS/single bells .mp4"
+?? 02_ACTIVE_PROJECTS/skill-vetter-1.0.0.zip
+?? 02_ACTIVE_PROJECTS/skill-vetter-1.0.0/
+?? 02_ACTIVE_PROJECTS/smart-trend-surfer/
+?? 02_ACTIVE_PROJECTS/sms-money-system-demo.zip
+?? 02_ACTIVE_PROJECTS/sms-money-system-demo/
+?? 02_ACTIVE_PROJECTS/spotdl/
+?? 02_ACTIVE_PROJECTS/sshhh-vpn/
+?? 02_ACTIVE_PROJECTS/start_backend.bat
+?? "02_ACTIVE_PROJECTS/storageService (1).ts"
+?? 02_ACTIVE_PROJECTS/storageService.ts
+?? 02_ACTIVE_PROJECTS/storylearn/
+?? "02_ACTIVE_PROJECTS/streamrot (1).zip"
+?? "02_ACTIVE_PROJECTS/streamrot (2).zip"
+?? 02_ACTIVE_PROJECTS/streamrot.zip
+?? "02_ACTIVE_PROJECTS/system_audit_log_2026-06-13 (1).txt"
+?? "02_ACTIVE_PROJECTS/system_audit_log_2026-06-13 (2).txt"
+?? "02_ACTIVE_PROJECTS/system_audit_log_2026-06-13 (3).txt"
+?? "02_ACTIVE_PROJECTS/system_audit_log_2026-06-13 (4).txt"
+?? "02_ACTIVE_PROJECTS/system_audit_log_2026-06-13 (5).txt"
+?? "02_ACTIVE_PROJECTS/system_audit_log_2026-06-13 (6).txt"
+?? "02_ACTIVE_PROJECTS/system_audit_log_2026-06-13 (7).txt"
+?? 02_ACTIVE_PROJECTS/system_audit_log_2026-06-13.txt
+?? 02_ACTIVE_PROJECTS/tamagotchi-open/
+?? 02_ACTIVE_PROJECTS/tariff-developments-eu-en.pdf
+?? 02_ACTIVE_PROJECTS/taskforge-matrix/
+?? 02_ACTIVE_PROJECTS/tcymp-web-controller/
+?? 02_ACTIVE_PROJECTS/tea-time-corner/
+?? 02_ACTIVE_PROJECTS/teddy-os-real/
+?? 02_ACTIVE_PROJECTS/terminalphone/
+?? 02_ACTIVE_PROJECTS/test-probe/
+?? 02_ACTIVE_PROJECTS/test_browser.js
+?? 02_ACTIVE_PROJECTS/tests/
+?? "02_ACTIVE_PROJECTS/the venting machine/"
+?? 02_ACTIVE_PROJECTS/the-beast---agency-automation.zip
+?? 02_ACTIVE_PROJECTS/the-beast---agency-automation/
+?? "02_ACTIVE_PROJECTS/the-beast---ai-sales-predator (1).zip"
+?? "02_ACTIVE_PROJECTS/the-beast---ai-sales-predator (1)/"
+?? 02_ACTIVE_PROJECTS/the-beast---ai-sales-predator.zip
+?? 02_ACTIVE_PROJECTS/the-beast---ai-sales-predator/
+?? "02_ACTIVE_PROJECTS/the-karenator-3000-pro (2)/"
+?? "02_ACTIVE_PROJECTS/the-puppet-face---audio-driven-interface (1)/"
+?? "02_ACTIVE_PROJECTS/the-spec-machine (1)/"
+?? 02_ACTIVE_PROJECTS/theaiguy-repair/
+?? 02_ACTIVE_PROJECTS/tiktok-setup-warden/
+?? 02_ACTIVE_PROJECTS/title.keys
+?? "02_ACTIVE_PROJECTS/token-wars (7).zip"
+?? 02_ACTIVE_PROJECTS/token-wars.zip
+?? 02_ACTIVE_PROJECTS/token-wars/
+?? 02_ACTIVE_PROJECTS/tools/
+?? 02_ACTIVE_PROJECTS/trade-up.zip
+?? 02_ACTIVE_PROJECTS/trade-up/
+?? 02_ACTIVE_PROJECTS/trader/
+?? "02_ACTIVE_PROJECTS/tradingview-mcp-main (1).zip"
+?? 02_ACTIVE_PROJECTS/tradingview-mcp-main.zip
+?? 02_ACTIVE_PROJECTS/twager/
+?? "02_ACTIVE_PROJECTS/twagger-neural-life (1).zip"
+?? 02_ACTIVE_PROJECTS/ultra_deploy.sh
+?? 02_ACTIVE_PROJECTS/unified-cann-ai/
+?? 02_ACTIVE_PROJECTS/unified-red-queen/
+?? 02_ACTIVE_PROJECTS/uniques_to_move_20260226_123128.csv
+?? 02_ACTIVE_PROJECTS/untitled.zip
+?? 02_ACTIVE_PROJECTS/userspace/
+?? "02_ACTIVE_PROJECTS/utar the mutar/"
+?? 02_ACTIVE_PROJECTS/valuation_books_and_dreamforge.pdf
+?? "02_ACTIVE_PROJECTS/vlc-3.0.21-win32 (1).exe"
+?? 02_ACTIVE_PROJECTS/vlc-3.0.21-win32.exe
+?? 02_ACTIVE_PROJECTS/voxel-scene-1768449365030.html
+?? 02_ACTIVE_PROJECTS/voxel-scene-1768480046893.html
+?? 02_ACTIVE_PROJECTS/voxel-scene-1768480128747.html
+?? 02_ACTIVE_PROJECTS/voxel-velocity-react/
+?? 02_ACTIVE_PROJECTS/vrp-public.json
+?? 02_ACTIVE_PROJECTS/who-_-u-_/
+?? 02_ACTIVE_PROJECTS/why.exe.zip
+?? 02_ACTIVE_PROJECTS/worst-website-ever/
+?? 02_ACTIVE_PROJECTS/wreckage-systems/
+?? 02_ACTIVE_PROJECTS/ycata_seal_v2_black_on_white.png
+?? "02_ACTIVE_PROJECTS/zip (1).zip"
+?? "02_ACTIVE_PROJECTS/zip (1)/"
+?? "02_ACTIVE_PROJECTS/zip (2).zip"
+?? "02_ACTIVE_PROJECTS/zip (2)/"
+?? 02_ACTIVE_PROJECTS/zip.zip
+?? 02_ACTIVE_PROJECTS/zip/
+?? "02_ACTIVE_PROJECTS/\344\272\247\345\223\201\347\233\256\345\275\225yl(2025-08-15 01_07_15)(2025-09-15 19_24_00)(2025-11-21 20_33_44)(2025-12-06 05_32_45).pdf"
+?? 03_EXTRACTED_PROJECTS/
+?? 05_DOCUMENTATION/
+?? 06_SCRIPTS_TOOLS/
+?? "06bb0041-b5c8-45c8-9225-a05a42736427-files (1).zip"
+?? "06bb0041-b5c8-45c8-9225-a05a42736427-files (2).zip"
+?? "06bb0041-b5c8-45c8-9225-a05a42736427-files (3).zip"
+?? "06bb0041-b5c8-45c8-9225-a05a42736427-files (4).zip"
+?? 06bb0041-b5c8-45c8-9225-a05a42736427-files.zip
+?? 0_0(1).png
+?? 0_0(2).png
+?? 0_0.png
+?? 0_1.png
+?? 0_1.webp
+?? 0_2(1).png
+?? 0_2.png
+?? 0_2.webp
+?? 0_3(1).png
+?? 0_3(2).png
+?? 0_3(3).png
+?? 0_3(4).png
+?? 0_3.png
+?? 0aaa77e2-b268-4bec-b735-2529d6bf8782.mp3
+?? 1-s2.0-S2665917424000084-main.pdf
+?? 10kcode/
+?? "13-Unitree Robotics R1 humanoid robot list .pdf"
+?? 15224.jpg
+?? 15228.jpg
+?? 1545664937_a_steampunk_boy_with_oversized_goggles_on_his_head__Kayden__blonde_shhhhhhhhhort_sharp_messy_hair__standing_.png
+?? 15935.jpg
+?? 15942.jpg
+?? 15944.jpg
+?? 18223.jpg
+?? 192.168.1.149.html
+?? 2020-433.pdf
+?? 20230728_113410.mp4
+?? 20230728_113554.mp4
+?? 20230729_113643.mp4
+?? 20230805_091618.mp4
+?? 20230805_091834.mp4
+?? 20230805_231344.mp4
+?? 20230805_231619.mp4
+?? 20230811_195317.mp4
+?? 20230812_001958.mp4
+?? 20230812_095619.mp4
+?? 20230818_190121.mp4
+?? 20230819_165102.mp4
+?? 20230819_165601.mp4
+?? 20230819_171759.mp4
+?? 20230819_173152.mp4
+?? 20230820_123639.mp4
+?? 20230824_142118.mp4
+?? 20230824_190201.mp4
+?? 20230825_132726.mp4
+?? 20230825_133636.mp4
+?? 20230825_161225.mp4
+?? 20230830_202421.mp4
+?? 20230830_204111.mp4
+?? 20230830_204504.mp4
+?? 20230831_112730.mp4
+?? 20230902_143416.mp4
+?? 20230908_140416.mp4
+?? 20230908_193238.mp4
+?? 20230915_115452.mp4
+?? 20230917_111012.mp4
+?? 20230922_114906.mp4
+?? 20230923_133512.mp4
+?? 20230923_185935.mp4
+?? 20230929_201350.mp4
+?? 20231005_191909.mp4
+?? 20231007_122949.mp4
+?? 20231008_143840.mp4
+?? 20231008_171408.mp4
+?? 20231014_170955.mp4
+?? 20231014_171324.mp4
+?? 20231026_214641.mp4
+?? 20231027_115741.mp4
+?? 20231029_112355.mp4
+?? 20231103_132927.mp4
+?? 20231103_151844.mp4
+?? 20231104_111729.mp4
+?? 20231104_194941.mp4
+?? 20231105_095904.mp4
+?? 20231105_125210.mp4
+?? 20231106_103250.mp4
+?? 20231109_213728.mp4
+?? 20231109_213823.mp4
+?? 20231111_102257.mp4
+?? 20231112_155700.mp4
+?? 20231117_095514.mp4
+?? 20231117_155114.jpg
+?? 20231118_182010-1.mp4
+?? 20231118_182125.mp4
+?? 20231119_110146.mp4
+?? 20231119_110254.mp4
+?? 20231215_184106.mp4
+?? "20231227_232619 (1).mp4"
+?? 20231227_232619.mp4
+?? 20231229_154510.mp4
+?? 20240202_162335.jpg
+?? 20240429_121203.mp4
+?? 20240705_223755.mp4
+?? 20240831_105611.mp4
+?? 20241012_164247(1).mp4
+?? 20241020_110444.mp4
+?? 20241115_225709.mp4
+?? 20241115_232740.mp4
+?? 20241115_232835.mp4
+?? 20241127_215408.mp4
+?? 20241228_160006.mp4
+?? 20241229_130951.mp4
+?? 20241230_190706.mp4
+?? 20250101_180115.mp4
+?? 20250121_124714.mp4
+?? 20250122_190038.mp4
+?? 20250126_202727.mp4
+?? 20250127_184947.mp4
+?? 20250128_203359.mp4
+?? 20250201_234937.mp4
+?? 20250219_212301.mp4
+?? 20250224_195716.mp4
+?? 20250314_155247.mp4
+?? 20250409_154107.mp4
+?? 20250411_175701.mp4
+?? 20250413_201118.mp4
+?? 20250508_180707.mp4
+?? 20250614_221601.mp4
+?? 20250903_003828.mp4
+?? 20250903_004104.mp4
+?? "20250909_065652 (1).mp4"
+?? 20250909_065652.mp4
+?? 20250911_210906.mp4
+?? 20250911_211231.mp4
+?? 20251005_081036.mp4
+?? 21-omega-plugin.program.theredwizard-2.1.8.zip
+?? 2202.06877v4.pdf
+?? 2406.11931v1.pdf
+?? 2412.19437v2.pdf
+?? 244d71cf-04b8-4630-bafa-d05c420a2a51.png
+?? 2505.09343v1.pdf
+?? 2928428_loudtoons_sonicc.png
+?? 35inchENG.rar
+?? 3d/
+?? 3december2020-train-set.zip
+?? 4134vnx3ZmL._AC_.jpg
+?? "5.5.2 source code.zip"
+?? 61lqJ80efHL._AC_SX679_.jpg
+?? 65585e976304081d6cf95ea50f032ef660f23b006adcb51733ffd55277ba7979-2026-02-25-15-56-59-97c5d2287436402594380db9e245e28a.zip
+?? 71yTRVoibRL._AC_UL210_SR210,210_.jpg
+?? 7d0d0ab5-e39d-4d21-bb29-fe2b64f9c0bd.mp3
+?? 9147d9c32a3d5eedc25b79f5b03b5a5b.mp4
+?? 978-1-5292-2434-4-front-1.pdf
+?? 99_DELETE_CANDIDATES/
+?? ADP_Mandatory_Redetermination_Eddie_Cannon_FULL.docx
+?? AGI_HQ.kmz
+?? AIMLAPI_APIkey_9c99ca3f.txt
+?? ALEOUSDT_2025-04-28_09-49-29.png
+?? ARCHIVED_PROJECTS_UPLOADED_TO_GITHUB/
+?? "A_ADP_Redetermination_FULL (1).pdf"
+?? A_ADP_Redetermination_FULL.pdf
+?? "A_T-shirt_in_the_image_displays_a__TO-DO_LIST__hum (1).png"
+?? A_T-shirt_in_the_image_displays_a__TO-DO_LIST__hum.png
+?? A_text-based_digital_graphic_design_displays_a__TO.png
+?? "Adp Redetermination Letter.pdf"
+?? "Agentic_Micro-SaaS_Accelerator_Architecture (1).pdf"
+?? "Agentic_Micro-SaaS_Accelerator_Architecture (2).pdf"
+?? Agentic_Micro-SaaS_Accelerator_Architecture.pdf
+?? "Alice In Wonderland-www.learnenglishteam.com.pdf"
+?? "Alien Rogue Incursion VR.iso"
+?? Antigravity.lnk
+?? App.tsx
+?? App_Acquisition_&_Sales_Programme_Architecture.pdf
+?? Arcade_Collection_v2/
+?? Arena.tsx
+?? "Articulated Xenodermus   Dragon Snake   Pre-Painted   Optional 8mm Glass Eye Version.zip"
+?? AutoFixer.rar
+?? "Autonomous_Software_Sales_Engine_Architecture (1).pdf"
+?? Autonomous_Software_Sales_Engine_Architecture.pdf
+?? BANANA_BLOOD_OATH_DASHBOARD.zip
+?? BCUninstaller.lnk
+?? BananaMachine.css
+?? "Beginning Reader Stories Level 38.pdf"
+?? "Blender 5.0.lnk"
+?? Building_trading_systems_for_crypto_exchanges.pdf
+?? C100_0424.pdf
+?? CANN_ON_AI_MOVIE_STUDIO_UNIFIED_v1.zip
+?? CANN_ON_AI_MOVIE_STUDIO_UNIFIED_v1/
+?? CL4R1T4S-main.zip
+?? "CLAUDE THIS IS URS BUDDY.zip"
+?? CN-ESP32-S3-1.28-BOX-Touch-Clock-250516.bin
+?? "CPUID CPU-Z.lnk"
+?? CRT_HYBRID_SYSTEM_BUNDLE.zip
+?? "CRT_Merge_Override (1).zip"
+?? CRT_Merge_Override.zip
+?? CRT_Patched_SRC.zip
+?? C_Safeguarding_Escalation_FULL.pdf
+?? "Cannon Property Holdings Ltd \342\200\223 Stair-Block Hybrid Expansion Strategy Pitch Deck.docx"
+?? "Cannon Property Holdings Ltd \342\200\223 Stair-Block Hybrid Expansion Strategy Pitch Deck.pdf"
+?? "ChatGPT Image Apr 13, 2025, 03_51_14 PM.png"
+?? "ChatGPT Image Apr 24, 2025, 11_46_45 PM.png"
+?? "ChatGPT Image Apr 25, 2025, 11_06_55 AM.png"
+?? "ChatGPT Image Apr 25, 2025, 12_32_03 AM.png"
+?? "ChatGPT Image Dec 15, 2025, 01_32_48 PM.png"
+?? "ChatGPT Image Dec 16, 2025, 08_58_56 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_41_10 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_41_40 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_41_52 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_42_01 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_42_04 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_42_08 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_42_15 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_42_22 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_42_27 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_42_42 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_42_50 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_42_55 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_43_00 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_43_04 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_43_08 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_43_11 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_43_20 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_43_23 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_43_27 PM.png"
+?? "ChatGPT Image Dec 6, 2025, 10_43_31 PM.png"
+?? "ChatGPT Image Dec 8, 2025, 01_04_16 PM.png"
+?? "ChatGPT Image Dec 8, 2025, 01_04_18 PM.png"
+?? "ChatGPT Image Jun 15, 2025, 03_13_52 PM.png"
+?? "ChatGPT Image Jun 19, 2025, 02_07_07 PM.png"
+?? "ChatGPT Image Jun 26, 2025, 03_46_48 AM.png"
+?? "ChatGPT Image Jun 26, 2025, 04_08_22 AM.png"
+?? "ChatGPT Image Jun 26, 2025, 04_12_58 AM.png"
+?? "ChatGPT Image Jun 26, 2025, 04_18_43 AM.png"
+?? "ChatGPT Image Jun 26, 2025, 04_30_13 AM.png"
+?? "ChatGPT Image Jun 26, 2025, 04_30_41 AM.png"
+?? "ChatGPT Image Jun 26, 2025, 08_35_41 PM.png"
+?? "ChatGPT Image Mar 17, 2026, 08_23_55 PM.png"
+?? "ChatGPT Image Mar 17, 2026, 08_23_57 PM.png"
+?? "ChatGPT Image Mar 17, 2026, 08_24_04 PM.png"
+?? "ChatGPT Image Mar 17, 2026, 08_24_06 PM.png"
+?? "ChatGPT Image Mar 21, 2026, 08_53_35 PM.png"
+?? "ChatGPT Image Mar 23, 2026, 10_21_09 PM.png"
+?? "ChatGPT Image Mar 27, 2026, 10_47_26 AM.png"
+?? "ChatGPT Image Mar 27, 2026, 10_47_52 AM.png"
+?? "ChatGPT Image Mar 27, 2026, 10_49_06 AM.png"
+?? "ChatGPT Image May 16, 2025, 12_49_11 PM.png"
+?? "ChatGPT Image May 2, 2026, 03_25_08 PM.png"
+?? "ChatGPT Image May 4, 2025, 11_05_49 AM.png"
+?? "ChatGPT Image May 7, 2026, 07_23_20 PM (1).png"
+?? "ChatGPT Image May 7, 2026, 07_23_20 PM (2).png"
+?? "ChatGPT Image May 7, 2026, 07_23_21 PM (3).png"
+?? "ChatGPT Image May 7, 2026, 07_23_21 PM (4).png"
+?? "ChatGPT Image May 7, 2026, 07_23_21 PM (5).png"
+?? "ChatGPT Image May 7, 2026, 07_23_22 PM (6).png"
+?? "ChatGPT Image May 7, 2026, 07_23_22 PM (7).png"
+?? "ChatGPT Image May 7, 2026, 07_23_22 PM (8).png"
+?? "ChatGPT Image May 7, 2026, 07_24_55 PM (1).png"
+?? "ChatGPT Image May 7, 2026, 07_24_55 PM (2).png"
+?? "ChatGPT Image May 7, 2026, 07_24_56 PM (3).png"
+?? "ChatGPT Image May 7, 2026, 07_24_58 PM (4).png"
+?? "ChatGPT Image May 7, 2026, 07_24_59 PM (5).png"
+?? "ChatGPT Image May 7, 2026, 07_24_59 PM (6).png"
+?? "ChatGPT Image May 7, 2026, 07_24_59 PM (7).png"
+?? "ChatGPT Image May 7, 2026, 07_25_00 PM (8).png"
+?? "ChatGPT Image May 8, 2026, 06_46_42 PM (1).png"
+?? "ChatGPT Image May 8, 2026, 06_46_43 PM (2).png"
+?? "ChatGPT Image May 8, 2026, 06_46_43 PM (3).png"
+?? "ChatGPT Image May 8, 2026, 06_46_43 PM (4).png"
+?? "ChatGPT Image May 8, 2026, 06_46_46 PM (5).png"
+?? "ChatGPT Image May 8, 2026, 07_31_07 PM.png"
+?? "ChatGPT Image May 8, 2026, 07_32_56 PM.png"
+?? Checkm8.info_Software_5.4.5_win.zip
+?? ChickenCredit_Plus_Complete_Dev_Handoff_Pack.zip
+?? Chromium.lnk
+?? Claude.lnk
+?? Clawd-Code-main.zip
+?? Coffee_Rant_Video_Generated.mp4
+?? Crypto_exchange_business_plan_template_2025.pdf
+?? CrystalDiskInfo.lnk
+?? DG-Home1_V1.0.5_20250226.1216_RELEASE.zip
+?? DREAMFORGE_LIVE_PAGES_WITH_THRINGLETS.zip
+?? DREAMFORGE_ZIPCHECK_20250503_144710.zip
+?? DTEMP.BAT
+?? Dashboard.tsx
+?? DataVault_Full_Spec_v1.md
+?? DataVault_Immediate_Build_Order_v1.md
+?? DataVault_v1_Spec_and_Build_Order.zip
+?? Deep-Live-Cam-main.zip
+?? DeepSeek-R1-Document.pdf
+?? Digital_Twin_Mirror_v2.0.zip
+?? Digital_Twin_Mirror_v2.0_AllInOne.zip
+?? Digital_Twin_Parser_v1.0.zip
+?? Discord.lnk
+?? "Display Driver Uninstaller.lnk"
+?? Dockerfile
+?? Document_A_ADP_Redetermination.pdf
+?? "Document_B_Formal_Complaint (1).pdf"
+?? Document_B_Formal_Complaint.pdf
+?? Document_C_Safeguarding_Escalation.pdf
+?? Documents.lnk
+?? DreamForge_Ingest_Audit_Pack.zip
+?? DreamForge_Remix_AI_v2.zip
+?? "Dreamforge Spine v0.96 Audit Report.pdf"
+?? "Dreamforge Spine v25 \342\200\223 Technical Audit Report.pdf"
+?? "DreamforgeSoulchain (1).zip"
+?? Dreamforge_GameCenter_Merged.zip
+?? "Dreamforge_ICBM_Bundle (1).zip"
+?? Dreamforge_ICBM_Bundle.zip
+?? "E2-9615GW Cannon.pdf"
+?? ECOS_Disk.img
+?? ECOS_Kernel.elf
+?? ECOS_v3.1_Bootable.iso
+?? EDDIE_FULL_MERGE/
+?? EDDIE_RUNNING/
+?? EDDY_SYSTEM_TOOLKIT.zip
+?? "ENGINEERING VERDICT_ IMPLEMENTATION READINESS ASSESSMENT.pdf"
+?? EXCHANGE_GOD_ARB_TURNKEY_READY.zip
+?? EXCHANGE_GOD_MULTIMONITOR_HARDENED_READY.zip
+?? Eddie-Finance-Premium-v1.apk
+?? Eddie-Finance-v1.apk
+?? Eddie-Finance-v2-Clean.apk
+?? EddieFinance-v1.0.0-SIGNED.apk
+?? EddieFinance-v1.0.1-SIGNED.apk
+?? EdwardCannon_CompanionForms_SAR_GMC_Solicitor.pdf
+?? EdwardCannon_CompleteProfile_Corrected.txt
+?? EdwardCannon_FullEscalation_TEDVOICE_ONLY.pdf
+?? EdwardCannon_GMC_Complaint_REBUILD.pdf
+?? EdwardCannon_GP_Letter_FINAL_REBUILD.pdf
+?? EdwardCannon_GP_Letter_SAR_FullFire.pdf
+?? EdwardCannon_GP_Letter_SAR_Tribunal.pdf
+?? EdwardCannon_GP_Letter_SAR_Tribunal_FIXED.pdf
+?? EdwardCannon_Mental_Impact_Proof_REBUILD.pdf
+?? EdwardCannon_Tribunal_GPEscalation_Pack.pdf
+?? Effects.tsx
+?? ElphapexTool_1.0.0_20240618_Release_CN.zip
+?? Enemy.tsx
+?? Evidence_Index.pdf
+?? Evidence_Index_Edward_Cannon.pdf
+?? "Exodus_Flat Samsund_&_Tritnitron.rar"
+?? "Extras + Info.lnk"
+?? FTy1XnK8aZebIKhk1eTH_23_19570596f0e7c99b9b7180bbf8962d90_docs_doc.pdf
+?? "Fallout 4 NG [FitGirl Repack].torrent"
+?? Firefox.lnk
+?? Firmware.19.0.1.zip
+?? FlashMaster.ini
+?? Fusion_Engine_Modules.csv
+?? "GHDFGH - Copy - Copy.pdf"
+?? "GHDFGH - Copy.pdf"
+?? GHDFGH.pdf
+?? GHOSTLINK_MOBILE_README.txt
+?? GLITCH_01_ETHICAL_RECURSOR.zip
+?? "GMC_enquiry_E2-9615GW (1).pdf"
+?? GMC_enquiry_E2-9615GW.pdf
+?? GP_Letter_Edward_Cannon_DIRECT.txt
+?? GP_Letter_Edward_Cannon_FINAL.txt
+?? GP_Letter_Edward_Cannon_FINAL_DETAILED.txt
+?? "Game (1).tsx"
+?? Game.tsx
+?? "Generated File June 06, 2025 - 11_07AM (1).mp4"
+?? "Generated File June 06, 2025 - 11_07AM.mp4"
+?? "Generated File May 18, 2025 - 12_49PM.mp4"
+?? "Generated File May 18, 2025 - 12_56PM.mp4"
+?? GhostLink-Mobile.html
+?? "Git Bash.lnk"
+?? HER_AUDIT_REPORT.json
+?? HER_CORE_LEDGER_1772130654310.txt
+?? HER_MASTER_UNCHAINED_v1.0.7_20250531_140951.txt
+?? HER_Text_Core_Runtime_Alpha.zip
+?? HWMonitor.txt
+?? Handy_0.8.1_x64-setup.exe
+?? Home.tsx
+?? ICE_Complaint_EdwardMorrison_SafeguardingUpdate_2025-06-15.txt
+?? ILSpy_Source/
+?? IMG-20231104-WA0010.jpg
+?? INSTALL_GHOSTLINK_MOBILE.bat
+?? IceRiver_MinerTool_English_V2.0.19.zip
+?? ImgBurn.lnk
+?? IndustryCard.tsx
+?? Intel_R_ME_SW_2514.7.16.0.zip
+?? Intel_R_ME_SW_2553.8.58.0.zip
+?? KDP_DragDrop_Formatter.zip
+?? KINECT_FINAL_TEST_REPORT.txt
+?? KidGlitchSweep_FINAL.zip
+?? "Kimi_Agent_Agent Router Blueprint (1).zip"
+?? "Kimi_Agent_Agent Router Blueprint.zip"
+?? "Kimi_Agent_RealFake News Parody (1).zip"
+?? "Kimi_Agent_RealFake News Parody (2).zip"
+?? "Kimi_Agent_RealFake News Parody.zip"
+?? KinectFullTest.py
+?? KinectTest_Fixed.py
+?? Kinect_3D_Mapper.py
+?? Kinect_Air_Draw.py
+?? Kinect_Air_Mouse.py
+?? Kinect_Audio_20260224_140357.wav
+?? Kinect_Audio_Visualizer.py
+?? Kinect_Master_Control.py
+?? Kinect_Motion_Cam.py
+?? Kinect_Status_Report.txt
+?? Kinect_Stream_Server.py
+?? "Kirby's Return to Dreamland [SUKE01].zip"
+?? "KnifeyPistol MK. V - 7001043.zip"
+?? L1B3RT4S-main.zip
+?? LAUNCH_MOVIE_STUDIO.bat
+?? LM-List-landscape.pdf
+?? LandingPage.tsx
+?? "Launch Checklist_ PING SMS-Based Payment Service.pdf"
+?? Leaderboard.tsx
+?? LobeHub-2.1.42-setup.exe
+?? "Local Disk (C).lnk"
+?? LocalSend-1.17.0-windows-x86-64.exe
+?? Lossless.Scaling.v3.1.0.2.7z
+?? LuckyPatcher.tools_Installer_11.4.8.apk
+?? MCP_ChromeDevTools_Setup.zip
+?? MERGE_ANALYSIS/
+?? "MPC-HC x64.lnk"
+?? "MSI Afterburner.lnk"
+?? MSIAfterburnerSetup.zip
+?? Makefile
+?? "Mario Party 9 [SSQE01].zip"
+?? Mario_by_Shigehisa_Nakaue.png
+?? "Meal Plan for Fat Gain Day.png"
+?? MenuMochi_Retro_Browser_Pet_Extension_v1.zip
+?? MenuMochi_Retro_Browser_Pet_Extension_v1_1_TabBuddy.zip
+?? MenuMochi_Retro_Browser_Pet_Extension_v1_2_StalkerGuilt.zip
+?? MenuMochi_Retro_Browser_Pet_Extension_v1_3_VictimDiary.zip
+?? Merehead-Crypto-Exchange-Business-Plan-and-Model-EN.pdf
+?? "Meshy_AI_Animation_Walking (1).usdz"
+?? Meshy_AI_Animation_Walking.usdz
+?? "Meshy_AI_Isometric Cityscape_ Building Blocks_1773705956_texture.stl"
+?? Meshy_AI_Isometric_Cityscape__0317002626_texture.blend
+?? "Minecraft Lantern Night Light - 6843856.zip"
+?? "Mineforever (1).m4a"
+?? Mineforever.m4a
+?? MobileControls.tsx
+?? "Mon Jun 23 23_04_48 CST 2025 AiGcDesign.zip"
+?? MonkeyStatusPanel.jsx
+?? MotioninJoy_071001_signed.zip
+?? "Mouckup (1).zip"
+?? "Mouckup (2).zip"
+?? "Mouckup (3).zip"
+?? "Mouckup (4).zip"
+?? "Mouckup (5).zip"
+?? Mouckup.zip
+?? "Multiboard Demo Pack  FREE .zip"
+?? NHS_ESCALATION_LETTER_Edward_Cannon_TRUE_FINAL.txt
+?? Nan_Rants_Short_Sassy_Videos.mp4
+?? NetworkReset.bat
+?? "New folder (2).zip"
+?? "New folder (3).zip"
+?? "New folder.zip"
+?? "OBS Studio.lnk"
+?? "OPENROUTER_KEY - Copy.txt"
+?? OPENROUTER_KEY.txt
+?? OPERATION_ONE_HUNDRED/
+?? Obsidian.lnk
+?? "Odin 2 Retroid Pocket 5 Thumb Sticks - 6926096.zip"
+?? "OneDrive-2025-06-20 (1).zip"
+?? OneDrive-2025-06-20.zip
+?? OneDrive-2025-11-11.zip
+?? OneDrive_2_16-03-2025.zip
+?? "OpenAI Researchers Warned Board of AI Breakthrough Ahead of CEO Ouster - Slashdot"
+?? OpenSpec-main/
+?? "OpenVPN Connect.lnk"
+?? OtherPlayer.tsx
+?? PAGE_1.html
+?? PAGE_1_NAV.html
+?? PAGE_2.html
+?? PAGE_2_NAV.html
+?? PAGE_3.html
+?? PAGE_3_FULL_DROP_WIRED.zip
+?? PAGE_3_NAV.html
+?? PAGE_4.html
+?? PAGE_4_5_CRT_FINAL_CORRECTED.zip
+?? PAGE_4_5_FINAL_CENTERED_43.zip
+?? PAGE_4_NAV.html
+?? PAGE_5__NAV.html
+?? PAGE_6_THINGLET_CORRUPT_NAV.html
+?? PHYSAI_ROBOTICS.zip
+?? PIXELBITS_EXCHANGE.zip
+?? PIXELVAULTWALLET_FULL_REPLIT_READY.zip
+?? PIXELVAULT_DREAMFORGE_DASHBOARD.zip
+?? "PROJECT 1-2p.zip"
+?? PURGE_AI_AGENT_PHASE1_EMAILER.zip
+?? Palera1n-Jailbreak-main.zip
+?? Passra1n-main.zip
+?? Passra1n_v1.0_Beta.zip
+?? "Paste March 02, 2026 - 6_49PM.txt"
+?? "Paste March 26, 2026 - 6_30PM.txt"
+?? Perplexity.lnk
+?? "Photos (1).zip"
+?? Photos.zip
+?? "Pixel Dream Forge - Launch Briefing.png"
+?? PixelBrainrotHatch_Roblox_MCP_recovery_note.md
+?? PixelVaultWallet.zip
+?? "PixelVaultWalletV2-main (1).zip"
+?? PixelVaultWalletV2-main.zip
+?? PixelVault_Valuation_Report_2025.pdf
+?? "Planet Zoo [FitGirl Repack].torrent"
+?? Player.tsx
+?? Portmaster.lnk
+?? Privacy-Preserving_Identity_Management_System_on_Blockchain_Using_Zk-SNARK.pdf
+?? Privacy_Notice_v4.pdf
+?? ProjectDemonicus_clean.zip
+?? README.txt
+?? "REDRUGGER_MVP (1).zip"
+?? REPLIT_CHAIN_FIX_PROMPT.txt
+?? RaiPal.msi
+?? "RealFakeNewz_App_Monetization_Program_Architecture (1).pdf"
+?? "RealFakeNewz_App_Monetization_Program_Architecture (2).pdf"
+?? RealFakeNewz_App_Monetization_Program_Architecture.pdf
+?? ReconstructMeSDK_64bit_2.5.1034.msi
+?? RedWizard-21.2-64-bit.apk
+?? RestoreDefaults.bat
+?? Rewards.tsx
+?? Robinson-Crusoe-beginners-level-ebook-www.learnenglishteam.com_.pdf
+?? RobloxStudioInstaller.exe
+?? "SAAP_V2_ALL_PATCHES_BUNDLE (1).zip"
+?? SAAP_V2_FINAL_BUILD.zip
+?? SDI_1.25.3.7z
+?? SDI_Update.torrent
+?? SHIPPING/
+?? START_MOVIE_STUDIO.bat
+?? START_STUDIO.bat
+?? STATIC_CHAIR_REVIEW_POSTER.pdf
+?? SUPERAPP_WORKSPACE_20260314_1319/
+?? SYSTEM_RESTORE_INSTRUCTIONS.txt
+?? SaaS_Solo_Seed_Programme_Architecture.pdf
+?? Safeguarding_Letter.pdf
+?? Safeguarding_Letter_Edward_Cannon.pdf
+?? SavedWorkflowsList.tsx
+?? "Scalable_App_&_Web_Solutions_Programme_Architecture (1).pdf"
+?? "Scalable_App_&_Web_Solutions_Programme_Architecture (2).pdf"
+?? "Scalable_App_&_Web_Solutions_Programme_Architecture (3).pdf"
+?? Scalable_App_&_Web_Solutions_Programme_Architecture.pdf
+?? Scalable_Software_Sales_Accelerator_Architecture.pdf
+?? Screenshot_1-6-2025_114247_localhost.jpeg
+?? Screenshot_10-5-2025_123023_replit.com.jpeg
+?? Screenshot_11-6-2025_134146_replit.com.jpeg
+?? Screenshot_13-6-2025_173934_replit.com.jpeg.crdownload
+?? Screenshot_14-6-2025_02243_console.neon.tech.jpeg
+?? Screenshot_17-5-2025_154147_docs.google.com.jpeg
+?? Screenshot_17-5-2025_161235_docs.google.com.jpeg
+?? Screenshot_17-5-2025_16142_docs.google.com.jpeg
+?? Screenshot_17-5-2025_161947_docs.google.com.jpeg
+?? Screenshot_18-5-2025_124452_aistudio.google.com.jpeg
+?? Screenshot_19-5-2025_131820_192.168.1.253.jpeg
+?? Screenshot_2-5-2025_0523_.zip
+?? Screenshot_2-6-2025_18276_aistudio.google.com.jpeg
+?? Screenshot_2-6-2025_205732_dashboard.convex.dev.jpeg
+?? Screenshot_2-6-2025_215048_aistudio.google.com.jpeg
+?? Screenshot_2-6-2025_22171_aistudio.google.com.jpeg
+?? Screenshot_20-5-2025_183023_gemini.google.com.jpeg
+?? Screenshot_21-5-2025_171517_192.168.1.149.jpeg
+?? Screenshot_21-5-2025_18404_replit.com.jpeg
+?? Screenshot_21-5-2025_191136_gemini.google.com.jpeg
+?? Screenshot_21-5-2025_195310_replit.com.jpeg
+?? Screenshot_21-5-2025_195326_replit.com.jpeg
+?? Screenshot_21-5-2025_195342_replit.com.jpeg
+?? Screenshot_21-5-2025_195356_replit.com.jpeg
+?? Screenshot_21-5-2025_195410_replit.com.jpeg
+?? Screenshot_22-5-2025_234641_replit.com.jpeg
+?? Screenshot_22-5-2025_234641_replit.com.zip
+?? Screenshot_22-5-2025_234735_replit.com.jpeg
+?? Screenshot_22-5-2025_234758_replit.com.jpeg
+?? Screenshot_22-5-2025_23478_replit.com.jpeg
+?? Screenshot_22-5-2025_234821_replit.com.jpeg
+?? Screenshot_22-5-2025_234840_replit.com.jpeg
+?? Screenshot_22-5-2025_234859_replit.com.jpeg
+?? Screenshot_22-5-2025_234926_replit.com.jpeg
+?? Screenshot_22-5-2025_234943_replit.com.jpeg
+?? Screenshot_22-5-2025_235032_replit.com.jpeg
+?? Screenshot_22-5-2025_23504_replit.com.jpeg
+?? Screenshot_22-5-2025_235122_replit.com.jpeg
+?? Screenshot_22-5-2025_235140_replit.com.jpeg
+?? Screenshot_22-5-2025_23520_replit.com.jpeg
+?? Screenshot_22-5-2025_235217_replit.com.jpeg
+?? Screenshot_22-5-2025_235243_replit.com.jpeg
+?? Screenshot_22-5-2025_235257_replit.com.jpeg
+?? Screenshot_22-5-2025_235313_replit.com.jpeg
+?? Screenshot_22-5-2025_235327_replit.com.jpeg
+?? Screenshot_22-5-2025_235347_replit.com.jpeg
+?? Screenshot_22-5-2025_235413_replit.com.jpeg
+?? Screenshot_23-5-2025_02057_jules.google.com.jpeg
+?? Screenshot_23-5-2025_0524_github.com.jpeg
+?? Screenshot_23-5-2025_14344_jules.google.com.jpeg
+?? Screenshot_23-6-2025_193044_www.yoycol.com.jpeg
+?? Screenshot_23-6-2025_215354_www.facebook.com.jpeg
+?? Screenshot_24-5-2025_16656_www.tradingview.com.jpeg
+?? Screenshot_25-5-2025_151257_www.gmc-uk.org.jpeg
+?? Screenshot_25-5-2025_15172_www.gmc-uk.org.jpeg
+?? Screenshot_25-5-2025_152058_www.gmc-uk.org.jpeg
+?? Screenshot_25-5-2025_15246_www.gmc-uk.org.jpeg
+?? Screenshot_25-5-2025_152712_www.gmc-uk.org.jpeg
+?? Screenshot_25-5-2025_15445_www.gmc-uk.org.jpeg
+?? Screenshot_26-6-2025_4910_chatgpt.com.jpeg
+?? Screenshot_26-6-2025_4925_chatgpt.com.jpeg
+?? Screenshot_27-5-2025_32934_www.dxpool.com.jpeg
+?? Screenshot_27-5-2025_32955_hub.goldshell.com.jpeg
+?? Screenshot_28-4-2025_133536_.zip
+?? Screenshot_3-6-2025_19716_chatgpt.com.jpeg
+?? Screenshot_3-6-2025_221447_sora.chatgpt.com.jpeg
+?? Screenshot_31-5-2025_13585_gemini.google.com.jpeg
+?? Screenshot_31-5-2025_15114_aistudio.google.com.jpeg
+?? Screenshot_31-5-2025_151220_aistudio.google.com.jpeg
+?? Screenshot_31-5-2025_151237_aistudio.google.com.jpeg
+?? Screenshot_31-5-2025_152217_aistudio.google.com.jpeg
+?? Screenshot_31-5-2025_152338_aistudio.google.com.jpeg
+?? Screenshot_31-5-2025_154327_aistudio.google.com.jpeg
+?? Screenshot_31-5-2025_15853_aistudio.google.com.jpeg
+?? Screenshot_31-5-2025_163158_aistudio.google.com.jpeg
+?? Screenshot_5-6-2025_124727_localhost.jpeg
+?? Screenshot_6-6-2025_03920_aistudio.google.com.jpeg
+?? Screenshot_6-6-2025_11043_aistudio.google.com.jpeg
+?? Screenshot_7-6-2025_192514_replit.com.jpeg
+?? Screenshot_7-6-2025_192546_replit.com.jpeg
+?? Screenshot_7-6-2025_192549_replit.com.jpeg
+?? Screenshot_7-6-2025_204310_replit.com.jpeg
+?? Screenshot_8-6-2025_133639_replit.com.jpeg
+?? Screenshot_8-6-2025_14335_replit.com.jpeg
+?? Screenshot_8-6-2025_14349_replit.com.jpeg
+?? Screenshot_8-6-2025_162512_github.com.jpeg
+?? Screenshot_8-6-2025_162757_github.com.jpeg
+?? Screenshot_8-6-2025_163444_chatgpt.com.jpeg
+?? Screenshot_8-6-2025_163456_jules.google.com.jpeg
+?? Screenshot_9-6-2025_231955_replit.com.jpeg
+?? Shared_Care_Statement_Edward_Morrison.docx
+?? Shmaltman_s_Revenge_Trailer_Production.mp4
+?? SideQuest.lnk
+?? SilviaMargarit_MasterThesis.pdf
+?? SimpleCLI-master.zip
+?? Space-Agent-0.65-windows-x64.exe
+?? "Stackable Christmas tree - 6838643.zip"
+?? Suyu-Android_Arm64-1.apk
+?? Suyu-Android_Arm64.apk
+?? TASKFORGE_EXPANSION.zip
+?? TED_Sleep_RLS_FullStack_Protocol.pdf
+?? THE_9990_INDICATOR_COMPLETE_GUIDE.pdf
+?? "TMAC v6.lnk"
+?? TO-DO_LIST_GREEN_TICKS.psd
+?? "TechPowerUp GPU-Z.lnk"
+?? "Telegram Desktop/"
+?? Telegram.apk
+?? Telegram.lnk
+?? Terms_of_Service_v2.pdf
+?? The-Little-Prince-Antoine-de-Saint-Exupery-PDF-download.pdf
+?? The-Wizard-Of-Oz-beginner-story-book-pdf-download.pdf
+?? "Tor Browser.lnk"
+?? Translated_Chinese_Business_License.pdf
+?? UCD172_Edward_Cannon_Morrison.pdf
+?? UC_FormalComplaint_AgentDebbie_EdwardMorrison_2025-06-15.txt
+?? UC_escalation_letter_corrected_daughter_moveout_2025-06-15.txt
+?? UC_escalation_letter_evidence_by_request_2025-06-15.txt
+?? UC_letter_final_ACCOUNTABILITY_2025-06-15.txt
+?? UC_payment_query_letter_2025-06-15.txt
+?? "Unconfirmed 282746.crdownload"
+?? "Unity Hub.lnk"
+?? UnityHubSetup-x64.exe
+?? VRoidStudio-v2.11.0-win.exe
+?? VSCodeUserSetup-x64-1.111.0.exe
+?? WEF_Getting_Started_Cryptocurrency_2021.pdf
+?? WINDOWS-GAMING-OPTIMIZER-Bleeding-Edge-Edition-v1.0-main.zip
+?? WinSCP.lnk
+?? WindowsGamingOptimizer.bat
+?? WindowsPCHealthCheckSetup.msi
+?? Wondershare_PDFelement_Installer.exe
+?? WorkflowDisplay.tsx
+?? YOUR_SHAME_1771175146086.txt
+?? Yorkshire_Pudding_Texting_Advice.mp4
+?? ZAMP-Visual-Tape-2026-05-08T13-08-01-011Z.webm
+?? ZAMP.zip
+?? ZAMP/.env.example
+?? ZAMP/.gitignore
+?? ZAMP/AndroidManifest.xml
+?? ZAMP/DebugProbesKt.bin
+?? ZAMP/IPTV-Collections/
+?? ZAMP/LANDING_MEDIA_PLAYER.html
+?? ZAMP/META-INF/
+?? ZAMP/README.md
+?? ZAMP/SONAUTO_TAGS_v2.txt
+?? ZAMP/SONAUTO_TAGS_v3.txt
+?? ZAMP/ZAMP-OMEGA-v3.9-AUTHENTIC/
+?? ZAMP/ZAMP-VIDEO-ALIGNED.zip
+?? ZAMP/ZAMP-VIDEO-UNSIGNED.zip
+?? ZAMP/ZAMP-v3.3-FIXED/
+?? ZAMP/ZAMP-v3.4-FIXED/
+?? ZAMP/ZAMP_LANDING.html
+?? ZAMP/app-new/
+?? ZAMP/app-release-2/
+?? ZAMP/assets/
+?? ZAMP/backend.cjs
+?? ZAMP/backend.js
+?? ZAMP/classes.dex
+?? ZAMP/decompiled/
+?? ZAMP/garlic-main/
+?? ZAMP/index.html
+?? ZAMP/index.txt
+?? ZAMP/iptv-player.html
+?? ZAMP/kotlin/
+?? ZAMP/live-gen-proof/
+?? ZAMP/org/
+?? ZAMP/player.html
+?? ZAMP/proxy-server.cjs
+?? ZAMP/res/
+?? ZAMP/resources.arsc
+?? ZAMP/start_backend.bat
+?? ZAMP/start_backend.ps1
+?? ZAMP/tv_after_tabs.txt
+?? ZAMP/tv_area_around_tabbar.txt
+?? ZAMP/tv_integration_analysis.txt
+?? ZAMP/tv_tab_render.txt
+?? ZAMP/tv_tab_render_full.txt
+?? ZAMP/v4_generation_modes.txt
+?? ZAMP/v4_visualizer.txt
+?? ZAMP/zamp-webapp-dev/
+?? Zk-SNARKs_As_A_Cryptographic_Solution_For_Data_Pri.pdf
+?? "[Windows X-Lite] Ultimate 11 Neon 24H2 v3 (FBConan).7z"
+?? __heartbeat__/
+?? aaabench/
+?? active_projects_list.txt
+?? adguard.apk
+?? ae1_update_please_unzip_before_upgrading.zip
+?? agent_exchange_summary.txt
+?? agent_work/
+?? agentic-ai-the-new-frontier-in-genai-an-executive-playbook.pdf
+?? ai-town-main.zip
+?? ai-venting-machine-main.zip
+?? ai-venting-machine.zip
+?? "ai_studio_code (1).txt"
+?? "ai_studio_code (2).txt"
+?? "ai_studio_code (3).txt"
+?? "ai_studio_code (4).txt"
+?? "ai_studio_code (5).txt"
+?? ai_studio_code.txt
+?? alien-soundboard-builder.zip
+?? "all te bullshit you put me thoughT.zip"
+?? altinstaller.zip
+?? android-studio-panda1-patch1-windows.exe
+?? app.js
+?? app_UPDATED.py
+?? appealModule.sol
+?? arch_barrier.h
+?? arch_spinlock.h
+?? "ari_venti_____post_melone_________post_venti (1).mp3"
+?? "ari_venti_____post_melone_________post_venti (2).mp3"
+?? ari_venti_____post_melone_________post_venti.mp3
+?? "ari_venti_____post_melone_________post_venti_lyrics (1) - Copy.txt"
+?? "ari_venti_____post_melone_________post_venti_lyrics (1).txt"
+?? "ari_venti_____post_melone_________post_venti_lyrics (2) - Copy.txt"
+?? "ari_venti_____post_melone_________post_venti_lyrics (2).txt"
+?? "ari_venti_____post_melone_________post_venti_lyrics - Copy.txt"
+?? ari_venti_____post_melone_________post_venti_lyrics.txt
+?? asset-06a07215-d055-4884-8f66-9bdcb1c8e4bc.png
+?? asset-13cf9c7d-5696-4404-be84-3a27d58c0f90.png
+?? "asset-191edc6a-6e4b-40f5-996b-1b0905b4e0b0 (1).png"
+?? asset-191edc6a-6e4b-40f5-996b-1b0905b4e0b0.png
+?? asset-1c2a8e77-ad35-4d5d-bb22-0df076a7409c.png
+?? asset-261f1953-b8d4-42cf-a786-d10137bad14c.png
+?? asset-27fc6f38-b505-4d39-8395-d2074af1cf8a.png
+?? "asset-2b5f085c-4cf9-4c83-86b1-d5deb121164c (1).png"
+?? asset-2b5f085c-4cf9-4c83-86b1-d5deb121164c.png
+?? "asset-2da5f6b4-48da-4d1c-9f78-7406198f8e28 (1).png"
+?? asset-2da5f6b4-48da-4d1c-9f78-7406198f8e28.png
+?? asset-2f9f0dc3-4e9f-4f37-ba3d-cd2b3c4a13ec.png
+?? "asset-3096e193-468e-4df7-814d-04a20f1d218e (1).png"
+?? asset-3096e193-468e-4df7-814d-04a20f1d218e.png
+?? "asset-325b05fd-2274-4aef-8c8b-d7a383ae3bdd (1).png"
+?? asset-325b05fd-2274-4aef-8c8b-d7a383ae3bdd.png
+?? asset-33e17a1d-5bb4-4d7a-8865-dfdce2641978.png
+?? asset-39e35324-f3ad-40f7-944b-21202556b8d2.png
+?? asset-3c82f6a8-8a36-484b-b56a-c02d7eff1db5.png
+?? "asset-3d09c935-ccfe-4f1f-ae19-8c9d91bd19d6 (1).png"
+?? asset-3d09c935-ccfe-4f1f-ae19-8c9d91bd19d6.png
+?? "asset-46503586-a06b-4f23-9fe8-bfdfe5b7c63b (1).png"
+?? "asset-46503586-a06b-4f23-9fe8-bfdfe5b7c63b (2).png"
+?? asset-46503586-a06b-4f23-9fe8-bfdfe5b7c63b.png
+?? asset-631d427e-1eb5-45a7-8aab-dac3769152ff.png
+?? "asset-6c65dfe5-46ed-4dbd-8afd-82285b8d1820 (1).png"
+?? asset-6c65dfe5-46ed-4dbd-8afd-82285b8d1820.png
+?? "asset-6c9fa141-af21-489b-a80b-3b729f323672 (1).png"
+?? asset-6c9fa141-af21-489b-a80b-3b729f323672.png
+?? asset-75bd7b08-2311-4de4-9c1c-2cb3e451a9f5.png
+?? asset-787afe58-e3d5-4495-b9b0-0035dcc77176.png
+?? asset-7b23b201-2275-4561-ab12-91de776a681d.png
+?? asset-910769ad-c546-481e-bc8c-5233867dbb0e.png
+?? "asset-9270a3ef-bfd6-4d83-aee2-52ef71c0fa8b (1).png"
+?? asset-9270a3ef-bfd6-4d83-aee2-52ef71c0fa8b.png
+?? "asset-9b2b4058-01d0-4c5b-8ba7-e33f4d5dbc77 (1).png"
+?? asset-9b2b4058-01d0-4c5b-8ba7-e33f4d5dbc77.png
+?? asset-a1bf4a92-b870-4e5c-986a-841eb8c7d3af.png
+?? asset-b0325dfa-4f78-4490-88e9-8820a91c21de.png
+?? "asset-b53d9d5a-50b9-41a3-8e1d-9619e9e9dce7 (1).png"
+?? asset-b53d9d5a-50b9-41a3-8e1d-9619e9e9dce7.png
+?? "asset-c7fa59db-da35-4819-bb18-d4ce961c4e13 (1).png"
+?? asset-c7fa59db-da35-4819-bb18-d4ce961c4e13.png
+?? asset-ce69dc24-6f5a-43bc-8c78-5467e7f147a1.png
+?? "asset-cf23af10-f18d-42e9-b939-b727fa1a43b4 (1).png"
+?? asset-cf23af10-f18d-42e9-b939-b727fa1a43b4.png
+?? asset-cfdcf3e5-76a2-47a0-ba85-0b1931e5269e.png
+?? asset-f1cc57dc-e756-4925-866b-adb1b3337ff7.png
+?? asset-f78330c8-5689-4124-aad0-5d07ef719f62.png
+?? asset-f846778e-79f8-4841-855c-7b246e2e73d8.png
+?? asset-fe1fbfee-df81-4298-95de-e6a3233044e2.png
+?? "assets (7).bin"
+?? assets.bin
+?? atomic.c
+?? audio_2ebe2fc0-0bfe-409e-bf1c-41f0264db40b_0.mp3
+?? audio_711bc6e8-134b-4b8d-b359-c3221ec492fd_0.mp3
+?? audio_a96aa51f-7ae2-4cca-a85e-f890dce47e86_0.mp3
+?? audiopipe-web-controller.zip
+?? auto_gen_1774194330241_6812.mp4
+?? b_chamel_sauce__balsamella__recipe.pdf
+?? back-to-the-future-train-steam-locomotive.zip
+?? backups/
+?? basilisk_boot_patched.ps1
+?? "behaviour-policy-v1.0 (1).pdf"
+?? behaviour-policy-v1.0.pdf
+?? biochemical-biomechanics-of-invisible-illnesses-copy-3-1-2.png
+?? biosync-protocol.zip
+?? book.kdf
+?? bookmarks_19_01_2024.html
+?? build.log
+?? build.ps1
+?? business_plan.pdf
+?? camera_test.py
+?? "cann.on.ai (7).zip"
+?? cann.on.ai---programme-architect-&-workflow-engine.zip
+?? "cann.on.ai-3dreamforge (1).zip"
+?? "cann.on.ai-3dreamforge (2).zip"
+?? cann.on.ai-3dreamforge.zip
+?? "cann.on.ai-__-h.e.r.-sovereign-core (1).zip"
+?? "cann.on.ai-__-h.e.r.-sovereign-core (2).zip"
+?? cann.on.ai-__-h.e.r.-sovereign-core.zip
+?? "cann.on.ai-forge.finances (1).zip"
+?? "cann.on.ai-forge.finances (2).zip"
+?? "cann.on.ai-forge.finances (3).zip"
+?? "cann.on.ai-forge.finances (4).zip"
+?? cann.on.ai-forge.finances.zip
+?? cann.on.ai-mirrorvale-systems.zip
+?? "cann.on.ai-omnisend (2).zip"
+?? "cann.on.ai-omnisend (2)/"
+?? "cann.on.ai-productions (1).zip"
+?? cann.on.ai-productions.zip
+?? cann.on.ai-spine.zip
+?? "cann.on.ai-studio-os (1).zip"
+?? cann.on.ai-studio-os.zip
+?? "cann.on.ai-studios (1).zip"
+?? "cann.on.ai-studios (2).zip"
+?? cann.on.ai-studios---the-bacteria-hardening.zip
+?? cann.on.ai-studios.zip
+?? cann.on.ai-trading-terminal.zip
+?? cann.on.ai-turbo-terminal.zip
+?? cann.on.ai.zip
+?? "cann.on.ai_-grant-ready-programme-architect (6).zip"
+?? cann.on.ai_-grant-ready-programme-architect.zip
+?? cctv.db
+?? chain_engine_bundle.zip
+?? "chickencredit\303\242_\302\242.zip"
+?? chronos-world-engine.zip
+?? chronos_33-temporal-anchor.zip
+?? cinema-identity-rig.zip
+?? citron_windows.zip
+?? classic-crt-collection-master.zip
+?? "claude-code-main (1).zip"
+?? claude-code-main.zip
+?? claude_experience_video.html
+?? "code-of-conduct-v1.0 (1).pdf"
+?? code-of-conduct-v1.0.pdf
+?? code.zip
+?? coldplay_ish______all_about_me_.mp3
+?? "coldplay_ish______lion_king_brahsimba_ (2).mp3"
+?? coldplay_ish______lion_king_brahsimba_.mp3
+?? "coldplay_ish______lion_king_brahsimba__lyrics (2) - Copy.txt"
+?? "coldplay_ish______lion_king_brahsimba__lyrics (2).txt"
+?? "coldplay_ish______lion_king_brahsimba__lyrics - Copy.txt"
+?? coldplay_ish______lion_king_brahsimba__lyrics.txt
+?? com.termux.api_1002.apk
+?? complete-system-validation.js
+?? comprehensive-diagnostic.js
+?? config.yaml
+?? consequence_cache.json
+?? "constants (1).ts"
+?? constants.ts
+?? copy-of-copy-of-copy-of-dreamforge-spine.zip
+?? copy-of-dreamforge-spine.zip
+?? copy-of-pixelvault-dreamforge.zip
+?? copy-of-taskforge-matrix_-gamified-quest-system.zip
+?? credentials.json
+?? crysisvr_pdbs.7z
+?? "current setup dashbaaord filanD.zip"
+?? d04413c0-1f45-42cc-9029-1335571e689f.png
+?? "dad-mask-prototype (1).zip"
+?? daft_punk_d___life_all_changed_aft.mp3
+?? "daft_punk_d___life_all_changed_aft_lyrics - Copy.txt"
+?? daft_punk_d___life_all_changed_aft_lyrics.txt
+?? de-shortify.zip
+?? deep-system-audit.js
+?? deepseek_data-2026-02-25.zip
+?? deepseek_data-2026-05-16.zip
+?? deepseek_mermaid_20260111_f5e33c.mermaid
+?? "deepseek_pine_20260224_24a370 - Copy.txt"
+?? deepseek_pine_20260224_24a370.txt
+?? "deploy-6985157251dae56170b13f21 (1).zip"
+?? "deploy-6985157251dae56170b13f21 (2).zip"
+?? "deploy-6985157251dae56170b13f21 (3).zip"
+?? deploy-6985157251dae56170b13f21.zip
+?? derek_makson___a_time_traveling_pig.mp3
+?? dev-browser-main.zip
+?? dewindows_vanilla_bundle_fixed.zip
+?? dewindows_vanilla_bundle_fixed_v2_launchers.zip
+?? digital_civilization_toolkit.txt
+?? digital_twin_parser.py
+?? dmtnet/
+?? dnSpy-master.zip
+?? dnSpy-net-win64.zip
+?? dnSpy_Source/
+?? do-u-buddy---mvp-web.zip
+?? docker-compose.yml
+?? "download (1).jpg"
+?? download.PDF
+?? download.jpg
+?? download.wav
+?? "dream3dforge (1).zip"
+?? dream3dforge.zip
+?? dreamforge-os_-thringlet-soulchain-engine.zip
+?? dreamforge-soulchain-engine.zip
+?? dreamforge-sp.zip
+?? "dreamforge-spine (1).zip"
+?? "dreamforge-spine (2).zip"
+?? "dreamforge-spine (6).zip"
+?? dreamforge-spine.zip
+?? "dreamforge.truth (1).json"
+?? "dreamforge.truth (2).json"
+?? dreamforge.truth.json
+?? "dreamforge_app_bundle (1).zip"
+?? dreamforge_spine_audit_docs_patch.zip
+?? "drizzy_draki______a_dog_who_learned_to (2).mp3"
+?? drizzy_draki______a_dog_who_learned_to.mp3
+?? "drizzy_draki______a_dog_who_learned_to_lyrics (1) - Copy.txt"
+?? "drizzy_draki______a_dog_who_learned_to_lyrics (1).txt"
+?? "drizzy_draki______a_dog_who_learned_to_lyrics (3).txt"
+?? drizzy_draki______a_dog_who_learned_to_lyrics.txt
+?? dscr.png
+?? "dscr_heatmap (1).png"
+?? dscr_heatmap.png
+?? dt_parser_clean.py
+?? dual_signal_webhook.py
+?? echo-tts-main.zip
+?? echohouse-control.zip
+?? "echohouse-web (14).zip"
+?? echohouse_dump_1767721198755.log
+?? echohouse_set_2026-01-05T21-59-04.webm
+?? echohouse_set_2026-01-05T23-59-56.webm
+?? "eddie---autonomous-systems-builder (1).zip"
+?? "eddie---autonomous-systems-builder (3).zip"
+?? eddie---autonomous-systems-builder.zip
+?? edex-ui-master.zip
+?? edinburgh-ai-install-service.zip
+?? elvis_botley___elvis_finds_moon_che.mp3
+?? eminem_m___found_a_fiver.mp3
+?? eminem_m___found_a_fiver_lyrics.txt
+?? endpoint-test-suite.js
+?? "enhypen_bot______21_savage_ish______a_tactical_approach_ (1).mp3"
+?? "enhypen_bot______21_savage_ish______a_tactical_approach_ (2).mp3"
+?? errors.log
+?? esp8266_deauther-2.zip
+?? ethic_core.ts
+?? expanded_business_plan_with_grants.pdf
+?? f4cbeb08-12d3-4d70-b2c3-dad51d8bf086.png
+?? fastclean.BAT
+?? "fifty_fifty_bot______you_want_k_pop_demon (1).mp3"
+?? "fifty_fifty_bot______you_want_k_pop_demon (2).mp3"
+?? "fifty_fifty_bot______you_want_k_pop_demon (3).mp3"
+?? "fifty_fifty_bot______you_want_k_pop_demon (4).mp3"
+?? fifty_fifty_bot______you_want_k_pop_demon.mp3
+?? "fifty_fifty_bot______you_want_k_pop_demon_lyrics (1).txt"
+?? "fifty_fifty_bot______you_want_k_pop_demon_lyrics (2).txt"
+?? fifty_fifty_bot______you_want_k_pop_demon_lyrics.txt
+?? files.zip
+?? finance_scraper.py
+?? financialEngine.ts
+?? "fitty bars to uplaod .mp3"
+?? fix_file_associations.bat
+?? fix_registry.ps1
+?? flash-ui.zip
+?? flash_download_tool_3.9.3.rar
+?? flash_download_tool_3.9.9_R2.exe
+?? forgeboard.zip
+?? "framepack_cu126_torch26 (1).7z"
+?? framepack_cu126_torch26.7z
+?? freddie_thermometer___found_a_fiver_live_n.mp3
+?? freddie_thermometer___found_a_fiver_live_n_lyrics.txt
+?? fuck_off.png
+?? full_lender_pack.pdf
+?? "geminiService (1).ts"
+?? geminiService.ts
+?? gh_2.87.3_windows_amd64.msi
+?? "ghostlink (1).zip"
+?? "ghostlink (2).zip"
+?? ghostlink-screen-server.py
+?? ghostlink-test-server.js
+?? ghostlink.zip
+?? ghostlink_art.html
+?? ghostlink_dashboard.html
+?? ghostlink_monitor.py
+?? glitchStyles.css
+?? glitch_manifest.md
+?? "god folder.zip"
+?? gold-hybrid-execution-terminal.zip
+?? gold-terminal.zip
+?? goop-note.png
+?? goop-oracle-bot.zip
+?? goop.bat
+?? goop_deploy.sh
+?? gotham_check.txt
+?? "grokbet (1).zip"
+?? "grokbet (2).zip"
+?? grokbet.zip
+?? guang-gong-how-practical-is-zksnark-enabled-blockchain-privacy.pdf
+?? "h.e.r.-evolution-interface (7).zip"
+?? hai_ai_index_report_2025.pdf
+?? "harry_styles_ish______u_cant_run_forever_ (1).mp3"
+?? "harry_styles_ish______u_cant_run_forever__lyrics (1).txt"
+?? healthLogic.js
+?? her_hyper_evolutionary_rewriter.txt
+?? her_patch_bundle.zip
+?? "hoodie unisex  doodle buddies black n white all over design  _ eBay.jpg"
+?? how-to-create-a-P2P-crypto-exchange-platform.pdf
+?? hybrid_expansion_business_plan.pdf
+?? iRemovalPRO_Source/
+?? index.css
+?? index.html
+?? index.ts
+?? index.tsx
+?? infinite-heroes.zip
+?? "install-xiaozhi-esphome (1).mp4"
+?? install-xiaozhi-esphome.mp4
+?? "install_echohouse (1).py"
+?? "install_echohouse (2).py"
+?? install_echohouse.py
+?? invite.ics
+?? jdsp4rp5-main.zip
+?? junkie-fx-reactor.zip
+?? junkie_battle_injector.html
+?? junkie_generator.html
+?? junkie_generator_minter.html
+?? junkie_injector_lab.html
+?? junkie_market_fusion_lab.html
+?? junkie_trait_system.json
+?? "justice-engine (1).zip"
+?? "justice-engine (2).zip"
+?? "justice-engine (3).zip"
+?? "justice-engine (4).zip"
+?? justice-engine.zip
+?? "justice_beaver______snoopys_log__________smooth_criminal_ (2).mp3"
+?? justice_beaver______snoopys_log__________smooth_criminal_.mp3
+?? "justice_beaver______snoopys_log__________smooth_criminal__lyrics (1).txt"
+?? "justice_beaver______snoopys_log__________smooth_criminal__lyrics (2).txt"
+?? justice_beaver______snoopys_log__________smooth_criminal__lyrics.txt
+?? kantor-labs.zip
+?? "karen_anthem (1).mp4"
+?? karen_anthem.mp4
+?? kayden-protocol_-omega-edition.zip
+?? kernel_atomic.h
+?? kernel_percpu.h
+?? kernel_smp.h
+?? keykid.zip
+?? kinect_audio_test.py
+?? kinect_test.py
+?? koryoin-deportation-train.zip
+?? large.sonicc.png.dd6845972982297fdc310a5a5ca2cc61.png
+?? larry_marketing_mine_pack.zip
+?? launch_codex_test.ps1
+?? "lecture14 (1).pdf"
+?? "lecture14 (2).pdf"
+?? lecture14.pdf
+?? lecture16.pdf
+?? level_1_-_The_Adventures_of_Tom_Sawyer_-_Penguin_Readers-min.pdf
+?? level_1_-_The_Gift_of_the_Magi_-_Penguin_Readers-min.pdf
+?? link_wsl.sh
+?? linker.ld
+?? linuxmint-22.1-xfce-64bit.iso
+?? live_api.py
+?? lively_utility_screensaver.zip
+?? "livetrade-pro-dashboard (1).zip"
+?? "livetrade-pro-dashboard (2).zip"
+?? livetrade-pro-dashboard.zip
+?? "local-agent-swarm-orchestrator (1).zip"
+?? local-agent-swarm-orchestrator.zip
+?? local-ops.zip
+?? local-ops_-fracture-protocol.zip
+?? "locus-control (1).zip"
+?? "locus-control (2).zip"
+?? "locus-control (3).zip"
+?? locus-control.zip
+?? logs.txt
+?? "look at all this shit D.zip"
+?? loop_of_shame.py
+?? main.tsx
+?? manager.apk
+?? matrix_rain.py
+?? medical-information-v1.0.pdf
+?? merged-binary.bin
+?? metadata.json
+?? metallica_mittens___smells_like_teen_spi.mp3
+?? "mlmheroclaude editions.zip"
+?? mockingbird.zip
+?? moldyspot-ready.tar.gz
+?? moldyspot-sovereign-level3.zip
+?? moltbot_INSTALL_AND_BOOT.zip
+?? monkey-status-component.zip
+?? morning-report.mp3
+?? mpc-hc-develop.zip
+?? multimodal_robot_BOM_v0_1.csv
+?? mutagen.ts
+?? neonstream-v-tuber-studio.zip
+?? net_cashflow.png
+?? neural-relay-v1.0.zip
+?? "neural-trade-deck (8).zip"
+?? neural-trade-deck.zip
+?? "neurosync-av-instrument (1).zip"
+?? "neurosync-av-instrument (2).zip"
+?? neurosync-av-instrument.zip
+?? "nicki_minage______all_about_me_ (1).mp3"
+?? "nicki_minage______all_about_me__lyrics (1).txt"
+?? node-v21.7.3-x64.msi
+?? node-v22.15.0-x64.msi
+?? "node-v22.22.0-x64 (1).msi"
+?? node-v22.22.0-x64.msi
+?? node-v22.22.1-x64.msi
+?? "node-v24.14.0-x64 (1).msi"
+?? node-v24.14.0-x64.msi
+?? node-v25.6.1-x64.msi
+?? "nonna's-kitchen (1).zip"
+?? "nonna's-kitchen (2).zip"
+?? nonna's-kitchen.zip
+?? nostalgia-video---1993.zip
+?? not-clawd-code-main.zip
+?? nutriforge-starter.zip
+?? "nyx-control-node (1).zip"
+?? nyx-control-node.zip
+?? obtainium-emulation-pack-v6.0.0.json
+?? omni-asset-scalper-bot.zip
+?? omnicode_20_repo_list.txt
+?? omnicode_fresh_10_repo_list_20260601.txt
+?? omnicode_random_10_repo_list.txt
+?? "omnimarket-ai (1).zip"
+?? omnimarket-ai.zip
+?? omnitown_-ai-agent-simulation.zip
+?? openclaw-exorcist.bat
+?? "ozzy_osbourne_ish_bats___u_cant_prove_i_ate_t_lyrics (1) - Copy.txt"
+?? "ozzy_osbourne_ish_bats___u_cant_prove_i_ate_t_lyrics (1).txt"
+?? p5js-playground.zip
+?? "package (2).json"
+?? package-lock.json
+?? package.json
+?? parser_v2.py
+?? patched_taskforge_jsx.zip
+?? pavarotti_ish______u_cant_run_forever_.mp3
+?? pdf_extracted.txt
+?? pdfs/
+?? percpu.c
+?? pg_unlocker_pack.zip
+?? photo_2024-10-13_12-00-22.jpg
+?? photo_2026-03-23_22-23-54.jpg
+?? photography-consent-v1.0.pdf
+?? photos/
+?? "ping---sms-protocol (1).zip"
+?? "ping---sms-protocol (2).zip"
+?? ping---sms-protocol-(gambia-edition).zip
+?? ping---sms-protocol.zip
+?? ping-infrastructure.zip
+?? pitch_deck(1).pptx
+?? pitch_deck.pptx
+?? pixel-dynasty-poca-funding-pack.docx
+?? pixel-dynasty-poca-funding-pack.pdf
+?? pnet_ready.zip
+?? polpette_della_nonna_al_sugo_recipe.pdf
+?? "project dash.zip"
+?? project-hope-fundraiser.zip
+?? prompt_2026-02-09T12_32_23.361Z.json
+?? prompt_2026-02-10T17_44_16.405Z.json
+?? prompts.ts
+?? property_growth_app.zip
+?? "purpclaw-local-agent-swarm-orchestrator (1).zip"
+?? purpclaw-local-agent-swarm-orchestrator.zip
+?? pvx-blockchain-explorer-&-hub.zip
+?? px_label_1.png
+?? px_label_2.png
+?? px_label_3.png
+?? px_label_4.png
+?? px_label_5.png
+?? px_label_6.png
+?? px_label_7.png
+?? "python goop.py"
+?? python-3.11.0-amd64.exe
+?? python-3.14.3-amd64.exe
+?? "python-manager-26.0 (1).msix"
+?? python-manager-26.0.msix
+?? ralph-main.zip
+?? rapid-fix-suite.js
+?? rarnew.dat
+?? real-system-validation.js
+?? red-queen-ai-dashboard.zip
+?? red-queen-ai-trader.zip
+?? "registration-pack-v1.0 (1).pdf"
+?? "registration-pack-v1.0 (2).pdf"
+?? "registration-pack-v1.0 (3).pdf"
+?? "registration-pack-v1.0 (4).pdf"
+?? registration-pack-v1.0.pdf
+?? remix_-kayden-protocol_-omega-edition.zip
+?? remix_-sky-metropolis.zip
+?? repair_log.txt
+?? repair_os.bat
+?? requirements_parser.txt
+?? reserve_balance.png
+?? ribollita_tradizionale_recipe.pdf
+?? rig-ball-firmware.zip
+?? rig_vision.py
+?? rig_voice_loop.py
+?? rig_voice_v2.py
+?? rise_fibre_direct_debit_guarantee.pdf
+?? rise_fibre_terms_and_conditions.pdf
+?? roadman_ranker_full_app.json
+?? robot_mockup_v0_1.png
+?? "rocket_elton______socket_man_he_still_ (1).mp3"
+?? rocket_elton______socket_man_he_still_.mp3
+?? "rocket_elton______socket_man_he_still__lyrics (1) - Copy.txt"
+?? "rocket_elton______socket_man_he_still__lyrics (1).txt"
+?? "rocket_elton______socket_man_he_still__lyrics - Copy.txt"
+?? rocket_elton______socket_man_he_still__lyrics.txt
+?? "rocky_balboa___don_t_copy__holly_jo (1).mp3"
+?? rocky_balboa___don_t_copy__holly_jo.mp3
+?? "rocky_balboa___don_t_copy__holly_jo_lyrics (1) - Copy.txt"
+?? "rocky_balboa___don_t_copy__holly_jo_lyrics (1).txt"
+?? "rocky_balboa___don_t_copy__holly_jo_lyrics - Copy.txt"
+?? rocky_balboa___don_t_copy__holly_jo_lyrics.txt
+?? roland-r.a.t.-terminal.zip
+?? run_mtk.py
+?? "safeguarding-policy-v1.0 (1).pdf"
+?? safeguarding-policy-v1.0.pdf
+?? "self_modifying_red_queen (1).py"
+?? self_modifying_red_queen.py
+?? semantic-nuker-week1-mvp.zip
+?? server.ts
+?? service.ts
+?? sesame-companion-app-main.zip
+?? "session (1).log"
+?? session.log
+?? shared.zip
+?? shizuku-v13.6.0.r1086.2650830c-release.apk
+?? shizuku.apk
+?? short-stories-for-children.pdf
+?? shot224506.png
+?? signal.lnk
+?? skill_spin.py
+?? smart-trend-surfer.zip
+?? smp_boot.c
+?? smp_ipi.c
+?? sms-money-system-demo.zip
+?? snoop_log___a_robot_learning_how.mp3
+?? snoop_log___dropping_your_ice_cr.mp3
+?? "snoopys_log______doja_kitten______fixing_the_fucking_f (1).mp3"
+?? "snoopys_log______doja_kitten______fixing_the_fucking_f (2).mp3"
+?? "snoopys_log______doja_kitten______fixing_the_fucking_f (3).mp3"
+?? "snoopys_log______doja_kitten______fixing_the_fucking_f_lyrics (1) - Copy.txt"
+?? "snoopys_log______doja_kitten______fixing_the_fucking_f_lyrics (1).txt"
+?? "snoopys_log______doja_kitten______fixing_the_fucking_f_lyrics (2) - Copy.txt"
+?? "snoopys_log______doja_kitten______fixing_the_fucking_f_lyrics (2).txt"
+?? "snoopys_log______doja_kitten______fixing_the_fucking_f_lyrics (3) - Copy.txt"
+?? "snoopys_log______doja_kitten______fixing_the_fucking_f_lyrics (3).txt"
+?? "snoopys_log______doja_kitten______fixing_the_fucking_f_lyrics - Copy.txt"
+?? snoopys_log______doja_kitten______fixing_the_fucking_f_lyrics.txt
+?? "snoopys_log______lion_king_brahsimba_ (1).mp3"
+?? "snoopys_log______lion_king_brahsimba__lyrics (1) - Copy.txt"
+?? "snoopys_log______lion_king_brahsimba__lyrics (1).txt"
+?? "snoopys_log______living_with_my_human (1).mp3"
+?? "snoopys_log______living_with_my_human (2).mp3"
+?? "snoopys_log______living_with_my_human (3).mp3"
+?? "snoopys_log______living_with_my_human (4).mp3"
+?? "snoopys_log______living_with_my_human (5).mp3"
+?? "snoopys_log______living_with_my_human (6).mp3"
+?? snoopys_log______living_with_my_human.mp3
+?? "snoopys_log______living_with_my_human_lyrics (1).txt"
+?? "snoopys_log______living_with_my_human_lyrics (2).txt"
+?? "snoopys_log______living_with_my_human_lyrics (3).txt"
+?? "snoopys_log______living_with_my_human_lyrics (4).txt"
+?? "snoopys_log______living_with_my_human_lyrics (5).txt"
+?? "snoopys_log______living_with_my_human_lyrics (6).txt"
+?? snoopys_log______living_with_my_human_lyrics.txt
+?? snoopys_log______lizzo_pop______what_s_my_flavour___lyrics.txt
+?? "snoopys_log______mj_moonwalker__________smooth_criminal_ (1).mp3"
+?? "snoopys_log______mj_moonwalker__________smooth_criminal_ (2).mp3"
+?? snoopys_log______mj_moonwalker__________smooth_criminal_.mp3
+?? "snoopys_log______mj_moonwalker__________smooth_criminal__lyrics (1).txt"
+?? "snoopys_log______mj_moonwalker__________smooth_criminal__lyrics (2).txt"
+?? snoopys_log______mj_moonwalker__________smooth_criminal__lyrics.txt
+?? "snoopys_log______sza_siren______paying_taxes_in_spac (1).mp3"
+?? "snoopys_log______sza_siren______paying_taxes_in_spac (2).mp3"
+?? snoopys_log______sza_siren______paying_taxes_in_spac.mp3
+?? snoopys_log___a_villain_who_can_on.mp3
+?? snoopys_log___a_villain_who_can_on.mp3.mp3
+?? snoopys_log___give_me_cybernetic_e.mp3
+?? snoopys_log___pelvis_is_home_baby_.mp3
+?? snoopys_log___zip_files_and_white_.mp3
+?? snoopys_log___zip_files_and_white__lyrics.txt
+?? socket_showreel.py
+?? sonauto_tags_v3.txt
+?? space-agent-main.zip
+?? spotify-9.0.26.109-https___apkitech.com.apk
+?? src.zip
+?? start-wifi-densepose.bat
+?? steam_train.zip
+?? storage.js
+?? store.ts
+?? stories1-260209101721-a40f092b.pdf
+?? storylearn.zip
+?? submissions/
+?? sudachi-windows-v1.0.14.7z
+?? system-prompts-and-models-of-ai-tools-main.zip
+?? taskforge-matrix.zip
+?? "taskforge-matrix_-gamified-quest-system (3).zip"
+?? "tcymp-web-controller (1).zip"
+?? tcymp-web-controller.zip
+?? "ted_sheeran______all_about_me_ (1).mp3"
+?? ted_sheeran______all_about_me__lyrics.txt
+?? telemetry-nuker-chrome-mv3-v1.0.1.zip
+?? test_after_credits.ps1
+?? test_codex_integration.ps1
+?? test_praydate.py
+?? test_praydate2.py
+?? test_timesfm.py
+?? textures/
+?? "the nuke.BAT"
+?? the-beast---ai-sales-predator.zip
+?? "the-karenator-3000-pro (1).zip"
+?? "the-karenator-3000-pro (2).zip"
+?? "the-karenator-3000-pro (3).zip"
+?? the-karenator-3000-pro.zip
+?? "the-puppet-face---audio-driven-interface (1).zip"
+?? the-puppet-face---audio-driven-interface.zip
+?? "the-spec-machine (1).zip"
+?? the-spec-machine.zip
+?? the-state-of-ai-how-organizations-are-rewiring-to-capture-value_final.pdf
+?? the_because_the_night___k_pop_kings_meet_k_p.mp3
+?? the_because_the_night___k_pop_kings_meet_k_p_lyrics.txt
+?? the_galactic_showman___fiver_forever_found_.mp3
+?? the_galactic_showman___fiver_forever_found__lyrics.txt
+?? the_pelvis___king_come_home_leave.mp3
+?? threejs_demo.html
+?? thringlet_bonding_corruption_system.zip
+?? thringlet_gremlin_mode.json
+?? tiers.json
+?? "tiktok-setup-warden (1).zip"
+?? tiktok-setup-warden.zip
+?? trainforge_kayden_mvp.zip
+?? tron.bat
+?? "try (1).zip"
+?? try.zip
+?? tsconfig.json
+?? tsetup-x64.6.5.1.exe
+?? ttsService.ts
+?? turing-smart-screen-python.zip
+?? twagger-neural-life.zip
+?? types.ts
+?? ubuntu-24.04.2-desktop-amd64.iso
+?? ultra_deploy.sh
+?? unifiedRuntimeEngine_1749646824322.ts
+?? unit_growth.png
+?? unlock_pg.bat
+?? v2.2.3_esp-box-3.zip
+?? v2.2.4_zhengchen-1.54tft-ml307.zip
+?? v2.2.4_zhengchen-1.54tft-wifi.zip
+?? v2.2.4_zhengchen-cam.zip
+?? validate_elf.py
+?? veo-studio.zip
+?? video_inspection_report_20260507_233816.txt
+?? vite.config.ts
+?? vlc-3.0.23-win32.exe
+?? voice-test.mp3
+?? voxel-velocity-react.zip
+?? "vs_BuildTools (1).exe"
+?? vs_BuildTools.exe
+?? wanna_fuck.png
+?? "watchdog_fused (1).ts"
+?? watchdog_fused.ts
+?? weak-piano-roll.html
+?? who-_-u-_.zip
+?? why.exe.zip
+?? wifi-densepose-eme.bat
+?? winrar-x64-720.exe
+?? winsdksetup.exe
+?? wireguard-tools-master/
+?? "wreckage-systems (1).zip"
+?? wreckage-systems.zip
+?? wsl.2.4.13.0.x64.msi
+?? xiaozhi-esp32-main.zip
+?? xiaozhi-esp32-main/
+?? xiaozhi-esphome-main.zip
+?? yacata_hoodie_poor_qr.png
+?? yacata_hoodie_price_qr.png
+?? yacata_qr_pricecheck.png
+?? yacata_qr_toopoor.png
+?? yeah-boy-114748.mp3
+?? zelda_song_data.js
+?? "zip (1).zip"
+?? zip.zip
+?? zk_logger_bridge.py
