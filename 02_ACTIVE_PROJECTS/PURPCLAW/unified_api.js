@@ -8,7 +8,21 @@
  * SSE: /api/stream
  */
 
-require('dotenv').config();
+// Load .env from THIS file's dir, not cwd — under PM2 the cwd is not guaranteed
+// to be the project root, so a bare config() silently skipped .env and the API
+// service resolved the wrong LLM provider (openai default) while the CLI worked.
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
+// Stale OS/PM2-daemon env can SHADOW .env (dotenv never overrides existing env).
+// A leftover LLM_API_KEY=ollama in the daemon made this service send the wrong
+// key to MiniMax (401/1004) while the CLI worked — a surface-parity bug. Force
+// the provider config from .env so every surface resolves the same provider.
+try {
+  const _envText = require('fs').readFileSync(require('path').join(__dirname, '.env'), 'utf8');
+  for (const line of _envText.split('\n')) {
+    const m = line.match(/^\s*(LLM_[A-Z_]+|(?:MINIMAX|NVIDIA|GLM|DEEPSEEK|KIMI|GROQ|OPENAI)_API_KEY|OPENAI_BASE_URL)=(.*)$/);
+    if (m) process.env[m[1]] = m[2].trim();
+  }
+} catch {}
 const http = require('http');
 const https = require('https');
 const net = require('net');

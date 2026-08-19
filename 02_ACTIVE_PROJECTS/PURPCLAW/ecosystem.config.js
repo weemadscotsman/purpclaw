@@ -81,7 +81,14 @@ module.exports = {
         KIMI_API_KEY: KIMI_API_KEY,
         MINIMAX_API_KEY: MINIMAX_API_KEY,
         OPENAI_API_KEY: env.OPENAI_API_KEY || '',
-        OPENAI_BASE_URL: env.OPENAI_BASE_URL || ''
+        OPENAI_BASE_URL: env.OPENAI_BASE_URL || '',
+        // Canonical LLM config — the API surface must resolve the same provider
+        // as the CLI (surface parity). Without these the service fell back to
+        // provider=openai and chat 401'd.
+        LLM_PROVIDER: env.LLM_PROVIDER || '',
+        LLM_API_KEY: env.LLM_API_KEY || '',
+        LLM_MODEL: env.LLM_MODEL || '',
+        LLM_BASE_URL: env.LLM_BASE_URL || ''
       },
       exec_mode: 'fork',
       wait_ready: false,
