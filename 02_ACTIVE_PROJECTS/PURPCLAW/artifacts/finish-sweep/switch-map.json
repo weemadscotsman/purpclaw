@@ -1,0 +1,722 @@
+[
+ {
+  "name": "tui",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "ui",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "init",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "start",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "stop",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "restart",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "chat",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "run",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "plan",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "clear",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "compact",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "status",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "doctor",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "approve",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "reject",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "jobs",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "policies",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "policy",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "introspect",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "rollback",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "bg",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "registry",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "install",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "search",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "resume",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "context",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "pool",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "tick",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "mochi",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "spaghetti",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "llm",
+  "primary": true,
+  "module": "llm"
+ },
+ {
+  "name": "browser",
+  "primary": true,
+  "module": "browser"
+ },
+ {
+  "name": "browse",
+  "primary": false,
+  "module": "browser"
+ },
+ {
+  "name": "cognition",
+  "primary": true,
+  "module": "cognition"
+ },
+ {
+  "name": "cog",
+  "primary": false,
+  "module": "cognition"
+ },
+ {
+  "name": "code",
+  "primary": true,
+  "module": "code"
+ },
+ {
+  "name": "github",
+  "primary": false,
+  "module": "code"
+ },
+ {
+  "name": "gitx",
+  "primary": false,
+  "module": "code"
+ },
+ {
+  "name": "lora",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "checkpoint",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "cp",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "certify",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "cert",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "cryosleep",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "sleep",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "wake",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "steering",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "bench",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "provider-bench",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "benchmarks",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "model",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "models",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "agents",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "profiles",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "workflows",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "queue",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "memory",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "parity",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "constitution",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "law",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "soul-memory",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "memory-contract",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "cross-review",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "xreview",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "dream",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "forge",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "skill-forge",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "skillforge",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "subagent",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "bridge",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "team",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "team-roster",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "roster",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "websearch",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "forgecode",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "forge-code",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "ptc",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "sessionlog",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "session-log",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "session",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "hooks",
+  "primary": true,
+  "module": "hooks"
+ },
+ {
+  "name": "skill-discovery",
+  "primary": true,
+  "module": "skill-discovery"
+ },
+ {
+  "name": "discover",
+  "primary": false,
+  "module": "skill-discovery"
+ },
+ {
+  "name": "pr",
+  "primary": true,
+  "module": "pr"
+ },
+ {
+  "name": "release",
+  "primary": true,
+  "module": "release"
+ },
+ {
+  "name": "skillgraph",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "skill-graph",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "skills",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "look",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "voice",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "config",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "logs",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "bars",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "show",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "stack",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "audit",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "whoami",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "about",
+  "primary": false,
+  "module": null
+ },
+ {
+  "name": "health",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "identity",
+  "primary": true,
+  "module": "identity"
+ },
+ {
+  "name": "embeddings",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "embed",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "bughunt",
+  "primary": true,
+  "module": "bughunt"
+ },
+ {
+  "name": "ctx-viz",
+  "primary": true,
+  "module": "ctx-viz"
+ },
+ {
+  "name": "ctxviz",
+  "primary": false,
+  "module": "ctx-viz"
+ },
+ {
+  "name": "onboard",
+  "primary": true,
+  "module": "onboard"
+ },
+ {
+  "name": "teleport",
+  "primary": true,
+  "module": "teleport"
+ },
+ {
+  "name": "autofix-pr",
+  "primary": true,
+  "module": "autofix-pr"
+ },
+ {
+  "name": "autofix",
+  "primary": false,
+  "module": "autofix-pr"
+ },
+ {
+  "name": "workers",
+  "primary": true,
+  "module": "workers"
+ },
+ {
+  "name": "worker",
+  "primary": false,
+  "module": "workers"
+ },
+ {
+  "name": "ask",
+  "primary": true,
+  "module": "ask"
+ },
+ {
+  "name": "automate",
+  "primary": true,
+  "module": "automate"
+ },
+ {
+  "name": "atbs",
+  "primary": false,
+  "module": "automate"
+ },
+ {
+  "name": "setup",
+  "primary": true,
+  "module": "setup"
+ },
+ {
+  "name": "wizard",
+  "primary": false,
+  "module": "setup"
+ },
+ {
+  "name": "tour",
+  "primary": true,
+  "module": "tour"
+ },
+ {
+  "name": "walkthrough",
+  "primary": false,
+  "module": "tour"
+ },
+ {
+  "name": "commit",
+  "primary": true,
+  "module": "claudecode"
+ },
+ {
+  "name": "review",
+  "primary": false,
+  "module": "claudecode"
+ },
+ {
+  "name": "find",
+  "primary": false,
+  "module": "claudecode"
+ },
+ {
+  "name": "claudecode",
+  "primary": false,
+  "module": "claudecode"
+ },
+ {
+  "name": "gc",
+  "primary": true,
+  "module": "gc"
+ },
+ {
+  "name": "cleanup",
+  "primary": false,
+  "module": "gc"
+ },
+ {
+  "name": "pocket",
+  "primary": true,
+  "module": "pocket"
+ },
+ {
+  "name": "architecture",
+  "primary": true,
+  "module": "architecture"
+ },
+ {
+  "name": "arch",
+  "primary": false,
+  "module": "architecture"
+ },
+ {
+  "name": "concepts",
+  "primary": false,
+  "module": "architecture"
+ },
+ {
+  "name": "smoke",
+  "primary": true,
+  "module": "smoke"
+ },
+ {
+  "name": "selftest",
+  "primary": false,
+  "module": "smoke"
+ },
+ {
+  "name": "overview",
+  "primary": true,
+  "module": "overview"
+ },
+ {
+  "name": "what-is-purpclaw",
+  "primary": false,
+  "module": "overview"
+ },
+ {
+  "name": "whatis",
+  "primary": false,
+  "module": "overview"
+ },
+ {
+  "name": "safe-start",
+  "primary": true,
+  "module": "safe-start"
+ },
+ {
+  "name": "safestart",
+  "primary": false,
+  "module": "safe-start"
+ },
+ {
+  "name": "evolve",
+  "primary": true,
+  "module": "evolve"
+ },
+ {
+  "name": "safe-stop",
+  "primary": true,
+  "module": "safe-stop"
+ },
+ {
+  "name": "safestop",
+  "primary": false,
+  "module": "safe-stop"
+ },
+ {
+  "name": "services",
+  "primary": true,
+  "module": "services"
+ },
+ {
+  "name": "heal",
+  "primary": true,
+  "module": "heal"
+ },
+ {
+  "name": "recover",
+  "primary": false,
+  "module": "heal"
+ },
+ {
+  "name": "training",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "idle",
+  "primary": true,
+  "module": null
+ },
+ {
+  "name": "vector",
+  "primary": true,
+  "module": null
+ }
+]

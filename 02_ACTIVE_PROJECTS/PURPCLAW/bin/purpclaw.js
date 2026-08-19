@@ -6122,7 +6122,24 @@ function cmdTui(args = []) {
 }
 
 // â”€â”€ help â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function cmdHelp() {
+function cmdHelp(topic) {
+  const CLI_REGISTRY = require(path.join(PURP_DIR, 'lib', 'cli', 'registry'));
+  // Per-command detail from the registry: `purpclaw help <command>`
+  if (topic) {
+    const t = String(topic).replace(/^\//, '').toLowerCase();
+    const entry = CLI_REGISTRY.find(t);
+    if (!entry) {
+      const suggestions = CLI_REGISTRY.suggest(t);
+      console.log(col(C.red, `\n  No help for "${t}" — not a known command.`));
+      if (suggestions.length) console.log(col(C.gray, `  Did you mean: ${suggestions.join(', ')}`));
+      process.exit(2);
+    }
+    console.log(`\n  ${col(C.cyan + C.bold, 'purpclaw ' + entry.name)}${entry.aliases && entry.aliases.length ? col(C.gray, '  (' + entry.aliases.join(', ') + ')') : ''}`);
+    console.log(`  ${col(C.white, entry.description || '(no description)')}`);
+    console.log(col(C.gray, `  category: ${entry.category}${entry.json ? '  ·  supports --json' : ''}${entry.module ? '  ·  module: lib/commands/' + entry.module + '.js' : '  ·  built-in'}`));
+    console.log('');
+    return;
+  }
   banner();
 
   const W = isTTY ? Math.min(process.stdout.columns || 100, 100) : 100;
@@ -6295,6 +6312,18 @@ function cmdHelp() {
     ['purpclaw bars',                  'Mochi status bars preview (opt-in with --bars)'],
   ]);
 
+  // ── Complete command index (generated from lib/cli/registry.js) ─────────
+  // The sections above are a curated guide with subcommand examples; this
+  // index is machine-generated so no command can go undocumented again.
+  for (const { key, title } of CLI_REGISTRY.categories()) {
+    const rows = CLI_REGISTRY.commands().filter(c => c.category === key);
+    if (!rows.length) continue;
+    section('â–’  ' + title + '  (all)', rows.map(c => [
+      'purpclaw ' + c.name + (c.aliases && c.aliases.length ? '  [' + c.aliases.join(' ') + ']' : ''),
+      (c.description || '') + (c.json ? '  [--json]' : ''),
+    ]));
+  }
+
   // Port quick-ref
   console.log(`\n  ${col(C.cyan + C.bold, 'ðŸ—º  PORTS')}`);
   console.log(col(C.gray, '  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”'));
@@ -6371,9 +6400,21 @@ async function main() {
     if (!command) { cmdHelp(); return; }
   }
 
+  // Git Bash (MSYS) path conversion rewrites a leading-slash command like
+  // `/status` into a Windows path (`C:/Program Files/Git/status`). Reverse it:
+  // a drive-absolute arg whose file does not exist and whose basename is a
+  // known command was a slash command before the shell touched it.
+  if (command && /^[A-Za-z]:[\\/]/.test(command)) {
+    const base = command.split(/[\\/]/).pop().toLowerCase();
+    const reg = require(path.join(PURP_DIR, 'lib', 'cli', 'registry'));
+    if (!fs.existsSync(command) && reg.find(base)) {
+      command = base;
+    }
+  }
+
   // Explicit help/version paths
   if (command === 'help' || command === '--help' || command === '-h') {
-    cmdHelp(); return;
+    cmdHelp(args[0]); return;
   }
   if (command === 'version' || command === '--version' || command === '-v' || command === '-V') {
     const pkg = require(path.join(PURP_DIR, 'package.json'));
@@ -6454,6 +6495,9 @@ async function main() {
     return require(path.join(PURP_DIR, 'lib', 'commands', name + '.js'));
   }
 
+  // Canonical command registry — identity, aliases, modules, help, completion
+  const CLI_REGISTRY = require(path.join(PURP_DIR, 'lib', 'cli', 'registry'));
+
   // Shared context object passed to all lib/commands modules
   function sharedCtx() {
     return {
@@ -6464,6 +6508,22 @@ async function main() {
 
   // Helper: dispatches the command, optionally wrapped in mochi status bars
   async function dispatch() {
+    // ── Registry-first dual dispatch ──────────────────────────────────────
+    // lib/cli/registry.js is the canonical command table. Registry-only
+    // commands (migrated orphans) route straight to their module; commands
+    // the switch already handles fall through to it unchanged; anything else
+    // is an error — natural-language tasks belong to `run` / `ask`.
+    const entry = CLI_REGISTRY.find(command);
+    if (entry && !entry.inSwitch && entry.module) {
+      return loadCmd(entry.module).run(args, sharedCtx());
+    }
+    if (!entry) {
+      const suggestions = CLI_REGISTRY.suggest(command);
+      console.error(col(C.red, `\n  Unknown command: ${command}`));
+      if (suggestions.length) console.error(col(C.gray, `  Did you mean: ${suggestions.join(', ')}`));
+      console.error(col(C.gray, `  Natural-language tasks: purpclaw run <goal>  ·  purpclaw ask`));
+      process.exit(2);
+    }
     switch (command.toLowerCase()) {
     case 'tui':
     case 'ui':        return cmdTui(args);
@@ -6611,11 +6671,12 @@ case 'registry': return cmdRegistry(args);
     case 'idle':      return cmdIdleEngine(args);
     case 'vector':    return cmdVectorBench(args);
     default:
-      // Unknown command â€” treat as an inline task for convenience
-      // e.g. `purpclaw fix the auth bug` â†’ same as `purpclaw run "fix the auth bug"`
-      const task = [command, ...args].join(' ');
-      console.log(col(C.gray, `\n  Treating as task: "${task}"`));
-      return cmdRun([task]);
+      // Unreachable in the registry era: unknown commands are rejected before
+      // the switch. Kept as a hard guard - a command reaching here means the
+      // registry and the switch have drifted apart.
+      console.error(col(C.red, '\n  Internal dispatch drift: "' + command + '" passed the registry check but has no case.'));
+      console.error(col(C.gray, '  Report this - lib/cli/registry.js and the switch disagree.'));
+      process.exit(2);
     }
   }
 
