@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.0.0",
+  "tests": [
+    {
+      "id": "single-runtime-multisurface",
+      "must_pass": true,
+      "assert": "CLI+TUI+Web+Desktop attach to one runtime_id and one supervisor"
+    },
+    {
+      "id": "cross-surface-process",
+      "must_pass": true,
+      "assert": "task started on one surface has same process_id and state on all"
+    },
+    {
+      "id": "agent-minimal-load",
+      "must_pass": true,
+      "assert": "default one agent; no bulk agent wake"
+    },
+    {
+      "id": "skill-lazy-load",
+      "must_pass": true,
+      "assert": "only selected skill bodies enter task context"
+    },
+    {
+      "id": "tool-minimal-load",
+      "must_pass": true,
+      "assert": "only eligible tool schemas are exposed"
+    },
+    {
+      "id": "plugin-lazy-load",
+      "must_pass": true,
+      "assert": "plugin client/auth requested only when selected capability requires it"
+    },
+    {
+      "id": "harness-path",
+      "must_pass": true,
+      "assert": "every tool/model action passes canonical harness chain"
+    },
+    {
+      "id": "steering-parity",
+      "must_pass": true,
+      "assert": "steering update from any surface mutates one canonical process"
+    },
+    {
+      "id": "provider-parity",
+      "must_pass": true,
+      "assert": "same router/policy used from all surfaces"
+    },
+    {
+      "id": "port-authority",
+      "must_pass": true,
+      "assert": "no hard-coded collision including audit ports 7781 and 7791"
+    },
+    {
+      "id": "media-lazy",
+      "must_pass": true,
+      "assert": "voice/vision workers remain asleep unless modality selected"
+    },
+    {
+      "id": "web-reconnect",
+      "must_pass": true,
+      "assert": "closing/reopening web never duplicates process"
+    },
+    {
+      "id": "recovery",
+      "must_pass": true,
+      "assert": "recoverable work resumes or truthfully marks terminal state"
+    },
+    {
+      "id": "memory-truth",
+      "must_pass": true,
+      "assert": "unsupported memory layers are unavailable, not claimed wired"
+    },
+    {
+      "id": "registry-dynamic-counts",
+      "must_pass": true,
+      "assert": "surfaces derive counts from registries, never baked constants"
+    },
+    {
+      "id": "workflow-single-authority",
+      "must_pass": true,
+      "assert": "one mutation authority after legacy migration"
+    },
+    {
+      "id": "mission-single-authority",
+      "must_pass": true,
+      "assert": "one mutation authority after legacy migration"
+    },
+    {
+      "id": "zero-agent-utility",
+      "must_pass": true,
+      "assert": "deterministic utility action can execute without model/agent"
+    },
+    {
+      "id": "provenance",
+      "must_pass": true,
+      "assert": "process records action agent soul skills tools harnesses steering provider model worker artifacts"
+    },
+    {
+      "id": "mobile-same-brain",
+      "must_pass": true,
+      "assert": "mobile connects to canonical runtime through authenticated gateway and does not create a second brain"
+    }
+  ]
+}

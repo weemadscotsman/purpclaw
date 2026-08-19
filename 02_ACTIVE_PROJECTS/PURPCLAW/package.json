@@ -67,7 +67,8 @@
     "pm2:status": "pm2 list",
     "lint": "eslint .",
     "clean": "next clean",
-    "test": "node --test tests/cli/test_cli.js tests/steering/test-live-turn.js tests/steering/test-s-modules.js tests/tool-bridge/test-bridge.js"
+    "test": "node --test tests/cli/test_cli.js tests/steering/test-live-turn.js tests/steering/test-s-modules.js tests/tool-bridge/test-bridge.js",
+    "acceptance": "node scripts/acceptance/run.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.17.0",

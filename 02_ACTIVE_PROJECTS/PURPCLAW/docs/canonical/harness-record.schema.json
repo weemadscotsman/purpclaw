@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "purpclaw://schemas/harness-record.json",
+  "title": "PURPCLAW Harness Record",
+  "type": "object",
+  "required": [
+    "id",
+    "stage",
+    "inputs",
+    "outputs",
+    "events",
+    "failure_policy"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "stage": {
+      "enum": [
+        "request",
+        "action",
+        "agent",
+        "tool",
+        "provider",
+        "workflow",
+        "mission",
+        "surface",
+        "recovery",
+        "verification"
+      ]
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "policy_checks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "failure_policy": {
+      "type": "string"
+    },
+    "timeout_ms": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "retries": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

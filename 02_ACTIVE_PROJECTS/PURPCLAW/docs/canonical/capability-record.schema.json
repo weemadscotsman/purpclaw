@@ -1,0 +1,217 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "purpclaw://schemas/capability-record.json",
+  "title": "PURPCLAW Canonical Capability Record",
+  "type": "object",
+  "required": [
+    "id",
+    "version",
+    "owner",
+    "action_ids",
+    "agent_policy",
+    "skills",
+    "tools",
+    "runtime_requirements",
+    "harnesses",
+    "surfaces",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "object",
+      "required": [
+        "division"
+      ],
+      "properties": {
+        "division": {
+          "type": "string"
+        },
+        "service": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "action_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "agent_policy": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "enum": [
+            "none",
+            "single",
+            "multi",
+            "council"
+          ]
+        },
+        "preferred_agents": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "soul_required": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "mode"
+      ]
+    },
+    "skills": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optional": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "tools": {
+      "type": "object",
+      "properties": {
+        "required": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "optional": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "runtime_requirements": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "CORE_ORGANISATION",
+          "AGENT",
+          "TOOL",
+          "PROVIDER",
+          "WORKER_SANDBOX",
+          "MEDIA",
+          "IDLE_EVOLUTION"
+        ]
+      }
+    },
+    "harnesses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "provider_requirements": {
+      "type": "object"
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "memory": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "surfaces": {
+      "type": "object",
+      "required": [
+        "cli",
+        "tui",
+        "web",
+        "desktop",
+        "mobile"
+      ],
+      "properties": {
+        "cli": {
+          "enum": [
+            "FULL",
+            "READ_ONLY",
+            "PLATFORM_UNSUPPORTED",
+            "BLOCKED_BY_CONFLICT",
+            "NOT_IMPLEMENTED"
+          ]
+        },
+        "tui": {
+          "enum": [
+            "FULL",
+            "READ_ONLY",
+            "PLATFORM_UNSUPPORTED",
+            "BLOCKED_BY_CONFLICT",
+            "NOT_IMPLEMENTED"
+          ]
+        },
+        "web": {
+          "enum": [
+            "FULL",
+            "READ_ONLY",
+            "PLATFORM_UNSUPPORTED",
+            "BLOCKED_BY_CONFLICT",
+            "NOT_IMPLEMENTED"
+          ]
+        },
+        "desktop": {
+          "enum": [
+            "FULL",
+            "READ_ONLY",
+            "PLATFORM_UNSUPPORTED",
+            "BLOCKED_BY_CONFLICT",
+            "NOT_IMPLEMENTED"
+          ]
+        },
+        "mobile": {
+          "enum": [
+            "FULL",
+            "READ_ONLY",
+            "PLATFORM_UNSUPPORTED",
+            "BLOCKED_BY_CONFLICT",
+            "NOT_IMPLEMENTED"
+          ]
+        }
+      }
+    },
+    "status": {
+      "enum": [
+        "FULL",
+        "DEGRADED",
+        "BLOCKED",
+        "UNVERIFIED",
+        "RETIRED"
+      ]
+    }
+  }
+}

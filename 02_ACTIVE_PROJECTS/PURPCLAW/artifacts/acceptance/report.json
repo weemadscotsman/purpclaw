@@ -1,0 +1,149 @@
+{
+  "tally": {
+    "NOT_IMPLEMENTED": 13,
+    "PASS": 5,
+    "FAIL": 2
+  },
+  "results": [
+    {
+      "id": "single-runtime-multisurface",
+      "must_pass": true,
+      "assert": "CLI+TUI+Web+Desktop attach to one runtime_id and one supervisor",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs live CLI+TUI+Web+Desktop attached to one supervisor — no offline probe"
+    },
+    {
+      "id": "cross-surface-process",
+      "must_pass": true,
+      "assert": "task started on one surface has same process_id and state on all",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs a live task observed across surfaces"
+    },
+    {
+      "id": "agent-minimal-load",
+      "must_pass": true,
+      "assert": "default one agent; no bulk agent wake",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs a live agent run to prove no bulk agent wake"
+    },
+    {
+      "id": "skill-lazy-load",
+      "must_pass": true,
+      "assert": "only selected skill bodies enter task context",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs a live task to prove only selected SKILL.md bodies enter context"
+    },
+    {
+      "id": "tool-minimal-load",
+      "must_pass": true,
+      "assert": "only eligible tool schemas are exposed",
+      "status": "PASS",
+      "evidence": "full catalog=180, scoped to allowedTools=[read] exposes 1"
+    },
+    {
+      "id": "plugin-lazy-load",
+      "must_pass": true,
+      "assert": "plugin client/auth requested only when selected capability requires it",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs a live capability that requires a plugin"
+    },
+    {
+      "id": "harness-path",
+      "must_pass": true,
+      "assert": "every tool/model action passes canonical harness chain",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs live tracing that every tool/model action traversed the harness chain"
+    },
+    {
+      "id": "steering-parity",
+      "must_pass": true,
+      "assert": "steering update from any surface mutates one canonical process",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs a live steering update observed on one canonical process across surfaces"
+    },
+    {
+      "id": "provider-parity",
+      "must_pass": true,
+      "assert": "same router/policy used from all surfaces",
+      "status": "PASS",
+      "evidence": "model-router.js delegates to canonical routing-decisions.js"
+    },
+    {
+      "id": "port-authority",
+      "must_pass": true,
+      "assert": "no hard-coded collision including audit ports 7781 and 7791",
+      "status": "PASS",
+      "evidence": "no real collisions (3 documented co-locations excluded); 7781=voice-coordinator 7791=gatekeeper"
+    },
+    {
+      "id": "media-lazy",
+      "must_pass": true,
+      "assert": "voice/vision workers remain asleep unless modality selected",
+      "status": "PASS",
+      "evidence": "media services on-demand: voice-coordinator=optional-dark, voice-bridge=optional-dark, stt=optional-dark, voice-ingress=optional-dark, vision-monitor=optional-dark"
+    },
+    {
+      "id": "web-reconnect",
+      "must_pass": true,
+      "assert": "closing/reopening web never duplicates process",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs a live web client close/reopen against a running task"
+    },
+    {
+      "id": "recovery",
+      "must_pass": true,
+      "assert": "recoverable work resumes or truthfully marks terminal state",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs a live core restart mid-task"
+    },
+    {
+      "id": "memory-truth",
+      "must_pass": true,
+      "assert": "unsupported memory layers are unavailable, not claimed wired",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs the canonical memory registry to enumerate implemented vs claimed layers"
+    },
+    {
+      "id": "registry-dynamic-counts",
+      "must_pass": true,
+      "assert": "surfaces derive counts from registries, never baked constants",
+      "status": "FAIL",
+      "evidence": "unified_api.js hard-codes an agent roster array (~line 3298); must read from registry at runtime"
+    },
+    {
+      "id": "workflow-single-authority",
+      "must_pass": true,
+      "assert": "one mutation authority after legacy migration",
+      "status": "FAIL",
+      "evidence": "3 competing workflow engines present: lib/workflow-manager.js, lib/event-workflow.js, lib/recipe-manager.js — one canonical authority + adapters required"
+    },
+    {
+      "id": "mission-single-authority",
+      "must_pass": true,
+      "assert": "one mutation authority after legacy migration",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs a declared canonical mission authority marker to assert against"
+    },
+    {
+      "id": "zero-agent-utility",
+      "must_pass": true,
+      "assert": "deterministic utility action can execute without model/agent",
+      "status": "PASS",
+      "evidence": "deterministic CLI commands resolve without agent dispatch: status, completion, help, version"
+    },
+    {
+      "id": "provenance",
+      "must_pass": true,
+      "assert": "process records action agent soul skills tools harnesses steering provider model worker artifacts",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs a live process record to inspect full lineage"
+    },
+    {
+      "id": "mobile-same-brain",
+      "must_pass": true,
+      "assert": "mobile connects to canonical runtime through authenticated gateway and does not create a second brain",
+      "status": "NOT_IMPLEMENTED",
+      "evidence": "needs a paired mobile client against the canonical gateway"
+    }
+  ]
+}

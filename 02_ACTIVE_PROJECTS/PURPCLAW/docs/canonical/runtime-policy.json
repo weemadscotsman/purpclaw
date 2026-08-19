@@ -1,0 +1,196 @@
+{
+  "schema_version": "1.0.0",
+  "product_rule": "one_product_one_canonical_runtime_one_truth_source",
+  "surface_rule": {
+    "surfaces": [
+      "cli",
+      "tui",
+      "web",
+      "desktop",
+      "mobile"
+    ],
+    "business_logic_in_surface": false,
+    "private_state_stores": false,
+    "private_agent_routing": false,
+    "private_provider_routing": false
+  },
+  "runtime_classes": {
+    "BOOTSTRAP": {
+      "resident": false,
+      "start": "first_entry_or_attach"
+    },
+    "SUPERVISOR": {
+      "resident": true,
+      "instances_per_profile_workspace": 1
+    },
+    "CORE_ORGANISATION": {
+      "resident": true
+    },
+    "AGENT": {
+      "resident": false,
+      "start": "task_requires_agent"
+    },
+    "TOOL": {
+      "resident": false,
+      "start": "tool_invocation"
+    },
+    "PROVIDER": {
+      "resident": "router_shell_only",
+      "clients": "lazy"
+    },
+    "WORKER_SANDBOX": {
+      "resident": false,
+      "start": "bounded_job"
+    },
+    "MEDIA": {
+      "resident": false,
+      "start": "modality_required"
+    },
+    "IDLE_EVOLUTION": {
+      "resident": false,
+      "start": "policy_allows"
+    },
+    "SURFACE": {
+      "resident": "user_selected",
+      "owns_truth": false
+    }
+  },
+  "load_classes": {
+    "BOOT_INDEX": [
+      "registry_metadata",
+      "policies",
+      "aliases",
+      "routes",
+      "surface_metadata"
+    ],
+    "CORE_RESIDENT": [
+      "supervisor",
+      "action_kernel",
+      "registry_authority",
+      "capability_resolver",
+      "event_spine",
+      "state_authority",
+      "approval_authority",
+      "provider_router_shell",
+      "verified_memory_authority",
+      "surface_gateway",
+      "health"
+    ],
+    "SESSION_LOAD": [
+      "profile",
+      "workspace",
+      "session_policy",
+      "relevant_recent_state",
+      "provider_preferences"
+    ],
+    "TASK_LOAD": [
+      "selected_agent",
+      "optional_soul",
+      "selected_skills",
+      "selected_workflow",
+      "task_memory",
+      "permitted_tool_descriptors"
+    ],
+    "INVOCATION_LOAD": [
+      "tool_implementation",
+      "plugin_client",
+      "provider_client",
+      "media_worker",
+      "special_parser_runtime"
+    ],
+    "EPHEMERAL": [
+      "sandbox",
+      "one_shot_worker",
+      "bounded_child_process"
+    ],
+    "IDLE_OPTIONAL": [
+      "autoresearch",
+      "autoevolve_proposals",
+      "donor",
+      "compaction",
+      "background_indexing",
+      "ambient_systems"
+    ]
+  },
+  "harnesses": [
+    "request",
+    "action",
+    "agent",
+    "tool",
+    "provider",
+    "workflow",
+    "mission",
+    "surface",
+    "recovery",
+    "verification"
+  ],
+  "steering_precedence": [
+    "constitutional_perimeter",
+    "execution_contract",
+    "user_profile_policy",
+    "workspace_policy",
+    "mission_policy",
+    "workflow_step_contract",
+    "agent_contract",
+    "soul_persona",
+    "selected_skills",
+    "task_request",
+    "tool_outputs_and_observation"
+  ],
+  "request_pipeline": [
+    "normalise",
+    "resolve_action",
+    "policy_preflight",
+    "select_runtime",
+    "select_agents",
+    "attach_soul_if_needed",
+    "select_skills",
+    "select_tools_plugins",
+    "wake_services",
+    "route_provider_model",
+    "assemble_context",
+    "execute_tool_loop",
+    "verify",
+    "commit_events_state_memory_artifacts",
+    "broadcast_surfaces"
+  ],
+  "agent_policy": {
+    "default_agent_count": 1,
+    "zero_agent_deterministic_path": true,
+    "council_only_when_justified": true,
+    "load_all_agents": false
+  },
+  "skill_policy": {
+    "metadata_index_at_boot": true,
+    "content_lazy_load": true,
+    "record_version_hash": true,
+    "load_all_skills": false
+  },
+  "tool_policy": {
+    "minimum_eligible_toolset": true,
+    "schema_validation": true,
+    "approval_gateway": true,
+    "health_check": true,
+    "event_every_call": true,
+    "load_all_tools": false
+  },
+  "plugin_policy": {
+    "metadata_index_at_boot": true,
+    "client_lazy_load": true,
+    "auth_on_demand": true,
+    "surface_specific_catalogue": false
+  },
+  "ports": {
+    "hardcoded_service_ports_allowed": false,
+    "supervisor_owns_allocation": true,
+    "known_audit_collisions": [
+      7781,
+      7791
+    ]
+  },
+  "memory": {
+    "evidence_backed_only": true,
+    "historical_claims_do_not_enable_layers": true,
+    "provenance_required": true
+  }
+}
