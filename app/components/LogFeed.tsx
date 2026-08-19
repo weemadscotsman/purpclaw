@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 interface LogEntry {
   id: string;
@@ -75,7 +75,10 @@ export default function LogFeed() {
   const [filter, setFilter] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const filteredLogs = filter ? logs.filter((log) => log.type === filter) : logs;
+  // ⚡ Bolt: Memoize filtered logs to prevent unnecessary recalculations on every render
+  const filteredLogs = useMemo(() => {
+    return filter ? logs.filter((log) => log.type === filter) : logs;
+  }, [filter, logs]);
 
   useEffect(() => {
     if (!paused && scrollRef.current) {
