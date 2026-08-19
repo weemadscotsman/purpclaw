@@ -747,6 +747,21 @@ function san(s) { return typeof s !== 'string' ? '' : s.replace(/[`$;|><&{}\[\]'
 function coord(v) { const n = Number(v); return (isNaN(n) || n < 0 || n > 10000) ? 0 : Math.floor(n); }
 function ok(text) { return { content: [{ type: 'text', text: String(text).substring(0, 8000) }] }; }
 
+// Canonical tool bridge: the runTool switch below only hand-implements a subset
+// of builtins. Everything else lives in the shared tool registry (lib/tools).
+// Route those through ToolRuntime so the deterministic ladder (scope, schema,
+// path-security, permissions, governance, approval) still enforces — restoring
+// the pre-replacement registry dispatch WITH the permission boundary, not the
+// old raw registry.invoke() that bypassed it. Lazy to avoid init-time cycles.
+let _toolRuntime = null;
+function getToolRuntime() {
+  if (!_toolRuntime) {
+    const { ToolRuntime } = require('./lib/tool-runtime');
+    _toolRuntime = new ToolRuntime({ permissionProfile: process.env.PURPCLAW_API_TOOL_PROFILE || 'workspace-write' });
+  }
+  return _toolRuntime;
+}
+
 async function ps(cmd, timeout = 15000) {
   try {
     const { stdout, stderr } = await execAsync(`${PS_PREFIX} "${cmd}"`, { timeout, maxBuffer: 5 * 1024 * 1024 });
@@ -2251,7 +2266,19 @@ if ($data[1].Count -gt 0) {
         return ok(`Memory matches (${results.length}):\n${out}`);
       } catch (e) { return ok(`Memory search error: ${e.message}`); }
     }
-    default: return ok(`Unknown tool: ${name}`);
+    default: {
+      // Not a hand-coded builtin — try the canonical tool registry (permission-gated).
+      const TR = getToolRuntime();
+      if (TR.registry.has(name)) {
+        try {
+          const r = await TR.invoke(name, args || {}, { source: 'unified_api' });
+          if (r && r.ok === false) return ok(`Tool ${name} denied/failed: ${r.error || r.code || 'error'}`);
+          const body = (r && (r.content ?? r.text ?? r.message ?? r.result));
+          return ok(typeof body === 'string' ? body : JSON.stringify(body ?? r));
+        } catch (e) { return ok(`Tool ${name} error: ${e.message}`); }
+      }
+      return ok(`Unknown tool: ${name}`);
+    }
   }
 }
 
