@@ -22,6 +22,7 @@ test('purpclaw update --json emits valid live status', () => {
   // Boot noise may precede the JSON; grab the object.
   const jsonStart = out.indexOf('{');
   const parsed = JSON.parse(out.slice(jsonStart));
-  assert.ok(parsed.version, 'reports a version');
-  assert.ok('branch' in parsed && 'sha' in parsed, 'reports git branch and sha');
+  assert.ok(parsed.workingTree && parsed.workingTree.version, 'reports working-tree version');
+  assert.ok('branch' in parsed.workingTree && 'sha' in parsed.workingTree, 'reports git branch and sha');
+  assert.ok(parsed.managed && 'channel' in parsed.managed, 'reports managed runtime status (channel)');
 });

@@ -1,48 +1,70 @@
 'use strict';
 /**
- * lib/commands/update.js — live "update to newest" for the operator loop.
+ * lib/commands/update.js — `purpclaw update [subcommand]`, the one updater.
  *
- * The CLI already loads fresh from disk on every invocation, so `purpclaw`
- * commands are always on the newest code. What this command adds:
- *   - shows exactly what version/commit you're on (confirm you have my latest),
- *   - --log      : recent commits so you can see what changed,
- *   - --restart  : reload the long-running BACKEND services to newest code
- *                  (safe-start --core), since those don't auto-refresh,
- *   - --pull     : fast-forward from a git remote if one is configured & ahead.
- *
- * Inside the interactive REPL (`purpclaw ask` / `chat`) the `/update` slash
- * re-execs the REPL into newest code — see lib/commands/ask.js.
+ * Two paths, one command:
+ *   MANAGED release path (live-update contract): status | check | apply [path] |
+ *     rollback | history | auto <off|notify|safe|aggressive> | channel <local|dev|stable>.
+ *     Backed by lib/update (UpdateManager): inbox scan, hash-verify, stage,
+ *     atomic current/previous flip, rollback, canonical events.
+ *   WORKING-TREE convenience path (bare `update`, or --log/--pull/--restart):
+ *     the CLI already loads fresh from disk each run — this shows exactly what
+ *     commit you're on and can reload the backend to your newest edits.
  */
-const { execSync, spawn } = require('child_process');
+const { execSync } = require('child_process');
 const path = require('path');
+const { createManager, makeUpdateSlashHandler } = require('../update');
+
 const ROOT = path.resolve(__dirname, '..', '..');
+const MANAGED = new Set(['status', 'check', 'apply', 'rollback', 'history', 'auto', 'channel']);
 
 function sh(cmd) {
   try { return execSync(cmd, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim(); }
   catch { return ''; }
 }
 
-function status() {
-  let pkg = '?';
-  try { pkg = require(path.join(ROOT, 'package.json')).version || '?'; } catch {}
+function workingTree() {
+  let version = '?';
+  try { version = require(path.join(ROOT, 'package.json')).version || '?'; } catch {}
   return {
-    version: pkg,
+    version,
     sha: sh('git rev-parse --short HEAD'),
     subject: sh('git log -1 --pretty=%s'),
     branch: sh('git rev-parse --abbrev-ref HEAD'),
-    // `-- .` scopes to the PURPCLAW subtree (git root is one level above).
     dirty: sh('git status --porcelain -- .').split('\n').filter(Boolean).length,
   };
 }
 
 async function run(args = []) {
-  const s = status();
-  if (args.includes('--json')) { console.log(JSON.stringify(s, null, 2)); return; }
+  const sub = String(args[0] || '').toLowerCase();
+
+  // ── Managed release subcommands → shared UpdateManager via slash handler ──
+  if (MANAGED.has(sub)) {
+    const mgr = createManager();
+    await mgr.init();
+    const handler = makeUpdateSlashHandler(mgr);
+    try { await handler('/update ' + args.join(' ')); }
+    catch (e) { console.error(`[update] ${e.message}`); process.exitCode = 2; }
+    return;
+  }
+
+  // ── Working-tree view (bare `update`, or with --log/--pull/--restart) ──
+  const s = workingTree();
+  const mgr = createManager();
+  await mgr.init();
+  const managed = await mgr.status();
+
+  if (args.includes('--json')) {
+    console.log(JSON.stringify({ workingTree: s, managed }, null, 2));
+    return;
+  }
 
   console.log(`\nPURPCLAW v${s.version}${s.sha ? `  (${s.sha})` : ''}  [${s.branch}]`);
   if (s.subject) console.log(`  head: ${s.subject}`);
   console.log(`  ${s.dirty ? `working tree: ${s.dirty} uncommitted change(s)` : 'working tree clean'}`);
   console.log(`  the CLI loads fresh from disk each run — you are already on the newest CLI code.`);
+  console.log(`\n  managed runtime: current ${managed.current?.version || 'unmanaged'} · channel ${managed.channel} · auto ${managed.autoMode} · rollback ${managed.rollbackAvailable ? 'available' : 'none'}${managed.candidates.length ? ` · candidate ${managed.candidates[0].manifest.version}` : ''}`);
+  console.log(`  subcommands: status | check | apply [path] | rollback | history | auto <mode> | channel <name>`);
 
   if (args.includes('--log')) {
     const log = sh('git log --oneline -8');
@@ -62,15 +84,17 @@ async function run(args = []) {
   }
 
   if (args.includes('--restart') || args.includes('-r')) {
+    const { ROOT: R } = require('../update');
+    const { spawn } = require('child_process');
     console.log(`\n  reloading backend services to newest code (safe-start --core)...\n`);
     await new Promise(res => {
-      const child = spawn(process.execPath, [path.join(ROOT, 'bin', 'purpclaw.js'), 'safe-start', '--core'],
-        { cwd: ROOT, stdio: 'inherit' });
+      const child = spawn(process.execPath, [path.join(R, 'bin', 'purpclaw.js'), 'safe-start', '--core'],
+        { cwd: R, stdio: 'inherit' });
       child.on('exit', res);
       child.on('error', e => { console.error(`  restart failed: ${e.message}`); res(); });
     });
   } else {
-    console.log(`\n  tip: 'purpclaw update --restart' also reloads the running backend services.`);
+    console.log(`\n  tip: 'purpclaw update --restart' reloads running backend services; 'update apply' stages an inbox release.`);
   }
 }
 

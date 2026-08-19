@@ -1140,7 +1140,7 @@ const COMMANDS = [
     "aliases": ["up", "upgrade"],
     "module": "update",
     "category": "systems",
-    "description": "Show version/commit and reload to newest code (--restart backend, --log, --pull)",
+    "description": "Live update: status|check|apply|rollback|history|auto|channel; bare shows version/commit (--restart,--log,--pull)",
     "json": true,
     "legacyFn": false,
     "inSwitch": false

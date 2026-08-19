@@ -145,15 +145,28 @@ const SLASH_COMMANDS = {
     const aliases = Object.entries(SLASH_ALIASES).map(([alias, cmd]) => `  ${D(alias.padEnd(12))} (alias for ${cmd})`);
     return `slash commands:\n${lines.join('\n')}\n\nno-slash aliases:\n${aliases.join('\n')}`;
   } },
-  '/update':   { description: 're-exec this REPL into the newest on-disk code', run: async () => {
-    const { spawn } = require('child_process');
-    const path = require('path');
-    let ver = '?'; try { ver = require(path.resolve(__dirname, '..', '..', 'package.json')).version; } catch {}
-    process.stdout.write(`\x1b[36m  reloading REPL into newest code (v${ver})...\x1b[0m\n`);
-    // Hand the terminal to a fresh process running the same argv, then exit.
-    const child = spawn(process.execPath, process.argv.slice(1), { stdio: 'inherit', cwd: process.cwd() });
-    child.on('exit', code => process.exit(code || 0));
-    return '';
+  '/update':   { description: 'live update: status|check|apply|rollback|auto|channel|reload', run: async (args = []) => {
+    const sub = String((Array.isArray(args) ? args[0] : args) || 'status').toLowerCase();
+    if (sub === 'reload') {
+      // Re-exec THIS REPL into the newest on-disk code (working-tree edits).
+      const { spawn } = require('child_process');
+      const path = require('path');
+      let ver = '?'; try { ver = require(path.resolve(__dirname, '..', '..', 'package.json')).version; } catch {}
+      process.stdout.write(`\x1b[36m  reloading REPL into newest code (v${ver})...\x1b[0m\n`);
+      const child = spawn(process.execPath, process.argv.slice(1), { stdio: 'inherit', cwd: process.cwd() });
+      child.on('exit', code => process.exit(code || 0));
+      return '';
+    }
+    // Managed release subcommands → shared UpdateManager (same as CLI `purpclaw update`).
+    const { createManager, makeUpdateSlashHandler } = require('../update');
+    const lines = [];
+    const mgr = createManager({ print: l => lines.push(l) });
+    await mgr.init();
+    const handler = makeUpdateSlashHandler(mgr, { print: l => lines.push(l) });
+    const rest = Array.isArray(args) ? args.join(' ') : String(args || '');
+    try { await handler('/update ' + rest); }
+    catch (e) { lines.push(`[update] ${e.message}`); }
+    return lines.join('\n');
   } },
   '/quit':     { description: 'exit',                                 run: () => { process.exit(0); } },
   '/exit':     { description: 'exit',                                 run: () => { process.exit(0); } },

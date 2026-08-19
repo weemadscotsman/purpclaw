@@ -1,0 +1,114 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "purpclaw://schemas/update-manifest.json",
+  "title": "PURPCLAW Update Manifest",
+  "type": "object",
+  "required": [
+    "product",
+    "version",
+    "releaseId",
+    "entry",
+    "channel",
+    "createdAt"
+  ],
+  "properties": {
+    "product": {
+      "const": "purpclaw"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "releaseId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "entry": {
+      "type": "string",
+      "minLength": 1
+    },
+    "channel": {
+      "enum": [
+        "local",
+        "dev",
+        "stable"
+      ]
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "minimumBootstrapVersion": {
+      "type": "string"
+    },
+    "minimumSchemaVersion": {
+      "type": "string"
+    },
+    "packageSha256": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]{64}$"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-fA-F0-9]{64}$"
+          }
+        }
+      }
+    },
+    "restartDomains": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "migrations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "healthChecks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "smokeActions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "signature": {
+      "type": "object",
+      "properties": {
+        "algorithm": {
+          "const": "ed25519"
+        },
+        "keyId": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "algorithm",
+        "keyId",
+        "value"
+      ]
+    }
+  }
+}
