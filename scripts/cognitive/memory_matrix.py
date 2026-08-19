@@ -1261,8 +1261,8 @@ class MemoryAPIHandler(BaseHTTPRequestHandler):
                 name = req['pattern']
                 self.memory.reactions.register_pattern(
                     name,
-                    trigger_fn=eval(req.get('trigger_fn', 'lambda ctx: False')),
-                    action_fn=eval(req.get('action_fn', 'lambda ctx: None')),
+                    trigger_fn=lambda ctx: False, # Disabled eval() for security (RCE prevention)
+                    action_fn=lambda ctx: None,   # Disabled eval() for security (RCE prevention)
                     cooldown_seconds=int(req.get('cooldown', 300))
                 )
                 self.send_json({'success': True, 'pattern_registered': name})
