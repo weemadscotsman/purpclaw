@@ -154,7 +154,22 @@ const CHECKERS = {
   'web-reconnect': () => NI('needs a live web client close/reopen against a running task'),
   'recovery': () => NI('needs a live core restart mid-task'),
   'memory-truth': () => NI('needs the canonical memory registry to enumerate implemented vs claimed layers'),
-  'mission-single-authority': () => NI('needs a declared canonical mission authority marker to assert against'),
+  'mission-single-authority': () => {
+    if (!exists('registry/mission-authority.json')) {
+      return { status: 'FAIL', evidence: 'no registry/mission-authority.json — mission authority undeclared' };
+    }
+    const decl = JSON.parse(read('registry/mission-authority.json'));
+    const surf = decl.surfaces || {};
+    const authorities = Object.entries(surf).filter(([, s]) => s.role === 'authority');
+    if (authorities.length !== 1) {
+      return { status: 'FAIL', evidence: `expected exactly 1 mission authority, found ${authorities.length}` };
+    }
+    const rogue = Object.entries(surf).filter(([, s]) => s.role !== 'authority' && s.mutates);
+    if (rogue.length) {
+      return { status: 'FAIL', evidence: `non-authority surfaces mutate missions: ${rogue.map(x => x[0]).join(', ')}` };
+    }
+    return { status: 'PASS', evidence: `authority=${authorities[0][0]} (${surf[authorities[0][0]].endpoint}); ${Object.keys(surf).length - 1} surfaces are read/client only` };
+  },
   'provenance': () => NI('needs a live process record to inspect full lineage'),
   'mobile-same-brain': () => NI('needs a paired mobile client against the canonical gateway'),
 };

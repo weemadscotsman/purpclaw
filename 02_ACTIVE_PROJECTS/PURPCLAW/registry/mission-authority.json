@@ -1,0 +1,15 @@
+{
+  "_spec": "docs/canonical/PURPCLAW_CANONICAL_RUNTIME_INSTALL_FIRST_RUN_SPEC.md#11-workflow-and-mission-authority",
+  "_purpose": "Canonical decision: exactly one mission MUTATION authority. Discovery flagged 'four competing mission surfaces'; on reading the code only one mutates mission state — the rest are read proxies, UI clients, or (bin/MISSION.js) not a mission engine at all.",
+  "decided": "2026-08-19",
+  "canonical_mission_authority": "harness",
+  "rationale": "harness_service.js owns mission/job lifecycle (POST /harness/job). Missions are jobs surfaced via toMission(). app/api/harness/missions and app/api/mission-data expose GET only.",
+  "surfaces": {
+    "harness": { "role": "authority", "mutates": true, "impl": "harness_service.js", "endpoint": "POST /harness/job" },
+    "app/api/harness/missions": { "role": "adapter", "mutates": false, "note": "GET proxy to /harness/jobs -> toMission()" },
+    "app/api/mission-data": { "role": "adapter", "mutates": false, "note": "GET read of mission data files" },
+    "bin/MISSION.js": { "role": "not-a-surface", "mutates": false, "note": "11-line manifesto poem, not a mission engine — discovery miscount" },
+    "public/mission.html": { "role": "client", "mutates": false, "note": "static UI, renders via API" },
+    "app/mission": { "role": "client", "mutates": false, "note": "web UI page(s), render via API" }
+  }
+}

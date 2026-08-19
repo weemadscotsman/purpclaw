@@ -1,7 +1,7 @@
 {
   "tally": {
-    "NOT_IMPLEMENTED": 13,
-    "PASS": 7
+    "NOT_IMPLEMENTED": 12,
+    "PASS": 8
   },
   "results": [
     {
@@ -120,8 +120,8 @@
       "id": "mission-single-authority",
       "must_pass": true,
       "assert": "one mutation authority after legacy migration",
-      "status": "NOT_IMPLEMENTED",
-      "evidence": "needs a declared canonical mission authority marker to assert against"
+      "status": "PASS",
+      "evidence": "authority=harness (POST /harness/job); 5 surfaces are read/client only"
     },
     {
       "id": "zero-agent-utility",
