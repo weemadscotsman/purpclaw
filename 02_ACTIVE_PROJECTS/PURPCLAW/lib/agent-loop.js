@@ -29,6 +29,33 @@ const fs   = require('fs');
 const TOOLS = require('./tools');
 const FEEDBACK = (() => { try { return require('./user-feedback'); } catch { return null; } })();
 const IDLE_ENGINE = (() => { try { return require('./idle-engine'); } catch { return null; } })();
+const { enforceToolUse } = (() => { try { return require('./tools/tool-intent-gate'); } catch { return null; } })();
+const { IdleScheduler } = (() => { try { return require('./runtime/idle-scheduler'); } catch { return null; } })();
+
+// Debounced idle engine wrapper.
+// Spec: 120s real-idle debounce, skip if state fingerprint unchanged, no overlapping cycles,
+// background logs only, no foreground pollution.
+const IDLE_QUIET_MS = parseInt(process.env.PURPCLAW_IDLE_QUIET_MS || '120000', 10);
+const idleScheduler = IDLE_ENGINE && IdleScheduler ? new IdleScheduler({
+  quietMs: IDLE_QUIET_MS,
+  run: () => IDLE_ENGINE.runIdleCycle('agent-loop-end'),
+  fingerprint: async () => {
+    try {
+      const fsState = fs.existsSync(path.join(process.cwd(), 'agent_work', '.idle_engine_state.json'))
+        ? fs.readFileSync(path.join(process.cwd(), 'agent_work', '.idle_engine_state.json'), 'utf8')
+        : null;
+      return fsState ? fsState.length : 0;
+    } catch { return null; }
+  },
+  log: (entry) => {
+    try {
+      const logDir = path.join(process.cwd(), 'agent_work');
+      if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+      fs.appendFileSync(path.join(logDir, 'idle_scheduler.log'),
+        JSON.stringify({ ts: new Date().toISOString(), ...entry }) + '\n');
+    } catch {}
+  }
+}) : null;
 const ROUTED = (() => { try { return require('./control/agent-loop-bridge'); } catch { return null; } })();
 // Phase 3 — steering: resolve the capsule before recall/provider/tool work.
 // Advisory in the prompt, enforced at the dispatch boundary.
@@ -103,8 +130,21 @@ function buildSystemPrompt(opts = {}) {
   const tools = TOOLS.list();
   const toolList = tools.map(t => `- ${t.name}: ${t.description}`).join('\n');
   const cwd = opts.cwd || process.cwd();
+  const historyLen = opts.historyLength ?? 0;
+  const turnNumber = opts.turnNumber ?? 1;
+  const lastFailure = opts.lastFailure ?? null;
+  const workspace = opts.workspace || cwd;
   return [
     SYSTEM_PROMPT_BASE,
+    '',
+    '# Session state (canonical)',
+    `Turn: ${turnNumber}  ·  prior user turns in this session: ${historyLen}`,
+    `Workspace: ${workspace}`,
+    `CWD: ${cwd}`,
+    lastFailure ? `Last tool failure (avoid repeating): ${lastFailure}` : '',
+    'You are NOT on a "first message" — you have history. Reference earlier',
+    'turns when the user implies continuity. Never claim this is the start',
+    'of a session unless turnNumber === 1 AND historyLen === 0.',
     '',
     '# Available tools',
     toolList,
@@ -112,7 +152,7 @@ function buildSystemPrompt(opts = {}) {
     '# Tool call format',
     'Emit a JSON line: {"tool": "<name>", "args": {...}}',
     'You can emit text and tool calls in the same response. After the tool',
-    'runs, you\'ll see the result and can continue.',
+    "runs, you'll see the result and can continue.",
     '',
     'Examples:',
     '  Read a file: {"tool": "read", "args": {"path": "src/main.js"}}',
@@ -238,6 +278,19 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   if (prompt) messages.push({ role: 'user', content: prompt });
   let totalContent = '';
   let turn = 0;
+  // Session state passed into the system prompt for every turn.
+  // This is the canonical answer to "is this the first message?"
+  opts.historyLength = history.filter(m => m.role === 'user').length;
+  opts.turnNumber = 1;
+  // Repeat-call guard. Observed live: one "check the stack" prompt fired 47
+  // tool calls with `tasklist` repeated 24x identically — the model re-asking
+  // for data it already had. The system prompt says "avoid repeating", but a
+  // prompt is advisory; this is the enforcement. Identical tool+args short-
+  // circuits with a truthful pointer back to the result it already received.
+  const callCounts = new Map();
+  const MAX_IDENTICAL_CALLS = Number(process.env.PURPCLAW_MAX_IDENTICAL_TOOL_CALLS || 2);
+  opts.workspace = opts.workspace || process.cwd();
+  opts.lastFailure = null;
 
   // ── Personal model growth: capture the user prompt ──────────────────
   if (FEEDBACK && prompt) {
@@ -330,6 +383,7 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
     }
 
     yield { type: 'turn', turn, maxTurns, capsuleId: capId() };
+    opts.turnNumber = turn + 1;
 
     let turnText = '';
     let toolCalls = [];
@@ -356,14 +410,16 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       if (STEER && capsule) {
         const blocked = STEER.completionBlocked(capsule);
         if (blocked) {
-          if (IDLE_ENGINE) IDLE_ENGINE.markIdle('agent-loop-steering-blocked');
+          if (idleScheduler) idleScheduler.touch('agent-loop-steering-blocked');
+          else if (IDLE_ENGINE) IDLE_ENGINE.markIdle('agent-loop-steering-blocked');
           if (PSTEER) PSTEER.turnEnded();
           yield { type: 'steering-blocked', capsuleId: capsule.capsuleId, conflicts: blocked };
           return;
         }
       }
-      // ── Idle engine: session complete, beast wakes ──────────────────
-      if (IDLE_ENGINE) IDLE_ENGINE.markIdle('agent-loop-done');
+      // ── Idle engine: session complete, beast wakes (debounced) ──────
+      if (idleScheduler) idleScheduler.touch('agent-loop-done');
+      else if (IDLE_ENGINE) IDLE_ENGINE.markIdle('agent-loop-done');
       if (PSTEER) PSTEER.turnEnded();
       yield { type: 'done', turns: turn, totalContent, capsuleId: capId() };
       return;
@@ -383,6 +439,21 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
           continue;
         }
       }
+
+      // ── Repeat guard: identical tool+args, already run this session ──
+      let sig;
+      try { sig = call.tool + ':' + JSON.stringify(call.args || {}); }
+      catch { sig = call.tool + ':[unserialisable]'; }
+      const priorCount = callCounts.get(sig) || 0;
+      if (priorCount >= MAX_IDENTICAL_CALLS) {
+        const msg = `${call.tool} was already called ${priorCount}x with identical arguments in this run. ` +
+          `Reuse the result you already received instead of calling it again. ` +
+          `If you need different data, change the arguments; if you have enough, answer the user.`;
+        yield { type: 'tool-result', tool: call.tool, id: call.id || null, ok: false, error: msg, code: 'REPEAT_CALL_BLOCKED', capsuleId: capId() };
+        messages.push({ role: 'user', content: `[${call.tool}] ${msg}` });
+        continue;
+      }
+      callCounts.set(sig, priorCount + 1);
 
       yield { type: 'tool-call', tool: call.tool, args: call.args, capsuleId: capId() };
 
@@ -408,6 +479,10 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       if (FEEDBACK) FEEDBACK.captureToolResult(call.tool, result, { provider, model, turn });
 
       yield { type: 'tool-result', tool: call.tool, id: call.id || null, ok: result.ok, content: result.content || result.stdout || '', error: result.error, capsuleId: capId() };
+      // Capture last failure for the next-turn system prompt.
+      if (!result.ok && result.error) {
+        opts.lastFailure = `${call.tool}: ${String(result.error).slice(0, 200)}`;
+      }
       // Send tool result as a user message with tool name + content.
       // This lets the LLM see what the tool returned without requiring tool_call_id
       // (which becomes stale/invalid across multi-turn boundaries with MiniMax).
@@ -416,10 +491,26 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
         : `[${call.tool}] error: ${result.error}`;
       messages.push({ role: 'user', content: toolContent });
     }
+
+    // ── Tool intent gate: if prompt needed tools but none were called, retry
+    if (enforceToolUse) {
+      const lastUserMsg = messages.filter(m => m.role === 'user').pop();
+      const enforcement = enforceToolUse({ toolCalls, reply: '' }, lastUserMsg?.content || '');
+      if (enforcement?.forced_retry) {
+        // Push the original text reply as a user message and retry
+        if (enforcement.originalReply) {
+          messages.push({ role: 'user', content: enforcement.originalReply });
+        }
+        continue; // retry this turn
+      }
+    }
+
     // Loop again with the updated messages
   }
   // ── Idle engine: session ended (max turns or natural) ──────────────
-  if (IDLE_ENGINE) IDLE_ENGINE.markIdle('agent-loop-max-turns');
+  // Spec: debounced 120s, no foreground pollution, skip if state unchanged.
+  if (idleScheduler) idleScheduler.touch('agent-loop-end');
+  else if (IDLE_ENGINE) IDLE_ENGINE.markIdle('agent-loop-max-turns');
   if (PSTEER) PSTEER.turnEnded();
   // Phase 3 — max-turns exit obeys the same completion gate.
   if (STEER && capsule) {
@@ -429,7 +520,11 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       return;
     }
   }
-  yield { type: 'done', turns: turn, totalContent, maxTurnsHit: true, capsuleId: capId() };
+  // Strip idle engine markers from totalContent before yielding done
+  const cleanContent = typeof totalContent === 'string'
+    ? totalContent.replace(/\[idle-engine[^\]]*\]/gi, '').replace(/Session ended/gi, '').replace(/◇ injected env[^\n]*/gi, '')
+    : totalContent;
+  yield { type: 'done', turns: turn, totalContent: cleanContent, maxTurnsHit: true, capsuleId: capId() };
 }
 
 module.exports = { runAgent, agentTurn, buildSystemPrompt, extractToolCalls, AGENT_TOOLS, captureCorrection: (original, corrected, ctx) => FEEDBACK && FEEDBACK.captureCorrection(original, corrected, ctx) };

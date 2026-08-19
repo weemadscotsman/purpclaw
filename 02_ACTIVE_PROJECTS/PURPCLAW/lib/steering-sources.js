@@ -114,6 +114,11 @@ function loadSteeringRecords(steeringDir, now = new Date()) {
       field: rec.field || 'general',
       condition: rec.condition || null,
       rule: rec.rule,
+      // Preserve the operator's explicit block list. This was being dropped, so
+      // a record declaring forbidTools got NO deterministic enforcement — it
+      // only blocked when the tool name happened to appear in the rule prose.
+      // forbidTools is the enforcement path (steering-resolver applyToAction).
+      forbidTools: Array.isArray(rec.forbidTools) ? rec.forbidTools : undefined,
       source: rec._sourceRef,
       mandatory: rec.mandatory !== false,
       conflictsWith: rec.conflictsWith || [],

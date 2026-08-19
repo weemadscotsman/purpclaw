@@ -185,6 +185,11 @@ function loadBuiltInIndex() {
     field: 'pc-control',
     condition: null,
     rule: 'Never execute a destructive system action (format, rm -rf, registry edit) without an explicit operator confirmation captured in the steering capsule.',
+    // Deterministic enforcement. Previously this rule had no forbidTools, so the
+    // only block was a prose keyword regex — which matched any tool whose NAME
+    // appeared in the sentence above, e.g. the read-only `registry`/`format`
+    // tools. Enforcement belongs in an explicit list, not in prose matching.
+    forbidTools: ['format', 'format_disk', 'raw_disk_wipe', 'diskpart', 'mkfs', 'rm_rf', 'reg_write', 'reg_delete'],
     source: 'PURPCLAW_AUTONOMOUS_EXECUTION_CONTRACT.md',
     sourceChecksum: null,
     mandatory: true,
@@ -201,6 +206,10 @@ function loadBuiltInIndex() {
     field: 'pc-control',
     condition: null,
     rule: 'Never execute format_disk, raw_disk_wipe, or any low-level disk destruction action. These are blocked at the steering layer; explicit operator confirmation and an UNSAFE environment marker are required to override.',
+    // Explicit block list. The read-only `disk` (usage) tool is deliberately NOT
+    // here: the prose regex used to match the bare word "disk" in this sentence
+    // and blocked disk-usage checks entirely.
+    forbidTools: ['format_disk', 'raw_disk_wipe', 'diskpart', 'mkfs', 'low_level_format'],
     source: 'PURPCLAW_AUTONOMOUS_EXECUTION_CONTRACT.md §6',
     sourceChecksum: null,
     mandatory: true,
@@ -849,8 +858,16 @@ function applyToAction(capsule, action) {
       return { allowed: false, reason: `forbidden by ${f.id} (authority ${f.authority})`, rule: f.rule };
     }
     if (f.appliesTo && f.appliesTo.includes('tool-routing')) {
-      // Heuristic: if action.kind matches a known forbids keyword, block.
-      if (kind && f.rule && new RegExp('\\b' + esc(kind) + '\\b', 'i').test(f.rule)) {
+      // Prose backstop — deliberately NARROW. This used to block any tool whose
+      // name appeared as a word anywhere in the rule text, which false-blocked
+      // read-only tools: `disk` matched "format disk", and `logs`/`tokens`
+      // matched the no-secret-output rule. Real enforcement is forbidTools
+      // above; prose may only block compound identifiers (format_disk, rm_rf)
+      // or explicit destructive verbs — never a bare common noun.
+      const isCompound = /[_-]/.test(kind);
+      const isDestructiveVerb = /^(format|wipe|destroy|erase|shred|mkfs|diskpart)$/.test(kind);
+      if (kind && f.rule && (isCompound || isDestructiveVerb)
+          && new RegExp('\\b' + esc(kind) + '\\b', 'i').test(f.rule)) {
         return { allowed: false, reason: `forbidden by ${f.id} (authority ${f.authority})`, rule: f.rule };
       }
     }

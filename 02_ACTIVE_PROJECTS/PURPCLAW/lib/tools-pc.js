@@ -69,7 +69,13 @@ function registerAll(registry) {
     name: 'top', description: 'Show real-time system processes (top 20 by CPU).',
     inputSchema: { type:'object', properties: { count: { type:'number', default: 20 } } },
     execute: async (args) => {
-      const c = IS_WIN ? cmd('powershell', '-c', 'Get-Process | Sort-Object CPU -Descending | Select-Object -First '+(args.count||20)+' | Format-Table Name,Id,CPU,WorkingSet -AutoSize')
+      // Spawn powershell.exe DIRECTLY. Routing it through cmd() produced
+      // `cmd.exe /c powershell -c Get-Process | Sort-Object ...`, where cmd.exe
+      // consumed the pipe and tried to run Sort-Object itself
+      // ("'Sort-Object' is not recognized"). The script must reach PowerShell
+      // as one argument.
+      const c = IS_WIN ? ['powershell.exe', '-NoProfile', '-Command',
+          'Get-Process | Sort-Object CPU -Descending | Select-Object -First '+(args.count||20)+' | Format-Table Name,Id,CPU,WorkingSet -AutoSize | Out-String']
         : ['sh', '-c', `ps aux --sort=-%cpu | head -${(args.count||20)+1}`];
       const r = await sh(c); return { ok: r.ok, content: r.output };
     },
@@ -139,8 +145,15 @@ function registerAll(registry) {
     name: 'disk', description: 'Show disk space for each drive.',
     inputSchema: { type:'object', properties: { path:{type:'string',default:'/'} } },
     execute: async () => {
-      const c = IS_WIN ? cmd('wmic', 'logicaldisk', 'get', 'size,freespace,caption') : ['sh','-c','df -h'];
-      const r = await sh(c); return { ok: r.ok, content: r.output };
+      // wmic is removed on Windows 11 24H2+ — use PowerShell, keep wmic as fallback.
+      if (IS_WIN) {
+        const ps = await sh(['powershell.exe','-NoProfile','-Command',
+          'Get-PSDrive -PSProvider FileSystem | Select-Object Name,@{n="UsedGB";e={[math]::Round($_.Used/1GB,1)}},@{n="FreeGB";e={[math]::Round($_.Free/1GB,1)}} | Format-Table -AutoSize | Out-String']);
+        if (ps.ok && (ps.output || '').trim()) return { ok: true, content: ps.output };
+        const legacy = await sh(cmd('wmic','logicaldisk','get','size,freespace,caption'));
+        return { ok: legacy.ok, content: legacy.ok ? legacy.output : 'disk enumeration failed (Get-PSDrive and wmic both unavailable)' };
+      }
+      const r = await sh(['sh','-c','df -h']); return { ok: r.ok, content: r.output };
     },
   });
   registry.register({
@@ -195,27 +208,10 @@ function registerAll(registry) {
     execute: async (args) => { fs.unlinkSync(safePath(args.path)); return { ok:true, content: 'deleted' }; },
   });
   registry.register({
-    name: 'find', description: 'Find files by name pattern (scoped to dir, skips node_modules, capped at 50).',
+    name: 'find', description: 'Find files by name pattern.',
     inputSchema: { type:'object', properties: { pattern:{type:'string'}, dir:{type:'string',default:'.'} }, required: ['pattern'] },
     execute: async (args) => {
-      // The old Windows branch was `dir /s /b <pattern>` — UNSCOPED (ignored
-      // args.dir), UNFILTERED (descended into every node_modules), and
-      // UNLIMITED. On this repo it scanned the whole tree, blew past the 15s
-      // child-registry timeout, and got killed every call. Now both platforms
-      // scope to dir, skip node_modules/.git/.next, and cap at 50 results.
-      const dir = String(args.dir || '.');
-      const pat = String(args.pattern || '*');
-      let c;
-      if (IS_WIN) {
-        const psq = s => "'" + s.replace(/'/g, "''") + "'";
-        const script =
-          `Get-ChildItem -Path ${psq(dir)} -Recurse -Filter ${psq(pat)} -File -ErrorAction SilentlyContinue | ` +
-          `Where-Object { $_.FullName -notmatch 'node_modules|\\.git|\\.next' } | ` +
-          `Select-Object -First 50 -ExpandProperty FullName`;
-        c = ['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', script];
-      } else {
-        c = ['sh','-c',`find ${dir} -name "${pat}" -type f -not -path '*/node_modules/*' 2>/dev/null | head -50`];
-      }
+      const c = IS_WIN ? cmd('dir', '/s', '/b', args.pattern) : ['sh','-c',`find ${args.dir||'.'} -name "${args.pattern}" -type f | head -50`];
       const r = await sh(c); return { ok: r.ok, content: r.output };
     },
   });
@@ -246,6 +242,17 @@ function registerAll(registry) {
     name: 'ls', description: 'List directory contents with details.',
     inputSchema: { type:'object', properties: { path:{type:'string',default:'.'}, long:{type:'boolean'} } },
     execute: async (args) => {
+      // Windows: go through the fs adapter. `cmd /c dir E:/` parses the forward
+      // slash as a switch ("Invalid switch - \"\"") and paths with spaces break
+      // unquoted, so the naive dir call failed on every real path. The adapter
+      // normalises slashes/quotes and falls back cmd -> PowerShell -> node fs.
+      if (IS_WIN) {
+        try {
+          const { windowsLs } = require('./tools/windows-fs-adapter');
+          const r = await windowsLs(args.path || '.');
+          return { ok: r.ok, content: r.ok ? r.stdout : (r.stderr || 'listing failed') };
+        } catch { /* fall through to the legacy path below */ }
+      }
       const c = IS_WIN ? cmd('dir', args.long ? '' : '/b', args.path||'.') : ['sh','-c',`ls ${args.long?'-la':'-1'} ${args.path||'.'} | head -100`];
       const r = await sh(c); return { ok: r.ok, content: r.output };
     },
@@ -398,7 +405,19 @@ function registerAll(registry) {
   registry.register({
     name: 'drives', description: 'List available drives/volumes.',
     inputSchema: { type:'object', properties: {} },
-    execute: async () => { const c = IS_WIN?cmd('wmic','logicaldisk','get', 'caption,volumename,filesystem'):['sh','-c','df -hT']; const r = await sh(c); return { ok:r.ok, content:r.output }; },
+    // wmic was REMOVED in Windows 11 24H2 ("'wmic' is not recognized"), so this
+    // tool failed on every modern Windows box. PowerShell Get-PSDrive is the
+    // supported replacement; wmic stays only as a last-ditch fallback.
+    execute: async () => {
+      if (IS_WIN) {
+        const ps = await sh(['powershell.exe', '-NoProfile', '-Command',
+          'Get-PSDrive -PSProvider FileSystem | Select-Object Name,@{n="UsedGB";e={[math]::Round($_.Used/1GB,1)}},@{n="FreeGB";e={[math]::Round($_.Free/1GB,1)}},Root | Format-Table -AutoSize | Out-String']);
+        if (ps.ok && (ps.output || '').trim()) return { ok: true, content: ps.output };
+        const legacy = await sh(cmd('wmic','logicaldisk','get','caption,volumename,filesystem'));
+        return { ok: legacy.ok, content: legacy.ok ? legacy.output : 'drive enumeration failed (Get-PSDrive and wmic both unavailable)' };
+      }
+      const r = await sh(['sh','-c','df -hT']); return { ok:r.ok, content:r.output };
+    },
   });
 
   // ── QUICK ACCESS ──────────────────────────────────────────────
