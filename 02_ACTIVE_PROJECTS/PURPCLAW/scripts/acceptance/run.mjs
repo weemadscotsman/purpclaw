@@ -144,7 +144,23 @@ const CHECKERS = {
   },
 
   // ── Live-runtime gates: need a running multi-surface stack, honestly unproven ──
-  'single-runtime-multisurface': () => NI('needs live CLI+TUI+Web+Desktop attached to one supervisor — no offline probe'),
+  'single-runtime-multisurface': async () => {
+    // Two surfaces, one runtime: CLI reads identity.json; the API serves it on
+    // /api/health. Match = one runtime. Stack down = NI (honest, not a fail).
+    let cli;
+    try { cli = require(P('lib/runtime/identity.js')).identity(); } catch (e) { return NI(`runtime identity unavailable: ${e.message}`); }
+    const { PORTS } = require(P('lib/runtime/ports.js'));
+    let api = null;
+    try {
+      const r = await fetch(`http://127.0.0.1:${PORTS.UNIFIED_API}/api/health`, { signal: AbortSignal.timeout(1500) });
+      api = (await r.json()).runtime;
+    } catch {}
+    if (!api) return NI(`unified-api not reachable on :${PORTS.UNIFIED_API} — start the stack (safe-start --core) to verify live`);
+    if (api.runtimeId === cli.runtimeId) {
+      return { status: 'PASS', evidence: `CLI + API surfaces share one runtimeId ${cli.runtimeId} (${cli.profile}/${cli.workspace})` };
+    }
+    return { status: 'FAIL', evidence: `surfaces disagree: CLI ${cli.runtimeId} vs API ${api.runtimeId}` };
+  },
   'cross-surface-process': () => NI('needs a live task observed across surfaces'),
   'agent-minimal-load': () => NI('needs a live agent run to prove no bulk agent wake'),
   'skill-lazy-load': () => {

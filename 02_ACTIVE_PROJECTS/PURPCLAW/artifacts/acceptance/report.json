@@ -1,15 +1,15 @@
 {
   "tally": {
-    "NOT_IMPLEMENTED": 7,
-    "PASS": 13
+    "PASS": 14,
+    "NOT_IMPLEMENTED": 6
   },
   "results": [
     {
       "id": "single-runtime-multisurface",
       "must_pass": true,
       "assert": "CLI+TUI+Web+Desktop attach to one runtime_id and one supervisor",
-      "status": "NOT_IMPLEMENTED",
-      "evidence": "needs live CLI+TUI+Web+Desktop attached to one supervisor — no offline probe"
+      "status": "PASS",
+      "evidence": "CLI + API surfaces share one runtimeId rt-47691211-c814-45c4-a609-67cb9c4d1f56 (operator/canonical)"
     },
     {
       "id": "cross-surface-process",

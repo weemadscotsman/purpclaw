@@ -53,13 +53,16 @@ async function run(args = []) {
   const mgr = createManager();
   await mgr.init();
   const managed = await mgr.status();
+  let runtime = null;
+  try { runtime = require('../runtime/identity').identity(); } catch {}
 
   if (args.includes('--json')) {
-    console.log(JSON.stringify({ workingTree: s, managed }, null, 2));
+    console.log(JSON.stringify({ workingTree: s, runtime, managed }, null, 2));
     return;
   }
 
   console.log(`\nPURPCLAW v${s.version}${s.sha ? `  (${s.sha})` : ''}  [${s.branch}]`);
+  if (runtime) console.log(`  runtime: ${runtime.runtimeId}  ${runtime.profile}/${runtime.workspace}`);
   if (s.subject) console.log(`  head: ${s.subject}`);
   console.log(`  ${s.dirty ? `working tree: ${s.dirty} uncommitted change(s)` : 'working tree clean'}`);
   console.log(`  the CLI loads fresh from disk each run — you are already on the newest CLI code.`);

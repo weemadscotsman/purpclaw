@@ -2786,7 +2786,7 @@ const server = http.createServer(async (req, res) => {
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
 
-    if (pathname === '/api/health' && method === 'GET') return sendJson(res, 200, { status: 'healthy', timestamp: new Date().toISOString(), uptime: process.uptime(), memory: process.memoryUsage(), cpu: os.loadavg(), bridgeConnected: bridgeWs && !bridgeWs.destroyed });
+    if (pathname === '/api/health' && method === 'GET') { let runtime = null; try { runtime = require('./lib/runtime/identity').identity(); } catch {} return sendJson(res, 200, { status: 'healthy', runtime, timestamp: new Date().toISOString(), uptime: process.uptime(), memory: process.memoryUsage(), cpu: os.loadavg(), bridgeConnected: bridgeWs && !bridgeWs.destroyed }); }
     if (pathname === '/api/version' && method === 'GET') return sendJson(res, 200, { name: 'PURPCLAW', version: '7.0', codename: 'The Purple King', protocol: 'TURING v7.0', build: process.env.BUILD_HASH || 'dev' });
     // ── Mochi state bridge (unified pet across terminal + browser) ──────
     if (pathname === '/api/mochi' && method === 'GET') {
