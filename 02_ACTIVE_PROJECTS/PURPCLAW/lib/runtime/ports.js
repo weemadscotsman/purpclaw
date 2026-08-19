@@ -52,6 +52,7 @@ const DEFAULTS = Object.freeze({
   CHORUS:            7797,   // companion-chorus bridge
   BRIDGE_NEURO:      7799,   // thringlet-bridge / neuro-symbolic
   VISION_MONITOR:    7889,   // webcam monitoring (purpclaw-vision) — was 7781/7788, settled on 7889
+  A2A_GATEWAY:       9119,   // HTTP+WS: A2A agent-card, /a2a JSON-RPC, /v1/runs (agent-gateway-server)
   OLLAMA:            11434,  // local ollama default
   LMSTUDIO:          1234,   // local LM Studio default
 });
@@ -98,6 +99,7 @@ const SERVICES = Object.freeze([
   { id: 'goop',              name: 'GOOP Playground Broker',   port: PORTS.GOOP,             class: 'optional-dark', host: '127.0.0.1', protocol: 'http' },
   { id: 'autodream',         name: 'AutoDream on Cognitive Spine', port: PORTS.AUTODREAM,    class: 'cognitive-endpoint', host: '127.0.0.1', protocol: 'http' },
   { id: 'workers',           name: 'Worker Service',           port: PORTS.WORKER_POOL,      class: 'core', host: '127.0.0.1', protocol: 'http' },
+  { id: 'a2a-gateway',       name: 'A2A Agent Gateway',         port: PORTS.A2A_GATEWAY,      class: 'core', host: '127.0.0.1', protocol: 'http+websocket' },
   { id: 'ollama',            name: 'Ollama (local)',            port: PORTS.OLLAMA,           class: 'optional-dark', host: '127.0.0.1', protocol: 'http' },
   { id: 'lmstudio',          name: 'LM Studio (local)',         port: PORTS.LMSTUDIO,         class: 'optional-dark', host: '127.0.0.1', protocol: 'http' },
 ]);

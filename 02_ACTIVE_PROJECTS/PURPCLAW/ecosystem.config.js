@@ -155,6 +155,21 @@ module.exports = {
       windowsHide: true
     },
     {
+      // A2A Agent Gateway (:9119 from canonical registry) — agent-card,
+      // /a2a JSON-RPC, /v1/runs, WS. Restored after the build replacement
+      // dropped its entry; server lives in lib/agent-gateway-server.js.
+      name: 'purpclaw-a2a',
+      script: './agent_gateway_service.js',
+      exec_mode: 'fork',
+      wait_ready: false,
+      kill_timeout: 10000,
+      max_restarts: 3,
+      restart_delay: 10000,
+      max_memory: '256MB',
+      autorestart: true,
+      windowsHide: true
+    },
+    {
       name: 'purpclaw-thringlet',
       script: './thringlet_bridge.js',
       exec_mode: 'fork',
