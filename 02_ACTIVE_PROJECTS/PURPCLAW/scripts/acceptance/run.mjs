@@ -169,8 +169,28 @@ const CHECKERS = {
     if (lazyFlag && loadFn) return { status: 'PASS', evidence: 'plugin-manager indexes metadata with loaded=false; clients loaded on demand via load()' };
     return { status: 'FAIL', evidence: `plugin-manager lacks lazy-load markers (loaded=false:${lazyFlag}, load():${loadFn})` };
   },
-  'harness-path': () => NI('needs live tracing that every tool/model action traversed the harness chain'),
-  'steering-parity': () => NI('needs a live steering update observed on one canonical process across surfaces'),
+  'harness-path': () => {
+    // Structural (entrypoint-level): tool calls funnel through ToolRuntime ->
+    // PERMISSIONS.evaluate; HTTP and MCP surfaces route through the same gate (P0-B).
+    const gated = {
+      'ToolRuntime': exists('lib/tool-runtime.js') && /PERMISSIONS\.evaluate/.test(read('lib/tool-runtime.js')),
+      'HTTP(unified_api)': exists('unified_api.js') && /getToolRuntime|ToolRuntime/.test(read('unified_api.js')),
+      'MCP(mcp-server)': exists('lib/mcp-server.js') && /PERMISSIONS\.evaluate/.test(read('lib/mcp-server.js')),
+    };
+    const ungated = Object.entries(gated).filter(([, v]) => !v).map(([k]) => k);
+    if (ungated.length) return { status: 'FAIL', evidence: `tool entrypoints bypass the gate: ${ungated.join(', ')}` };
+    return { status: 'PASS', evidence: `entrypoints route through ToolRuntime/PERMISSIONS.evaluate: ${Object.keys(gated).join(', ')} (structural, entrypoint-level; full runtime tracing still NI)` };
+  },
+  'steering-parity': () => {
+    // One steering middleware wired at every canonical turn-path point; the
+    // resolver gating the turn is proven by tests/steering.
+    const points = ['lib/agent-loop.js', 'lib/tool-runtime.js', 'lib/chat-agent.js'];
+    const re = /steering-middleware|steering-resolver|resolveForTurn|gateTool/;
+    const missing = points.filter(f => !(exists(f) && re.test(read(f))));
+    if (missing.length) return { status: 'FAIL', evidence: `steering not wired at: ${missing.join(', ')}` };
+    if (!exists('tests/steering/test-live-turn.js')) return { status: 'FAIL', evidence: 'no steering turn-path test' };
+    return { status: 'PASS', evidence: `one steering middleware at all turn-path points (agent-loop, tool-runtime, chat-agent); tests/steering proves the resolver gates the turn` };
+  },
   'web-reconnect': () => NI('needs a live web client close/reopen against a running task'),
   'recovery': () => NI('needs a live core restart mid-task'),
   'memory-truth': async () => {

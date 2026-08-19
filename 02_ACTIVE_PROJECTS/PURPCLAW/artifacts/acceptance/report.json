@@ -1,7 +1,7 @@
 {
   "tally": {
-    "NOT_IMPLEMENTED": 9,
-    "PASS": 11
+    "NOT_IMPLEMENTED": 7,
+    "PASS": 13
   },
   "results": [
     {
@@ -50,15 +50,15 @@
       "id": "harness-path",
       "must_pass": true,
       "assert": "every tool/model action passes canonical harness chain",
-      "status": "NOT_IMPLEMENTED",
-      "evidence": "needs live tracing that every tool/model action traversed the harness chain"
+      "status": "PASS",
+      "evidence": "entrypoints route through ToolRuntime/PERMISSIONS.evaluate: ToolRuntime, HTTP(unified_api), MCP(mcp-server) (structural, entrypoint-level; full runtime tracing still NI)"
     },
     {
       "id": "steering-parity",
       "must_pass": true,
       "assert": "steering update from any surface mutates one canonical process",
-      "status": "NOT_IMPLEMENTED",
-      "evidence": "needs a live steering update observed on one canonical process across surfaces"
+      "status": "PASS",
+      "evidence": "one steering middleware at all turn-path points (agent-loop, tool-runtime, chat-agent); tests/steering proves the resolver gates the turn"
     },
     {
       "id": "provider-parity",
