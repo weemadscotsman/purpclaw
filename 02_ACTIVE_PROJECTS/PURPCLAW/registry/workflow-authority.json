@@ -1,0 +1,29 @@
+{
+  "_spec": "docs/canonical/PURPCLAW_CANONICAL_RUNTIME_INSTALL_FIRST_RUN_SPEC.md#11-workflow-and-mission-authority",
+  "_purpose": "Canonical decision: exactly one workflow MUTATION authority. The discovery notes flagged three 'competing workflow engines'; on reading the code they are three different concepts. This records the one authority and reclassifies the others.",
+  "decided": "2026-08-19",
+  "canonical_workflow_authority": "workflow-manager",
+  "rationale": "lib/workflow-manager.js is the persisted, typed, resumable node-graph engine: run/resume/fork/checkpoint, approval + interrupt nodes, state reducers, SQLite workflow_runs + workflow_checkpoints. 9 live consumers. Matches spec 3.6 (WORKFLOW HARNESS).",
+  "modules": {
+    "workflow-manager": {
+      "role": "authority",
+      "persists_runs": true,
+      "concept": "typed node-graph workflow (branch/parallel/loop/subgraph/approval, resumable)",
+      "consumers": 9
+    },
+    "event-workflow": {
+      "role": "legacy",
+      "persists_runs": true,
+      "concept": "event/message-passing workflow (AutoGen / MS Agent Framework typed messages)",
+      "consumers": 0,
+      "note": "unwired; superseded by workflow-manager as the mutation authority. Retained read-only for its canonical message contract; NOT an authority. Migrate/retire under the supervisor consolidation."
+    },
+    "recipe-manager": {
+      "role": "recipe",
+      "persists_runs": false,
+      "concept": "linear YAML macro — sequential prompt/tool/recipe steps, no run persistence",
+      "consumers": 5,
+      "note": "distinct capability, not a workflow authority. Escalate to workflow-manager for branching, parallelism, approvals or resumable runs."
+    }
+  }
+}

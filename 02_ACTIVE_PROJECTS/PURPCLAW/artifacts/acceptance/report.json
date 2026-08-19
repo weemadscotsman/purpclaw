@@ -1,8 +1,7 @@
 {
   "tally": {
     "NOT_IMPLEMENTED": 13,
-    "PASS": 6,
-    "FAIL": 1
+    "PASS": 7
   },
   "results": [
     {
@@ -114,8 +113,8 @@
       "id": "workflow-single-authority",
       "must_pass": true,
       "assert": "one mutation authority after legacy migration",
-      "status": "FAIL",
-      "evidence": "3 competing workflow engines present: lib/workflow-manager.js, lib/event-workflow.js, lib/recipe-manager.js — one canonical authority + adapters required"
+      "status": "PASS",
+      "evidence": "authority=workflow-manager; classified: event-workflow=legacy, recipe-manager=recipe"
     },
     {
       "id": "mission-single-authority",

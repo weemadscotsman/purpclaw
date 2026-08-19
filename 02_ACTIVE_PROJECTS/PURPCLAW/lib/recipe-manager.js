@@ -1,3 +1,7 @@
+// RECIPE capability (role=recipe in registry/workflow-authority.json), NOT a
+// workflow authority. Linear YAML macros: sequential prompt/tool/recipe steps,
+// no run persistence. For branching, parallelism, approvals or resumable runs,
+// use the canonical workflow authority lib/workflow-manager.js.
 'use strict';const fs=require('fs'),path=require('path'),yaml=require('js-yaml');const{ToolRuntime}=require('./tool-runtime');
 function dirs(cwd=process.cwd()){return[path.join(cwd,'.purpclaw','recipes'),path.join(cwd,'recipes'),path.join(__dirname,'..','recipes')];}
 function files(cwd){const result=[];for(const dir of dirs(cwd)){try{for(const entry of fs.readdirSync(dir)){if(/\.ya?ml$/i.test(entry))result.push(path.join(dir,entry));}}catch{}}return[...new Set(result)];}

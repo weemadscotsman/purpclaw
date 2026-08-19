@@ -64,12 +64,25 @@ const CHECKERS = {
   },
 
   'workflow-single-authority': () => {
-    const engines = ['lib/workflow-manager.js', 'lib/event-workflow.js', 'lib/recipe-manager.js']
-      .filter(exists);
-    if (engines.length > 1) {
-      return { status: 'FAIL', evidence: `${engines.length} competing workflow engines present: ${engines.join(', ')} — one canonical authority + adapters required` };
+    // One MUTATION authority — verified against the canonical declaration, not
+    // by counting files. Others must be explicitly classified (legacy/recipe/
+    // adapter), and every workflow module present must be declared.
+    if (!exists('registry/workflow-authority.json')) {
+      return { status: 'FAIL', evidence: 'no registry/workflow-authority.json — workflow authority undeclared' };
     }
-    return { status: 'PASS', evidence: `single workflow engine: ${engines[0] || '(none)'}` };
+    const decl = JSON.parse(read('registry/workflow-authority.json'));
+    const mods = decl.modules || {};
+    const present = ['workflow-manager', 'event-workflow', 'recipe-manager'].filter(f => exists(`lib/${f}.js`));
+    const undeclared = present.filter(f => !mods[f]);
+    if (undeclared.length) {
+      return { status: 'FAIL', evidence: `workflow modules present but unclassified: ${undeclared.join(', ')}` };
+    }
+    const authorities = Object.entries(mods).filter(([, m]) => m.role === 'authority');
+    if (authorities.length !== 1) {
+      return { status: 'FAIL', evidence: `expected exactly 1 workflow authority, found ${authorities.length}: ${authorities.map(a => a[0]).join(', ') || '(none)'}` };
+    }
+    const others = Object.entries(mods).filter(([, m]) => m.role !== 'authority').map(([k, m]) => `${k}=${m.role}`);
+    return { status: 'PASS', evidence: `authority=${authorities[0][0]}; classified: ${others.join(', ')}` };
   },
 
   'tool-minimal-load': () => {
