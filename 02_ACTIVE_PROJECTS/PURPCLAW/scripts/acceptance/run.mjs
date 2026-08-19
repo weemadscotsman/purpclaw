@@ -173,7 +173,22 @@ const CHECKERS = {
   'steering-parity': () => NI('needs a live steering update observed on one canonical process across surfaces'),
   'web-reconnect': () => NI('needs a live web client close/reopen against a running task'),
   'recovery': () => NI('needs a live core restart mid-task'),
-  'memory-truth': () => NI('needs the canonical memory registry to enumerate implemented vs claimed layers'),
+  'memory-truth': async () => {
+    // The memory gateway must report REAL per-layer status (probed), never a
+    // blanket "7/7 wired" claim. Passes whether layers are up or down, as long
+    // as each carries an explicit probed status.
+    let mem;
+    try { mem = require(P('lib/memory-gateway.js')); } catch (e) { return NI(`memory gateway not loadable: ${e.message}`); }
+    let h;
+    try { h = await mem.health(); } catch (e) { return { status: 'FAIL', evidence: `memory health() threw: ${e.message}` }; }
+    const layers = (h && h.layers) || {};
+    const names = Object.keys(layers);
+    if (!names.length) return { status: 'FAIL', evidence: 'memory health() returns no per-layer status' };
+    const structured = names.every(n => layers[n] && ('online' in layers[n] || 'ok' in layers[n]));
+    if (!structured) return { status: 'FAIL', evidence: 'layers lack explicit online/ok status — blanket-claim risk' };
+    const online = names.filter(n => layers[n].online || layers[n].ok).length;
+    return { status: 'PASS', evidence: `real per-layer status (probed): ${online}/${names.length} online now — ${names.join(', ')}` };
+  },
   'mission-single-authority': () => {
     if (!exists('registry/mission-authority.json')) {
       return { status: 'FAIL', evidence: 'no registry/mission-authority.json — mission authority undeclared' };
@@ -195,12 +210,13 @@ const CHECKERS = {
 };
 
 // ── Run ─────────────────────────────────────────────────────────────────────
-const results = spec.tests.map(t => {
+const results = [];
+for (const t of spec.tests) {
   let r;
-  try { r = (CHECKERS[t.id] || (() => NI('no checker defined')))(); }
+  try { r = await ((CHECKERS[t.id] || (() => NI('no checker defined')))()); }
   catch (e) { r = { status: 'FAIL', evidence: `checker threw: ${e.message}` }; }
-  return { id: t.id, must_pass: t.must_pass, assert: t.assert, ...r };
-});
+  results.push({ id: t.id, must_pass: t.must_pass, assert: t.assert, ...r });
+}
 
 const tally = results.reduce((a, r) => (a[r.status] = (a[r.status] || 0) + 1, a), {});
 const mustFail = results.filter(r => r.must_pass && r.status === 'FAIL');

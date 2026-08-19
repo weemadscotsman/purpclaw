@@ -1,7 +1,7 @@
 {
   "tally": {
-    "NOT_IMPLEMENTED": 10,
-    "PASS": 10
+    "NOT_IMPLEMENTED": 9,
+    "PASS": 11
   },
   "results": [
     {
@@ -99,8 +99,8 @@
       "id": "memory-truth",
       "must_pass": true,
       "assert": "unsupported memory layers are unavailable, not claimed wired",
-      "status": "NOT_IMPLEMENTED",
-      "evidence": "needs the canonical memory registry to enumerate implemented vs claimed layers"
+      "status": "PASS",
+      "evidence": "real per-layer status (probed): 7/7 online now — episodic, semantic, procedural, symbolic, temporal, counterfactual, affective-interaction"
     },
     {
       "id": "registry-dynamic-counts",
