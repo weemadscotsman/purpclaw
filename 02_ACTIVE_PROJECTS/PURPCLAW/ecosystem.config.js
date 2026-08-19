@@ -25,6 +25,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { PORTS } = require('./lib/runtime/ports'); // canonical port source — never hard-code below
 
 const envFile = path.join(__dirname, '.env');
 const env = {};
@@ -170,8 +171,8 @@ module.exports = {
       script: './node_modules/next/dist/bin/next',
       // dev mode is correct for a workshop with active edits — production `start`
       // requires `next build` first, and the workshop pace doesn't suit that.
-      // If you ever ship: run `next build` then change this to 'start -p 3000'.
-      args: 'dev -p 3000',
+      // If you ever ship: run `next build` then change 'dev' to 'start'.
+      args: `dev -p ${PORTS.WEB_UI}`,
       cwd: './',
       env: {
         NEXT_TELEMETRY_DISABLED: '1',

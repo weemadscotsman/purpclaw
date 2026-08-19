@@ -123,7 +123,7 @@ function checkLiveWeb() {
   try { const c = reqFresh(path.join(ROOT, 'lib', 'surface-capabilities.js')); const l = c.CAPABILITIES || (c.listCapabilities && c.listCapabilities()) || []; catalog = Array.isArray(l) ? l.length : Object.keys(l).length; } catch {}
   let liveCount = null;
   try {
-    const out = execFileSync('node', ['-e', `fetch('http://127.0.0.1:3030/api/capabilities').then(r=>r.json()).then(j=>console.log(j.count||(j.capabilities||[]).length)).catch(()=>console.log(''))`], { cwd: ROOT, encoding: 'utf8', timeout: 6000 }).trim();
+    const out = execFileSync('node', ['-e', `fetch('http://127.0.0.1:3000/api/capabilities').then(r=>r.json()).then(j=>console.log(j.count||(j.capabilities||[]).length)).catch(()=>console.log(''))`], { cwd: ROOT, encoding: 'utf8', timeout: 6000 }).trim();
     if (out) liveCount = parseInt(out, 10);
   } catch {}
   if (liveCount == null) return { id: 'liveweb', severity: 'ok', autofixable: false, drift: false, detail: `live web not reachable — catalog has ${catalog} (skip)`, fix: '' };

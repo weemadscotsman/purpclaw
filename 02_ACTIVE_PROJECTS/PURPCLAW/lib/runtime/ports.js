@@ -24,8 +24,8 @@ const path = require('path');
 
 // ── Defaults (must match safe-start / ecosystem.config.js) ──────────────────
 const DEFAULTS = Object.freeze({
-  WEB_UI:            3030,   // Next.js development and PM2 production port
-  WEB_UI_PM2:        3030,   // PM2-launched Next.js production port
+  WEB_UI:            3000,   // Next.js dev + PM2 port — MUST match ecosystem.config.js purpclaw-nextjs (-p)
+  WEB_UI_PM2:        3000,   // PM2-launched Next.js port (same server, same port)
   UNIFIED_API:       7780,   // HTTP: /api/chat, /api/health
   UNIFIED_API_TCP:  7778,   // TCP: raw JSON RPC (bridge and voice clients connect here)
   VOICE_COORD:       7781,   // HTTP + WebSocket: voice command routing
@@ -51,11 +51,8 @@ const DEFAULTS = Object.freeze({
   TRAY_AGENT:        7796,   // HTTP: Windows tray agent
   CHORUS:            7797,   // companion-chorus bridge
   BRIDGE_NEURO:      7799,   // thringlet-bridge / neuro-symbolic
-  VISION_MONITOR:    7889,   // webcam monitoring service
-  VISION_MONITOR:    7788,   // webcam monitoring (moved from 7781 — conflicted with voice_coordinator TCP)
-  VISION_MONITOR:    7889,   // final override for current purpclaw-vision port
+  VISION_MONITOR:    7889,   // webcam monitoring (purpclaw-vision) — was 7781/7788, settled on 7889
   OLLAMA:            11434,  // local ollama default
-  VISION_MONITOR:    7889,   // final current purpclaw-vision port
   LMSTUDIO:          1234,   // local LM Studio default
 });
 
