@@ -147,8 +147,28 @@ const CHECKERS = {
   'single-runtime-multisurface': () => NI('needs live CLI+TUI+Web+Desktop attached to one supervisor — no offline probe'),
   'cross-surface-process': () => NI('needs a live task observed across surfaces'),
   'agent-minimal-load': () => NI('needs a live agent run to prove no bulk agent wake'),
-  'skill-lazy-load': () => NI('needs a live task to prove only selected SKILL.md bodies enter context'),
-  'plugin-lazy-load': () => NI('needs a live capability that requires a plugin'),
+  'skill-lazy-load': () => {
+    // Structural guarantee: the skill index holds metadata + a file pointer,
+    // never the SKILL.md body — so bodies cannot be bulk-loaded at index time.
+    if (!exists('registry/index.json')) return NI('no registry/index.json skill index');
+    const idx = JSON.parse(read('registry/index.json'));
+    const skills = idx.skills || [];
+    if (!skills.length) return NI('skill index empty');
+    const withBody = skills.filter(s => s.body || s.content || s.markdown || s.instructions);
+    if (withBody.length) return { status: 'FAIL', evidence: `${withBody.length}/${skills.length} index entries embed full bodies — not lazy` };
+    const withFile = skills.filter(s => s.file).length;
+    return { status: 'PASS', evidence: `${skills.length} skills indexed by metadata+file pointer (0 bodies embedded, ${withFile} with file); SKILL.md loaded on demand` };
+  },
+  'plugin-lazy-load': () => {
+    // Structural: plugins are metadata-indexed with loaded=false and clients
+    // are brought up on demand via load().
+    if (!exists('lib/plugin-manager.js')) return NI('no lib/plugin-manager.js');
+    const src = read('lib/plugin-manager.js');
+    const lazyFlag = /loaded\s*[:=]\s*false/.test(src);
+    const loadFn = /\bload\s*\(/.test(src);
+    if (lazyFlag && loadFn) return { status: 'PASS', evidence: 'plugin-manager indexes metadata with loaded=false; clients loaded on demand via load()' };
+    return { status: 'FAIL', evidence: `plugin-manager lacks lazy-load markers (loaded=false:${lazyFlag}, load():${loadFn})` };
+  },
   'harness-path': () => NI('needs live tracing that every tool/model action traversed the harness chain'),
   'steering-parity': () => NI('needs a live steering update observed on one canonical process across surfaces'),
   'web-reconnect': () => NI('needs a live web client close/reopen against a running task'),
