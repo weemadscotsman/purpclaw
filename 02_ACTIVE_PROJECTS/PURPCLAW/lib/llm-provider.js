@@ -11,6 +11,53 @@ const http  = require('http');
 const { URL } = require('url');
 
 /**
+ * Map raw HTTP error bodies to human-readable messages for every surface.
+ * Replaces the raw "HTTP 401: {}" leak with actionable diagnosis.
+ *
+ * @param {string} body          - raw response body (may be empty or JSON)
+ * @param {number} statusCode   - HTTP status code
+ * @param {'openai'|'anthropic'|'gemini'} providerType
+ * @returns {string}             - human-readable error message
+ */
+function humanError(body, statusCode, providerType) {
+  // Try to parse structured error
+  let code = null, message = null;
+  try { const j = JSON.parse(body); code = j.error?.code || j.code || j.status; message = j.error?.message || j.message || j.status; } catch (_) {}
+
+  if (statusCode === 401 || statusCode === 402 || statusCode === 403 || statusCode === 429) {
+    if (code === 'invalid_api_key' || code === 'error.api_key_invalid' || code === 1004 || (message && message.toLowerCase().includes('auth'))) {
+      return `Provider authentication failed (HTTP ${statusCode}). ` +
+        `Your API key is invalid, expired, or lacks permissions. ` +
+        `Refresh the key for provider "${providerType}" and update your .env file.`;
+    }
+    if (code === 'insufficient_quota' || code === 'billing_not_enabled') {
+      return `Provider "${providerType}" has no credit or the free tier is exhausted (HTTP ${statusCode}). ` +
+        `Add credit or switch to a funded key.`;
+    }
+    if (code === 'model_not_found' || code === 'invalid_model') {
+      return `Model not found (HTTP ${statusCode}). ` +
+        `The model ID may be wrong or the key doesn't have access to this model.`;
+    }
+    return `Provider "${providerType}" rejected the request (HTTP ${statusCode}). ` +
+      `Authentication, billing, or permissions issue — check your API key.`;
+  }
+
+  if (statusCode === 429) {
+    return `Provider "${providerType}" rate-limited (HTTP 429). ` +
+      `Wait a moment and retry, or check your request frequency.`;
+  }
+
+  if (statusCode === 500 || statusCode === 502 || statusCode === 503) {
+    return `Provider "${providerType}" had a server error (HTTP ${statusCode}). ` +
+      `This is usually temporary — retry shortly.`;
+  }
+
+  // Fallback: include the raw body snippet if it's meaningful
+  const snippet = body && body.length > 3 ? ` — ${body.slice(0, 200)}` : '';
+  return `HTTP ${statusCode}${snippet}`;
+}
+
+/**
  * PURPCLAW LLM Provider
  * =====================
  * Unified, provider-agnostic LLM interface. Bring your own API key.
@@ -29,12 +76,11 @@ const { URL } = require('url');
  *
  *   SWARM_PROVIDER=kimi           # Provider for the heavy swarm reasoning engine
  *   SWARM_API_KEY=...             # API key for swarm provider (falls back to LLM_API_KEY)
- *   SWARM_MODEL=kimi-k2-6         # Swarm model (Kimi K2.6 — 100-wide agent fanout)
+ *   SWARM_MODEL=kimi-k2-5         # Swarm model
  *
  * Supported providers (OpenAI-compatible):
  *   openai      → api.openai.com
- *   kimi        → api.moonshot.cn          (Kimi K2 / K2.6)
- *   glm         → api.z.ai/api/paas/v4     (GLM Coding Plan, GLM-4.6)
+ *   kimi        → api.moonshot.cn          (Kimi K2)
  *   groq        → api.groq.com/openai/v1
  *   deepseek    → api.deepseek.com/v1
  *   openrouter  → openrouter.ai/api/v1     (access 200+ models)
@@ -76,14 +122,6 @@ const PROVIDERS = {
     authHeader   : 'Bearer',
     format       : 'openai',
   },
-  glm: {
-    // Z.AI (Zhipu AI) GLM Coding Plan — OpenAI-compatible chat/completions.
-    // Get a key at https://z.ai/manage-apikey (GLM Coding Plan tier).
-    baseUrl      : 'https://api.z.ai/api/paas/v4',
-    defaultModel : 'glm-4.6',
-    authHeader   : 'Bearer',
-    format       : 'openai',
-  },
   minimax: {
     baseUrl      : 'https://api.minimax.io/v1',
     defaultModel : 'MiniMax-M2.7',
@@ -122,12 +160,12 @@ const PROVIDERS = {
   },
   openrouter: {
     baseUrl      : 'https://openrouter.ai/api/v1',
-    defaultModel : 'openai/gpt-4o-mini',
+    defaultModel : 'anthropic/claude-3.5-haiku',
     authHeader   : 'Bearer',
     format       : 'openai',
     extraHeaders : {
-      'HTTP-Referer': process.env.OPENROUTER_SITE_URL || 'http://127.0.0.1:3030',
-      'X-Title': process.env.OPENROUTER_APP_TITLE || 'PURPCLAW',
+      'HTTP-Referer' : 'https://github.com/purpclaw/purpclaw',
+      'X-Title'      : 'PURPCLAW',
     },
   },
   together: {
@@ -265,11 +303,6 @@ const PROVIDER_ENV_ALIASES = {
     model: ['KIMI_MODEL', 'MOONSHOT_MODEL'],
     baseUrl: ['KIMI_BASE_URL', 'MOONSHOT_BASE_URL'],
   },
-  glm: {
-    apiKey: ['GLM_API_KEY', 'ZAI_API_KEY', 'Z_AI_API_KEY'],
-    model: ['GLM_MODEL', 'ZAI_MODEL'],
-    baseUrl: ['GLM_BASE_URL', 'ZAI_BASE_URL'],
-  },
   minimax: {
     apiKey: ['MINIMAX_API_KEY'],
     model: ['MINIMAX_MODEL'],
@@ -279,11 +312,6 @@ const PROVIDER_ENV_ALIASES = {
     apiKey: ['NVIDIA_API_KEY', 'NVAPI_KEY', 'NVIDIA_NIM_API_KEY'],
     model: ['NVIDIA_MODEL', 'NVIDIA_NIM_MODEL'],
     baseUrl: ['NVIDIA_BASE_URL', 'NVIDIA_NIM_BASE_URL', 'NVIDIA_API_BASE'],
-  },
-  openrouter: {
-    apiKey: ['OPENROUTER_API_KEY'],
-    model: ['OPENROUTER_MODEL'],
-    baseUrl: ['OPENROUTER_BASE_URL'],
   },
   huggingface: {
     apiKey: ['HUGGINGFACE_API_KEY', 'HF_TOKEN', 'HUGGINGFACE_TOKEN'],
@@ -319,97 +347,14 @@ function firstEnv(keys = []) {
 
 // ── Config resolution ─────────────────────────────────────────────────────────
 
-// Env prefix → config lane. Declared once: it was previously an inline ternary
-// chain inside resolveConfig(), so adding a lane meant editing an expression
-// that read like a ransom note and was invisible to anything wanting to
-// enumerate the lanes.
-const LANE_BY_PREFIX = {
-  LLM: 'PRIMARY_CHAT',
-  SWARM: 'SWARM',
-  CODE: 'CODE',
-  DIVISION: 'DIVISION',
-  REASONING: 'REASONING',
-  FALLBACK: 'FALLBACK',
-};
-
-/**
- * What a real call will actually use, and why. This is the function status
- * surfaces must report from — reporting a lane's configured value while the
- * call resolves something else is the whole P0-C defect.
- */
-function explainConfig(envPrefix = 'LLM') {
-  const lane = LANE_BY_PREFIX[envPrefix] || 'PRIMARY_CHAT';
-  const cfg = resolveConfig(envPrefix);
-  const envProvider = process.env[`${envPrefix}_PROVIDER`] || null;
-  const envModel = (process.env[`${envPrefix}_MODEL`] || '').trim() || null;
-  let userLane = {};
-  try { userLane = require('./runtime/provider-config').getLane(lane); } catch { /* absent */ }
-  return {
-    lane,
-    // providerName, not provider: resolveConfig returns the provider *object*
-    // under .provider (baseUrl, authHeader, format…). Reporting that as "the
-    // provider" would put a config blob where a name belongs — and any status
-    // surface rendering it would show [object Object].
-    provider: cfg.providerName,
-    model: cfg.model,
-    hasKey: Boolean(cfg.apiKey),
-    source: {
-      provider: envProvider ? 'env' : (userLane.provider ? 'provider-config' : 'default'),
-      model: envModel ? 'env' : (userLane.model ? 'provider-config' : 'default'),
-    },
-    configPath: (() => {
-      try { return require('./runtime/provider-config').configPath(); } catch { return null; }
-    })(),
-  };
-}
-
 function resolveConfig(envPrefix = 'LLM') {
-  // P0-C: Check provider-config.json for user settings (from WebUI settings page).
-  // Precedence: env vars > provider-config.json > hardcoded defaults.
-  // The settings UI writes to ~/.purpclaw/provider-config.json (lane: {provider, model}).
-  // If env vars are not set, resolveConfig now reads that file so the WebUI
-  // settings actually steer the runtime instead of being ignored.
-  let configProvider = null, configModel = null;
-  const laneName = LANE_BY_PREFIX[envPrefix] || 'PRIMARY_CHAT';
-  try {
-    // P0-C: read through provider-config, never by re-deriving the path here.
-    // This block used to compute its own config path as
-    //   PROVIDER_CONFIG_PATH || ~/.purpclaw/provider-config.json
-    // which silently dropped OPENCLAUDE_CONFIG_DIR — a variable
-    // provider-config.configPath() does honour. With that set, `purpclaw
-    // provider load` and the settings page wrote one file while real LLM calls
-    // read a different one, so the UI reported a provider the runtime was not
-    // using and every request quietly fell through to env/hardcoded defaults.
-    // That is the exact P0-C failure: config steers status, env steers reality.
-    const lane = require('./runtime/provider-config').getLane(laneName);
-    if (lane.provider) configProvider = lane.provider;
-    if (lane.model) configModel = lane.model;
-  } catch (e) { /* config absent or unreadable — env and defaults still apply */ }
-
-  const providerName = (process.env[`${envPrefix}_PROVIDER`] || configProvider || 'openai').toLowerCase();
-  const provider     = PROVIDERS[providerName];
-  if (!provider) {
-    const known = Object.keys(PROVIDERS).join(', ');
-    console.warn(`[LLM] Unknown ${envPrefix}_PROVIDER="${providerName}" — falling back to openai. Known providers: ${known}`);
-    return resolveConfig('OPENAI'); // recurse to get a valid config; will warn again about missing API key
-  }
-  const _provider = provider;
+  const providerName = (process.env[`${envPrefix}_PROVIDER`] || 'openai').toLowerCase();
+  const provider     = PROVIDERS[providerName] || PROVIDERS.openai;
 
   const aliases  = PROVIDER_ENV_ALIASES[providerName] || {};
-  // Native providers own their own baseUrl. Without this guard, a shared
-  // LLM_BASE_URL=https://api.minimax.io/v1 in the env would silently re-route
-  // GLM/Kimi/MiniMax/DeepSeek/OpenAI/Anthropic/Gemini/NVIDIA to that proxy
-  // and the call would 402 (invalid_request_error / insufficient balance).
-  // Only `custom` and `atomic-chat` users actually want LLM_BASE_URL.
-  const NATIVE_PROVIDERS = new Set(['glm','kimi','moonshot','minimax','deepseek','openai','anthropic','gemini','nvidia','huggingface','groq','together','mistral','cohere']);
-  const isCustom = providerName === 'custom' || providerName === 'atomic-chat';
-  const baseUrl  = isCustom
-    ? (process.env[`${envPrefix}_BASE_URL`] || firstEnv(aliases.baseUrl) || provider.baseUrl)
-    : (                          firstEnv(aliases.baseUrl) || provider.baseUrl);
+  const baseUrl  = process.env[`${envPrefix}_BASE_URL`] || firstEnv(aliases.baseUrl) || provider.baseUrl;
   const apiKey   = process.env[`${envPrefix}_API_KEY`]  || firstEnv(aliases.apiKey)  || provider.apiKey || '';
-  const model    = (process.env[`${envPrefix}_MODEL`] && process.env[`${envPrefix}_MODEL`].trim())
-                   || (configModel && configModel.trim())
-                   || firstEnv(aliases.model) || provider.defaultModel;
+  const model    = process.env[`${envPrefix}_MODEL`]    || firstEnv(aliases.model)   || provider.defaultModel;
 
   if (!apiKey && providerName !== 'ollama' && providerName !== 'lmstudio' && providerName !== 'custom') {
     // Warn once, don't spam
@@ -493,56 +438,6 @@ function httpRequest(url, method, headers, body, timeoutMs = 30000) {
 }
 
 // ── Format adapters ───────────────────────────────────────────────────────────
-
-/**
- * Repair multi-turn tool-call history so OpenAI-compatible endpoints (NIM,
- * MiniMax) never 400. Two invalid shapes reach us from saved sessions and
- * agent loops:
- *   1. assistant message carrying tool_calls with no matching role:'tool'
- *      replies following it → strip the tool_calls (keep any text).
- *   2. role:'tool' message whose tool_call_id matches no preceding assistant
- *      tool_call → downgrade to a plain user message with the same content.
- * Non-destructive: returns a new array, originals untouched.
- */
-function sanitizeToolHistory(messages) {
-  if (!Array.isArray(messages)) return messages;
-  const out = [];
-  for (let i = 0; i < messages.length; i++) {
-    const m = messages[i];
-    if (m && m.role === 'assistant' && Array.isArray(m.tool_calls) && m.tool_calls.length) {
-      const ids = new Set(m.tool_calls.map(c => c && c.id).filter(Boolean));
-      // Collect the run of tool replies immediately following
-      let j = i + 1;
-      const answered = new Set();
-      while (j < messages.length && messages[j] && messages[j].role === 'tool') {
-        if (ids.has(messages[j].tool_call_id)) answered.add(messages[j].tool_call_id);
-        j++;
-      }
-      if (answered.size === ids.size && ids.size > 0) {
-        out.push(m); // fully answered — pass through untouched, replies included
-        for (let k = i + 1; k < j; k++) out.push(messages[k]);
-      } else {
-        // Orphaned/partial tool_calls → strip them, keep text + fold results in
-        const text = typeof m.content === 'string' ? m.content : '';
-        const calls = m.tool_calls.map(c => `[called ${c.function?.name || 'tool'}(${c.function?.arguments || ''})]`).join('\n');
-        out.push({ role: 'assistant', content: [text, calls].filter(Boolean).join('\n') || '[tool call]' });
-        for (let k = i + 1; k < j; k++) {
-          const t = messages[k];
-          out.push({ role: 'user', content: `[tool result]\n${typeof t.content === 'string' ? t.content : JSON.stringify(t.content || '')}` });
-        }
-      }
-      i = j - 1;
-      continue;
-    }
-    if (m && m.role === 'tool') {
-      // tool reply with no preceding assistant tool_calls (handled above) → downgrade
-      out.push({ role: 'user', content: `[tool result]\n${typeof m.content === 'string' ? m.content : JSON.stringify(m.content || '')}` });
-      continue;
-    }
-    out.push(m);
-  }
-  return out;
-}
 
 /**
  * OpenAI-compatible chat completion.
@@ -639,7 +534,8 @@ async function* streamChatOpenAI(cfg, messages, opts = {}) {
     // Read the error body then throw
     let body = '';
     for await (const c of res) body += c;
-    throw new Error(`HTTP ${res.statusCode} [prov=${cfg.providerName} url=${cfg.baseUrl} model=${cfg.model} key…${(cfg.apiKey || '').slice(-4)}]: ${body.slice(0, 200)}`);
+    const human = humanError(body.trim(), res.statusCode, 'openai');
+    throw new Error(human);
   }
 
   // Parse SSE stream. Format:
@@ -647,13 +543,6 @@ async function* streamChatOpenAI(cfg, messages, opts = {}) {
   //   data: [DONE]\n\n
   let buf = '';
   let model = '';
-  // Native tool-calling: accumulate streamed tool_call fragments by index.
-  // OpenAI/NIM split one call across many deltas (id+name first, then
-  // argument string fragments). Flushed on the final chunk as `toolCalls`.
-  const toolAcc = [];
-  const flushToolCalls = () => toolAcc
-    .filter(t => t && t.function && t.function.name)
-    .map(t => ({ id: t.id, type: 'function', function: { name: t.function.name, arguments: t.function.arguments || '' } }));
   for await (const chunk of res) {
     buf += chunk.toString('utf-8');
     let nl = null;
@@ -663,7 +552,7 @@ async function* streamChatOpenAI(cfg, messages, opts = {}) {
       if (!line || !line.startsWith('data:')) continue;
       const payload = line.slice(5).trim();
       if (payload === '[DONE]') {
-        yield { content: '', done: true, model, toolCalls: flushToolCalls() };
+        yield { content: '', done: true, model };
         return;
       }
       try {
@@ -671,25 +560,37 @@ async function* streamChatOpenAI(cfg, messages, opts = {}) {
         if (j.model) model = j.model;
         const delta = j.choices?.[0]?.delta;
         const content = delta?.content || '';
-        // DeepSeek V4 Pro thinking mode: emit reasoning_content as a separate
-        // stream field so the agent loop can round-trip it back to the API.
-        const reasoning = delta?.reasoning_content || '';
-        for (const tc of delta?.tool_calls || []) {
-          const idx = tc.index ?? 0;
-          const acc = toolAcc[idx] || (toolAcc[idx] = { id: '', function: { name: '', arguments: '' } });
-          if (tc.id) acc.id = tc.id;
-          if (tc.function?.name) acc.function.name += tc.function.name;
-          if (tc.function?.arguments) acc.function.arguments += tc.function.arguments;
-        }
         if (content) yield { content, done: false, model };
-        if (reasoning) yield { content: '', reasoning_content: reasoning, done: false, model };
-        // OpenAI puts usage in the last chunk sometimes
-        if (j.usage) yield { content: '', done: true, model, usage: j.usage, toolCalls: flushToolCalls() };
-      } catch (e) { /* skip malformed line */ }
+        // Yield structured tool_calls from the streaming delta (MiniMax/OpenAI send them here)
+        const toolCalls = delta?.tool_calls;
+        if (toolCalls && Array.isArray(toolCalls)) {
+          for (const tc of toolCalls) {
+            if (tc?.function?.name) {
+              // Contract consumed by agent-loop.js agentTurn(): it matches on
+              // `chunk.type === 'tool-call'` and reads id/tool/args. A previous
+              // patch changed this to {toolCall:{name,arguments}} with no type
+              // and content:'', so every native tool call was silently dropped
+              // (falsy content, no type match) — the agent could never run a
+              // tool when tool schemas were passed. The id also matters: MiniMax
+              // correlates tool results by tool_call_id.
+              yield {
+                type: 'tool-call',
+                content: '',
+                done: false,
+                model,
+                id: tc.id || null,
+                tool: tc.function.name,
+                args: (() => {
+                  try { return typeof tc.function.arguments === 'string' ? JSON.parse(tc.function.arguments || '{}') : (tc.function.arguments || {}); }
+                  catch { return {}; }
+                })(),
+              };
+            }
+          }
+        }
+      } catch (_) {}
     }
   }
-  // If we exit the loop without [DONE], signal end
-  yield { content: '', done: true, model, toolCalls: flushToolCalls() };
 }
 
 /**
@@ -750,7 +651,7 @@ async function* streamChatAnthropic(cfg, messages, opts = {}) {
   if (res.statusCode < 200 || res.statusCode >= 300) {
     let errBody = '';
     for await (const c of res) errBody += c;
-    throw new Error(`HTTP ${res.statusCode}: ${errBody.slice(0, 300)}`);
+    throw new Error(humanError(errBody.trim(), res.statusCode, 'anthropic'));
   }
 
   let buf = '';
@@ -845,7 +746,7 @@ async function* streamChatGemini(cfg, messages, opts = {}) {
   if (res.statusCode < 200 || res.statusCode >= 300) {
     let errBody = '';
     for await (const c of res) errBody += c;
-    throw new Error(`HTTP ${res.statusCode}: ${errBody.slice(0, 300)}`);
+    throw new Error(humanError(errBody.trim(), res.statusCode, 'gemini'));
   }
 
   let buf = '';
@@ -1070,32 +971,7 @@ function dispatchStreamChat(cfg, messages, opts) {
  *   LLM_FALLBACK_MODEL     default per-provider (Ollama default: qwen2.5:3b)
  * Returns null when fallback is disabled.
  */
-/**
- * Deterministic three-tier fallback chain:
- *
- * Tier 1 — Primary (cfg.providerName):
- *   Set by LLM_PROVIDER env var or opts.provider per-call override.
- *   Never silently replaced; this is the caller's intent.
- *
- * Tier 2 — Local fallback (fb.providerName):
- *   Set by LLM_FALLBACK env var (default: ollama, mode: lmstudio).
- *   Respects LLM_FALLBACK=off | none | 0 to disable.
- *   Also disabled when LLM_NO_AUTO_FALLBACK=1.
- *
- * Tier 3 — Global provider (resolveConfig('LLM')):
- *   Only used when BOTH Tier 1 AND Tier 2 have failed.
- *   Guards against a per-agent provider key (e.g. NVIDIA) expiring
- *   mid-mission while the global provider (MINIMAX) still has quota.
- *   Set LLM_NO_AUTO_FALLBACK=1 to disable all three tiers at once.
- *
- * Opt-out flag: LLM_NO_AUTO_FALLBACK=1
- *   Disables Tier 2 and Tier 3. Tier 1 failure → immediate throw
- *   with the real error, no silent re-routing.
- *
- * Debug: PURPCLAW_LLM_DEBUG=1 logs every fallback transition.
- */
 function fallbackConfig() {
-  if (process.env.LLM_NO_AUTO_FALLBACK === '1') return null;
   const mode = (process.env.LLM_FALLBACK || 'ollama').toLowerCase().trim();
   if (mode === 'off' || mode === 'none' || mode === '0') return null;
   const providerName = mode === 'lmstudio' ? 'lmstudio' : 'ollama';
@@ -1118,62 +994,12 @@ function fallbackConfig() {
  * fallback provider (Ollama/LM Studio) if one is configured and reachable.
  * Usage is recorded on whichever provider actually answered.
  */
-// ── Rate-limit + backoff guard ────────────────────────────────────────────
-// Prevents RPM slamming, which trips 429s and risks PERMANENT provider bans.
-// Per provider: enforce a minimum gap between calls (an RPM cap) and, on a
-// 429/503, hold that provider on an EXPONENTIAL cooldown so we stop hitting it
-// instead of machine-gunning retries through the fallback chain. While a
-// provider is cooling down, calls fail fast WITHOUT touching the network.
-// (Eddie 2026-06-24 — operator nearly got rate-limit-banned.)
-const _provThrottle = new Map();
-const PROVIDER_RPM = { minimax: 18, nvidia: 40, kimi: 18, deepseek: 18, glm: 18, gemini: 30, ollama: 600, lmstudio: 600 };
-function _provRpm(p) { return PROVIDER_RPM[p] || 24; }
-function _provState(p) { let s = _provThrottle.get(p); if (!s) { s = { lastAt: 0, cooldownUntil: 0, backoffMs: 0 }; _provThrottle.set(p, s); } return s; }
-function _statusOf(e) {
-  const n = Number(e && (e.status || e.code));
-  if (n) return n;
-  const m = String((e && e.message) || '').match(/\b(429|503|502|500|403|401)\b/);
-  return m ? Number(m[1]) : 0;
-}
-async function _throttleGate(provider) {
-  const s = _provState(provider);
-  const now = Date.now();
-  if (now < s.cooldownUntil) {
-    const secs = Math.ceil((s.cooldownUntil - now) / 1000);
-    const err = new Error(`provider "${provider}" is cooling down ${secs}s after a rate-limit (429) — holding instead of slamming the API`);
-    err.status = 429; err.cooldown = true;
-    throw err;
-  }
-  const minGap = Math.ceil(60000 / _provRpm(provider));
-  const wait = s.lastAt + minGap - now;
-  if (wait > 0) await new Promise(r => setTimeout(r, wait));
-  s.lastAt = Date.now();
-}
-function _noteResult(provider, statusOrErr) {
-  // Never let a self-inflicted cooldown error re-extend the cooldown.
-  if (statusOrErr && statusOrErr.cooldown) return;
-  const s = _provState(provider);
-  const code = typeof statusOrErr === 'number' ? statusOrErr : _statusOf(statusOrErr);
-  if (code === 429 || code === 503 || code === 502) {
-    s.backoffMs = Math.min(s.backoffMs ? s.backoffMs * 2 : 30000, 600000); // 30s → … → 10min
-    s.cooldownUntil = Date.now() + s.backoffMs;
-  } else if (code === 0 || (code >= 200 && code < 400)) {
-    s.backoffMs = 0; s.cooldownUntil = 0; // healthy → clear any backoff
-  }
-}
-function llmThrottleState() {
-  return [..._provThrottle.entries()].map(([p, s]) => ({ provider: p, coolingMs: Math.max(0, s.cooldownUntil - Date.now()), backoffMs: s.backoffMs }));
-}
-
 async function runWithFallback(cfg, messages, opts) {
   try {
-    await _throttleGate(cfg.providerName);
     const result = await dispatchChat(cfg, messages, opts);
-    _noteResult(cfg.providerName, 200);
     recordLLMUsage(cfg.providerName, cfg.model, result.usage);
     return result;
   } catch (primaryErr) {
-    _noteResult(cfg.providerName, primaryErr);
     const fb = fallbackConfig();
     // Don't fall back onto the same local provider we just failed on.
     if (!fb || fb.providerName === cfg.providerName) throw primaryErr;
@@ -1181,33 +1007,11 @@ async function runWithFallback(cfg, messages, opts) {
       console.warn(`[LLM] primary "${cfg.providerName}" failed (${primaryErr.message}); falling back to local "${fb.providerName}/${fb.model}"`);
     }
     try {
-      await _throttleGate(fb.providerName);
       const result = await dispatchChat(fb, messages, opts);
-      _noteResult(fb.providerName, 200);
       recordLLMUsage(fb.providerName, fb.model, result.usage);
       result.fallback = { from: cfg.providerName, to: fb.providerName, model: fb.model, reason: primaryErr.message };
       return result;
     } catch (fbErr) {
-      _noteResult(fb.providerName, fbErr);
-      // Last resort: the configured GLOBAL provider (LLM_*). When a per-agent
-      // override (e.g. swarm→nvidia, whose keys can expire/403) is down AND the
-      // local fallback (ollama) is unreachable, fall back to the global provider
-      // the rest of the stack uses, so one dead/expired provider can't fail an
-      // otherwise-doable task. Verified: this is why swarm missions failed while
-      // single-agent file writes (on the global minimax provider) succeeded.
-      try {
-        const global = resolveConfig('LLM');
-        if (global && global.apiKey &&
-            global.providerName !== cfg.providerName &&
-            global.providerName !== fb.providerName) {
-          await _throttleGate(global.providerName);
-          const result = await dispatchChat(global, messages, opts);
-          _noteResult(global.providerName, 200);
-          recordLLMUsage(global.providerName, global.model, result.usage);
-          result.fallback = { from: cfg.providerName, to: global.providerName, model: global.model, reason: primaryErr.message };
-          return result;
-        }
-      } catch (globalErr) { fbErr.globalError = globalErr; }
       const err = new Error(
         `LLM unavailable — primary "${cfg.providerName}" failed (${primaryErr.message}) ` +
         `and local fallback "${fb.providerName}" at ${fb.baseUrl} also failed (${fbErr.message}). ` +
@@ -1221,33 +1025,21 @@ async function runWithFallback(cfg, messages, opts) {
 }
 
 async function chat(messages, opts = {}, cfgOverride = null) {
-  messages = sanitizeToolHistory(messages);
   let cfg = cfgOverride || mainConfig();
   // Honor `opts.provider` — explicit provider override per-call.
-  // Builds cfg fresh from the provider definition so env vars CANNOT
-  // override opts.provider. Only provider-specific env vars
-  // (DEEPSEEK_API_KEY, etc.) are consulted; LLM_* vars are ignored
-  // when an explicit opts.provider is set.
+  // Falls through to env-based cfg if no provider was passed.
   if (opts.provider && PROVIDERS[opts.provider]) {
-    cfg = { providerName: opts.provider };
+    cfg = resolveConfig('LLM');
+    cfg.providerName = opts.provider;
     const p = PROVIDERS[opts.provider];
     cfg.provider = p;
     cfg.baseUrl  = opts.baseUrl || process.env[`${(opts.provider || 'LLM').toUpperCase()}_BASE_URL`] || p.baseUrl;
-    cfg.apiKey   = opts.apiKey  || process.env[`${opts.provider.toUpperCase()}_API_KEY`] || p.apiKey || (p.apiKeyEnv ? process.env[p.apiKeyEnv] : '') || '';
+    cfg.apiKey   = opts.apiKey  || process.env[`${opts.provider.toUpperCase()}_API_KEY`] || process.env.LLM_API_KEY || p.apiKey || (p.apiKeyEnv ? process.env[p.apiKeyEnv] : '') || '';
     cfg.extraHeaders = p.extraHeaders || {};
     // When --provider is passed without --model, use the new
     // provider's default model. (If the caller passed --model, that
     // wins, since they explicitly asked for a specific model.)
     cfg.model = opts.model || p.defaultModel;
-    // NVIDIA NIM: draw from the rotating 5+5 key pool (skips dead/cooling keys)
-    // instead of the single static NVIDIA_API_KEY. Without this, chat()/the
-    // /api/llm/raw gateway/the bridge all rode one key and broke the moment it
-    // rate-limited — while the streaming brain (streamChat) stayed up because
-    // IT already pools. This gives chat() the same resilience. (2026-06-23)
-    if (cfg.providerName === 'nvidia' && !opts.apiKey) {
-      const pooled = nextNvidiaKey();
-      if (pooled) cfg.apiKey = pooled;
-    }
   }
 
   // SpendGate: check budget before making the call
@@ -1272,6 +1064,18 @@ async function chat(messages, opts = {}, cfgOverride = null) {
       }
     } catch {}
   }
+  // Auto-route: model names containing "/" (e.g. "openai/gpt-oss-20b:free")
+  // are OpenRouter model IDs. If the active provider isn't already
+  // OpenRouter, switch the route so the call actually works.
+  if (opts.model && opts.model.includes('/') && cfg.providerName !== 'openrouter') {
+    cfg = resolveConfig('LLM');
+    cfg.providerName = 'openrouter';
+    cfg.provider = PROVIDERS.openrouter;
+    cfg.baseUrl = PROVIDERS.openrouter.baseUrl;
+    cfg.apiKey = process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY || cfg.apiKey;
+    cfg.extraHeaders = PROVIDERS.openrouter.extraHeaders;
+    cfg.model = opts.model;
+  }
   return runWithFallback(cfg, messages, opts);
 }
 
@@ -1284,248 +1088,29 @@ async function chat(messages, opts = {}, cfgOverride = null) {
  *     if (!c.done) process.stdout.write(c.content);
  *   }
  */
-// ── NVIDIA NIM key pool — full 5+5 failover (Step 2 fix, 2026-06-19).
-// Reads PRIMARY 1-5 + BACKUP 1-5 + HERMES last-resort. Round-robin for steady
-// load, then per-key cooldown on 429/401 + per-key dead-mark after 3x 401.
-let _nvKeyPool = null;
-let _nvKeyIdx = 0;
-const _nvKeyDeadUntil = new Map();     // key -> ms-until-resurrect
-const _nvKeyFail401 = new Map();        // key -> consecutive 401 count
-const NV_DEAD_MS = 60 * 60 * 1000;      // 401 → marked dead for the session
-const NV_COOLDOWN_MS = 60 * 1000;       // 429 → 60s cooling-off
-function nvidiaKeyPool() {
-  if (_nvKeyPool) return _nvKeyPool;
-  const raw = [
-    process.env.LLM_API_KEY,
-    process.env.NVIDIA_API_KEY,
-    process.env.NVIDIA_API_KEY_PURP1,
-    process.env.NVIDIA_API_KEY_PURP2,
-    process.env.NVIDIA_API_KEY_PURP3,
-    process.env.NVIDIA_API_KEY_PURP4,
-    process.env.NVIDIA_API_KEY_PURP5,
-    process.env.NVIDIA_API_KEY_BACKUP1,
-    process.env.NVIDIA_API_KEY_BACKUP2,
-    process.env.NVIDIA_API_KEY_BACKUP3,
-    process.env.NVIDIA_API_KEY_BACKUP4,
-    process.env.NVIDIA_API_KEY_BACKUP5,
-    process.env.NVIDIA_API_KEY_HERMES,
-  ].filter(k => k && k.startsWith('nvapi-'));
-  _nvKeyPool = [...new Set(raw)]; // de-dupe (LLM_API_KEY often == NVIDIA_API_KEY)
-  return _nvKeyPool;
-}
-function _nvKeyAlive(key, now = Date.now()) {
-  const dead = _nvKeyDeadUntil.get(key);
-  if (dead && dead > now) return false;
-  if (dead && dead <= now) { _nvKeyDeadUntil.delete(key); _nvKeyFail401.delete(key); }
-  const cool = _nvKeyDeadUntil.get(key + ':cool');
-  if (cool && cool > now) return false;
-  if (cool && cool <= now) _nvKeyDeadUntil.delete(key + ':cool');
-  return true;
-}
-function _nvKeyRecord(key, status) {
-  const now = Date.now();
-  if (status === 429) {
-    _nvKeyDeadUntil.set(key + ':cool', now + NV_COOLDOWN_MS);
-  } else if (status === 401) {
-    const n = (_nvKeyFail401.get(key) || 0) + 1;
-    _nvKeyFail401.set(key, n);
-    if (n >= 3) _nvKeyDeadUntil.set(key, now + NV_DEAD_MS);
-  } else if (status === 200) {
-    _nvKeyFail401.delete(key);
-  }
-}
-function nextNvidiaKey() {
-  const pool = nvidiaKeyPool();
-  if (!pool.length) return null;
-  const start = _nvKeyIdx;
-  for (let i = 0; i < pool.length; i++) {
-    const idx = (start + i) % pool.length;
-    const k = pool[idx];
-    if (_nvKeyAlive(k)) {
-      _nvKeyIdx = (idx + 1) % pool.length;
-      return k;
-    }
-  }
-  // Every key is dead/cooling — purge cooldown markers and pick first live key
-  // so we don't deadlock the call. Returns the first one anyway; the model-
-  // fallback loop will catch terminal errors.
-  const fallback = pool[start];
-  _nvKeyIdx = (start + 1) % pool.length;
-  return fallback;
-}
-function recordNvidiaResult(key, status) {
-  if (key) _nvKeyRecord(key, status);
-}
-function _nvKeyState() {
-  return {
-    poolSize: nvidiaKeyPool().length,
-    dead: [..._nvKeyDeadUntil.entries()].filter(([k]) => !k.endsWith(':cool')),
-    cool: [..._nvKeyDeadUntil.entries()].filter(([k]) => k.endsWith(':cool')),
-  };
-}
-
-// ── Central Usage Governor (v2.1) — one gate before every model call ────────
-let _governor = null;
-try { _governor = require('./usage-governor'); } catch { _governor = null; }
-
 async function* streamChat(messages, opts = {}, cfgOverride = null) {
-  messages = sanitizeToolHistory(messages);
   let cfg = cfgOverride || mainConfig();
   // Honor `opts.provider` — explicit per-call override.
-  // Builds cfg fresh from the provider definition so env vars CANNOT
-  // override opts.provider. Only provider-specific env vars are consulted.
   if (opts.provider && PROVIDERS[opts.provider]) {
-    cfg = { providerName: opts.provider };
+    cfg = resolveConfig('LLM');
+    cfg.providerName = opts.provider;
     const p = PROVIDERS[opts.provider];
     cfg.provider = p;
     cfg.baseUrl  = opts.baseUrl || process.env[`${opts.provider.toUpperCase()}_BASE_URL`] || p.baseUrl;
-    // Provider override must NOT silently fall back to LLM_API_KEY — each
-    // provider has its own slot (GLM_API_KEY, MINIMAX_API_KEY, KIMI_API_KEY,
-    // …). Falling back to LLM_API_KEY (MiniMax native) would make a `glm`
-    // request hit api.minimax.io with no auth → 401. Honor only the slot.
-    cfg.apiKey   = opts.apiKey
-      || process.env[`${opts.provider.toUpperCase()}_API_KEY`]
-      || p.apiKey
-      || (p.apiKeyEnv ? process.env[p.apiKeyEnv] : '')
-      || '';
+    cfg.apiKey   = opts.apiKey  || process.env[`${opts.provider.toUpperCase()}_API_KEY`] || process.env.LLM_API_KEY || p.apiKey || (p.apiKeyEnv ? process.env[p.apiKeyEnv] : '') || '';
     cfg.extraHeaders = p.extraHeaders || {};
     cfg.model = opts.model || p.defaultModel;
-    cfg.authHeader = p.authHeader || 'Bearer';
   }
-
-  // SpendGate: check budget before making the call
-  if (process.env.POCKET_MODE && !opts.bypassSpendGate) {
-    try {
-      const { SpendGate } = require('./spend-gate');
-      const gate = new SpendGate();
-      const estTokens = (opts.maxTokens || 1000) + (messages.reduce((s, m) => s + (m.content || '').length, 0) / 4);
-      const check = await gate.check({
-        agent: opts.agent || process.env.POCKET_AGENT || 'default',
-        provider: cfg.providerName,
-        estimatedTokens: Math.ceil(estTokens),
-      });
-      if (!check.allow) {
-        // Generator: yield the error chunk then stop
-        yield { error: `SpendGate: ${check.reason}`, blocked: true, provider: cfg.providerName, model: cfg.model };
-        return;
-      }
-    } catch {}
+  if (opts.model && opts.model.includes('/') && cfg.providerName !== 'openrouter') {
+    cfg = resolveConfig('LLM');
+    cfg.providerName = 'openrouter';
+    cfg.provider = PROVIDERS.openrouter;
+    cfg.baseUrl = PROVIDERS.openrouter.baseUrl;
+    cfg.apiKey = process.env.OPENROUTER_API_KEY || process.env.LLM_API_KEY || cfg.apiKey;
+    cfg.extraHeaders = PROVIDERS.openrouter.extraHeaders;
+    cfg.model = opts.model;
   }
-
-  // NIM model-fallback: minimax-m3 (and other NIM models) occasionally return
-  // "DEGRADED function cannot be invoked" or 5xx when NVIDIA's hosted endpoint
-  // is down. Prefer the configured model, but if it fails BEFORE any token is
-  // emitted, transparently retry with the next working NIM model so chat/agents
-  // keep running. Once tokens have streamed we can't switch, so we rethrow.
-  const models = [cfg.model];
-  if (cfg.providerName === 'nvidia' && !opts.noModelFallback) {
-    const fb = (process.env.LLM_NIM_FALLBACK_MODELS ||
-      'deepseek-ai/deepseek-v4-flash,meta/llama-3.3-70b-instruct')
-      .split(',').map(s => s.trim()).filter(Boolean);
-    for (const m of fb) if (m && !models.includes(m)) models.push(m);
-  }
-
-  // ── v2.1: Usage Governor gate — one chokepoint before any model call ─────
-  const role = opts.role || (opts.task === 'swarm' ? 'swarm_orchestrator'
-                          : opts.task === 'research' ? 'researcher'
-                          : opts.task === 'code' ? 'builder_code_repair'
-                          : opts.task === 'voice' ? 'tts_voice'
-                          : opts.task === 'fallback' ? 'fallback'
-                          : 'chat_coordinator');
-  let _govCall = null;
-  if (_governor) {
-    const gate = _governor.gateCheck({
-      role,
-      provider: cfg.providerName || 'minimax',
-      model: cfg.model,
-      keySlot: opts.apiKey ? null : undefined,
-    });
-    if (!gate.ok) {
-      // Fast-fail with structured error so caller can fallback
-      const err = new Error(`GOVERNOR_BLOCKED: ${gate.reason}${gate.cooldownMs ? ` (cooldown ${Math.round(gate.cooldownMs/1000)}s)` : ''}`);
-      err.code = 'GOVERNOR_BLOCKED';
-      err.governorReason = gate.reason;
-      err.cooldownMs = gate.cooldownMs || 0;
-      throw err;
-    }
-    _govCall = gate.callId;
-    // Use the picked key from the governor (smartest, not blind round-robin)
-    if (gate.key && cfg.providerName === 'nvidia' && !opts.apiKey) {
-      cfg.apiKey = gate.key.key;
-      cfg.baseUrl = (cfg.provider && cfg.provider.baseUrl) || 'https://integrate.api.nvidia.com/v1';
-    }
-  }
-
-  let lastErr = null;
-  let _lastModel = cfg.model;
-  let _tokensUsed = 0;
-  // v2.1: Slot-leak fix — release the governor reservation in a finally that
-  // wraps EVERY exit (success return, error throw, generator close). The prior
-  // pattern had a gap where a throw outside the bookkeeping would leak the slot.
-  let _govReleased = false;
-  function _releaseGov(status) {
-    if (_governor && _govCall && !_govReleased) {
-      _govReleased = true;
-      _governor.recordResult({ callId: _govCall, status: status || 'ok', tokens: _tokensUsed });
-    }
-  }
-  for (let i = 0; i < models.length; i++) {
-    // Round-robin the NIM key per attempt: spreads load and means a 429/auth
-    // failure on one key retries on the next key (not just the next model).
-    // Explicit opts.apiKey always wins.
-    const attemptCfg = { ...cfg, model: models[i] };
-    let pickedKey = null;
-    if (cfg.providerName === 'nvidia' && !opts.apiKey) {
-      pickedKey = nextNvidiaKey();
-      if (pickedKey) {
-        attemptCfg.apiKey = pickedKey;
-        // An nvapi- key MUST hit the NIM endpoint. Force it here so a poisoned
-        // global LLM_BASE_URL (e.g. api.minimax.io) can't send the key to the
-        // wrong host → 401. The NIM keys work regardless of the base-url config.
-        attemptCfg.baseUrl = (cfg.provider && cfg.provider.baseUrl) || 'https://integrate.api.nvidia.com/v1';
-      }
-    }
-    let emitted = false;
-    try {
-      await _throttleGate(attemptCfg.providerName);
-      for await (const chunk of dispatchStreamChat(attemptCfg, messages, opts)) {
-        emitted = true;
-        // v2.1: count tokens for the governor as we stream
-        if (chunk && chunk.content) _tokensUsed += Math.max(1, Math.ceil(chunk.content.length / 4));
-        yield chunk;
-      }
-      _noteResult(attemptCfg.providerName, 200);
-      if (pickedKey) recordNvidiaResult(pickedKey, 200);
-      _releaseGov('ok');  // v2.1: release slot on success
-      return;
-    } catch (e) {
-      lastErr = e;
-      _noteResult(attemptCfg.providerName, e);
-      // 429/401 → mark the key, let the next iteration try the next live key
-      if (pickedKey) {
-        const s = String(e && (e.status || e.code || ''));
-        if (s.includes('429')) recordNvidiaResult(pickedKey, 429);
-        else if (s.includes('401')) recordNvidiaResult(pickedKey, 401);
-      }
-      if (emitted || i === models.length - 1) throw e;
-      if (process.env.LLM_DEBUG) console.warn(`[LLM] model "${models[i]}" failed (${e.message.slice(0, 80)}); falling back to "${models[i + 1]}"`);
-    }
-  }
-  // ── v2.1: Governor bookkeeping on final outcome ─────────────────────────
-  if (_governor && _govCall && !_govReleased) {
-    if (lastErr) {
-      const msg = String(lastErr.message || '');
-      const status = /429|rate_limit|quota/i.test(msg) ? 'rate_limit'
-                   : /401|403|auth/i.test(msg) ? 'auth'
-                   : /timeout|timed?\s*out/i.test(msg) ? 'timeout'
-                   : /stall|no\s*output/i.test(msg) ? 'stall'
-                   : 'error';
-      _releaseGov(status);
-    } else {
-      _releaseGov('ok');
-    }
-  }
-  if (lastErr) throw lastErr;
+  yield* dispatchStreamChat(cfg, messages, opts);
 }
 
 /**
@@ -1549,7 +1134,27 @@ async function complete(prompt, opts = {}, system = '') {
   messages.push({ role: 'user', content: prompt });
   const resp = await chat(messages, opts);
   if (resp && resp.blocked) return resp;  // pass through SpendGate blocks
-  return resp.content;
+  let content = resp.content || '';
+
+  // Strip <think>...</think> thinking blocks (reasoning models like MiniMax-M3 emit these)
+  // Use indexOf/lastIndexOf to avoid regex edge-cases with these tags
+  {
+    const open = '<think>';
+    const close = '</think>';
+    let start = 0;
+    let cleaned = '';
+    while (true) {
+      const o = content.indexOf(open, start);
+      if (o === -1) { cleaned += content.slice(start); break; }
+      cleaned += content.slice(start, o);
+      const c = content.indexOf(close, o + open.length);
+      if (c === -1) { cleaned += content.slice(o); break; }
+      start = c + close.length;
+    }
+    content = cleaned.trim();
+  }
+
+  return content;
 }
 
 // ── Provider info ─────────────────────────────────────────────────────────────
@@ -1602,18 +1207,10 @@ module.exports = {
   getProviderInfo,
   listProviders,
   PROVIDERS,
-  // P0-C: the one function status surfaces must report from, so "what the UI
-  // shows" and "what the call uses" cannot drift apart again.
-  explainConfig,
-  LANE_BY_PREFIX,
   // Low-level — exposed for testing and custom integrations
   chatOpenAI,
-  sanitizeToolHistory,
   chatAnthropic,
   chatGemini,
   resolveConfig,
   fallbackConfig,
-  // 5+5 NIM key pool state (Step 2 fix, 2026-06-19)
-  _nvKeyState,
-  recordNvidiaResult,
 };

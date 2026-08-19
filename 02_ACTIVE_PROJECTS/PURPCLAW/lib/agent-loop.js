@@ -289,6 +289,14 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   // circuits with a truthful pointer back to the result it already received.
   const callCounts = new Map();
   const MAX_IDENTICAL_CALLS = Number(process.env.PURPCLAW_MAX_IDENTICAL_TOOL_CALLS || 2);
+  // Bounded retries when an action prompt produces zero tool calls.
+  let toolEnforcementRetries = 0;
+  const MAX_TOOL_ENFORCEMENT_RETRIES = Number(process.env.PURPCLAW_MAX_TOOL_ENFORCEMENT_RETRIES || 2);
+  // Run-level count of tools actually executed. Enforcement asks "did this RUN
+  // do any real work?", not "did this turn?" — otherwise the final summarising
+  // turn (which legitimately calls nothing) gets accused of doing nothing and
+  // the model argues back: "I did call it — ls returned the listing".
+  let executedToolCount = 0;
   opts.workspace = opts.workspace || process.cwd();
   opts.lastFailure = null;
 
@@ -405,6 +413,29 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
     }
 
     if (!toolCalls.length) {
+      // ── Tool-use enforcement (the real fix for "it just replies") ──────
+      // The gate used to live AFTER the tool-execution loop, so this early
+      // return made it dead code in exactly the case it exists for: the model
+      // says "let me check that" and emits ZERO tool calls. Observed live:
+      // `purpclaw ask "look in the E drive"` -> "done in 1 turn, 0 tool(s)".
+      // Enforce here, before we can declare done, with a bounded retry.
+      if (enforceToolUse && executedToolCount === 0 && toolEnforcementRetries < MAX_TOOL_ENFORCEMENT_RETRIES) {
+        const lastUser = [...messages].reverse().find(m => m.role === 'user');
+        const enforcement = enforceToolUse({ toolCalls: [], reply: turnText }, lastUser?.content || prompt || '');
+        if (enforcement?.forced_retry) {
+          toolEnforcementRetries++;
+          messages.push({
+            role: 'user',
+            content: 'You did not call any tool, so nothing was actually checked. '
+              + 'Do not describe what you would do — do it now. Emit a tool call as a '
+              + 'JSON line, e.g. {"tool": "shell", "args": {"command": "dir"}} or '
+              + '{"tool": "ls", "args": {"path": "E:/"}}. If no tool can answer this, '
+              + 'say plainly that it cannot be checked and why.',
+          });
+          yield { type: 'tool-enforcement', reason: enforcement.reason, attempt: toolEnforcementRetries, capsuleId: capId() };
+          continue; // retry the turn instead of finishing empty-handed
+        }
+      }
       // LLM didn't ask for any tools; we're done — unless steering says otherwise.
       // ── Phase 3 — DONE gate: unresolved conflicts require operator escalation.
       if (STEER && capsule) {
@@ -454,6 +485,7 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
         continue;
       }
       callCounts.set(sig, priorCount + 1);
+      executedToolCount++;
 
       yield { type: 'tool-call', tool: call.tool, args: call.args, capsuleId: capId() };
 
