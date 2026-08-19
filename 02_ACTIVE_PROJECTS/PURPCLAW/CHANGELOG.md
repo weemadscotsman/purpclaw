@@ -243,3 +243,32 @@ Three real defects were found behind the "output-too-short" validation failure; 
 
 ### Tests
 - New `tests/cli/test_cli.js`: 10/10 green — dispatch parity, registry completeness, unknown-command exit 2, help detail + index, completion derivation, orphan response, version contract.
+
+---
+
+## 2026-08-19 — Phase 3: Steering Live in the Turn Path (Finish-Line Sweep)
+
+### Steering is now executable law, not documentation
+- New `lib/steering-sources.js`: real source discovery — canonical law files checksummed (SHA-256), `.steering/` JSON records loaded with validFrom/validUntil/supersedes honoured. First workspace records live in `.steering/workspace.json`.
+- New `lib/steering-middleware.js`: the single seam (`resolveForTurn` / `gateTool` / `completionBlocked` / `preamble`).
+- `lib/agent-loop.js`: capsule resolves BEFORE provider/recall/tool work (contract position); advisory preamble in the prompt; deterministic gate BEFORE dispatch; capsuleId threaded through all events; DONE blocked while unresolvedConflicts > 0.
+- `lib/tool-runtime.js`: steering gate in the deterministic ladder (`STEERING_DENIED`); S6 approval-triage (learned auto-approve/auto-deny, HIGH_STAKES always escalates); S13 remote-approval transport (opt-in durable queue); S14 device-consent gate.
+- `lib/chat-agent.js`: executor now routes through canonical ToolRuntime — closed the raw-invoke effectful-path bypass; one capsule per chat turn threaded to loop + executor.
+- `unified_api.js`: steering events on SSE; `/api/approvals/*` (universal approval surface — queue, pending, approve, deny from any client); `/api/session/persist/*` (portable sessions).
+
+### All 7 orphan S-modules wired with production call sites + tests (S4 S6 S9 S10 S12 S13 S14)
+- S4 priority-steer → agent-loop turn boundaries (interrupt + queued operator directives)
+- S9 swarm-verify + S10 team-coordinator → coordinator mission flow (output registration, teams, handoffs)
+- S12 session-persistence → HTTP suspend/resume/fork/list
+
+### Honest steering registry
+- `lib/steering-registry.js` repaired: relative ROOT, real showcase path, `implemented` requires an existing probe file, probes are real `node --test` runs. Showcase regenerated: **8/16 PASS, 8/16 honestly UNIMPLEMENTED** (replaced PASS claims on nonexistent probes).
+- `lib/remote-approvals.js`: donor-machine absolute path removed.
+- `lib/per-reply-supervisor.js`: labelled `planning-only` / `executedBy: 'agent-loop'` — no runtime supervision claims without materialization.
+
+### Skills + contracts
+- `luno-gemini-live-voice` (wrong build) deleted; `luno-human-conversation` installed and indexed. Registry rebuild from disk truth: **380 skills** (stale index said 139). `registry update` no longer crashes on the absent `agents/` dir.
+- Landed in-repo: `docs/architecture/PURPCLAW_ONE_RUNTIME_ARCHITECTURE.md`, `docs/architecture/PURPCLAW_SURFACE_PARITY_CONTRACT.md`.
+
+### Tests
+- New `tests/steering/`: 14 tests, all green. Full sweep `tests/cli` + both steering suites: **24/24 pass**.

@@ -1,0 +1,37 @@
+{
+  "records": [
+    {
+      "id": "workspace.finish-sweep.receipts",
+      "rule": "Every phase of the finish-line sweep must produce an execution receipt under artifacts/finish-sweep/ and one scoped commit before the next phase begins.",
+      "effect": "REQUIRE",
+      "field": "coding",
+      "appliesTo": ["planning", "verification"],
+      "mandatory": true
+    },
+    {
+      "id": "workspace.finish-sweep.scoped-staging",
+      "rule": "Before every commit, verify git diff --cached --name-only contains only paths under the PurpClaw project directory. Anything else aborts the commit.",
+      "effect": "REQUIRE",
+      "field": "coding",
+      "appliesTo": ["tool-routing", "verification"],
+      "mandatory": true
+    },
+    {
+      "id": "workspace.certification.no-threshold-cheating",
+      "rule": "No certification gate may be made green by lowering a threshold, weakening an assertion, or reclassifying evidence. Fix the underlying defect or label the gate honestly.",
+      "effect": "REQUIRE",
+      "field": "general",
+      "appliesTo": ["verification"],
+      "mandatory": true
+    },
+    {
+      "id": "workspace.runtime.no-secret-output",
+      "rule": "Never print .env values, API keys, tokens, or vault contents into logs, receipts, events, or test output. Secret scans report paths and categories only.",
+      "effect": "FORBID",
+      "field": "general",
+      "appliesTo": ["planning", "tool-routing", "verification", "memory"],
+      "forbidTools": [],
+      "mandatory": true
+    }
+  ]
+}

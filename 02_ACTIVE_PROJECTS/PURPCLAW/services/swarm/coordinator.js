@@ -735,6 +735,21 @@ async function coordinateMission(missionId, task, options = {}) {
       });
     }
 
+    // S10 — team coordination (SPEC-010): the mission is a team with explicit
+    // role assignment and structured handoff records. Failure-tolerant: the
+    // graph runner works identically without it.
+    const s10TeamId = 'mission-' + missionId;
+    try {
+      const TC = require('../../lib/team-coordinator');
+      TC.createTeam({
+        teamId: s10TeamId,
+        roles: Object.fromEntries(mission.subtasks.map(st => [st.id, { agent: st.agent, scope: st.domain || 'general', status: 'waiting' }])),
+        handoffs: mission.subtasks.map(st => ({ from: st.id, to: 'synthesis', trigger: 'completed' })),
+        sharedContext: [{ kind: 'mission', text: task, intent: options.intent || 'swarm' }],
+      });
+      for (const st of mission.subtasks) TC.assign(s10TeamId, st.id, { text: st.text, dependsOn: st.dependsOn });
+    } catch { /* optional */ }
+
     // Graph runner loop
     while (mission.status === 'running') {
       const pending = mission.subtasks.filter(s => s.status === 'pending');
@@ -878,6 +893,18 @@ async function coordinateMission(missionId, task, options = {}) {
                 mission.metrics.memoryLessons++;
                 log(missionId, `Subtask completed successfully by ${subtask.agent}!`);
                 publishEvent('swarm.coordinator.subtask.completed', { missionId, subtask });
+
+                // S9 — swarm verification (SPEC-009): register every worker
+                // output per subtask; retried subtasks accumulate 2+ outputs
+                // and become comparable at synthesis time.
+                try {
+                  const SV = require('../../lib/swarm-verify');
+                  SV.registerOutput({ taskId: missionId + ':' + subtask.id, agent: subtask.agent, output: spawnResult.output, cost: subtask.durationMs || 0 });
+                } catch { /* optional */ }
+                // S10 — structured handoff record for the completed role.
+                try {
+                  require('../../lib/team-coordinator').handoff(s10TeamId, subtask.id, { agent: subtask.agent, status: 'completed', summary: String(spawnResult.output || '').slice(0, 400) });
+                } catch { /* optional */ }
 
                 // Feed the cognitive spine: assert facts to the rules engine + report to diagnostics.
                 if (cogClient) {

@@ -8,13 +8,7 @@
  * SSE: /api/stream
  */
 
-// override:true — .env is the source of truth. The pm2 daemon was started long
-// ago with a poisoned environment (LLM_PROVIDER=minimax, LLM_API_KEY=ollama,
-// LLM_MODEL=MiniMax-M2.7) that leaked into every app and made the chat brain
-// hit api.minimax.io with a bad key (401/402). Forcing override makes the API
-// honor .env (nvidia / minimaxai/minimax-m3) regardless of the stale daemon env.
-require('dotenv').config({ override: true });
-require('./lib/runtime/telemetry-console').installConsoleTelemetry('purpclaw-api');
+require('dotenv').config();
 const http = require('http');
 const https = require('https');
 const net = require('net');
@@ -28,49 +22,10 @@ const { promisify } = require('util');
 const WebSocket = require('ws');
 const os = require('os');
 
-const AGENT_TOWER = require('./agent_tower.js');
-const SESSION_REPOSITORY = require('./lib/session-repository');
-const { AgentGateway } = require('./lib/agent-gateway');
+const AgentTower = require('./agent_tower.js');
 
 // ── LLM provider for unified backend access ──
 const LLM = require('./lib/llm-provider');
-
-// v2.1 — Cache the full whoami snapshot so the Next.js proxy doesn't timeout.
-const whoamiCache = { data: null, cachedAt: 0, TTL: 15000 };
-
-// Localhost chat has no approval response channel; AgentGateway owns policy and tool dispatch.
-const WEB_CHAT_PERMISSION_PROFILE = process.env.PURPCLAW_WEB_PERMISSION_PROFILE || 'trusted';
-
-// P0-B: Module-level ToolRuntime for every API tool dispatch.
-let _toolRuntime = null;
-function getToolRuntime() {
-  if (!_toolRuntime) {
-    const { ToolRuntime } = require('./lib/tool-runtime');
-    // Wire PURPCLAW_WEB_PERMISSION_PROFILE into the constructor so the runtime
-    // honours the operator's chosen profile (default 'trusted'). Previously
-    // the env var was read but the constructor hardcoded 'standard'.
-    _toolRuntime = new ToolRuntime({ permissionProfile: WEB_CHAT_PERMISSION_PROFILE });
-  }
-  return _toolRuntime;
-}
-
-// v2.1 — Pulse: the stack's own heartbeat. Wakes itself, talks to the bus,
-// surfaces findings to the cockpit and the agent prompt.
-require('./lib/pulse').start();
-
-// ── Memory client (cognitive spine on :7880 via memory_matrix_v2.py) ──
-// Routes all memory tool calls + /api/memory to the real matrix instead of
-// the legacy samantha_memory.json file. Soft dependency — fails silent.
-let memory = null;
-try { memory = require('./lib/memory-client'); } catch (e) { console.error('[MEM] client load failed:', e.message); }
-
-// ========== HARVEST INDEXER ==========
-let harvest = null;
-try {
-  harvest = require('./lib/harvest/indexer');
-} catch (e) {
-  console.error('[HARVEST] load failed:', e.message);
-}
 
 // ========== DIGITAL SHAMAN LAYER ==========
 let shaman = null;
@@ -118,8 +73,8 @@ const SETTINGS_FILE = path.join(PURP_DIR, 'purpclaw_settings.json');
 const MEMORY_FILE = path.join(PURP_DIR, 'samantha_memory.json');
 const SKILLS_DIR = path.join(PURP_DIR, 'skills');
 const PS_PREFIX = 'powershell.exe -NoProfile -NonInteractive -Command';
-const KOKORO = process.env.KOKORO_BAT || 'C:\\Users\\Admin\\.purpclaw\\kokoro_send.bat';
-const KOKORO_LONG = process.env.KOKORO_LONG_BAT || 'C:\\Users\\Admin\\.purpclaw\\kokoro_long_send.bat';
+const KOKORO = 'C:\\Users\\Admin\\.openclaw\\kokoro_send.bat';
+const KOKORO_LONG = 'C:\\Users\\Admin\\.openclaw\\kokoro_long_send.bat';
 
 const state = {
   logs: [],
@@ -246,10 +201,6 @@ function sseStart(res) {
     'Cache-Control': 'no-cache, no-transform',
     'Connection': 'keep-alive',
     'X-Accel-Buffering': 'no',
-    // CORS so the UI on :3030 (or any localhost port) can stream from :7780
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Accept, Authorization',
   });
   if (res.flushHeaders) res.flushHeaders();
 }
@@ -392,29 +343,12 @@ async function composerContextHandler(req, res) {
 
 // Streaming chat handler. Mirrors the JSON /api/chat shape, but emits
 // each token as an SSE event so the UI can render in real-time.
-//
-// v2.1 — Wrapped in the single-envelope contract. Every chat becomes one
-// envelope with one of five terminal states: answered, delegated, failed,
-// pending, no-output. Every failure produces a visible card so the UI
-// never sits at "thinking…" silently.
-//
 // Events:
-//   envelope  → {envelopeId, route, status: 'pending'}
-//   phase     → {phase: 'received'|'thinking'|'responding'|'done'|'error'}
-//   routed    → {lane, model, provider, agent, label, fallback, reason}
-//   job       → {job_id, lane, project}
-//   token     → {content, model}
-//   tool-call → {tool, args}
-//   tool-result → {tool, ok, content}
-//   card      → {kind: 'failure', title, body, hint, errorCode}  -- shown on failed/no-output
-//   delegated → {envelopeId, jobId, status: 'delegated'}
-//   done      → {reply, model, providerStatus, envelopeId, status}
-//   error     → {envelopeId, error}
+//   phase  → {phase: 'received'|'thinking'|'responding'|'done'|'error'}
+//   token  → {content, model}
+//   done   → {reply, model, providerStatus, kernelJobId?}
+//   error  → {error}
 async function handleChatStream(req, res) {
-  const { createEnvelope, setStatus, deriveStatus } = require('./lib/spine/envelope');
-  const { buildFailureCard, SSE_EVENT_BY_STATUS } = require('./lib/spine/contract');
-  const { appendTurn } = require('./lib/spine/session-store');
-
   let body = null;
   try { body = await parseBody(req); }
   catch (e) {
@@ -422,183 +356,67 @@ async function handleChatStream(req, res) {
     sseEvent(res, 'error', { error: 'bad body: ' + e.message });
     return res.end();
   }
-  const {
-    message, spawnAgents = false, source = 'chat',
-    lane, model: modelOverride, provider: providerOverride, autoRoute = true,
-    sessionId,
-  } = body;
+  const { message, spawnAgents = false, source = 'chat' } = body;
   if (!message) {
     sseStart(res);
     sseEvent(res, 'error', { error: 'message required' });
     return res.end();
   }
-
-  // v2.1 — Envelope: every dispatch is a single tracked entity.
-  const env = createEnvelope({ sessionId, route: 'chat', userText: message, source });
   sseStart(res);
-  sseEvent(res, 'envelope', { envelopeId: env.id, route: 'chat', status: 'pending' });
   sseEvent(res, 'phase', { phase: 'received', message: message.slice(0, 100) });
-
-  // AgentGateway persists the prompt before provider execution and reloads canonical history.
   sseEvent(res, 'phase', { phase: 'thinking' });
 
-  // ── STEERING: consult the one router ────────────────────────────────────
-  // Chat is not always a chat answer. Classify where this request should go
-  // (answer vs agent / swarm / research / work-job) and report it as a `steer`
-  // event so the surface always shows the routing.
-  //
-  // When the request is clearly WORK *and* the caller opted into execution
-  // (spawnAgents flag, or mode=execute/swarm), open a real kernel job here and
-  // terminate as `delegated` — the job runs async (auto-chained) and the UI
-  // polls /api/kernel/jobs/[id] for the live chain. Plain chat (no opt-in) is
-  // untouched: it falls through to AgentGateway.submit below and answers inline.
   try {
-    const steering = require('./lib/steering-router');
-    const decision = steering.classify(message, { mode: body.mode });
-    sseEvent(res, 'steer', {
-      route: decision.route, area: decision.area,
-      confidence: decision.confidence, reason: decision.reason,
-      agent: decision.agent || null, envelopeId: env.id,
-    });
+    // Use the real agent-loop (tool-calling brain) instead of raw llm.streamChat.
+    // This unifies all three surfaces: CLI ask, WebUI, TUI, and all gateways
+    // (Discord, Telegram, email) hit the same agentic engine.
+    const { runAgent } = require('./lib/agent-loop');
+    let fullReply = '';
+    let modelName = '';
+    let toolCallsUsed = 0;
 
-    const optedIn = spawnAgents === true || body.mode === 'execute' || body.mode === 'swarm';
-    const isWork = decision.route === 'job' || decision.route === 'swarm' || decision.route === 'research' || decision.route === 'skill';
-    if (optedIn && isWork && decision.confidence >= 0.7) {
-      const result = steering.steer(message, { sessionId, mode: body.mode, source, execute: true });
-      if (result.delegated && result.jobId) {
-        setStatus(env, 'delegated', { jobId: result.jobId });
-        sseEvent(res, 'job', { job_id: result.jobId, lane: result.route, project: result.area, envelopeId: env.id });
-        sseEvent(res, 'delegated', { envelopeId: env.id, jobId: result.jobId, status: 'delegated', route: result.route });
-        sseEvent(res, 'phase', { phase: 'done' });
-        const note = `Opened a ${result.route} job (${result.jobId}). Tracking it live — poll /api/kernel/jobs/${result.jobId} for the chain.`;
-        if (sessionId) {
-          try {
-            appendTurn(sessionId, 'user', message);
-            appendTurn(sessionId, 'assistant', note);
-          } catch {}
-        }
-        sseEvent(res, 'done', {
-          reply: note, providerStatus: 'delegated', envelopeId: env.id,
-          envelopeStatus: 'delegated', jobId: result.jobId, route: result.route, source,
-        });
-        return res.end();
-      }
-      // steer declined to delegate (governance hold / error) — fall through to chat.
-    }
-  } catch (e) { /* steering optional — never block the chat */ }
-
-  // ── AUTO PROVIDER ROUTING + buttery fallback ────────────────────────────
-  // AgentGateway owns routing, tools, persistence, permissions, and lifecycle for web,
-  // CLI, and TUI behave identically. It emits `route` events (initial + each
-  // fallback hop) through the gateway event contract.
-  let fullReply = '';
-  let modelName = '';
-  let toolCallsUsed = 0;
-  let gatewaySessionId = sessionId || null;
-  try {
-    const gateway = new AgentGateway({ provider: providerOverride, model: modelOverride, cwd: __dirname });
-    gateway.on('route.selected', ev => {
-      modelName = ev.model || modelName;
-      setStatus(env, 'pending', { provider: ev.provider, model: ev.model });
-      sseEvent(res, 'routed', { lane: ev.lane, model: ev.model, provider: ev.provider, agent: ev.agent, label: ev.label, fallback: ev.fallback, reason: ev.reason, envelopeId: env.id });
-    });
-    gateway.on('job.started', ev => {
-      setStatus(env, 'delegated', { jobId: ev.job_id });
-      sseEvent(res, 'job', { job_id: ev.job_id, lane: ev.lane, project: ev.project, envelopeId: env.id });
-      sseEvent(res, 'delegated', { envelopeId: env.id, jobId: ev.job_id, status: 'delegated' });
-    });
-    gateway.on('job.stopped', ev => {
-      sseEvent(res, 'stopped', { job_id: ev.job_id, stopType: ev.stopType, reason: ev.reason, envelopeId: env.id });
-    });
-    gateway.on('message.delta', ev => {
-      fullReply += ev.delta || '';
-      modelName = ev.model || modelName;
-      sseEvent(res, 'token', { content: ev.delta || '', model: ev.model });
-    });
-    gateway.on('tool.start', ev => {
-      toolCallsUsed++;
-      sseEvent(res, 'tool-call', { tool: ev.tool, args: ev.arguments });
-    });
-    gateway.on('tool.complete', ev => {
-      sseEvent(res, 'tool-result', {
-        tool: ev.tool,
-        ok: ev.ok,
-        content: String(ev.result || ev.error || '').substring(0, 500),
-      });
-    });
-    gateway.on('error', () => {});
-
-    const result = await gateway.submit({
+    for await (const ev of runAgent({
       prompt: message,
-      provider: providerOverride,
-      model: modelOverride,
-      lane,
-      auto_route: autoRoute !== false,
-      max_tokens: 2048,
-      temperature: 0.7,
-      session_id: sessionId || undefined,
-      permission_profile: WEB_CHAT_PERMISSION_PROFILE,
-      operator_initiated: false,
-      platform: 'web-sse',
-    });
-    gatewaySessionId = result.session_id;
-    fullReply = result.message || fullReply;
-    sseEvent(res, 'phase', { phase: 'done' });
-    // Strip inline tool-call markup (DSML / JSON {"tool":...}) the same way
-    // the JSON /api/chat path does, so the final `done.reply` is clean for
-    // the UI to render as message text. Tool calls themselves are surfaced
-    // via the structured `toolCalls` field and earlier `tool-call` events.
-    const cleanedReply = fullReply
-      // Strip <think>…</think> reasoning blocks (MiniMax-M3 / deepseek / o1-style)
-      // so the user sees the answer, not the model's internal monologue.
-      .replace(/<think>[\s\S]*?<\/think>/gi, '')
-      .replace(/\{\s*"tool"\s*:\s*"[^"]+"\s*,\s*"args"\s*:\s*\{[\s\S]*?\}\s*\}/g, '')
-      .replace(/<[^>]*?DSML[^>]*?>[\s\S]*<\/[^>]*?DSML[^>]*?>/g, '')
-      .replace(/<\/?[^>]*?DSML[^>]*?>/g, '')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-
-    // v2.1 — Terminal answered vs no-output. The envelope was last set to
-    // 'pending' (route) or 'delegated' (job). If we have content, mark
-    // answered; if empty, mark no-output and emit a card.
-    if (cleanedReply) {
-      setStatus(env, 'answered', { provider: env.provider, model: env.model, artifacts: { reply: cleanedReply, rawReply: fullReply } });
-    } else {
-      setStatus(env, 'no-output', { provider: env.provider, model: env.model, error: { message: 'route completed but produced no content' }, errorCode: 'no_output' });
-      sseEvent(res, 'card', buildFailureCard(env));
+      opts: { maxTokens: 2048, temperature: 0.7 },
+    })) {
+      if (ev.type === 'token') {
+        fullReply += ev.content;
+        modelName = ev.model || modelName;
+        sseEvent(res, 'token', { content: ev.content, model: ev.model });
+      } else if (ev.type === 'steering') {
+        // Phase 3 — every governed turn announces its capsule.
+        sseEvent(res, 'steering', { capsuleId: ev.capsuleId, activeRules: ev.activeRules, unresolvedConflicts: ev.unresolvedConflicts, sources: ev.sources, error: ev.error });
+      } else if (ev.type === 'steering-blocked') {
+        sseEvent(res, 'steering-blocked', { capsuleId: ev.capsuleId, conflicts: ev.conflicts });
+      } else if (ev.type === 'tool-call') {
+        toolCallsUsed++;
+        sseEvent(res, 'tool-call', { tool: ev.tool, args: ev.args, capsuleId: ev.capsuleId });
+      } else if (ev.type === 'tool-result') {
+        sseEvent(res, 'tool-result', {
+          tool: ev.tool,
+          ok: ev.ok,
+          code: ev.code,
+          capsuleId: ev.capsuleId,
+          content: (ev.content || ev.error || '').substring(0, 500),
+        });
+      } else if (ev.type === 'done') {
+        break;
+      } else if (ev.type === 'error') {
+        throw new Error(ev.error);
+      }
     }
-    // v2.1 — Persist the assistant turn to the session history so the next
-    // /api/chat rehydrates with the full transcript.
+    sseEvent(res, 'phase', { phase: 'done' });
     sseEvent(res, 'done', {
-      reply: cleanedReply,
-      rawReply: fullReply,
+      reply: fullReply,
       model: modelName,
-      providerStatus: env.status,           // answered | no-output | delegated | failed
-      envelopeId: env.id,
-      envelopeStatus: env.status,
-      jobId: env.jobId || null,
+      providerStatus: 'answered',
       toolCalls: toolCallsUsed,
-      source, sessionId: gatewaySessionId,
+      source,
     });
     return res.end();
   } catch (e) {
-    // v2.1 — Every exception becomes a visible failure card. No silent exits.
-    setStatus(env, 'failed', {
-      provider: env.provider, model: env.model,
-      error: { message: e.message, stack: (e.stack || '').split('\n').slice(0, 3).join(' | ') },
-      errorCode: 'http_500',
-    });
     sseEvent(res, 'phase', { phase: 'error' });
-    sseEvent(res, 'card', buildFailureCard(env));
-    sseEvent(res, 'done', {
-      reply: '',
-      model: modelName || env.model,
-      providerStatus: env.status,
-      envelopeId: env.id,
-      envelopeStatus: env.status,
-      error: e.message,
-      source, sessionId: gatewaySessionId,
-    });
+    sseEvent(res, 'error', { error: e.message });
     return res.end();
   }
 }
@@ -923,53 +741,11 @@ let taskId = 0;
 const SWARM_AGENTS = ['duck', 'ghost', 'dragon', 'octopus', 'robot', 'mushroom', 'chonk', 'owl', 'cactus', 'penguin', 'goose', 'turtle', 'axolotl', 'rabbit', 'void', 'wolf', 'spider', 'raven', 'snake', 'bee', 'bunny'];
 
 let purpProc = null, purpOut = '';
-const PURPCLAW_GATEWAY_URL = process.env.PURPCLAW_GATEWAY_URL || 'ws://127.0.0.1:18789';
+const OPENCLAW_GW = process.env.OPENCLAW_GATEWAY || 'ws://127.0.0.1:18789';
 
 function san(s) { return typeof s !== 'string' ? '' : s.replace(/[`$;|><&{}\[\]'"]/g, '').replace(/\r?\n/g, ' ').substring(0, 500); }
 function coord(v) { const n = Number(v); return (isNaN(n) || n < 0 || n > 10000) ? 0 : Math.floor(n); }
 function ok(text) { return { content: [{ type: 'text', text: String(text).substring(0, 8000) }] }; }
-
-/**
- * P0-B: a refused tool call must not be representable as a success.
- * Carries isError so MCP clients surface it as a failure, plus the machine
- * code so callers can branch on PERMISSION_DENIED vs PATH_SECURITY_BLOCKED vs
- * TOOL_ARGUMENT_VALIDATION rather than string-matching prose.
- */
-function denied(toolName, trResult = {}) {
-  const code = trResult.code || 'PERMISSION_DENIED';
-  return {
-    isError: true,
-    ok: false,
-    code,
-    tool: toolName,
-    content: [{ type: 'text', text: `DENIED (${code}): ${String(trResult.error || 'refused by permission engine').substring(0, 4000)}` }],
-  };
-}
-
-/**
- * P0-B: denials must be auditable, not just logged to a console nobody reads.
- * Best-effort — an audit sink that is down must never turn a clean denial into
- * a crash, but it also must not silently swallow, so failures go to stderr.
- */
-function auditDenial(toolName, args, trResult = {}) {
-  try {
-    const ledger = require('./lib/proof-ledger');
-    const record = {
-      kind: 'tool.denied',
-      tool: toolName,
-      code: trResult.code || 'PERMISSION_DENIED',
-      reason: String(trResult.error || '').substring(0, 500),
-      source: 'http',
-      args: JSON.stringify(args || {}).substring(0, 500),
-      at: new Date().toISOString(),
-    };
-    if (typeof ledger.record === 'function') ledger.record(record);
-    else if (typeof ledger.append === 'function') ledger.append(record);
-    else console.error('[AUDIT] proof-ledger exposes no record/append; denial not persisted:', record.tool, record.code);
-  } catch (e) {
-    console.error(`[AUDIT] failed to persist denial for ${toolName}: ${e.message}`);
-  }
-}
 
 async function ps(cmd, timeout = 15000) {
   try {
@@ -1037,7 +813,7 @@ async function getBrowserPage() {
   return pwPage;
 }
 
-const TOOL_DEFINITIONS = [
+const TOOLS = [
   { name: 'screen_capture', description: 'Screenshot the screen. Returns file path.', inputSchema: { type: 'object', properties: { monitor: { type: 'number' } } } },
   { name: 'screen_ocr', description: 'Read text from screen using OCR. Supports line grouping and structured output.', inputSchema: { type: 'object', properties: { image_path: { type: 'string' } } } },
   { name: 'ocr_identify', description: 'Advanced OCR with line detection. Read text and identify line-by-line structure.', inputSchema: { type: 'object', properties: { image_path: { type: 'string' } } } },
@@ -1114,21 +890,7 @@ const loadedSkills = {};
 const CORE_PRESERVE = ['interactive_shell', 'skill_manager', 'task_manager', 'speak', 'memory', 'file_read', 'file_write', 'socket_rig', 'purpclaw_start', 'system_status', 'load_toolset', 'window_list'];
 let ACTIVE_TOOLSET = 'all';
 
-function registerApiTools() {
-  const registry = require('./lib/tools');
-  for (const definition of TOOL_DEFINITIONS) {
-    if (registry.has(definition.name)) continue;
-    registry.register({
-      name: definition.name,
-      description: definition.description,
-      inputSchema: definition.inputSchema,
-      execute: args => runTool(definition.name, args),
-    });
-  }
-}
-
 function loadDynamicSkills() {
-  const registry = require('./lib/tools');
   if (!fs.existsSync(SKILLS_DIR)) fs.mkdirSync(SKILLS_DIR, { recursive: true });
   const files = fs.readdirSync(SKILLS_DIR).filter(f => f.endsWith('.js') && !f.endsWith('.pending.js'));
   for (const file of files) {
@@ -1138,21 +900,10 @@ function loadDynamicSkills() {
       const skillDef = require(fullPath);
       if (skillDef.name && skillDef.description && typeof skillDef.handler === 'function') {
         loadedSkills[skillDef.name] = skillDef.handler;
-        registry.register({
-          name: skillDef.name,
-          description: skillDef.description,
-          inputSchema: skillDef.inputSchema || { type: 'object', properties: {} },
-          execute: args => skillDef.handler(args, {
-            ps, psScript, cmd, ok, execAsync,
-            config: { PURP_DIR, SKILLS_DIR },
-          }),
-        });
       }
     } catch (e) { console.error(`[SKILLS] Failed to load ${file}: ${e.message}`); }
   }
 }
-
-registerApiTools();
 
 async function executeTool(name, args) {
   const t0 = Date.now();
@@ -1165,40 +916,17 @@ async function executeTool(name, args) {
   ebCalledReq.end();
 
   let result = null;
-  try {
-    // P0-B. Three defects lived in this call and all three defeated the
-    // permission engine while appearing to use it:
-    //
-    //  1. operatorInitiated: true was hardcoded. tool-runtime.js passes that
-    //     straight to GOVERNANCE.checkWorkflow, where it auto-approves. An HTTP
-    //     request is by definition NOT operator-initiated — there is no console,
-    //     no human at the keyboard, and the caller is remote. Every API tool call
-    //     was therefore claiming console authority and walking through the
-    //     self-modification gate unchallenged.
-    //  2. permissionProfile: 'standard' was hardcoded, overriding the profile the
-    //     constructor was carefully given from PURPCLAW_WEB_PERMISSION_PROFILE.
-    //     The operator's configured profile was read, then ignored.
-    //  3. Denials and errors were returned through ok(). A refused tool call came
-    //     back as a SUCCESS envelope whose text happened to begin "ToolRuntime
-    //     denied". No caller could distinguish a denial from a result, so the
-    //     permission engine could refuse everything and every surface would
-    //     still render success.
-    const trResult = await getToolRuntime().invoke(name, args, {
-      // Let the runtime use its configured profile; do not override per call.
-      operatorInitiated: false,
-      source: 'http',
-    });
-    if (trResult.ok) {
-      result = ok(trResult.content || trResult.stdout || trResult);
-      console.log(`[TOOL] OK ${name} via ToolRuntime (${Date.now() - t0}ms)`);
-    } else {
-      result = denied(name, trResult);
-      console.error(`[TOOL] DENIED ${name} (${trResult.code || 'DENIED'}): ${trResult.error}`);
-      auditDenial(name, args, trResult);
-    }
-  } catch (e) {
-    result = denied(name, { error: e.message, code: 'TOOL_EXECUTION_ERROR' });
-    console.error(`[TOOL] ERROR ${name}: ${e.message}`);
+  if (loadedSkills[name]) {
+    try {
+      const res = await loadedSkills[name](args, { ps, psScript, cmd, ok, execAsync, config: { PURP_DIR, SKILLS_DIR } });
+      console.log(`[TOOL] OK ${name} (${Date.now() - t0}ms)`);
+      result = ok(res);
+    } catch (e) { result = ok(`Dynamic Skill Error: ${e.message}`); }
+  } else {
+    try {
+      result = await runTool(name, args);
+      console.log(`[TOOL] OK ${name} (${Date.now() - t0}ms)`);
+    } catch (e) { result = ok(`Error: ${e.message}`); }
   }
 
   const ebResultPayload = JSON.stringify({ topic: 'tool.result', toolName: name, duration: Date.now() - t0 });
@@ -1928,7 +1656,7 @@ if ($hwnd -ne [IntPtr]::Zero) {
           '--log',   PURP_LOG,
           '--out',   outDir,
           '--task',  args.task,
-          '--gw',    PURPCLAW_GATEWAY_URL,
+          '--gw',    OPENCLAW_GW,
         ],
         {
           tag: `purp-pipeline(${args.task.slice(0, 40)})`,
@@ -2016,38 +1744,14 @@ if ($hwnd -ne [IntPtr]::Zero) {
     }
 
     case 'memory': {
-      // ── Routes to cognitive spine via lib/memory-client ──
-      try {
-        if (!memory) return ok('Memory client unavailable');
-        const isUp = await memory.isOnline();
-        if (!isUp) return ok('Memory matrix offline (port 7880)');
-        switch (args.action) {
-          case 'remember': {
-            const memId = await memory.ingest(String(args.content || ''), {
-              source: 'tool:memory', importance: 0.6, valence: 0.1, type: 'text'
-            });
-            return ok(memId ? `Remembered (id ${memId}): ${args.content}` : `Failed to remember: ${args.content}`);
-          }
-          case 'recall': {
-            const q = String(args.content || '');
-            const { results } = await memory.recall(q, { limit: 10 });
-            if (!results || results.length === 0) return ok(`No memory matches for: ${q}`);
-            const out = results.slice(0, 10).map((m, i) => `${i + 1}. ${(m.content || '').substring(0, 200)}${m.score !== undefined ? ` [${(m.score * 100).toFixed(0)}%]` : ''}`).join('\n');
-            return ok(`Memory matches (${results.length}):\n${out}`);
-          }
-          case 'forget': {
-            // Cognitive spine has no per-item delete. Guide the user.
-            return ok('The cognitive spine does not support per-item deletion. Use recall to find entries, then remember updated context to supersede them.');
-          }
-          case 'list': {
-            const { results } = await memory.recall('', { limit: 50 });
-            if (!results || results.length === 0) return ok('No memories stored yet.');
-            const out = results.slice(0, 50).map((m, i) => `${i + 1}. ${(m.content || '').substring(0, 150)}${m.source ? ` — ${m.source}` : ''}`).join('\n');
-            return ok(`Recent memories (${results.length}):\n${out}`);
-          }
-          default: return ok('Actions: remember, recall, forget, list');
-        }
-      } catch (e) { return ok(`Memory error: ${e.message}`); }
+      const mem = loadMemory();
+      switch (args.action) {
+        case 'remember': mem.facts.push({ c: args.content, t: new Date().toISOString() }); saveMemory(mem); return ok(`Remembered (${mem.facts.length} total): ${args.content}`);
+        case 'recall': { const q = (args.content || '').toLowerCase(); const m = mem.facts.filter(f => f.c.toLowerCase().includes(q)); return ok(m.length ? m.map(x => `* ${x.c}`).join('\n') : 'No matches'); }
+        case 'forget': { const b = mem.facts.length; mem.facts = mem.facts.filter(f => !f.c.toLowerCase().includes((args.content || '').toLowerCase())); saveMemory(mem); return ok(`Forgot ${b - mem.facts.length}`); }
+        case 'list': return ok(mem.facts.length ? mem.facts.map(f => `* ${f.c}`).join('\n') : 'No memories');
+        default: return ok('Actions: remember, recall, forget, list');
+      }
     }
     case 'notification': {
       await psScript(`
@@ -2534,15 +2238,16 @@ if ($data[1].Count -gt 0) {
       } catch (e) { return ok(`Knowledge search error: ${e.message}`); }
     }
     case 'search_memory': {
-      // ── Routes to cognitive spine via lib/memory-client ──
       try {
-        if (!memory) return ok('Memory client unavailable');
-        const isUp = await memory.isOnline();
-        if (!isUp) return ok('Memory matrix offline (port 7880)');
-        const query = String(args.query || '');
-        const { results } = await memory.recall(query, { limit: 10 });
-        if (!results || results.length === 0) return ok(`No memory matches for: ${query}`);
-        const out = results.slice(0, 10).map((m, i) => `${i + 1}. ${(m.content || '').substring(0, 200)}${m.score !== undefined ? ` [${(m.score * 100).toFixed(0)}%]` : ''}`).join('\n');
+        const query = (args.query || '').toLowerCase();
+        const mem = loadMemory();
+        const entries = mem.facts || [];
+        const results = entries.filter(e => 
+          (e.c && e.c.toLowerCase().includes(query)) ||
+          (e.tags && e.tags.some(t => t.toLowerCase().includes(query)))
+        );
+        if (results.length === 0) return ok(`No memory matches for: ${query}`);
+        const out = results.slice(0, 10).map((e, i) => `${i + 1}. ${e.c.substring(0, 200)} (${e.t || 'unknown'})`).join('\n');
         return ok(`Memory matches (${results.length}):\n${out}`);
       } catch (e) { return ok(`Memory search error: ${e.message}`); }
     }
@@ -2558,8 +2263,8 @@ async function handleRpc(req) {
     case 'notifications/initialized': return null;
     case 'tools/list':
       loadDynamicSkills();
-      console.log(`[BRIDGE] ${TOOL_DEFINITIONS.length} tools`);
-      return { jsonrpc: '2.0', id, result: { tools: TOOL_DEFINITIONS } };
+      console.log(`[BRIDGE] ${TOOLS.length} tools`);
+      return { jsonrpc: '2.0', id, result: { tools: TOOLS } };
     case 'tools/call': {
       const { name, arguments: a } = params || {};
       if (!name) return { jsonrpc: '2.0', id, error: { code: -32602, message: 'No tool' } };
@@ -2614,16 +2319,16 @@ function connectWS() {
           console.log('[BALL] Voice command:', command.substring(0, 100));
           broadcast({ type: 'ball_voice_command', command, timestamp: new Date().toISOString() });
 
-          if (AGENT_TOWER && AGENT_TOWER.broadcast) {
-            AGENT_TOWER.broadcast({ type: 'ball_voice_command', command, timestamp: new Date().toISOString() });
+          if (AgentTower && AgentTower.broadcast) {
+            AgentTower.broadcast({ type: 'ball_voice_command', command, timestamp: new Date().toISOString() });
           }
 
           // Check for explicit spawn commands first
           const agentMatch = command.match(/spawn (\w+)|agent (\w+)|launch (\w+)/i);
           if (agentMatch) {
             const agentName = agentMatch[1] || agentMatch[2] || agentMatch[3];
-            if (AGENT_TOWER && AGENT_TOWER.spawnAgent) {
-              AGENT_TOWER.spawnAgent(agentName.toLowerCase(), command);
+            if (AgentTower && AgentTower.spawnAgent) {
+              AgentTower.spawnAgent(agentName.toLowerCase(), command);
               broadcast({ type: 'ball_spawn_request', agentName, command, timestamp: new Date().toISOString() });
             }
           } else {
@@ -2652,8 +2357,8 @@ function connectWS() {
 
             // Spawn up to 3 matching agents
             for (const agentName of autoSpawn.slice(0, 3)) {
-              if (AGENT_TOWER && AGENT_TOWER.spawnAgent) {
-                const result = await AGENT_TOWER.spawnAgent(agentName, `Voice task: ${command.substring(0, 50)}`, {});
+              if (AgentTower && AgentTower.spawnAgent) {
+                const result = await AgentTower.spawnAgent(agentName, `Voice task: ${command.substring(0, 50)}`, {});
                 if (result.success) {
                   broadcast({ type: 'ball_auto_spawn', agentName, command: command.substring(0, 50), timestamp: new Date().toISOString() });
                 }
@@ -2668,7 +2373,7 @@ function connectWS() {
       if (parsed.type === 'query') {
         if (parsed.query === 'tower_status' || parsed.query === 'status') {
           if (ws && ws.readyState === WebSocket.OPEN) {
-            const status = AGENT_TOWER.getAgentStatus();
+            const status = AgentTower.getAgentStatus();
             ws.send(JSON.stringify({ type: 'status_response', data: status }));
           }
         }
@@ -2706,7 +2411,7 @@ function recon() {
 // Keeping function for backwards compatibility but it's a no-op
 function connectBall() {
   console.log('[BALL] Using unified WS connection (connectBall deprecated)');
-  AGENT_TOWER.connectToBall(XIAOZHI_WS_URL);
+  AgentTower.connectToBall(XIAOZHI_WS_URL);
 }
 
 function scheduleBallReconnect() {}
@@ -2743,54 +2448,25 @@ function startLocalTcpServer() {
 }
 
 let bridgeWs = null;
-let bridgeReconnectDelay = 2000;
-const BRIDGE_MAX_DELAY = 30000;
-// Don't spam the log every cycle. The previous behavior logged one
-// "Bridge disconnected, reconnecting in …" line per flap, which on a
-// flapping network produces thousands of lines per minute and hides
-// real errors. Throttle to one log per (current) back-off window.
-let bridgeLastLogAt = 0;
 
 function connectToBridge() {
   try {
     bridgeWs = net.createConnection(7778, '127.0.0.1', () => {
       state.sammyStatus = 'ready';
-      bridgeReconnectDelay = 2000; // reset backoff on success
-      bridgeLastLogAt = 0;
       console.log('[CONTROL API] Connected to bridge');
-    });
-    bridgeWs.setTimeout(10000, () => {
-      // Idle timeout — treat as disconnect
-      try { bridgeWs.destroy(); } catch (_) {}
     });
     bridgeWs.on('data', (data) => {
       try { const msg = JSON.parse(data.toString()); handleBridgeMessage(msg); } catch (e) {}
     });
     bridgeWs.on('close', () => {
       state.sammyStatus = 'connecting';
-      const delay = bridgeReconnectDelay;
-      // Log at most once per back-off window so a flapping bridge doesn't
-      // fill the disk. If the reconnect eventually succeeds, the next
-      // "Connected to bridge" line tells the operator it's recovered.
-      const now = Date.now();
-      if (now - bridgeLastLogAt >= delay) {
-        console.log(`[CONTROL API] Bridge disconnected, reconnecting in ${delay}ms...`);
-        bridgeLastLogAt = now;
-      }
-      bridgeReconnectDelay = Math.min(bridgeReconnectDelay * 2, BRIDGE_MAX_DELAY);
-      setTimeout(connectToBridge, delay);
+      console.log('[CONTROL API] Bridge disconnected, reconnecting...');
+      setTimeout(connectToBridge, 2000);
     });
     bridgeWs.on('error', () => { state.sammyStatus = 'error'; });
   } catch (e) {
     state.sammyStatus = 'error';
-    const delay = bridgeReconnectDelay;
-    const now = Date.now();
-    if (now - bridgeLastLogAt >= delay) {
-      console.log(`[CONTROL API] Bridge error, retrying in ${delay}ms...`);
-      bridgeLastLogAt = now;
-    }
-    bridgeReconnectDelay = Math.min(bridgeReconnectDelay * 2, BRIDGE_MAX_DELAY);
-    setTimeout(connectToBridge, delay);
+    setTimeout(connectToBridge, 2000);
   }
 }
 
@@ -2837,7 +2513,7 @@ function spawnDivisionAgent(division, task, agentName = null) {
     default: command = 'cmd'; args = ['/c', 'echo', `Agent ${division}: ${task}`];
   }
   try {
-    const proc = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'], shell: false, windowsHide: true });
+    const proc = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'], shell: false });
     const pid = proc.pid;
     state.activeProcesses[pid] = { agentId, division, task, startTime: new Date().toISOString(), process: proc };
     proc.stdout.on('data', (data) => {
@@ -2846,8 +2522,8 @@ function spawnDivisionAgent(division, task, agentName = null) {
         state.logs.unshift({ timestamp: new Date().toISOString(), type: 'agent_output', data: { agentId, division, output } });
         if (state.logs.length > state.maxLogs) state.logs.pop();
         broadcast({ type: 'agent_output', agentId, division, output, timestamp: new Date().toISOString() });
-        if (AGENT_TOWER && AGENT_TOWER.broadcast) {
-          AGENT_TOWER.broadcast({ type: 'agent_output', agentId, division, output, timestamp: new Date().toISOString() });
+        if (AgentTower && AgentTower.broadcast) {
+          AgentTower.broadcast({ type: 'agent_output', agentId, division, output, timestamp: new Date().toISOString() });
         }
       }
     });
@@ -2857,8 +2533,8 @@ function spawnDivisionAgent(division, task, agentName = null) {
         state.logs.unshift({ timestamp: new Date().toISOString(), type: 'agent_error', data: { agentId, division, error } });
         if (state.logs.length > state.maxLogs) state.logs.pop();
         broadcast({ type: 'agent_error', agentId, division, error, timestamp: new Date().toISOString() });
-        if (AGENT_TOWER && AGENT_TOWER.broadcast) {
-          AGENT_TOWER.broadcast({ type: 'agent_error', agentId, division, error, timestamp: new Date().toISOString() });
+        if (AgentTower && AgentTower.broadcast) {
+          AgentTower.broadcast({ type: 'agent_error', agentId, division, error, timestamp: new Date().toISOString() });
         }
       }
     });
@@ -2867,8 +2543,8 @@ function spawnDivisionAgent(division, task, agentName = null) {
       state.logs.unshift({ timestamp: new Date().toISOString(), type: 'agent_exit', data: { agentId, division, exitCode: code } });
       if (state.logs.length > state.maxLogs) state.logs.pop();
       broadcast({ type: 'agent_exit', agentId, division, exitCode: code, timestamp: new Date().toISOString() });
-      if (AGENT_TOWER && AGENT_TOWER.broadcast) {
-        AGENT_TOWER.broadcast({ type: 'agent_exit', agentId, division, exitCode: code, timestamp: new Date().toISOString() });
+      if (AgentTower && AgentTower.broadcast) {
+        AgentTower.broadcast({ type: 'agent_exit', agentId, division, exitCode: code, timestamp: new Date().toISOString() });
       }
     });
     state.swarmAgents[agentId] = { id: agentId, name: agentName, division, status: 'working', currentTask: task, pid, startTime: new Date().toISOString() };
@@ -2876,8 +2552,8 @@ function spawnDivisionAgent(division, task, agentName = null) {
     state.logs.unshift(spawnEntry);
     if (state.logs.length > state.maxLogs) state.logs.pop();
     broadcast({ type: 'swarm_spawn', agentId, name: agentName, division, task, timestamp: new Date().toISOString() });
-    if (AGENT_TOWER && AGENT_TOWER.broadcast) {
-      AGENT_TOWER.broadcast({ type: 'swarm_spawn', agentId, name: agentName, division, task, timestamp: new Date().toISOString() });
+    if (AgentTower && AgentTower.broadcast) {
+      AgentTower.broadcast({ type: 'swarm_spawn', agentId, name: agentName, division, task, timestamp: new Date().toISOString() });
     }
     return agentId;
   } catch (e) { console.error(`Failed to spawn agent for ${division}:`, e); return null; }
@@ -2886,7 +2562,7 @@ function spawnDivisionAgent(division, task, agentName = null) {
 function killAgent(agentId) {
   for (const [pid, info] of Object.entries(state.activeProcesses)) {
     if (info.agentId === agentId) {
-      try { info.process.kill(); delete state.activeProcesses[pid]; delete state.swarmAgents[agentId]; broadcast({ type: 'swarm_kill', agentId, timestamp: new Date().toISOString() }); if (AGENT_TOWER && AGENT_TOWER.broadcast) { AGENT_TOWER.broadcast({ type: 'swarm_kill', agentId, timestamp: new Date().toISOString() }); } return true; }
+      try { info.process.kill(); delete state.activeProcesses[pid]; delete state.swarmAgents[agentId]; broadcast({ type: 'swarm_kill', agentId, timestamp: new Date().toISOString() }); if (AgentTower && AgentTower.broadcast) { AgentTower.broadcast({ type: 'swarm_kill', agentId, timestamp: new Date().toISOString() }); } return true; }
       catch (e) { console.error(`Failed to kill agent ${agentId}:`, e); return false; }
     }
   }
@@ -2921,7 +2597,7 @@ function proxyToGuardian(req, res, path, method) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
   const method = req.method;
 
@@ -3069,329 +2745,8 @@ const server = http.createServer(async (req, res) => {
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
 
-    // Board — live build-status page (static HTML served by unified_api, bypassing Next.js)
-    if (pathname === '/board' && method === 'GET') {
-      const file = path.join(__dirname, 'public', 'board', 'index.html');
-      const html = fs.existsSync(file)
-        ? fs.readFileSync(file, 'utf8')
-        : '<html><body style="font-family:monospace;background:#050308;color:#e9e6ff;padding:40px"><h1 style="color:#d946ef">Board not found</h1><p>Run: <code>node scripts/build-status.mjs</code></p></body></html>';
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(html);
-      return;
-    }
-    if (pathname === '/board/truth-manifest.json' && method === 'GET') {
-      const file = path.join(__dirname, 'public', 'board', 'truth-manifest.json');
-      const json = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '{}';
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(json);
-      return;
-    }
-
-    if (pathname === '/api/health' && method === 'GET')
-      return sendJson(res, 200, { status: 'healthy', timestamp: new Date().toISOString(), uptime: process.uptime(), memory: process.memoryUsage(), cpu: os.loadavg(), bridgeConnected: bridgeWs && !bridgeWs.destroyed });
-    if (pathname === '/api/internal/governor/status' && method === 'GET') {
-      try {
-        const path = require('path');
-        const gov = require(path.join(__dirname, 'lib', 'usage-governor.js'));
-        return sendJson(res, 200, { ok: true, governor: gov.status(), now: new Date().toISOString() });
-      } catch (e) { return sendJson(res, 500, { ok: false, error: e.message }); }
-    }
-
-    // ── Narrator API (event-types catalog for client-side narrator subscription) ──
-    if (pathname === '/api/narrator/types' && method === 'GET') {
-      try {
-        const bridge = require('./lib/narrator/eventbus-bridge');
-        return sendJson(res, 200, { ok: true, types: bridge.NARRATOR_EVENT_TYPES });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    // ── Harvest API ──────────────────────────────────────────────────────────
-    if (pathname === '/api/harvest/status' && method === 'GET') {
-      try {
-        const idx = require('./lib/harvest/indexer');
-        return sendJson(res, 200, idx.getStatus());
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    if (pathname === '/api/harvest/search' && method === 'GET') {
-      try {
-        const q = (parsedUrl.searchParams.get('q') || '').toLowerCase();
-        const idx = require('./lib/harvest/indexer');
-        const hits = q ? idx.searchIndex(q) : [];
-        return sendJson(res, 200, { ok: true, query: q, hits });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    // ── Sessions API ──────────────────────────────────────────────────
-    if (pathname === '/api/sessions' && method === 'GET') {
-      try {
-        const limit = Math.max(1, Math.min(Number(parsedUrl.searchParams.get('limit')) || 100, 500));
-        const list = SESSION_REPOSITORY.listSessions(limit);
-        return sendJson(res, 200, { ok: true, sessions: list });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    if (pathname === '/api/sessions' && method === 'POST') {
-      try {
-        const body = await parseBody(req) || {};
-        const title = typeof body.title === 'string' ? body.title : 'Untitled';
-        const provider = typeof body.provider === 'string' ? body.provider : '';
-        const model = typeof body.model === 'string' ? body.model : '';
-        const requestedId = typeof body.id === 'string' && body.id.trim() ? body.id.trim() : '';
-        let session = requestedId ? SESSION_REPOSITORY.loadSession(requestedId) : null;
-        if (!session) {
-          session = SESSION_REPOSITORY.createSession(title, provider, model, {
-            ...(requestedId ? { id: requestedId } : {}),
-            source: 'api',
-          });
-        }
-        if (Array.isArray(body.messages)) {
-          session = SESSION_REPOSITORY.saveSession(session.id, body.messages, {
-            title,
-            provider,
-            model,
-            source: session.source || 'api',
-          });
-        }
-        return sendJson(res, 200, { ok: true, session });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    if (pathname.startsWith('/api/sessions/') && method === 'GET') {
-      try {
-        const id = decodeURIComponent(pathname.slice('/api/sessions/'.length));
-        const session = SESSION_REPOSITORY.loadSession(id);
-        if (!session) return sendJson(res, 404, { error: 'session not found' });
-        return sendJson(res, 200, { ok: true, session });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    if (pathname.startsWith('/api/sessions/') && method === 'PATCH') {
-      try {
-        const id = decodeURIComponent(pathname.slice('/api/sessions/'.length));
-        const body = await parseBody(req) || {};
-        const title = typeof body.title === 'string' ? body.title.trim() : '';
-        if (!title) return sendJson(res, 400, { error: 'missing title' });
-        const session = SESSION_REPOSITORY.renameSession(id, title);
-        if (!session) return sendJson(res, 404, { error: 'session not found' });
-        return sendJson(res, 200, { ok: true, session });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    if (pathname.startsWith('/api/sessions/') && method === 'DELETE') {
-      try {
-        const id = decodeURIComponent(pathname.slice('/api/sessions/'.length));
-        const result = SESSION_REPOSITORY.deleteSession(id);
-        return sendJson(res, 200, { ok: true, ...result });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    if (false && pathname === '/api/health-old') return;
+    if (pathname === '/api/health' && method === 'GET') return sendJson(res, 200, { status: 'healthy', timestamp: new Date().toISOString(), uptime: process.uptime(), memory: process.memoryUsage(), cpu: os.loadavg(), bridgeConnected: bridgeWs && !bridgeWs.destroyed });
     if (pathname === '/api/version' && method === 'GET') return sendJson(res, 200, { name: 'PURPCLAW', version: '7.0', codename: 'The Purple King', protocol: 'TURING v7.0', build: process.env.BUILD_HASH || 'dev' });
-
-    // ── Agent Scores ─────────────────────────────────────────────────────
-    if (pathname === '/api/agent-scores' && method === 'GET') {
-      try {
-        const scorePath = path.join(PURP_DIR, 'agent_score.json');
-        if (!fs.existsSync(scorePath)) return sendJson(res, 200, { success: true, meta: { totalTasksRecorded: 0, lastUpdated: new Date().toISOString() }, agents: {}, leaderboard: [] });
-        const raw = fs.readFileSync(scorePath, 'utf8');
-        const data = JSON.parse(raw);
-        const isReal = (v) => { const t = String(v||'').toLowerCase(); return Boolean(t) && !t.includes('fake') && !t.includes('nonexistent') && !t.includes('xyz123') && t !== 'unknown' && t.length <= 40; };
-        const agents = Object.fromEntries(Object.entries(data.agents||{}).filter(([n]) => isReal(n)));
-        const leaderboard = Object.entries(agents)
-          .sort((a,b) => ((b[1]?.score||0) - (a[1]?.score||0)))
-          .slice(0,20).map(([name,data]) => ({ name, ...(data||{}) }));
-        return sendJson(res, 200, { success: true, meta: { totalTasksRecorded: Object.keys(agents).length, lastUpdated: new Date().toISOString() }, agents, leaderboard });
-      } catch(e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    // ── LLM Ledger ───────────────────────────────────────────────────────
-    if (pathname === '/api/llm-ledger' && method === 'GET') {
-      try {
-        const ledgerPath = path.join(PURP_DIR, 'agent_work', 'llm_ledger.json');
-        if (!fs.existsSync(ledgerPath)) return sendJson(res, 200, { entries: [], totalSpend: 0, totalTokens: 0 });
-        const raw = fs.readFileSync(ledgerPath, 'utf8');
-        const data = JSON.parse(raw);
-        return sendJson(res, 200, { entries: data.entries||[], totalSpend: data.totalSpend||0, totalTokens: data.totalTokens||0 });
-      } catch(e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    // ── Host Telemetry ──────────────────────────────────────────────────
-    if (pathname === '/api/host-telemetry' && method === 'GET') {
-      const cpuSnapshot = () => { let idle=0,total=0; for(const c of require('os').cpus()){for(const t of Object.values(c.times))total+=t;idle+=c.times.idle;} return {idle,total}; };
-      const a = cpuSnapshot();
-      const pause = (ms) => new Promise(r => setTimeout(r, ms));
-      await pause(120);
-      const b = cpuSnapshot();
-      const idleDiff=b.idle-a.idle,totalDiff=b.total-a.total;
-      const cpuPct = totalDiff>0 ? Math.max(0,Math.min(100,Math.round((1-idleDiff/totalDiff)*100))) : null;
-      const os = require('os');
-      const total=os.totalmem(), ramPct=total>0?Math.round((1-os.freemem()/total)*100):null;
-      const processRssMb=Math.round(process.memoryUsage().rss/1024/1024);
-      return sendJson(res, 200, { cpuPct, ramPct, processRssMb, platform:os.platform(), cores:os.cpus().length, loadAvg1:os.loadavg()[0]||null, sampledAt:new Date().toISOString() });
-    }
-
-    // ── Harness Benchmarks ──────────────────────────────────────────────
-    if (pathname === '/api/harness-benchmarks' && method === 'GET') {
-      const RESULTS_DIR = path.join(PURP_DIR, 'eval', 'results');
-      const LATEST_FILE = path.join(RESULTS_DIR, 'harness-benchmark-latest.json');
-      const LEDGER_FILE = path.join(PURP_DIR, 'agent_work', 'harness_benchmark.jsonl');
-      const readJson = (f, fb) => { try { return fs.existsSync(f)?JSON.parse(fs.readFileSync(f,'utf8')):fb; } catch { return fb; } };
-      const readHistory = () => { try { if(!fs.existsSync(LEDGER_FILE))return[]; return fs.readFileSync(LEDGER_FILE,'utf8').trim().split('\n').filter(Boolean).slice(-30).map(l=>{try{return JSON.parse(l);}catch{return null;}}).filter(Boolean).reverse(); } catch { return []; } };
-      const latest = readJson(LATEST_FILE, null);
-      const history = readHistory();
-      const previous = history[1]||null;
-      const latestSummary = latest?.summary||history[0]?.summary||null;
-      const previousSummary = previous?.summary||null;
-      const trend = latestSummary&&previousSummary?{completionRateDelta:Number(((latestSummary.completionRate||0)-(previousSummary.completionRate||0)).toFixed(4)),passAt1Delta:Number(((latestSummary.passAt1Rate||0)-(previousSummary.passAt1Rate||0)).toFixed(4)),retryDelta:(latestSummary.retries||0)-(previousSummary.retries||0),memoryLessonDelta:(latestSummary.memoryLessons||0)-(previousSummary.memoryLessons||0)}:null;
-      return sendJson(res, 200, { ok:true, latest, summary:latestSummary||{totalGoals:0,passedGoals:0,completionRate:0,passAt1Rate:0,passAt3Rate:0,retries:0,memoryLessons:0,agentScoreRecords:0}, trend, history, artifacts:{latest:fs.existsSync(LATEST_FILE)?LATEST_FILE:null, ledger:fs.existsSync(LEDGER_FILE)?LEDGER_FILE:null} });
-    }
-
-    // ── Kernel Jobs ─────────────────────────────────────────────────────
-    if (pathname === '/api/kernel/jobs' && method === 'GET') {
-      try {
-        const { getApiHarnessKernel } = require('./lib/api-harness-kernel.js');
-        const swarmCoordinator = require('./swarm_coordinator.js');
-        const kernel = getApiHarnessKernel({ rootDir: process.cwd(), swarmCoordinator });
-        const limit = parseInt(new URL(req.url,'http://x').searchParams.get('limit')||'40');
-        return sendJson(res, 200, { ok:true, state:'answered', jobs: kernel.listJobs(limit) });
-      } catch(e) { return sendJson(res, 200, { ok:false, state:'failed', errorCode:'kernel_unavailable', error:{message:e.message} }); }
-    }
-
-    // ── Mission Data (aggregated) ───────────────────────────────────────
-    if (pathname === '/api/mission-data' && method === 'GET') {
-      const get = (url, fb) => new Promise(resolve => { require('http').get(url, { timeout:2500 }, res => { let d='';res.on('data',c=>d+=c);res.on('end',()=>{try{resolve(JSON.parse(d));}catch{resolve(fb);}});}).on('error',()=>resolve(fb)).on('timeout',()=>resolve(fb)); }).catch(()=>fb);
-      const compact = (v,max=120) => { const c=String(v||'').replace(/\s+/g,' ').trim(); return c.length>max?c.slice(0,max)+'...':c; };
-      const readKernel = (lim=20) => { try { const {getApiHarnessKernel}=require('./lib/api-harness-kernel.js'); const sc=require('./swarm_coordinator.js'); return getApiHarnessKernel({rootDir:process.cwd(),swarmCoordinator:sc}).listJobs(lim); } catch { return[]; } };
-      const readScores = () => { try { const p=path.join(PURP_DIR,'agent_score.json'); return fs.existsSync(p)?JSON.parse(fs.readFileSync(p,'utf8')):{meta:{totalTasksRecorded:0},agents:{},intents:{},history:[]}; } catch { return{meta:{totalTasksRecorded:0},agents:{},intents:{},history:[]}; } };
-      const readLlmLedger = () => { try { const p=path.join(PURP_DIR,'agent_work','llm-ledger.jsonl'); if(!fs.existsSync(p))return{totalCalls:0,totalTokens:0,totalCost:0}; const lines=fs.readFileSync(p,'utf8').trim().split('\n').filter(Boolean); return lines.reduce((s,l)=>{try{const e=JSON.parse(l);s.totalCalls++;s.totalTokens+=e.total_tokens||0;s.totalCost+=e.estimatedCost||0;}catch{}return s;},{totalCalls:0,totalTokens:0,totalCost:0}); } catch { return{totalCalls:0,totalTokens:0,totalCost:0}; } };
-      try {
-        const [apiHealth,apiControl,tower,bus,pipeline,omnicode,delegation,llmStatus,researchStatus] = await Promise.all([
-          get('http://127.0.0.1:7780/api/health',{status:'unavailable'}),
-          get('http://127.0.0.1:7780/api/status',{status:'unavailable'}),
-          get('http://127.0.0.1:7790/tower/status',{activeAgents:[],registeredAgents:[],teams:[]}),
-          get('http://127.0.0.1:7782/state',{recentEvents:[]}),
-          get('http://127.0.0.1:7784/api/pipeline',null),
-          get('http://127.0.0.1:7780/api/omnicode/status',null),
-          get('http://127.0.0.1:7780/api/delegation/status',null),
-          get('http://127.0.0.1:7780/api/llm/status',null),
-          get('http://127.0.0.1:7780/api/research/status',null),
-        ]);
-        const kernelJobs = readKernel(20);
-        const agentScores = readScores();
-        const llmLedger = readLlmLedger();
-        const compactJob = (j) => ({ id:j.id, goal:compact(j.goal,240), state:j.state, route:j.route, mode:j.mode, dryRun:j.dryRun, createdAt:j.createdAt, startedAt:j.startedAt, finishedAt:j.finishedAt, durationMs:j.durationMs, error:compact(j.error,260) });
-        return sendJson(res, 200, {
-          api:{ ...apiControl, ...apiHealth, controlStatus:apiControl?.status||'unavailable', healthStatus:apiHealth?.status||'unavailable', status:apiHealth?.status==='healthy'?'healthy':(apiControl?.status||apiHealth?.status||'unavailable'), bridgeConnected:Boolean(apiHealth?.bridgeConnected??apiControl?.bridgeConnected) },
-          tower, eventBus:{recentEvents:(bus.recentEvents||[]).slice(-25)},
-          pipeline, kernelJobs:Array.isArray(kernelJobs)?kernelJobs.map(compactJob):[],
-          omnicodeStatus:omnicode, delegationStatus:delegation, llmStatus,
-          agentScores:{meta:agentScores.meta||{totalTasksRecorded:0},agentCount:Object.keys(agentScores.agents||{}).length,intentCount:Object.keys(agentScores.intents||{}).length,recent:(agentScores.history||[]).slice(-20).reverse().map((r)=>({agent:compact(r.agent,40),intent:compact(r.intent,80),success:Boolean(r.success),duration:r.duration||0,timestamp:r.timestamp}))},
-          llmLedger,
-        });
-      } catch(e) { return sendJson(res, 500, { error:e.message }); }
-    }
-
-    // ── Mission / Cockpit static pages (server-side data injection) ──────
-    if ((pathname === '/mission' || pathname === '/cockpit') && method === 'GET') {
-      const file = path.join(__dirname, 'public', 'mission.html');
-      let html = fs.existsSync(file) ? fs.readFileSync(file, 'utf8') : '<html><body style="font:16px monospace;padding:40px;background:#07040e;color:#ece7f5"><h1 style="color:#a855f7">PURPCLAW Mission</h1><p>HTML mockup not found at <code>ui mock up/Mission Control.html</code></p></body></html>';
-
-      // Server-side data injection: embed live data so browser doesn't need to fetch
-      const get = (url, fb) => new Promise(resolve => { require('http').get(url, { timeout:3000 }, res => { let d='';res.on('data',c=>d+=c);res.on('end',()=>{try{resolve(JSON.parse(d));}catch{resolve(fb);}});}).on('error',()=>resolve(fb)).on('timeout',()=>resolve(fb)); }).catch(()=>fb);
-
-      const [wData, aData, mData, oData] = await Promise.all([
-        get('http://127.0.0.1:7780/api/whoami', {}),
-        get('http://127.0.0.1:7780/api/agents/registry', {count:0,agents:[]}),
-        get('http://127.0.0.1:7780/api/mission-data', {}),
-        get('http://127.0.0.1:7780/api/mochi', {}),
-      ]).catch(()=>[{},{},{},{}]);
-
-      const whoami = wData || {};
-      const agents = aData || {count:0,agents:[]};
-      const mission = mData || {};
-      const mochi   = oData || {};
-      const tower = mission.tower || {};
-      const api2  = mission.api || {};
-      const jobs  = mission.kernelJobs || [];
-      const divs  = (tower.divisions && Object.keys(tower.divisions)) || [];
-
-      // Remove any broken preloaded block from the HTML first
-      html = html.replace(/<!-- __PRELOADED_DATA__ -->[\s\S]*?<\/script>\n/, '');
-      html = html.replace(/<script>window\.__PRELOADED\s*=\s*null;\s*\/[^*]*\*\//. comment, '');
-
-      // Build preloaded data
-      let breakdown = null;
-      try {
-        const { whoamiFull } = require('./lib/whoami');
-        const llm = require('./lib/llm-provider.js');
-        const allProviders = llm.PROVIDERS ? Object.keys(llm.PROVIDERS) : [];
-        const configured = Array.isArray(whoami.providers) ? whoami.providers : (whoami.providers && whoami.providers.present) || [];
-        const w = await whoamiFull();
-        breakdown = {
-          generatedAt: new Date().toISOString(),
-          tools: { total: w.systems.tools.total, breakdown: w.systems.tools.breakdown, remotion: 3 },
-          skills: { count: w.systems.skills.count },
-          agents: { registered: w.systems.agents.count, divisions: w.surfaces.agentTower.divisions, active: w.surfaces.agentTower.active || 0 },
-          providers: { registered: allProviders.length, configured: configured.length, list: allProviders, configuredList: configured },
-          routes: { total: w.systems.routes.total },
-          services: {}  // populated live by browser
-        };
-      } catch (e) { /* breakdown optional */ }
-
-      const preload = {
-        whoami, agents, mission, mochi, breakdown,
-        _d: {
-          agentCount:    agents.count || 0,
-          registered:    tower.registeredAgents || 0,
-          jobCount:      jobs.length,
-          runningJobs:   jobs.filter(j=>/^executing$|^running$/.test(j.state)).length,
-          uptime:        Math.round(api2.uptime || 0),
-          heapUsedMB:    Math.round((api2.memory && api2.memory.heapUsed) / 1024 / 1024),
-          skillsTotal:   api2.skillsCount || 0,
-          healthStatus:  api2.healthStatus || 'ok',
-          divisions:     divs.length,
-        }
-      };
-
-      // Inject data into page as a global variable — safe, no HTML parsing issues
-      const preloadJson = JSON.stringify(preload);
-      if (!preloadJson || preloadJson === '{}') {
-        console.error('[INJECTION] preloadJson is empty — JSON serialization failed');
-      }
-      // Replace marker with a script tag that sets window.__PRELOADED directly
-      // This runs synchronously when the parser reaches this point
-      // Replace <body> opening tag with: <body><script>window.__PRELOADED=...<\/script>
-      // This ensures __PRELOADED is set BEFORE the main IIFE runs (which is in the middle of the HTML)
-      const injected = '<body>\n<script>window.__PRELOADED=' + preloadJson + '<\/script>\n';
-      const newHtml = html.replace('<body>', injected);
-      if (newHtml === html) {
-        console.error('[INJECTION] <body> tag not found');
-      } else {
-        console.log('[INJECTION] success — injected', newHtml.length - html.length, 'bytes');
-      }
-      html = newHtml;
-
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(html);
-      return;
-    }
-
-    // ── Static asset proxy for ui mockup images (os/art/*) ─────────────
-    if (pathname.startsWith('/os/art/') && method === 'GET') {
-      const file = path.join(__dirname, 'ui mock up', pathname);
-      if (fs.existsSync(file)) {
-        const ext = file.split('.').pop().toLowerCase();
-        const ct = ext === 'png' ? 'image/png' : ext === 'svg' ? 'image/svg+xml' : ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'text/plain';
-        res.writeHead(200, { 'Content-Type': ct });
-        res.end(fs.readFileSync(file));
-      } else {
-        res.writeHead(200, { 'Content-Type': 'text/plain' });
-        res.end('');
-      }
-      return;
-    }
-
     // ── Mochi state bridge (unified pet across terminal + browser) ──────
     if (pathname === '/api/mochi' && method === 'GET') {
       res.setHeader('Access-Control-Allow-Origin', '*');
@@ -3414,154 +2769,7 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, merged);
       } catch (e) { return sendJson(res, 400, { error: e.message }); }
     }
-
-    // ── Harvest indexer routes ──────────────────────────────────────────
-    if (!harvest) {
-      // harvest module not loaded — only register a 503 stub for clarity
-      if (pathname.startsWith('/api/harvest')) {
-        return sendJson(res, 503, { error: 'harvest module not loaded' });
-      }
-    } else {
-      if (pathname === '/api/harvest/scan' && method === 'POST') {
-        try {
-          const body = await parseBody(req);
-          const params = typeof body === 'string' ? JSON.parse(body) : (body || {});
-          const { scanDirectory } = require('./lib/harvest/crawler');
-          const result = scanDirectory(params.dir || PURP_DIR);
-          return sendJson(res, 200, { ok: true, ...result });
-        } catch (e) { return sendJson(res, 400, { error: e.message }); }
-      }
-      if (pathname === '/api/harvest/extract' && method === 'POST') {
-        try {
-          const body = await parseBody(req);
-          const params = typeof body === 'string' ? JSON.parse(body) : (body || {});
-          const { extract } = require('./lib/harvest/extractors');
-          const entry = extract(params.path);
-          return sendJson(res, 200, { ok: true, entry });
-        } catch (e) { return sendJson(res, 400, { error: e.message }); }
-      }
-      if (pathname === '/api/harvest/index' && method === 'POST') {
-        try {
-          const body = await parseBody(req);
-          const params = typeof body === 'string' ? JSON.parse(body) : (body || {});
-          // indexer exports appendToBuffer (raw text), addToLedger (entry+summary)
-          if (params.entry) {
-            harvest.addToLedger(params.entry, params.summary || '');
-            return sendJson(res, 200, { ok: true, mode: 'ledger' });
-          }
-          harvest.appendToBuffer(params.text || '', params.source || 'unknown');
-          return sendJson(res, 200, { ok: true, mode: 'buffer' });
-        } catch (e) { return sendJson(res, 400, { error: e.message }); }
-      }
-      if (pathname === '/api/harvest/search' && method === 'POST') {
-        try {
-          const body = await parseBody(req);
-          const params = typeof body === 'string' ? JSON.parse(body) : (body || {});
-          const results = harvest.searchIndex(params.query || '', params.limit || 20);
-          return sendJson(res, 200, { ok: true, results });
-        } catch (e) { return sendJson(res, 400, { error: e.message }); }
-      }
-      if (pathname === '/api/harvest/stats' && method === 'GET') {
-        try {
-          return sendJson(res, 200, { ok: true, stats: harvest.getStatus() });
-        } catch (e) { return sendJson(res, 500, { error: e.message }); }
-      }
-    }
-
-    // ── Megapanel status routes (mounted 2026-06-24 to fix 6 orphan polls) ──
-    // Fix (2026-07-07): useMissionData.ts called /api/llm-status but canonical route is /api/llm/status
-    if (pathname === '/api/llm-status' && method === 'GET') {
-      res.writeHead(301, { Location: '/api/llm/status' });
-      res.end(); return;
-    }
-    if (pathname === '/api/llm/status' && method === 'GET') {
-      try {
-        // reflect LLM module's own provider state as published by llm-provider.js
-        const llm = typeof LLM.getStatus === 'function' ? LLM.getStatus() : { ok: true, provider: 'unknown' };
-        return sendJson(res, 200, { ok: true, ...llm });
-      } catch (e) { return sendJson(res, 200, { ok: true, error: e.message }); }
-    }
-    if (pathname === '/api/research/status' && method === 'GET') {
-      return sendJson(res, 200, { ok: true, status: state.researchStatus || 'idle', updatedAt: Date.now() });
-    }
-    if (pathname === '/api/delegation/status' && method === 'GET') {
-      try {
-        const lanes = Array.isArray(state.delegationLanes) ? state.delegationLanes : [];
-        return sendJson(res, 200, { ok: true, lanes, waiting: state.delegationWaiting || 0, posted: state.delegationPosted || 0, updatedAt: Date.now() });
-      } catch (e) { return sendJson(res, 200, { ok: true, error: e.message }); }
-    }
-    if (pathname === '/api/omnicode/status' && method === 'GET') {
-      try {
-        return sendJson(res, 200, { ok: true, mode: state.omnicodeMode || 'idle', repoPath: PURP_DIR, platformRoot: PURP_DIR, updatedAt: Date.now() });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-    if (pathname === '/api/evolution/status' && method === 'GET') {
-      try {
-        const evoPath = path.join(PURP_DIR, 'agent_work', 'evolution.json');
-        const data = fs.existsSync(evoPath) ? JSON.parse(fs.readFileSync(evoPath, 'utf-8')) : { running: false };
-        return sendJson(res, 200, { ok: true, ...data });
-      } catch (e) { return sendJson(res, 200, { ok: true, error: e.message }); }
-    }
-    if (pathname === '/api/benchmark/odysseus' && method === 'GET') {
-      try {
-        return sendJson(res, 200, { ok: true, score: state.odysseusScore || null, updatedAt: Date.now() });
-      } catch (e) { return sendJson(res, 200, { ok: true, error: e.message }); }
-    }
     if (pathname === '/api/status' && method === 'GET') return sendJson(res, 200, { status: state.sammyStatus, currentTask: state.sammyCurrentTask, uptime: process.uptime(), memory: process.memoryUsage(), logsCount: state.logs.length, bridgeConnected: bridgeWs && !bridgeWs.destroyed });
-
-    // v2.1 — Pulse: the stack's own heartbeat. The user asked for a stack
-    // that talks back without being prompted. These routes let the agent
-    // and the UI ask "what's going on?" and get real live state.
-    if (pathname === '/api/pulse' && method === 'GET') {
-      const pulse = require('./lib/pulse');
-      return sendJson(res, 200, pulse.getStatus());
-    }
-    // v2.1 — Whoami: live stack self-description (CLI + UI + agent prompt)
-        if (pathname === '/api/whoami' && method === 'GET') {
-          try {
-            const { whoamiFull } = require('./lib/whoami');
-            // v2.1 — Cache the full snapshot for 15s. The full whoami does
-            // 4 HTTP probes and a 20k-atom iteration. Caching keeps the UI
-            // responsive and prevents the Next.js proxy (5s default) from timing out.
-            if (!whoamiCache.cachedAt || (Date.now() - whoamiCache.cachedAt) > whoamiCache.TTL) {
-              const w = await whoamiFull();
-              try { w.version = require('./package.json').version; } catch {}
-              whoamiCache.data = w;
-              whoamiCache.cachedAt = Date.now();
-            }
-            return sendJson(res, 200, whoamiCache.data);
-          } catch (e) {
-            return sendJson(res, 500, { ok: false, error: e.message });
-          }
-        }
-    if (pathname === '/api/spine/health' && method === 'GET') {
-      // Lightweight shim — reads memory_archive.json.gz file metadata.
-      // Real Python spine at :7880 still works when it responds.
-      try {
-        const shim = require('./lib/spine-shim');
-        shim.getCachedStats((err, stats) => {
-          sendJson(res, 200, {
-            ok: true,
-            shim: 'node-fallback',
-            archive: stats,
-            note: 'spine-shim is a Node.js fallback. The Python cognitive spine (:7880) is the real backend when it responds.',
-          });
-        });
-        return;
-      } catch (e) {
-        return sendJson(res, 500, { ok: false, error: e.message });
-      }
-    }
-    if (pathname === '/api/pulse/notifications' && method === 'GET') {
-      const pulse = require('./lib/pulse');
-      const limit = Math.min(Number(new URL(req.url, 'http://x').searchParams.get('limit') || 20), 100);
-      return sendJson(res, 200, { notifications: pulse.readNotifBuffer().slice(-limit).reverse() });
-    }
-    if (pathname === '/api/pulse/tick' && method === 'POST') {
-      const pulse = require('./lib/pulse');
-      const findings = await pulse.pulse();
-      return sendJson(res, 200, { ok: true, findings });
-    }
 
     if ((pathname === '/api/tool' || pathname === '/api/tools/call') && method === 'POST') {
       try {
@@ -3586,8 +2794,8 @@ const server = http.createServer(async (req, res) => {
           const { leader, members, task, teamId } = body;
           console.log(`[SWARM] Team spawn requested: ${leader} leading ${members?.join(', ')}`);
           // Forward to agent tower
-          if (AGENT_TOWER && AGENT_TOWER.spawnTeam) {
-            const result = await AGENT_TOWER.spawnTeam({ name: `Team-${teamId}`, leader, members, task });
+          if (AgentTower && AgentTower.spawnTeam) {
+            const result = await AgentTower.spawnTeam({ name: `Team-${teamId}`, leader, members, task });
             broadcast({ type: 'team_spawn_response', teamId, result, timestamp: new Date().toISOString() });
           } else {
             // Fallback: spawn individual agents
@@ -3611,92 +2819,8 @@ const server = http.createServer(async (req, res) => {
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
 
-    if (pathname === '/api/logs' && method === 'GET') { const limit = parseInt(parsedUrl.searchParams.get('limit') || '100'); return sendJson(res, 200, state.logs.slice(0, limit)); }
+    if (pathname === '/api/logs' && method === 'GET') { const limit = parseInt(parsedUrl.query.limit || '100'); return sendJson(res, 200, state.logs.slice(0, limit)); }
     if (pathname === '/api/logs' && method === 'DELETE') { state.logs = []; return sendJson(res, 200, { ok: true }); }
-
-    // v2.1 — Receipts breakdown: honest count table the UI can render.
-    // Distinguishes configured from registered, claims from proof.
-    if (pathname === '/api/breakdown' && method === 'GET') {
-      try {
-        const { whoamiFull } = require('./lib/whoami');
-        const w = await whoamiFull();
-        // Provider list: all registered (from llm-provider.js) vs configured (have keys)
-        const llm = require('./lib/llm-provider.js');
-        const allProviders = llm.PROVIDERS ? Object.keys(llm.PROVIDERS) : [];
-        const configured = Array.isArray(w.systems.providers.present) ? w.systems.providers.present : [];
-        // Tools breakdown by category
-        const toolsBreakdown = w.systems.tools.breakdown || {};
-        const toolsTotal = w.systems.tools.total || 0;
-        // Memory: read from spine if reachable
-        let memoryLayers = { scratch: 'unknown', episodic: 'unknown', procedural: 'unknown',
-                             vector: 'unknown', temporal: 'unknown', counterfactual: 'unknown', semantic: 'unknown' };
-        try {
-          const shim = require('./lib/spine-shim');
-          await new Promise(res => shim.getCachedStats((err, s) => {
-            if (s && s.atoms) {
-              memoryLayers.vector = s.atoms > 0 ? 'wired' : 'empty';
-              memoryLayers.semantic = s.atoms > 100 ? 'wired' : 'partial';
-            }
-            res();
-          }));
-        } catch {}
-        // Service health probes (fast). A process that answers HTTP at all —
-        // even 404 on an unknown path — is LIVE. Only a refused connection or
-        // timeout means down. (The old code required 2xx on /health, so
-        // unified_api on /api/health read as offline despite being up.)
-        const probe = async (port, healthPath) => {
-          try {
-            await fetch(`http://127.0.0.1:${port}${healthPath || '/health'}`, { signal: AbortSignal.timeout(800) });
-            return true;  // any HTTP response = the port is listening
-          } catch { return false; }
-        };
-        const services = {};
-        // Per-service real health path where it differs from /health.
-        const svcPorts = [['unified_api',7780,'/api/health'],['eventbus',7782,'/state'],
-                          ['orchestrator',7784,'/api/pipeline'],['agent_tower',7790,'/tower/status'],
-                          ['gatekeeper',7791,'/health'],['memory_matrix',7880,'/health'],
-                          ['cognitive_spine',7880,'/health'],['swarm_coord',7898,'/health']];
-        for (const [name, port] of svcPorts) {
-          if (!(name in services)) services[name] = { port, online: false };
-        }
-        await Promise.all(svcPorts.map(async ([name, port, healthPath]) => {
-          services[name].online = await probe(port, healthPath);
-        }));
-        return sendJson(res, 200, {
-          generatedAt: new Date().toISOString(),
-          tools: {
-            total: toolsTotal,
-            breakdown: {
-              core:        toolsBreakdown.core || 0,
-              skills:      toolsBreakdown.skills || 0,
-              mcp:         toolsBreakdown.mcp || 0,
-              bodyBridge:  toolsBreakdown.bodyBridge || 0,
-              nim:         toolsBreakdown.nim || 0,
-              remotion:    3,  // registered at boot
-            },
-          },
-          skills: { count: w.systems.skills.count || 0 },
-          agents: {
-            registered: w.systems.agents.count || 0,
-            divisions:  w.surfaces.agentTower.divisions || 0,
-            active:     w.surfaces.agentTower.active || 0,
-          },
-          providers: {
-            registered:  allProviders.length,
-            configured:  configured.length,
-            list:        allProviders,
-            configuredList: configured,
-          },
-          memory: { layers: memoryLayers, status: 'see /api/spine/health for live stats' },
-          services,
-          routes: { total: w.systems.routes.total || 0 },
-          api: w.surfaces.unifiedApi,
-          tower: w.surfaces.agentTower,
-        });
-      } catch (e) {
-        return sendJson(res, 500, { ok: false, error: e.message });
-      }
-    }
 
     if (pathname === '/api/command' && method === 'POST') {
       const body = await parseBody(req);
@@ -3722,112 +2846,7 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { ok: true });
     }
 
-    if (pathname === '/api/responses' && method === 'GET') { const limit = parseInt(parsedUrl.searchParams.get('limit') || '20'); return sendJson(res, 200, state.responses.slice(0, limit)); }
-
-    // ── /api/llm/raw — single provider gateway ──────────────────────────────
-    // One door for raw, stateless multi-provider chat (no tools/memory — that's
-    // /api/chat via runAgent). Surfaces that need to talk to a SPECIFIC provider/
-    // model (e.g. the Bridge comparison lab) call THIS instead of embedding their
-    // own provider/key logic. Keys live in this (api) process, not in nextjs, so
-    // routing here also fixes the bridge's "KEY not set on server" failures.
-    if (pathname === '/api/llm/raw' && method === 'POST') {
-      const body = await parseBody(req);
-      const { provider, model, baseUrl, messages, maxTokens } = body || {};
-      if (!Array.isArray(messages) || !messages.length) return sendJson(res, 400, { error: 'messages[] required' });
-      try {
-        const r = await LLM.chat(messages, {
-          provider, model, baseUrl,
-          maxTokens: Math.min(Math.max(64, maxTokens || 1024), 4096),
-          temperature: 0.6,
-        });
-        if (r && r.error) return sendJson(res, 502, { error: r.error, provider: r.provider, model: r.model });
-        return sendJson(res, 200, { reply: r.content, model: r.model, provider: r.provider });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    // ── /api/proof — the black-box recorder (evidence ledger) ───────────────
-    // GET  → recent evidence rows + truth stats (feeds the Truth/Bench tabs).
-    //        filters: ?limit&project&taskId&agent&status&risk
-    // POST → record one evidence row (agents/tools call this after acting).
-    if (pathname === '/api/proof' && method === 'GET') {
-      try {
-        const ledger = require('./lib/proof-ledger');
-        const limit = parseInt(parsedUrl.searchParams.get('limit') || '100');
-        const filter = {};
-        for (const k of ['project', 'taskId', 'agent', 'status', 'risk']) {
-          const v = parsedUrl.searchParams.get(k);
-          if (v) filter[k] = v;
-        }
-        return sendJson(res, 200, { rows: ledger.recent(limit, filter), stats: ledger.stats() });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-    if (pathname === '/api/proof' && method === 'POST') {
-      try {
-        const body = await parseBody(req);
-        const ledger = require('./lib/proof-ledger');
-        return sendJson(res, 200, { ok: true, row: ledger.record(body) });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    // ── /api/output/* — the Output Vault (durable artifacts, linked to jobs) ──
-    if (pathname === '/api/output/list' && method === 'GET') {
-      try {
-        const vault = require('./lib/output-vault');
-        const filter = {};
-        for (const k of ['project', 'lane', 'type', 'status', 'job_id']) { const v = parsedUrl.searchParams.get(k); if (v) filter[k] = v; }
-        return sendJson(res, 200, { artifacts: vault.list(filter, parseInt(parsedUrl.searchParams.get('limit') || '200')), stats: vault.stats() });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-    if (pathname === '/api/output/register' && method === 'POST') {
-      try { const body = await parseBody(req); return sendJson(res, 200, { ok: true, artifact: require('./lib/output-vault').register(body) }); }
-      catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-    if (pathname === '/api/output/approve' && method === 'POST') {
-      try { const body = await parseBody(req); const a = require('./lib/output-vault').approve(body.artifact_id || body.id, body.by); return a ? sendJson(res, 200, { ok: true, artifact: a }) : sendJson(res, 404, { error: 'not found' }); }
-      catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-    if (pathname === '/api/output/archive' && method === 'POST') {
-      try { const body = await parseBody(req); const a = require('./lib/output-vault').archive(body.artifact_id || body.id); return a ? sendJson(res, 200, { ok: true, artifact: a }) : sendJson(res, 404, { error: 'not found' }); }
-      catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-    if (pathname.startsWith('/api/output/by-job/') && method === 'GET') {
-      try { return sendJson(res, 200, { artifacts: require('./lib/output-vault').byJob(decodeURIComponent(pathname.split('/api/output/by-job/')[1] || '')) }); }
-      catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-    if (pathname.startsWith('/api/output/') && method === 'GET') {
-      try { const a = require('./lib/output-vault').get(decodeURIComponent(pathname.split('/api/output/')[1] || '')); return a ? sendJson(res, 200, a) : sendJson(res, 404, { error: 'not found' }); }
-      catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-
-    // ── /api/pipeline/* — the unified pipeline spine (call/stop/log/health) ──
-    if (pathname === '/api/pipeline/jobs' && method === 'GET') {
-      try {
-        const reg = require('./lib/pipeline-registry');
-        const filter = {};
-        for (const k of ['project', 'lane', 'status', 'pipeline_name']) {
-          const v = parsedUrl.searchParams.get(k); if (v) filter[k] = v;
-        }
-        return sendJson(res, 200, { jobs: reg.list(filter) });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-    if (pathname === '/api/pipeline/health' && method === 'GET') {
-      try { return sendJson(res, 200, require('./lib/pipeline-registry').health()); }
-      catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-    if (pathname === '/api/pipeline/start' && method === 'POST') {
-      try {
-        const body = await parseBody(req);
-        return sendJson(res, 200, { ok: true, job: require('./lib/pipeline-registry').start(body) });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
-    if (pathname === '/api/pipeline/stop' && method === 'POST') {
-      try {
-        const body = await parseBody(req);
-        if (!body.jobId && !body.job_id) return sendJson(res, 400, { error: 'jobId required' });
-        const reg = require('./lib/pipeline-registry');
-        return sendJson(res, 200, { ok: true, stop: reg.requestStop(body.jobId || body.job_id, body.type || 'cancel', body.reason || '') });
-      } catch (e) { return sendJson(res, 500, { error: e.message }); }
-    }
+    if (pathname === '/api/responses' && method === 'GET') { const limit = parseInt(parsedUrl.query.limit || '20'); return sendJson(res, 200, state.responses.slice(0, limit)); }
 
     if (pathname === '/api/division/control' && method === 'POST') {
       const body = await parseBody(req);
@@ -3918,86 +2937,28 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === '/api/memory' && method === 'GET') {
-      // ── Routes to cognitive spine via lib/memory-client ──
-      try {
-        if (!memory) return sendJson(res, 503, { ok: false, error: 'memory client unavailable' });
-        const isUp = await memory.isOnline();
-        if (!isUp) return sendJson(res, 503, { ok: false, error: 'memory matrix offline' });
-        const stats = await memory.stats();
-        const { results } = await memory.recall('', { limit: 50 });
-        return sendJson(res, 200, {
-          ok: true,
-          source: 'cognitive_spine:7880',
-          stats,
-          memories: results || [],
-        });
-      } catch (e) {
-        return sendJson(res, 500, { ok: false, error: e.message });
-      }
+      let memory = { facts: [], notes: [] };
+      try { if (fs.existsSync(MEMORY_FILE)) memory = JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8')); } catch (e) {}
+      return sendJson(res, 200, memory);
     }
 
     if (pathname === '/api/memory' && method === 'POST') {
-      // ── Routes to cognitive spine via lib/memory-client ──
-      try {
-        const body = await parseBody(req);
-        if (!memory) return sendJson(res, 503, { ok: false, error: 'memory client unavailable' });
-        const isUp = await memory.isOnline();
-        if (!isUp) return sendJson(res, 503, { ok: false, error: 'memory matrix offline' });
-        // Support both old shape {fact, note} and new shape {content, query, action}
-        if (body.query || body.action === 'recall') {
-          const { results } = await memory.recall(String(body.query || ''), { limit: 20 });
-          return sendJson(res, 200, { ok: true, source: 'cognitive_spine:7880', memories: results || [] });
-        }
-        const content = String(body.fact || body.note || body.content || '').trim();
-        if (!content) return sendJson(res, 400, { ok: false, error: 'content required (fact|note|content|query)' });
-        const memId = await memory.ingest(content, {
-          source: 'api:/memory', importance: 0.6, valence: 0.1, type: 'text'
-        });
-        return sendJson(res, 200, { ok: true, source: 'cognitive_spine:7880', memory_id: memId, content });
-      } catch (e) {
-        return sendJson(res, 500, { ok: false, error: e.message });
-      }
+      const body = await parseBody(req);
+      let memory = { facts: [], notes: [] };
+      try { if (fs.existsSync(MEMORY_FILE)) memory = JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8')); } catch (e) {}
+      if (body.fact) memory.facts.push({ content: body.fact, timestamp: new Date().toISOString() });
+      if (body.note) memory.notes.push({ content: body.note, timestamp: new Date().toISOString() });
+      fs.writeFileSync(MEMORY_FILE, JSON.stringify(memory, null, 2));
+      return sendJson(res, 200, { ok: true, memory });
     }
 
     if (pathname === '/api/skills' && method === 'GET') {
-      // Read real skills from skills/ subdirectory structure
-      const result = { skills: [], categories: {}, total: 0, loaded: 0 };
+      const skills = {};
       try {
-        const entries = fs.readdirSync(SKILLS_DIR);
-        for (const entry of entries) {
-          const fullPath = path.join(SKILLS_DIR, entry);
-          const stat = fs.statSync(fullPath);
-          if (stat.isDirectory()) {
-            const skillMd = path.join(fullPath, 'SKILL.md');
-            const hasFile = fs.existsSync(skillMd);
-            const skill = {
-              name: entry,
-              type: 'directory',
-              hasSKILL_md: hasFile,
-            };
-            if (hasFile) {
-              result.total++;
-              const content = fs.readFileSync(skillMd, 'utf8');
-              const catMatch = content.match(/^category:\s*(.+)/m);
-              const descMatch = content.match(/^description:\s*(.+)/m);
-              const trigMatch = content.match(/^trigger[^:]*:\s*(.+)/m);
-              skill.category = catMatch ? catMatch[1].trim() : null;
-              skill.description = descMatch ? descMatch[1].trim() : null;
-              skill.trigger = trigMatch ? trigMatch[1].trim() : null;
-              result.categories[skill.category || 'uncategorized'] =
-                (result.categories[skill.category || 'uncategorized'] || 0) + 1;
-            }
-            result.skills.push(skill);
-          } else if (entry.endsWith('.js') && !entry.endsWith('.pending.js')) {
-            result.skills.push({ name: entry.replace('.js',''), type: 'file', file: entry, loaded: !!loadedSkills[entry.replace('.js','')] });
-            result.total++;
-            if (loadedSkills[entry.replace('.js','')]) result.loaded++;
-          }
-        }
-      } catch (e) {
-        return sendJson(res, 500, { error: e.message });
-      }
-      return sendJson(res, 200, result);
+        const files = fs.readdirSync(SKILLS_DIR).filter(f => f.endsWith('.js'));
+        for (const file of files) skills[file.replace('.js', '')] = { file, loaded: !!loadedSkills[file.replace('.js', '')] };
+      } catch (e) {}
+      return sendJson(res, 200, skills);
     }
 
     if (pathname.startsWith('/api/skills/') && pathname.endsWith('/reload') && method === 'POST') {
@@ -4041,6 +3002,81 @@ const server = http.createServer(async (req, res) => {
 
     if (pathname === '/api/settings' && method === 'GET') return sendJson(res, 200, state.settings);
     if (pathname === '/api/settings' && method === 'POST') { const body = await parseBody(req); Object.assign(state.settings, body); saveSettings(); return sendJson(res, 200, { ok: true, settings: state.settings }); }
+
+    // ========== REMOTE APPROVALS (S13 — universal approval surface) ==========
+    // Any first-class surface (CLI/TUI/Web/Desktop/Mobile) can list, inspect,
+    // approve or deny queued approvals. ToolRuntime contexts with
+    // remoteApprovals: true block on this queue instead of instant-denying.
+    if (pathname.startsWith('/api/approvals')) {
+      try {
+        const REMOTE = require('./lib/remote-approvals');
+        const parts = pathname.split('/'); // ['', 'api', 'approvals', ...]
+        if (pathname === '/api/approvals/pending' && method === 'GET') {
+          return sendJson(res, 200, { ok: true, pending: REMOTE.pending() });
+        }
+        if (pathname === '/api/approvals' && method === 'POST') {
+          const body = await parseBody(req);
+          if (!body || !body.tool) return sendJson(res, 400, { error: 'tool required' });
+          const q = REMOTE.queue({ tool: body.tool, args: body.args || {}, context: body.context, ttlSeconds: body.ttlSeconds });
+          return sendJson(res, 200, { ok: true, ...q });
+        }
+        const requestId = parts[3];
+        if (requestId && parts[4] === 'approve' && method === 'POST') {
+          const body = await parseBody(req);
+          const r = REMOTE.approve(requestId, { notes: body && body.notes });
+          if (!r) return sendJson(res, 404, { error: 'approval request not found' });
+          broadcast({ type: 'approval.resolved', requestId, decision: 'approved', timestamp: new Date().toISOString() });
+          return sendJson(res, 200, { ok: true, ...r });
+        }
+        if (requestId && parts[4] === 'deny' && method === 'POST') {
+          const body = await parseBody(req);
+          const r = REMOTE.deny(requestId, { reason: body && body.reason });
+          if (!r) return sendJson(res, 404, { error: 'approval request not found' });
+          broadcast({ type: 'approval.resolved', requestId, decision: 'denied', timestamp: new Date().toISOString() });
+          return sendJson(res, 200, { ok: true, ...r });
+        }
+        if (requestId && parts.length === 4 && method === 'GET') {
+          const r = REMOTE.get(requestId);
+          if (!r) return sendJson(res, 404, { error: 'approval request not found' });
+          return sendJson(res, 200, { ok: true, request: r });
+        }
+        return sendJson(res, 404, { error: 'unknown approvals route' });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
+    // ========== SESSION PERSISTENCE (S12 — portable sessions) ==========
+    // Suspend/resume/fork/list durable checkpoints so a session can move
+    // between surfaces (parity invariant 6/7) and survive restarts.
+    if (pathname.startsWith('/api/session/persist')) {
+      try {
+        const SP = require('./lib/session-persistence');
+        const parts = pathname.split('/'); // ['', 'api', 'session', 'persist', ...]
+        if (parts[4] === 'suspend' && method === 'POST') {
+          const body = await parseBody(req);
+          if (!body || !body.sessionId) return sendJson(res, 400, { error: 'sessionId required' });
+          const r = SP.suspend(body.sessionId, { messages: body.messages || [], context: body.context || {} });
+          return sendJson(res, 200, { ok: true, ...r });
+        }
+        if (parts[4] === 'resume' && method === 'POST') {
+          const body = await parseBody(req);
+          if (!body || !body.sessionId) return sendJson(res, 400, { error: 'sessionId required' });
+          try {
+            const r = SP.resume(body.sessionId);
+            return sendJson(res, 200, { ok: true, ...r });
+          } catch (e) { return sendJson(res, 404, { error: e.message }); }
+        }
+        if (parts[4] === 'fork' && method === 'POST') {
+          const body = await parseBody(req);
+          if (!body || !body.sessionId) return sendJson(res, 400, { error: 'sessionId required' });
+          const r = SP.fork(body.sessionId);
+          return sendJson(res, 200, { ok: true, ...r });
+        }
+        if (parts[4] === 'list' && method === 'GET') {
+          return sendJson(res, 200, { ok: true, sessions: SP.list() });
+        }
+        return sendJson(res, 404, { error: 'unknown session persistence route' });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
 
     // ========== AI BACKEND MANAGEMENT ==========
     if (pathname === '/api/backends' && method === 'GET') {
@@ -4194,16 +3230,6 @@ const server = http.createServer(async (req, res) => {
 
     if (pathname === '/api/system' && method === 'GET') return sendJson(res, 200, { platform: os.platform(), arch: os.arch(), cpus: os.cpus(), totalmem: os.totalmem(), freemem: os.freemem(), loadavg: os.loadavg(), uptime: os.uptime(), hostname: os.hostname() });
 
-    // ── Single source of truth: the full system manifest (services, tools, lanes, agents) ──
-    if (pathname === '/api/manifest' && method === 'GET') {
-      try {
-        const manifest = require('./lib/system-manifest').getManifest(new Date().toISOString());
-        return sendJson(res, 200, manifest);
-      } catch (e) {
-        return sendJson(res, 500, { error: 'manifest unavailable: ' + e.message });
-      }
-    }
-
     if (pathname === '/api/security/scan/full' && method === 'POST') return proxyToGuardian(req, res, '/scan/full', 'POST');
     if (pathname === '/api/security/scan/secrets' && method === 'POST') return proxyToGuardian(req, res, '/scan/secrets', 'POST');
     if (pathname === '/api/security/scan/dependencies' && method === 'POST') return proxyToGuardian(req, res, '/scan/dependencies', 'POST');
@@ -4242,72 +3268,23 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === '/api/agents/registry' && method === 'GET') {
-      // Read from live AGENT_TOWER registry
-      const registry = Object.entries(AGENT_TOWER.registry).map(([key, a]) => ({
-        key,
-        name:       a.name     || key.toUpperCase(),
-        emoji:      a.emoji    || '◎',
-        division:   a.division || 'UNASSIGNED',
-        role:       a.role     || '',
-        tier:       a.tier     || 2,
-        skills:     a.skills   || [],
-        status:     a.status   || 'idle',
-        provider:   a.provider || null,
-        model:      a.model    || null,
-      }));
-      return sendJson(res, 200, {
-        agents: registry,
-        count:  registry.length,
-        source: 'agent_tower.js live registry',
-      });
+      const registry = [{ name: 'axolotl', emoji: '🧠', role: 'Regenerator', skills: ['heal', 'recover'] }, { name: 'bee', emoji: '🐝', role: 'Worker', skills: ['execute', 'build'] }, { name: 'cactus', emoji: '🌵', role: 'Survivor', skills: ['endure', 'thrive'] }, { name: 'chonk', emoji: '🐕', role: 'Comfy', skills: ['comfort', 'support'] }, { name: 'claw', emoji: '🦀', role: 'Builder', skills: ['code', 'create'] }, { name: 'crow', emoji: '🐦', role: 'Intelligence', skills: ['learn', 'pattern'] }, { name: 'dragon', emoji: '🐉', role: 'Warrior', skills: ['combat', 'defend'] }, { name: 'duck', emoji: '🦆', role: 'Utility', skills: ['debug', 'assist'] }, { name: 'fox', emoji: '🦊', role: 'Trickster', skills: ['humor', 'chaos'] }, { name: 'ghost', emoji: '👻', role: 'Infiltrator', skills: ['stealth', 'hide'] }, { name: 'goose', emoji: '🪿', role: 'Defender', skills: ['guard', 'alert'] }, { name: 'guardian', emoji: '🛡️', role: 'Security', skills: ['protect', 'scan'] }, { name: 'karen', emoji: '👩', role: 'Manager', skills: ['handle', 'escalate'] }, { name: 'mantis', emoji: '🐜', role: 'Predator', skills: ['debug', 'optimize'] }, { name: 'mushroom', emoji: '🍄', role: 'Trippy', skills: ['hallucinate', 'weird'] }, { name: 'octopus', emoji: '🐙', role: 'Multitasker', skills: ['parallel', '8arms'] }, { name: 'owl', emoji: '🦉', role: 'Wise', skills: ['analyze', 'know'] }, { name: 'penguin', emoji: '🐧', role: 'Cool', skills: ['cold', 'calculate'] }, { name: 'phoenix', emoji: '🔥', role: 'Rebirth', skills: ['restart', 'recover'] }, { name: 'rabbit', emoji: '🐰', role: 'Speed', skills: ['fast', 'race'] }, { name: 'robot', emoji: '🤖', role: 'Machine', skills: ['precise', 'repeat'] }, { name: 'snake', emoji: '🐍', role: 'Coder', skills: ['python', 'coiled'] }, { name: 'spider', emoji: '🕷️', role: 'Web', skills: ['scrape', 'crawl'] }, { name: 'turtle', emoji: '🐢', role: 'Steady', skills: ['slow', 'stable'] }, { name: 'void', emoji: '🕳️', role: 'Eraser', skills: ['delete', 'null'] }, { name: 'wolf', emoji: '🐺', role: 'Pack Leader', skills: ['command', 'alpha'] }];
+      return sendJson(res, 200, { agents: registry, count: registry.length });
     }
 
     if (pathname === '/api/stats' && method === 'GET') {
-      // Build real stats from AGENT_TOWER live registry + process metrics
-      const allAgents = Object.values(AGENT_TOWER.registry);
-      const divisionMap = {};
-      let totalRegistered = 0, totalActive = 0;
-
-      for (const agent of allAgents) {
-        const div = agent.division || 'UNASSIGNED';
-        if (!divisionMap[div]) divisionMap[div] = { count: 0, active: 0 };
-        divisionMap[div].count++;
-        totalRegistered++;
-        if (agent.status === 'working' || agent.status === 'active') {
-          divisionMap[div].active++;
-          totalActive++;
-        }
+      const divisionStats = {};
+      let totalActive = 0, totalAgents = 0;
+      const allDivisions = ['AI Research', 'Media Ops', 'Security', 'Data Mining', 'Engineering', 'Design', 'Management', 'Infrastructure', 'Lobby'];
+      for (const division of allDivisions) {
+        const divAgents = Object.values(state.swarmAgents).filter(a => a.division === division);
+        const workingAgents = divAgents.filter(a => a.status === 'working');
+        const info = { count: divAgents.length, active: workingAgents.length, priority: 3 };
+        divisionStats[division] = info;
+        totalAgents += info.count || 0;
+        totalActive += info.active || 0;
       }
-
-      const mem = process.memoryUsage();
-      const memUsedMB = Math.round(mem.heapUsed / 1024 / 1024);
-      const memTotalMB = Math.round(mem.heapTotal / 1024 / 1024);
-
-      return sendJson(res, 200, {
-        system: {
-          uptime:     Math.round(process.uptime()),
-          memoryMB:   memUsedMB,
-          heapTotal:  memTotalMB,
-          cpu:        os.loadavg(),
-          platform:   os.platform(),
-        },
-        swarm: {
-          totalRegistered,
-          totalActive,
-          totalDivisions: Object.keys(divisionMap).length,
-          divisions: divisionMap,
-        },
-        logs: {
-          total: state.logs.length,
-          byType: state.logs.reduce((acc, log) => {
-            acc[log.type] = (acc[log.type] || 0) + 1;
-            return acc;
-          }, {}),
-        },
-        responses: { total: state.responses.length },
-        timestamp: new Date().toISOString(),
-        source: 'agent_tower.js live registry',
-      });
+      return sendJson(res, 200, { system: { uptime: process.uptime(), memory: process.memoryUsage(), cpu: os.loadavg(), platform: os.platform() }, swarm: { totalAgents, totalActive, totalDivisions: 9, divisions: divisionStats }, logs: { total: state.logs.length, byType: state.logs.reduce((acc, log) => { acc[log.type] = (acc[log.type] || 0) + 1; return acc; }, {}) }, responses: { total: state.responses.length }, timestamp: new Date().toISOString() });
     }
 
     if (pathname === '/api/pipeline' && method === 'GET') {
@@ -4334,20 +3311,20 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === '/api/tower/status' && method === 'GET') {
-      const status = AGENT_TOWER.getAgentStatus();
+      const status = AgentTower.getAgentStatus();
       return sendJson(res, 200, status);
     }
 
     if (pathname === '/api/tower/divisions' && method === 'GET') {
       const divisionsWithCounts = {};
-      for (const [key, info] of Object.entries(AGENT_TOWER.divisions || {})) {
+      for (const [key, info] of Object.entries(AgentTower.divisions || {})) {
         divisionsWithCounts[key] = { ...info, agentCount: info.agents?.length || 0 };
       }
       return sendJson(res, 200, divisionsWithCounts);
     }
 
     if (pathname === '/api/tower/agents' && method === 'GET') {
-      const status = AGENT_TOWER.getAgentStatus();
+      const status = AgentTower.getAgentStatus();
       return sendJson(res, 200, status.registeredAgents);
     }
 
@@ -4385,7 +3362,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === '/api/tower/teams' && method === 'GET') {
-      const status = AGENT_TOWER.getAgentStatus();
+      const status = AgentTower.getAgentStatus();
       return sendJson(res, 200, status.teams);
     }
 
@@ -4409,163 +3386,75 @@ const server = http.createServer(async (req, res) => {
         const results = await Promise.allSettled(agentList.map(async (a) => {
           const r = await llm.chat([
             { role: 'system', content: a.system },
-          { role: 'user', content: message },
+            { role: 'user', content: message },
           ], { temperature: 0.4, maxTokens: 600 });
           return { id: a.id, role: a.role, ok: true, content: r.content, model: r.model };
         }));
-      const succeeded = results.filter(r => r.status === 'fulfilled' && r.value.ok).map(r => r.value);
-      return sendJson(res, 200, { ok: succeeded.length > 0, agents: succeeded, total: agentList.length });
-          } catch (e) { return sendJson(res, 500, { ok: false, error: e.message }); }
-        }
-    
+        const succeeded = results.filter(r => r.status === 'fulfilled' && r.value.ok).map(r => r.value);
+        return sendJson(res, 200, { ok: succeeded.length > 0, agents: succeeded, total: agentList.length });
+      } catch (e) { return sendJson(res, 500, { ok: false, error: e.message }); }
+    }
+
     if (pathname === '/api/chat' && method === 'POST') {
-          // SSE streaming mode — when client requests text/event-stream, stream
-          // tokens as they arrive. Otherwise fall through to the JSON path.
-          if ((req.headers['accept'] || '').includes('text/event-stream')) {
-            return handleChatStream(req, res);
-          }
-          try {
-            const body = await parseBody(req);
-            const { message, spawnAgents = true, sessionId, provider, model, lane } = body;
-            if (!message) return sendJson(res, 400, { error: 'message required' });
+      // SSE streaming mode — when client requests text/event-stream, stream
+      // tokens as they arrive. Otherwise fall through to the JSON path.
+      if ((req.headers['accept'] || '').includes('text/event-stream')) {
+        return handleChatStream(req, res);
+      }
+      try {
+        const body = await parseBody(req);
+        const { message, spawnAgents = true } = body;
+        if (!message) return sendJson(res, 400, { error: 'message required' });
 
-            // v2.1 — Same envelope contract as the SSE path. JSON response
-            // carries envelopeId + envelopeStatus so the UI can show cards.
-            const { createEnvelope, setStatus } = require('./lib/spine/envelope');
-            const { buildFailureCard } = require('./lib/spine/contract');
-            const env = createEnvelope({ sessionId, route: 'chat', userText: message, source: 'chat-json' });
+        // Use the real agent-loop (same tool-calling brain as CLI ask and SSE chat).
+        // This kills the keyword if-ladder that was routing to one-shot tower calls.
+        const { runAgent } = require('./lib/agent-loop');
+        let fullReply = '';
+        let modelName = '';
+        let toolCalls = [];
+        let steeringCapsuleId = null;
+        const errors = [];
 
-
-            // v2.1 — Lifecycle flow: called → routed → executed → watched → stopped → logged → verified → repaired → archived.
-            const announce = require('./lib/events');
-            const flow = announce.flow;
-            const flowStart = Date.now();
-            const flowTags = { sessionId: sessionId || null, provider: provider || null, model: model || null, envelopeId: env.id };
-            flow.called('chat', { ...flowTags, msgLen: message.length });
-
-            // Auto provider routing + buttery fallback — same one engine as SSE/CLI/TUI.
-            let fullReply = '';
-            let modelName = '';
-            let toolCalls = [];
-            const errors = [];
-            let flowRoutedAnnounced = false;
-
-            const gateway = new AgentGateway({ provider, model, cwd: __dirname });
-            gateway.on('route.selected', ev => {
-              modelName = ev.model || modelName;
-              setStatus(env, 'pending', { provider: ev.provider, model: ev.model });
-              if (!flowRoutedAnnounced) {
-                flow.routed(ev.provider || provider || 'auto', ev.model || model || 'auto', { ...flowTags, via: ev.via || null, attempts: ev.attempts || 1 });
-                flowRoutedAnnounced = true;
-              }
-            });
-            gateway.on('message.delta', ev => {
-              fullReply += ev.delta || '';
-              modelName = ev.model || modelName;
-            });
-            gateway.on('tool.start', ev => {
-              toolCalls.push({ tool: ev.tool, args: ev.arguments });
-              setStatus(env, 'delegated', { jobId: toolCalls.length });
-              flow.executed('tool-call', { ...flowTags, tool: ev.tool, args: ev.arguments });
-            });
-            gateway.on('tool.complete', ev => {
-              flow.watched('tool-result', { ...flowTags, tool: ev.tool, ok: ev.ok !== false });
-            });
-            gateway.on('error', ev => errors.push(ev.error));
-
-            const gatewayResult = await gateway.submit({
-              prompt: message,
-              provider, model, lane,
-              auto_route: true,
-              max_tokens: 2048,
-              temperature: 0.7,
-              session_id: sessionId || undefined,
-              permission_profile: WEB_CHAT_PERMISSION_PROFILE,
-              operator_initiated: false,
-              platform: 'web-json',
-            });
-            fullReply = gatewayResult.message || fullReply;
-            flow.stopped(errors.length === 0, { ...flowTags, model: modelName, toolCount: toolCalls.length, durationMs: Date.now() - flowStart });
-            flow.logged('events.jsonl', { ...flowTags, replyLen: fullReply.length, toolCount: toolCalls.length });
-
-            let cleanedReply = fullReply
-              .replace(/<think>[\s\S]*?<\/think>/gi, '')
-              .replace(/\{\s*"tool"\s*:\s*"[^"]+"\s*,\s*"args"\s*:\s*\{[\s\S]*?\}\s*\}/g, '')
-              .replace(/<[^>]*?DSML[^>]*?>[\s\S]*<\/[^>]*?DSML[^>]*?>/g, '')
-              .replace(/<\/?[^>]*?DSML[^>]*?>/g, '')
-              .replace(/\n{3,}/g, '\n\n')
-              .trim();
-
-            const verifications = [];
-            if (cleanedReply && cleanedReply.length > 0) verifications.push('reply_present');
-            if (modelName) verifications.push('model_named');
-            if (toolCalls.every(c => c.tool && typeof c.tool === 'string')) verifications.push('tools_well_formed');
-            flow.verified('chat', { ...flowTags, checks: verifications, ok: verifications.length >= 2 });
-
-            if (errors.length || !cleanedReply) {
-              flow.repaired('chat-empty-or-error', { ...flowTags, errors: errors.length, replyLen: (cleanedReply||'').length });
-            }
-
-            flow.archived('chat', { ...flowTags, sinks: ['trace.jsonl', 'notifications.jsonl'], totalMs: Date.now() - flowStart });
-
-            // v2.1 — Terminal state: answered if reply, failed if no content + errors.
-            // v2.1 (Phase 4) — Map known failure shapes to specific errorCodes
-            // so the UI card has a meaningful title/hint, not just "http_500".
-            function classifyError(msg) {
-              if (/429|rate_limit|quota/i.test(msg)) return { code: 'rate_limit', title: 'Provider rate-limited', hint: 'Quota hit. The governor rotated to the next provider/model. If all lanes are throttled, retry in ~60s.' };
-              if (/401|403|auth/i.test(msg)) return { code: 'unavailable', title: 'Auth failed', hint: 'API key rejected. Check NVIDIA/MiniMax key health in /providers.' };
-              if (/timeout|timed?\s*out/i.test(msg)) return { code: 'timeout', title: 'Route timed out', hint: 'The provider took longer than the watchdog allows. Try a faster lane.' };
-              if (/stall|no\s*output|empty/i.test(msg)) return { code: 'no_output', title: 'Route produced no output', hint: 'The provider completed but returned empty content. Check upstream handler.' };
-              if (/kernel.*not found|404/i.test(msg)) return { code: 'http_404', title: 'Kernel polling failed', hint: 'The kernel job ID returned 404. Job may have expired or never existed.' };
-              return { code: 'http_500', title: 'Route failed', hint: 'Check the server logs for the underlying error.' };
-            }
-            if (cleanedReply) {
-              setStatus(env, 'answered', { provider: env.provider, model: modelName, artifacts: { reply: cleanedReply } });
-            } else if (errors.length) {
-              const cls = classifyError(errors.join(' '));
-              setStatus(env, 'failed', { provider: env.provider, model: modelName, error: { message: errors.join('; ') }, errorCode: cls.code });
-              // Tag the env so buildFailureCard picks up our enriched hint.
-              env._enrichedHint = cls.hint;
-              env._enrichedTitle = cls.title;
-            } else {
-              setStatus(env, 'no-output', { provider: env.provider, model: modelName, error: { message: 'route completed but produced no content' }, errorCode: 'no_output' });
-            }
-            const payload = {
-              ok: env.status === 'answered',
-              reply: cleanedReply,
-              model: modelName,
-              envelopeId: env.id,
-              envelopeStatus: env.status,
-              jobId: env.jobId || null,
-              tool_calls: toolCalls,
-              errors: errors.length > 0 ? errors : undefined,
-              turns: toolCalls.length > 0 ? 'multi-turn' : 'single',
-              sessionId: gatewayResult.session_id,
-            };
-            // v2.1 — Every non-answered terminal returns a card so the UI never
-            // shows a silent empty success.
-            if (env.status !== 'answered') {
-              payload.card = buildFailureCard(env);
-            }
-            return sendJson(res, env.status === 'answered' ? 200 : (env.status === 'failed' ? 502 : 200), payload);
-          } catch (e) {
-            // v2.1 — Top-level catch also produces a failure card. No silent exits.
-            try {
-              const { buildFailureCard: bfc2 } = require('./lib/spine/contract');
-              const { createEnvelope: ce2, setStatus: ss2 } = require('./lib/spine/envelope');
-              const env2 = ce2({ sessionId: null, route: 'chat' });
-              ss2(env2, 'failed', { error: { message: e.message }, errorCode: 'http_500' });
-              return sendJson(res, 500, { ok: false, error: e.message, envelopeId: env2.id, card: bfc2(env2) });
-            } catch (_) { return sendJson(res, 500, { ok: false, error: e.message }); }
+        for await (const ev of runAgent({
+          prompt: message,
+          opts: { maxTokens: 2048, temperature: 0.7 },
+        })) {
+          if (ev.type === 'token') {
+            fullReply += ev.content;
+            modelName = ev.model || modelName;
+          } else if (ev.type === 'steering') {
+            steeringCapsuleId = ev.capsuleId || null;
+          } else if (ev.type === 'steering-blocked') {
+            errors.push(`steering: completion blocked (${ev.conflicts.length} unresolved conflict${ev.conflicts.length === 1 ? '' : 's'}) pending operator escalation`);
+          } else if (ev.type === 'tool-call') {
+            toolCalls.push({ tool: ev.tool, args: ev.args, capsuleId: ev.capsuleId });
+          } else if (ev.type === 'tool-result') {
+            // collected implicitly
+          } else if (ev.type === 'error') {
+            errors.push(ev.error);
+          } else if (ev.type === 'done') {
+            break;
           }
         }
+
+        return sendJson(res, 200, {
+          ok: true,
+          reply: fullReply,
+          model: modelName,
+          capsuleId: steeringCapsuleId || undefined,
+          tool_calls: toolCalls,
+          errors: errors.length > 0 ? errors : undefined,
+          turns: toolCalls.length > 0 ? 'multi-turn' : 'single',
+        });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
 
     if (pathname === '/api/tower/spawn' && method === 'POST') {
       try {
         const body = await parseBody(req);
         const { agentName, task, teamId, parentId } = body;
         if (!agentName) return sendJson(res, 400, { error: 'agentName required' });
-        const result = await AGENT_TOWER.spawnAgent(agentName, task || 'No task specified', { teamId, parentId });
+        const result = await AgentTower.spawnAgent(agentName, task || 'No task specified', { teamId, parentId });
         if (result.success) {
           broadcast({ type: 'tower_agent_spawned', agentId: result.agent.id, name: agentName, task, timestamp: new Date().toISOString() });
           return sendJson(res, 200, { ok: true, agentId: result.agent.id, agent: result.agent });
@@ -4579,7 +3468,7 @@ const server = http.createServer(async (req, res) => {
         const body = await parseBody(req);
         const { name, leader, members, task, priority } = body;
         if (!leader) return sendJson(res, 400, { error: 'leader required' });
-        const result = await AGENT_TOWER.spawnTeam({ name, leader, members, task: task || 'Team task', priority });
+        const result = await AgentTower.spawnTeam({ name, leader, members, task: task || 'Team task', priority });
         if (result.success) {
           broadcast({ type: 'tower_team_spawned', teamId: result.team.id, name: result.team.name, leader, members, timestamp: new Date().toISOString() });
           return sendJson(res, 200, { ok: true, teamId: result.team.id, team: result.team });
@@ -4590,7 +3479,7 @@ const server = http.createServer(async (req, res) => {
 
     if (pathname.startsWith('/api/tower/agents/') && method === 'DELETE') {
       const agentId = pathname.split('/')[4];
-      const result = AGENT_TOWER.killAgent(agentId);
+      const result = AgentTower.killAgent(agentId);
       if (result.success) {
         broadcast({ type: 'tower_agent_killed', agentId, timestamp: new Date().toISOString() });
         return sendJson(res, 200, { ok: true, result });
@@ -4600,10 +3489,10 @@ const server = http.createServer(async (req, res) => {
 
     if (pathname.startsWith('/api/tower/team/') && method === 'DELETE') {
       const teamName = pathname.split('/')[4];
-      const status = AGENT_TOWER.getAgentStatus();
+      const status = AgentTower.getAgentStatus();
       const team = status.teams.find(t => t.name === teamName || t.id === teamName);
       if (!team) return sendJson(res, 404, { error: 'Team not found' });
-      const result = AGENT_TOWER.killTeam(team.id);
+      const result = AgentTower.killTeam(team.id);
       broadcast({ type: 'tower_team_disbanded', teamId: team.id, name: teamName, timestamp: new Date().toISOString() });
       return sendJson(res, 200, { ok: true, result });
     }
@@ -4613,7 +3502,7 @@ const server = http.createServer(async (req, res) => {
         const body = await parseBody(req);
         const url = body.url || XIAOZHI_WS_URL;
         if (!url) return sendJson(res, 400, { error: 'No XIAOZHI_WS_URL configured and no url provided' });
-        const result = AGENT_TOWER.connectToBall(url);
+        const result = AgentTower.connectToBall(url);
         return sendJson(res, 200, { ok: result.success, status: result.status, url });
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
@@ -5055,50 +3944,15 @@ server.listen(PORT, () => {
   console.log(`[UNIFIED API] Listening on http://localhost:${PORT}`);
   console.log(`[UNIFIED API] SSE stream: http://localhost:${PORT}/api/stream`);
   console.log(`[UNIFIED API] WebSocket: ${XIAOZHI_WS_URL ? 'configured' : 'NOT SET (set XIAOZHI_WS_URL)'}`);
-  console.log(`[UNIFIED API] Tools: ${TOOL_DEFINITIONS.length}`);
+  console.log(`[UNIFIED API] Tools: ${TOOLS.length}`);
   connectToBridge();
   if (XIAOZHI_WS_URL) connectWS();
   startLocalTcpServer();
-  if (typeof AGENT_TOWER?.connectToUnifiedApi === 'function') {
-    AGENT_TOWER.connectToUnifiedApi(PORT);
-  } else {
-    console.warn('[UNIFIED API] Agent Tower not available — skipping connectToUnifiedApi');
-  }
+  AgentTower.connectToUnifiedApi(PORT);
   setTimeout(() => { spawnDivisionAgent('Engineering', 'Initialize system'); spawnDivisionAgent('Security', 'Monitor system'); spawnDivisionAgent('AI Research', 'Analyze patterns'); console.log('[UNIFIED API] Swarm initialized'); }, 1000);
 });
 
 server.on('error', (err) => { console.error('[UNIFIED API] Server error:', err.message); });
-
-// ========== NARRATOR PUBLISHERS (mounted 2026-06-24) ==========
-// Lightweight in-process bus. Subscribers receive typed frames:
-//   { id, kind, title, body, tone, tone, ts } where kind is one of:
-//   'mission:started' | 'mission:progress' | 'mission:completed'
-//   'mission:failed' | 'agent:speaking' | 'agent:tool-call'
-//   'provider:rotated' | 'provider:error' | 'system:notice'
-const narratorBus = [];
-const NARRATOR_MAX = 200;
-function publishNarrator({ kind = 'system:notice', title = '', body = '', tone = 'neutral' } = {}) {
-  const frame = { id: `nar_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, kind, title, body, tone, ts: Date.now() };
-  narratorBus.push(frame);
-  if (narratorBus.length > NARRATOR_MAX) narratorBus.shift();
-  // also write to agent_work/narrator.jsonl so it persists across restarts
-  try {
-    const fp = path.join(PURP_DIR, 'agent_work', 'narrator.jsonl');
-    fs.appendFileSync(fp, JSON.stringify(frame) + '\n');
-  } catch {}
-  return frame;
-}
-function readNarrator(limit = 50) { return narratorBus.slice(-limit); }
-function drainNarrator() { const r = [...narratorBus]; narratorBus.length = 0; return r; }
-
-(function ensureNarratorDir() {
-  try { fs.mkdirSync(path.join(PURP_DIR, 'agent_work'), { recursive: true }); } catch {}
-})();
-
-// expose helpers on globalThis so other modules can call publishNarrator(...)
-globalThis.__publishNarrator = publishNarrator;
-globalThis.__readNarrator = readNarrator;
-globalThis.__drainNarrator = drainNarrator;
 
 process.on('SIGINT', () => { if (hb) clearInterval(hb); if (rc) clearTimeout(rc); ws?.close(); if (purpProc) purpProc.kill(); if (pwBrowser) pwBrowser.close().catch(() => {}); process.exit(0); });
 process.on('uncaughtException', e => { console.error('[UNIFIED API] CRASH:', e.message); if (ws) recon(); });

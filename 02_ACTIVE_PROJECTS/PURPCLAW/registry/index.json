@@ -1,0 +1,1529 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-08-19T15:56:31.411Z",
+  "skills": [
+    {
+      "name": "1password",
+      "file": "skills/1password/SKILL.md"
+    },
+    {
+      "name": "3-statement-model",
+      "file": "skills/3-statement-model/SKILL.md"
+    },
+    {
+      "name": "accelerate",
+      "file": "skills/accelerate/SKILL.md"
+    },
+    {
+      "name": "adversarial-self-testing",
+      "file": "skills/adversarial-self-testing/SKILL.md"
+    },
+    {
+      "name": "adversarial-ux-test",
+      "file": "skills/adversarial-ux-test/SKILL.md"
+    },
+    {
+      "name": "agent-eval",
+      "file": "skills/agent-eval/SKILL.md"
+    },
+    {
+      "name": "agent-harness-construction",
+      "file": "skills/agent-harness-construction/SKILL.md"
+    },
+    {
+      "name": "agent-loop-pattern",
+      "file": "skills/agent-loop-pattern/SKILL.md"
+    },
+    {
+      "name": "agent-payment-x402",
+      "file": "skills/agent-payment-x402/SKILL.md"
+    },
+    {
+      "name": "agent-workspace-adaptation",
+      "file": "skills/agent-workspace-adaptation/SKILL.md"
+    },
+    {
+      "name": "agentic-engineering",
+      "file": "skills/agentic-engineering/SKILL.md"
+    },
+    {
+      "name": "agentmail",
+      "file": "skills/agentmail/SKILL.md"
+    },
+    {
+      "name": "ai-composer-pattern",
+      "file": "skills/ai-composer-pattern/SKILL.md"
+    },
+    {
+      "name": "ai-first-engineering",
+      "file": "skills/ai-first-engineering/SKILL.md"
+    },
+    {
+      "name": "ai-regression-testing",
+      "file": "skills/ai-regression-testing/SKILL.md"
+    },
+    {
+      "name": "ai-runtime-governance",
+      "file": "skills/ai-runtime-governance/SKILL.md"
+    },
+    {
+      "name": "airtable",
+      "file": "skills/airtable/SKILL.md"
+    },
+    {
+      "name": "android-clean-architecture",
+      "file": "skills/android-clean-architecture/SKILL.md"
+    },
+    {
+      "name": "antigravity-cli",
+      "file": "skills/antigravity-cli/SKILL.md"
+    },
+    {
+      "name": "api-design",
+      "file": "skills/api-design/SKILL.md"
+    },
+    {
+      "name": "apple-notes",
+      "file": "skills/apple-notes/SKILL.md"
+    },
+    {
+      "name": "apple-notes.bak",
+      "file": "skills/apple-notes.bak/SKILL.md"
+    },
+    {
+      "name": "apple-reminders",
+      "file": "skills/apple-reminders/SKILL.md"
+    },
+    {
+      "name": "architecture-decision-records",
+      "file": "skills/architecture-decision-records/SKILL.md"
+    },
+    {
+      "name": "architecture-diagram",
+      "file": "skills/architecture-diagram/SKILL.md"
+    },
+    {
+      "name": "article-writing",
+      "file": "skills/article-writing/SKILL.md"
+    },
+    {
+      "name": "arxiv",
+      "file": "skills/arxiv/SKILL.md"
+    },
+    {
+      "name": "ascii-art",
+      "file": "skills/ascii-art/SKILL.md"
+    },
+    {
+      "name": "ascii-video",
+      "file": "skills/ascii-video/SKILL.md"
+    },
+    {
+      "name": "audiocraft",
+      "file": "skills/audiocraft/SKILL.md"
+    },
+    {
+      "name": "autonomous-agent-harness",
+      "file": "skills/autonomous-agent-harness/SKILL.md"
+    },
+    {
+      "name": "autonomous-loops",
+      "file": "skills/autonomous-loops/SKILL.md"
+    },
+    {
+      "name": "autonomous-revenue",
+      "file": "skills/autonomous-revenue/SKILL.md"
+    },
+    {
+      "name": "axolotl",
+      "file": "skills/axolotl/SKILL.md"
+    },
+    {
+      "name": "backend-patterns",
+      "file": "skills/backend-patterns/SKILL.md"
+    },
+    {
+      "name": "baoyu-article-illustrator",
+      "file": "skills/baoyu-article-illustrator/SKILL.md"
+    },
+    {
+      "name": "baoyu-comic",
+      "file": "skills/baoyu-comic/SKILL.md"
+    },
+    {
+      "name": "baoyu-infographic",
+      "file": "skills/baoyu-infographic/SKILL.md"
+    },
+    {
+      "name": "bee",
+      "file": "skills/bee/SKILL.md"
+    },
+    {
+      "name": "benchmark",
+      "file": "skills/benchmark/SKILL.md"
+    },
+    {
+      "name": "bioinformatics",
+      "file": "skills/bioinformatics/SKILL.md"
+    },
+    {
+      "name": "blackbox",
+      "file": "skills/blackbox/SKILL.md"
+    },
+    {
+      "name": "blender-mcp",
+      "file": "skills/blender-mcp/SKILL.md"
+    },
+    {
+      "name": "blogwatcher",
+      "file": "skills/blogwatcher/SKILL.md"
+    },
+    {
+      "name": "blueprint",
+      "file": "skills/blueprint/SKILL.md"
+    },
+    {
+      "name": "brand-voice",
+      "file": "skills/brand-voice/SKILL.md"
+    },
+    {
+      "name": "browser-qa",
+      "file": "skills/browser-qa/SKILL.md"
+    },
+    {
+      "name": "bun-runtime",
+      "file": "skills/bun-runtime/SKILL.md"
+    },
+    {
+      "name": "bunny",
+      "file": "skills/bunny/SKILL.md"
+    },
+    {
+      "name": "cactus",
+      "file": "skills/cactus/SKILL.md"
+    },
+    {
+      "name": "canary-watch",
+      "file": "skills/canary-watch/SKILL.md"
+    },
+    {
+      "name": "canvas",
+      "file": "skills/canvas/SKILL.md"
+    },
+    {
+      "name": "carrier-relationship-management",
+      "file": "skills/carrier-relationship-management/SKILL.md"
+    },
+    {
+      "name": "chart",
+      "file": "skills/chart/SKILL.md"
+    },
+    {
+      "name": "child-registry-no-spawn-leak",
+      "file": "skills/child-registry-no-spawn-leak/SKILL.md"
+    },
+    {
+      "name": "chonk",
+      "file": "skills/chonk/SKILL.md"
+    },
+    {
+      "name": "chroma",
+      "file": "skills/chroma/SKILL.md"
+    },
+    {
+      "name": "ck",
+      "file": "skills/ck/SKILL.md"
+    },
+    {
+      "name": "claude-api",
+      "file": "skills/claude-api/SKILL.md"
+    },
+    {
+      "name": "claude-code",
+      "file": "skills/claude-code/SKILL.md"
+    },
+    {
+      "name": "claude-design",
+      "file": "skills/claude-design/SKILL.md"
+    },
+    {
+      "name": "claude-devfleet",
+      "file": "skills/claude-devfleet/SKILL.md"
+    },
+    {
+      "name": "claw",
+      "file": "skills/claw/SKILL.md"
+    },
+    {
+      "name": "cli",
+      "file": "skills/cli/SKILL.md"
+    },
+    {
+      "name": "click-path-audit",
+      "file": "skills/click-path-audit/SKILL.md"
+    },
+    {
+      "name": "clickhouse-io",
+      "file": "skills/clickhouse-io/SKILL.md"
+    },
+    {
+      "name": "clip",
+      "file": "skills/clip/SKILL.md"
+    },
+    {
+      "name": "code-version-merge",
+      "file": "skills/code-version-merge/SKILL.md"
+    },
+    {
+      "name": "code-wiki",
+      "file": "skills/code-wiki/SKILL.md"
+    },
+    {
+      "name": "codebase-inspection",
+      "file": "skills/codebase-inspection/SKILL.md"
+    },
+    {
+      "name": "codebase-onboarding",
+      "file": "skills/codebase-onboarding/SKILL.md"
+    },
+    {
+      "name": "codex",
+      "file": "skills/codex/SKILL.md"
+    },
+    {
+      "name": "coding-standards",
+      "file": "skills/coding-standards/SKILL.md"
+    },
+    {
+      "name": "cognitive-spine-deployment",
+      "file": "skills/cognitive-spine-deployment/SKILL.md"
+    },
+    {
+      "name": "comfyui",
+      "file": "skills/comfyui/SKILL.md"
+    },
+    {
+      "name": "compose-multiplatform-patterns",
+      "file": "skills/compose-multiplatform-patterns/SKILL.md"
+    },
+    {
+      "name": "comps-analysis",
+      "file": "skills/comps-analysis/SKILL.md"
+    },
+    {
+      "name": "concept-diagrams",
+      "file": "skills/concept-diagrams/SKILL.md"
+    },
+    {
+      "name": "configure-ecc",
+      "file": "skills/configure-ecc/SKILL.md"
+    },
+    {
+      "name": "connections-optimizer",
+      "file": "skills/connections-optimizer/SKILL.md"
+    },
+    {
+      "name": "consolidate-codebase-versions",
+      "file": "skills/consolidate-codebase-versions/SKILL.md"
+    },
+    {
+      "name": "content-engine",
+      "file": "skills/content-engine/SKILL.md"
+    },
+    {
+      "name": "content-hash-cache-pattern",
+      "file": "skills/content-hash-cache-pattern/SKILL.md"
+    },
+    {
+      "name": "context-budget",
+      "file": "skills/context-budget/SKILL.md"
+    },
+    {
+      "name": "continuous-agent-loop",
+      "file": "skills/continuous-agent-loop/SKILL.md"
+    },
+    {
+      "name": "continuous-learning",
+      "file": "skills/continuous-learning/SKILL.md"
+    },
+    {
+      "name": "continuous-learning-v2",
+      "file": "skills/continuous-learning-v2/SKILL.md"
+    },
+    {
+      "name": "cost-aware-llm-pipeline",
+      "file": "skills/cost-aware-llm-pipeline/SKILL.md"
+    },
+    {
+      "name": "cpp-coding-standards",
+      "file": "skills/cpp-coding-standards/SKILL.md"
+    },
+    {
+      "name": "cpp-testing",
+      "file": "skills/cpp-testing/SKILL.md"
+    },
+    {
+      "name": "creative-ideation",
+      "file": "skills/creative-ideation/SKILL.md"
+    },
+    {
+      "name": "crosspost",
+      "file": "skills/crosspost/SKILL.md"
+    },
+    {
+      "name": "crow",
+      "file": "skills/crow/SKILL.md"
+    },
+    {
+      "name": "csharp-testing",
+      "file": "skills/csharp-testing/SKILL.md"
+    },
+    {
+      "name": "customer-billing-ops",
+      "file": "skills/customer-billing-ops/SKILL.md"
+    },
+    {
+      "name": "customs-trade-compliance",
+      "file": "skills/customs-trade-compliance/SKILL.md"
+    },
+    {
+      "name": "dart-flutter-patterns",
+      "file": "skills/dart-flutter-patterns/SKILL.md"
+    },
+    {
+      "name": "darwinian-evolver",
+      "file": "skills/darwinian-evolver/SKILL.md"
+    },
+    {
+      "name": "data-scraper-agent",
+      "file": "skills/data-scraper-agent/SKILL.md"
+    },
+    {
+      "name": "database-migrations",
+      "file": "skills/database-migrations/SKILL.md"
+    },
+    {
+      "name": "dcf-model",
+      "file": "skills/dcf-model/SKILL.md"
+    },
+    {
+      "name": "debugging-hermes-tui-commands",
+      "file": "skills/debugging-hermes-tui-commands/SKILL.md"
+    },
+    {
+      "name": "deep-research",
+      "file": "skills/deep-research/SKILL.md"
+    },
+    {
+      "name": "deployment-patterns",
+      "file": "skills/deployment-patterns/SKILL.md"
+    },
+    {
+      "name": "design-md",
+      "file": "skills/design-md/SKILL.md"
+    },
+    {
+      "name": "design-system",
+      "file": "skills/design-system/SKILL.md"
+    },
+    {
+      "name": "django-patterns",
+      "file": "skills/django-patterns/SKILL.md"
+    },
+    {
+      "name": "django-security",
+      "file": "skills/django-security/SKILL.md"
+    },
+    {
+      "name": "django-tdd",
+      "file": "skills/django-tdd/SKILL.md"
+    },
+    {
+      "name": "django-verification",
+      "file": "skills/django-verification/SKILL.md"
+    },
+    {
+      "name": "dmux-workflows",
+      "file": "skills/dmux-workflows/SKILL.md"
+    },
+    {
+      "name": "docker-management",
+      "file": "skills/docker-management/SKILL.md"
+    },
+    {
+      "name": "docker-patterns",
+      "file": "skills/docker-patterns/SKILL.md"
+    },
+    {
+      "name": "documentation-audit",
+      "file": "skills/documentation-audit/SKILL.md"
+    },
+    {
+      "name": "documentation-cleanup",
+      "file": "skills/documentation-cleanup/SKILL.md"
+    },
+    {
+      "name": "documentation-lookup",
+      "file": "skills/documentation-lookup/SKILL.md"
+    },
+    {
+      "name": "dogfood",
+      "file": "skills/dogfood/SKILL.md"
+    },
+    {
+      "name": "domain-intel",
+      "file": "skills/domain-intel/SKILL.md"
+    },
+    {
+      "name": "dotnet-patterns",
+      "file": "skills/dotnet-patterns/SKILL.md"
+    },
+    {
+      "name": "dragon",
+      "file": "skills/dragon/SKILL.md"
+    },
+    {
+      "name": "drug-discovery",
+      "file": "skills/drug-discovery/SKILL.md"
+    },
+    {
+      "name": "dspy",
+      "file": "skills/dspy/SKILL.md"
+    },
+    {
+      "name": "duck",
+      "file": "skills/duck/SKILL.md"
+    },
+    {
+      "name": "duckduckgo-search",
+      "file": "skills/duckduckgo-search/SKILL.md"
+    },
+    {
+      "name": "e2e-testing",
+      "file": "skills/e2e-testing/SKILL.md"
+    },
+    {
+      "name": "edward-10-year-history",
+      "file": "skills/edward-10-year-history/SKILL.md"
+    },
+    {
+      "name": "elephant",
+      "file": "skills/elephant/SKILL.md"
+    },
+    {
+      "name": "energy-procurement",
+      "file": "skills/energy-procurement/SKILL.md"
+    },
+    {
+      "name": "enterprise-agent-ops",
+      "file": "skills/enterprise-agent-ops/SKILL.md"
+    },
+    {
+      "name": "eval-harness",
+      "file": "skills/eval-harness/SKILL.md"
+    },
+    {
+      "name": "evaluation",
+      "file": "skills/evaluation/SKILL.md"
+    },
+    {
+      "name": "evm",
+      "file": "skills/evm/SKILL.md"
+    },
+    {
+      "name": "exa-search",
+      "file": "skills/exa-search/SKILL.md"
+    },
+    {
+      "name": "excalidraw",
+      "file": "skills/excalidraw/SKILL.md"
+    },
+    {
+      "name": "excel-author",
+      "file": "skills/excel-author/SKILL.md"
+    },
+    {
+      "name": "faiss",
+      "file": "skills/faiss/SKILL.md"
+    },
+    {
+      "name": "fakery-audit-protocol",
+      "file": "skills/fakery-audit-protocol/SKILL.md"
+    },
+    {
+      "name": "fal-ai-media",
+      "file": "skills/fal-ai-media/SKILL.md"
+    },
+    {
+      "name": "fastmcp",
+      "file": "skills/fastmcp/SKILL.md"
+    },
+    {
+      "name": "findmy",
+      "file": "skills/findmy/SKILL.md"
+    },
+    {
+      "name": "fitness-nutrition",
+      "file": "skills/fitness-nutrition/SKILL.md"
+    },
+    {
+      "name": "flash-attention",
+      "file": "skills/flash-attention/SKILL.md"
+    },
+    {
+      "name": "flutter-dart-code-review",
+      "file": "skills/flutter-dart-code-review/SKILL.md"
+    },
+    {
+      "name": "foundation-models-on-device",
+      "file": "skills/foundation-models-on-device/SKILL.md"
+    },
+    {
+      "name": "fox",
+      "file": "skills/fox/SKILL.md"
+    },
+    {
+      "name": "frontend-patterns",
+      "file": "skills/frontend-patterns/SKILL.md"
+    },
+    {
+      "name": "frontend-slides",
+      "file": "skills/frontend-slides/SKILL.md"
+    },
+    {
+      "name": "g0dm0d3-integration",
+      "file": "skills/g0dm0d3-integration/SKILL.md"
+    },
+    {
+      "name": "gan-style-harness",
+      "file": "skills/gan-style-harness/SKILL.md"
+    },
+    {
+      "name": "gaze-auto-response",
+      "file": "skills/gaze-auto-response/SKILL.md"
+    },
+    {
+      "name": "ghost",
+      "file": "skills/ghost/SKILL.md"
+    },
+    {
+      "name": "gif-search",
+      "file": "skills/gif-search/SKILL.md"
+    },
+    {
+      "name": "git-workflow",
+      "file": "skills/git-workflow/SKILL.md"
+    },
+    {
+      "name": "github-auth",
+      "file": "skills/github-auth/SKILL.md"
+    },
+    {
+      "name": "github-code-review",
+      "file": "skills/github-code-review/SKILL.md"
+    },
+    {
+      "name": "github-issues",
+      "file": "skills/github-issues/SKILL.md"
+    },
+    {
+      "name": "github-pr-workflow",
+      "file": "skills/github-pr-workflow/SKILL.md"
+    },
+    {
+      "name": "github-repo-management",
+      "file": "skills/github-repo-management/SKILL.md"
+    },
+    {
+      "name": "gitnexus-explorer",
+      "file": "skills/gitnexus-explorer/SKILL.md"
+    },
+    {
+      "name": "godmode",
+      "file": "skills/godmode/SKILL.md"
+    },
+    {
+      "name": "golang-patterns",
+      "file": "skills/golang-patterns/SKILL.md"
+    },
+    {
+      "name": "golang-testing",
+      "file": "skills/golang-testing/SKILL.md"
+    },
+    {
+      "name": "google-workspace",
+      "file": "skills/google-workspace/SKILL.md"
+    },
+    {
+      "name": "google-workspace-ops",
+      "file": "skills/google-workspace-ops/SKILL.md"
+    },
+    {
+      "name": "google-workspace.bak",
+      "file": "skills/google-workspace.bak/SKILL.md"
+    },
+    {
+      "name": "goose",
+      "file": "skills/goose/SKILL.md"
+    },
+    {
+      "name": "goose-dataset-builder",
+      "file": "skills/goose-dataset-builder/SKILL.md"
+    },
+    {
+      "name": "gorilla",
+      "file": "skills/gorilla/SKILL.md"
+    },
+    {
+      "name": "grok",
+      "file": "skills/grok/SKILL.md"
+    },
+    {
+      "name": "gsd-pai-integration",
+      "file": "skills/gsd-pai-integration/SKILL.md"
+    },
+    {
+      "name": "guardian",
+      "file": "skills/guardian/SKILL.md"
+    },
+    {
+      "name": "guidance",
+      "file": "skills/guidance/SKILL.md"
+    },
+    {
+      "name": "hawk",
+      "file": "skills/hawk/SKILL.md"
+    },
+    {
+      "name": "healthcare-cdss-patterns",
+      "file": "skills/healthcare-cdss-patterns/SKILL.md"
+    },
+    {
+      "name": "healthcare-emr-patterns",
+      "file": "skills/healthcare-emr-patterns/SKILL.md"
+    },
+    {
+      "name": "healthcare-eval-harness",
+      "file": "skills/healthcare-eval-harness/SKILL.md"
+    },
+    {
+      "name": "healthcare-phi-compliance",
+      "file": "skills/healthcare-phi-compliance/SKILL.md"
+    },
+    {
+      "name": "heartmula",
+      "file": "skills/heartmula/SKILL.md"
+    },
+    {
+      "name": "help",
+      "file": "skills/help/SKILL.md"
+    },
+    {
+      "name": "here-now",
+      "file": "skills/here-now/SKILL.md"
+    },
+    {
+      "name": "hermes-agent",
+      "file": "skills/hermes-agent/SKILL.md"
+    },
+    {
+      "name": "hermes-agent-skill-authoring",
+      "file": "skills/hermes-agent-skill-authoring/SKILL.md"
+    },
+    {
+      "name": "hermes-gateway-ops",
+      "file": "skills/hermes-gateway-ops/SKILL.md"
+    },
+    {
+      "name": "hermes-gaze",
+      "file": "skills/hermes-gaze/SKILL.md"
+    },
+    {
+      "name": "hermes-s6-container-supervision",
+      "file": "skills/hermes-s6-container-supervision/SKILL.md"
+    },
+    {
+      "name": "hermes-tts-providers",
+      "file": "skills/hermes-tts-providers/SKILL.md"
+    },
+    {
+      "name": "hexagonal-architecture",
+      "file": "skills/hexagonal-architecture/SKILL.md"
+    },
+    {
+      "name": "himalaya",
+      "file": "skills/himalaya/SKILL.md"
+    },
+    {
+      "name": "honcho",
+      "file": "skills/honcho/SKILL.md"
+    },
+    {
+      "name": "huggingface-hub",
+      "file": "skills/huggingface-hub/SKILL.md"
+    },
+    {
+      "name": "huggingface-tokenizers",
+      "file": "skills/huggingface-tokenizers/SKILL.md"
+    },
+    {
+      "name": "humanizer",
+      "file": "skills/humanizer/SKILL.md"
+    },
+    {
+      "name": "hyperframes",
+      "file": "skills/hyperframes/SKILL.md"
+    },
+    {
+      "name": "hyperliquid",
+      "file": "skills/hyperliquid/SKILL.md"
+    },
+    {
+      "name": "imessage",
+      "file": "skills/imessage/SKILL.md"
+    },
+    {
+      "name": "inference",
+      "file": "skills/inference/SKILL.md"
+    },
+    {
+      "name": "innovator",
+      "file": "skills/innovator/SKILL.md"
+    },
+    {
+      "name": "install-test-1785269424167",
+      "file": "skills/install-test-1785269424167/SKILL.md"
+    },
+    {
+      "name": "install-test-1785269651861",
+      "file": "skills/install-test-1785269651861/SKILL.md"
+    },
+    {
+      "name": "instructor",
+      "file": "skills/instructor/SKILL.md"
+    },
+    {
+      "name": "inventory-demand-planning",
+      "file": "skills/inventory-demand-planning/SKILL.md"
+    },
+    {
+      "name": "investor-materials",
+      "file": "skills/investor-materials/SKILL.md"
+    },
+    {
+      "name": "investor-outreach",
+      "file": "skills/investor-outreach/SKILL.md"
+    },
+    {
+      "name": "iterative-retrieval",
+      "file": "skills/iterative-retrieval/SKILL.md"
+    },
+    {
+      "name": "java-coding-standards",
+      "file": "skills/java-coding-standards/SKILL.md"
+    },
+    {
+      "name": "jellyfish",
+      "file": "skills/jellyfish/SKILL.md"
+    },
+    {
+      "name": "jira-integration",
+      "file": "skills/jira-integration/SKILL.md"
+    },
+    {
+      "name": "jpa-patterns",
+      "file": "skills/jpa-patterns/SKILL.md"
+    },
+    {
+      "name": "jupyter-live-kernel",
+      "file": "skills/jupyter-live-kernel/SKILL.md"
+    },
+    {
+      "name": "kanban-codex-lane",
+      "file": "skills/kanban-codex-lane/SKILL.md"
+    },
+    {
+      "name": "kanban-orchestrator",
+      "file": "skills/kanban-orchestrator/SKILL.md"
+    },
+    {
+      "name": "kanban-video-orchestrator",
+      "file": "skills/kanban-video-orchestrator/SKILL.md"
+    },
+    {
+      "name": "kanban-worker",
+      "file": "skills/kanban-worker/SKILL.md"
+    },
+    {
+      "name": "karen",
+      "file": "skills/karen/SKILL.md"
+    },
+    {
+      "name": "karenator",
+      "file": "skills/karenator/SKILL.md"
+    },
+    {
+      "name": "karenator-3000",
+      "file": "skills/karenator-3000/SKILL.md"
+    },
+    {
+      "name": "karpathy-autoresearch-3file-contract",
+      "file": "skills/karpathy-autoresearch-3file-contract/SKILL.md"
+    },
+    {
+      "name": "kernel-job-training-buffer",
+      "file": "skills/kernel-job-training-buffer/SKILL.md"
+    },
+    {
+      "name": "kotlin-coroutines-flows",
+      "file": "skills/kotlin-coroutines-flows/SKILL.md"
+    },
+    {
+      "name": "kotlin-exposed-patterns",
+      "file": "skills/kotlin-exposed-patterns/SKILL.md"
+    },
+    {
+      "name": "kotlin-ktor-patterns",
+      "file": "skills/kotlin-ktor-patterns/SKILL.md"
+    },
+    {
+      "name": "kotlin-patterns",
+      "file": "skills/kotlin-patterns/SKILL.md"
+    },
+    {
+      "name": "kotlin-testing",
+      "file": "skills/kotlin-testing/SKILL.md"
+    },
+    {
+      "name": "kraken",
+      "file": "skills/kraken/SKILL.md"
+    },
+    {
+      "name": "lambda-labs",
+      "file": "skills/lambda-labs/SKILL.md"
+    },
+    {
+      "name": "laravel-patterns",
+      "file": "skills/laravel-patterns/SKILL.md"
+    },
+    {
+      "name": "laravel-plugin-discovery",
+      "file": "skills/laravel-plugin-discovery/SKILL.md"
+    },
+    {
+      "name": "laravel-security",
+      "file": "skills/laravel-security/SKILL.md"
+    },
+    {
+      "name": "laravel-tdd",
+      "file": "skills/laravel-tdd/SKILL.md"
+    },
+    {
+      "name": "laravel-verification",
+      "file": "skills/laravel-verification/SKILL.md"
+    },
+    {
+      "name": "lbo-model",
+      "file": "skills/lbo-model/SKILL.md"
+    },
+    {
+      "name": "lead-intelligence",
+      "file": "skills/lead-intelligence/SKILL.md"
+    },
+    {
+      "name": "lemur",
+      "file": "skills/lemur/SKILL.md"
+    },
+    {
+      "name": "linear",
+      "file": "skills/linear/SKILL.md"
+    },
+    {
+      "name": "liquid-glass-design",
+      "file": "skills/liquid-glass-design/SKILL.md"
+    },
+    {
+      "name": "llama-cpp",
+      "file": "skills/llama-cpp/SKILL.md"
+    },
+    {
+      "name": "llava",
+      "file": "skills/llava/SKILL.md"
+    },
+    {
+      "name": "llm-wiki",
+      "file": "skills/llm-wiki/SKILL.md"
+    },
+    {
+      "name": "lm-evaluation-harness",
+      "file": "skills/lm-evaluation-harness/SKILL.md"
+    },
+    {
+      "name": "local-first-ai-app-architecture",
+      "file": "skills/local-first-ai-app-architecture/SKILL.md"
+    },
+    {
+      "name": "lora-finetune-qlora-on-consumer-gpu",
+      "file": "skills/lora-finetune-qlora-on-consumer-gpu/SKILL.md"
+    },
+    {
+      "name": "luno-human-conversation",
+      "file": "skills/luno-human-conversation/SKILL.md"
+    },
+    {
+      "name": "lunokio-avatar-control",
+      "file": "skills/lunokio-avatar-control/SKILL.md"
+    },
+    {
+      "name": "macos-computer-use",
+      "file": "skills/macos-computer-use/SKILL.md"
+    },
+    {
+      "name": "manim-video",
+      "file": "skills/manim-video/SKILL.md"
+    },
+    {
+      "name": "mantis",
+      "file": "skills/mantis/SKILL.md"
+    },
+    {
+      "name": "maps",
+      "file": "skills/maps/SKILL.md"
+    },
+    {
+      "name": "mcporter",
+      "file": "skills/mcporter/SKILL.md"
+    },
+    {
+      "name": "meme-generation",
+      "file": "skills/meme-generation/SKILL.md"
+    },
+    {
+      "name": "memento-flashcards",
+      "file": "skills/memento-flashcards/SKILL.md"
+    },
+    {
+      "name": "merger-model",
+      "file": "skills/merger-model/SKILL.md"
+    },
+    {
+      "name": "minecraft-modpack-server",
+      "file": "skills/minecraft-modpack-server/SKILL.md"
+    },
+    {
+      "name": "modal",
+      "file": "skills/modal/SKILL.md"
+    },
+    {
+      "name": "models",
+      "file": "skills/models/SKILL.md"
+    },
+    {
+      "name": "monetization-pipeline",
+      "file": "skills/monetization-pipeline/SKILL.md"
+    },
+    {
+      "name": "moth",
+      "file": "skills/moth/SKILL.md"
+    },
+    {
+      "name": "multi-service-runtime-boot-hardening",
+      "file": "skills/multi-service-runtime-boot-hardening/SKILL.md"
+    },
+    {
+      "name": "mushroom",
+      "file": "skills/mushroom/SKILL.md"
+    },
+    {
+      "name": "nano-pdf",
+      "file": "skills/nano-pdf/SKILL.md"
+    },
+    {
+      "name": "nanoclaw-repl",
+      "file": "skills/nanoclaw-repl/SKILL.md"
+    },
+    {
+      "name": "native-mcp",
+      "file": "skills/native-mcp/SKILL.md"
+    },
+    {
+      "name": "nemo-curator",
+      "file": "skills/nemo-curator/SKILL.md"
+    },
+    {
+      "name": "neuroskill-bci",
+      "file": "skills/neuroskill-bci/SKILL.md"
+    },
+    {
+      "name": "nightly-learning",
+      "file": "skills/nightly-learning/SKILL.md"
+    },
+    {
+      "name": "node-inspect-debugger",
+      "file": "skills/node-inspect-debugger/SKILL.md"
+    },
+    {
+      "name": "notion",
+      "file": "skills/notion/SKILL.md"
+    },
+    {
+      "name": "numbers",
+      "file": "skills/numbers/SKILL.md"
+    },
+    {
+      "name": "obliteratus",
+      "file": "skills/obliteratus/SKILL.md"
+    },
+    {
+      "name": "obsidian",
+      "file": "skills/obsidian/SKILL.md"
+    },
+    {
+      "name": "ocr-and-documents",
+      "file": "skills/ocr-and-documents/SKILL.md"
+    },
+    {
+      "name": "octopus",
+      "file": "skills/octopus/SKILL.md"
+    },
+    {
+      "name": "omnicode-mcp",
+      "file": "skills/omnicode-mcp/SKILL.md"
+    },
+    {
+      "name": "one-three-one-rule",
+      "file": "skills/one-three-one-rule/SKILL.md"
+    },
+    {
+      "name": "open-source-coding-agent-cli",
+      "file": "skills/open-source-coding-agent-cli/SKILL.md"
+    },
+    {
+      "name": "openclaw-migration",
+      "file": "skills/openclaw-migration/SKILL.md"
+    },
+    {
+      "name": "opencode",
+      "file": "skills/opencode/SKILL.md"
+    },
+    {
+      "name": "openhands",
+      "file": "skills/openhands/SKILL.md"
+    },
+    {
+      "name": "openhue",
+      "file": "skills/openhue/SKILL.md"
+    },
+    {
+      "name": "openrouter-media",
+      "file": "skills/openrouter-media/SKILL.md"
+    },
+    {
+      "name": "openrouter-video-generation",
+      "file": "skills/openrouter-video-generation/SKILL.md"
+    },
+    {
+      "name": "osint-investigation",
+      "file": "skills/osint-investigation/SKILL.md"
+    },
+    {
+      "name": "oss-forensics",
+      "file": "skills/oss-forensics/SKILL.md"
+    },
+    {
+      "name": "outlines",
+      "file": "skills/outlines/SKILL.md"
+    },
+    {
+      "name": "owl",
+      "file": "skills/owl/SKILL.md"
+    },
+    {
+      "name": "p5js",
+      "file": "skills/p5js/SKILL.md"
+    },
+    {
+      "name": "page-agent",
+      "file": "skills/page-agent/SKILL.md"
+    },
+    {
+      "name": "panda",
+      "file": "skills/panda/SKILL.md"
+    },
+    {
+      "name": "parallel-cli",
+      "file": "skills/parallel-cli/SKILL.md"
+    },
+    {
+      "name": "parallel-swarm-and-live-feed-pattern",
+      "file": "skills/parallel-swarm-and-live-feed-pattern/SKILL.md"
+    },
+    {
+      "name": "parrot",
+      "file": "skills/parrot/SKILL.md"
+    },
+    {
+      "name": "peft",
+      "file": "skills/peft/SKILL.md"
+    },
+    {
+      "name": "penguin",
+      "file": "skills/penguin/SKILL.md"
+    },
+    {
+      "name": "phoenix",
+      "file": "skills/phoenix/SKILL.md"
+    },
+    {
+      "name": "pinecone",
+      "file": "skills/pinecone/SKILL.md"
+    },
+    {
+      "name": "pinggy-tunnel",
+      "file": "skills/pinggy-tunnel/SKILL.md"
+    },
+    {
+      "name": "pixel-art",
+      "file": "skills/pixel-art/SKILL.md"
+    },
+    {
+      "name": "plan",
+      "file": "skills/plan/SKILL.md"
+    },
+    {
+      "name": "pokemon-player",
+      "file": "skills/pokemon-player/SKILL.md"
+    },
+    {
+      "name": "polymarket",
+      "file": "skills/polymarket/SKILL.md"
+    },
+    {
+      "name": "popular-web-designs",
+      "file": "skills/popular-web-designs/SKILL.md"
+    },
+    {
+      "name": "powerpoint",
+      "file": "skills/powerpoint/SKILL.md"
+    },
+    {
+      "name": "pptx-author",
+      "file": "skills/pptx-author/SKILL.md"
+    },
+    {
+      "name": "pretext",
+      "file": "skills/pretext/SKILL.md"
+    },
+    {
+      "name": "purpclaw-chat-gateway",
+      "file": "skills/purpclaw-chat-gateway/SKILL.md"
+    },
+    {
+      "name": "purpclaw-codebase-audit",
+      "file": "skills/purpclaw-codebase-audit/SKILL.md"
+    },
+    {
+      "name": "purpclaw-feature-parity-build",
+      "file": "skills/purpclaw-feature-parity-build/SKILL.md"
+    },
+    {
+      "name": "purpclaw-harness",
+      "file": "skills/purpclaw-harness/SKILL.md"
+    },
+    {
+      "name": "purpclaw-survivor-mode",
+      "file": "skills/purpclaw-survivor-mode/SKILL.md"
+    },
+    {
+      "name": "python-debugpy",
+      "file": "skills/python-debugpy/SKILL.md"
+    },
+    {
+      "name": "pytorch-fsdp",
+      "file": "skills/pytorch-fsdp/SKILL.md"
+    },
+    {
+      "name": "pytorch-lightning",
+      "file": "skills/pytorch-lightning/SKILL.md"
+    },
+    {
+      "name": "qdrant",
+      "file": "skills/qdrant/SKILL.md"
+    },
+    {
+      "name": "qmd",
+      "file": "skills/qmd/SKILL.md"
+    },
+    {
+      "name": "rabbit",
+      "file": "skills/rabbit/SKILL.md"
+    },
+    {
+      "name": "raven",
+      "file": "skills/raven/SKILL.md"
+    },
+    {
+      "name": "requesting-code-review",
+      "file": "skills/requesting-code-review/SKILL.md"
+    },
+    {
+      "name": "research",
+      "file": "skills/research/SKILL.md"
+    },
+    {
+      "name": "research-paper-writing",
+      "file": "skills/research-paper-writing/SKILL.md"
+    },
+    {
+      "name": "rest-graphql-debug",
+      "file": "skills/rest-graphql-debug/SKILL.md"
+    },
+    {
+      "name": "robot",
+      "file": "skills/robot/SKILL.md"
+    },
+    {
+      "name": "saelens",
+      "file": "skills/saelens/SKILL.md"
+    },
+    {
+      "name": "scientist",
+      "file": "skills/scientist/SKILL.md"
+    },
+    {
+      "name": "scrapling",
+      "file": "skills/scrapling/SKILL.md"
+    },
+    {
+      "name": "searxng-search",
+      "file": "skills/searxng-search/SKILL.md"
+    },
+    {
+      "name": "segment-anything",
+      "file": "skills/segment-anything/SKILL.md"
+    },
+    {
+      "name": "session-recovery",
+      "file": "skills/session-recovery/SKILL.md"
+    },
+    {
+      "name": "shark",
+      "file": "skills/shark/SKILL.md"
+    },
+    {
+      "name": "sherlock",
+      "file": "skills/sherlock/SKILL.md"
+    },
+    {
+      "name": "shop-app",
+      "file": "skills/shop-app/SKILL.md"
+    },
+    {
+      "name": "shopify",
+      "file": "skills/shopify/SKILL.md"
+    },
+    {
+      "name": "simpo",
+      "file": "skills/simpo/SKILL.md"
+    },
+    {
+      "name": "single-file-gateway-service",
+      "file": "skills/single-file-gateway-service/SKILL.md"
+    },
+    {
+      "name": "siyuan",
+      "file": "skills/siyuan/SKILL.md"
+    },
+    {
+      "name": "sketch",
+      "file": "skills/sketch/SKILL.md"
+    },
+    {
+      "name": "slime",
+      "file": "skills/slime/SKILL.md"
+    },
+    {
+      "name": "smith-neo-adversarial",
+      "file": "skills/smith-neo-adversarial/SKILL.md"
+    },
+    {
+      "name": "smith-neo-adversarial-pair",
+      "file": "skills/smith-neo-adversarial-pair/SKILL.md"
+    },
+    {
+      "name": "snake",
+      "file": "skills/snake/SKILL.md"
+    },
+    {
+      "name": "socket-rig",
+      "file": "skills/socket-rig/SKILL.md"
+    },
+    {
+      "name": "solana",
+      "file": "skills/solana/SKILL.md"
+    },
+    {
+      "name": "songsee",
+      "file": "skills/songsee/SKILL.md"
+    },
+    {
+      "name": "songwriting-and-ai-music",
+      "file": "skills/songwriting-and-ai-music/SKILL.md"
+    },
+    {
+      "name": "spider",
+      "file": "skills/spider/SKILL.md"
+    },
+    {
+      "name": "spike",
+      "file": "skills/spike/SKILL.md"
+    },
+    {
+      "name": "spotify",
+      "file": "skills/spotify/SKILL.md"
+    },
+    {
+      "name": "sse-streaming-pattern",
+      "file": "skills/sse-streaming-pattern/SKILL.md"
+    },
+    {
+      "name": "stable-diffusion",
+      "file": "skills/stable-diffusion/SKILL.md"
+    },
+    {
+      "name": "sticky-finger-testing",
+      "file": "skills/sticky-finger-testing/SKILL.md"
+    },
+    {
+      "name": "stocks",
+      "file": "skills/stocks/SKILL.md"
+    },
+    {
+      "name": "subagent-driven-development",
+      "file": "skills/subagent-driven-development/SKILL.md"
+    },
+    {
+      "name": "systematic-debugging",
+      "file": "skills/systematic-debugging/SKILL.md"
+    },
+    {
+      "name": "teams-meeting-pipeline",
+      "file": "skills/teams-meeting-pipeline/SKILL.md"
+    },
+    {
+      "name": "ted-session-learning",
+      "file": "skills/ted-session-learning/SKILL.md"
+    },
+    {
+      "name": "telephony",
+      "file": "skills/telephony/SKILL.md"
+    },
+    {
+      "name": "tensorrt-llm",
+      "file": "skills/tensorrt-llm/SKILL.md"
+    },
+    {
+      "name": "test-driven-development",
+      "file": "skills/test-driven-development/SKILL.md"
+    },
+    {
+      "name": "torchtitan",
+      "file": "skills/torchtitan/SKILL.md"
+    },
+    {
+      "name": "touchdesigner-mcp",
+      "file": "skills/touchdesigner-mcp/SKILL.md"
+    },
+    {
+      "name": "training",
+      "file": "skills/training/SKILL.md"
+    },
+    {
+      "name": "trl-fine-tuning",
+      "file": "skills/trl-fine-tuning/SKILL.md"
+    },
+    {
+      "name": "tui-cockpit",
+      "file": "skills/tui-cockpit/SKILL.md"
+    },
+    {
+      "name": "tui-textual",
+      "file": "skills/tui-textual/SKILL.md"
+    },
+    {
+      "name": "turtle",
+      "file": "skills/turtle/SKILL.md"
+    },
+    {
+      "name": "unsloth",
+      "file": "skills/unsloth/SKILL.md"
+    },
+    {
+      "name": "vector-databases",
+      "file": "skills/vector-databases/SKILL.md"
+    },
+    {
+      "name": "vllm",
+      "file": "skills/vllm/SKILL.md"
+    },
+    {
+      "name": "voice-driven-build-loop",
+      "file": "skills/voice-driven-build-loop/SKILL.md"
+    },
+    {
+      "name": "voice-first-protocol",
+      "file": "skills/voice-first-protocol/SKILL.md"
+    },
+    {
+      "name": "void",
+      "file": "skills/void/SKILL.md"
+    },
+    {
+      "name": "wallet-recovery",
+      "file": "skills/wallet-recovery/SKILL.md"
+    },
+    {
+      "name": "watchers",
+      "file": "skills/watchers/SKILL.md"
+    },
+    {
+      "name": "web-pentest",
+      "file": "skills/web-pentest/SKILL.md"
+    },
+    {
+      "name": "webhook-subscriptions",
+      "file": "skills/webhook-subscriptions/SKILL.md"
+    },
+    {
+      "name": "weights-and-biases",
+      "file": "skills/weights-and-biases/SKILL.md"
+    },
+    {
+      "name": "whisper",
+      "file": "skills/whisper/SKILL.md"
+    },
+    {
+      "name": "wolf",
+      "file": "skills/wolf/SKILL.md"
+    },
+    {
+      "name": "writing-plans",
+      "file": "skills/writing-plans/SKILL.md"
+    },
+    {
+      "name": "xurl",
+      "file": "skills/xurl/SKILL.md"
+    },
+    {
+      "name": "youtube-content",
+      "file": "skills/youtube-content/SKILL.md"
+    },
+    {
+      "name": "yuanbao",
+      "file": "skills/yuanbao/SKILL.md"
+    }
+  ],
+  "agents": [],
+  "total_skills": 380,
+  "total_agents": 0
+}

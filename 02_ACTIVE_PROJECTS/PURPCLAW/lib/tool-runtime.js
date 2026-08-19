@@ -1,4 +1,4 @@
-'use strict';
+﻿'use strict';
 
 const { EventEmitter } = require('events');
 const path = require('path');
@@ -8,7 +8,7 @@ const PERMISSIONS = require('./permission-manager');
 const SCHEMA = require('./schema-validator');
 const GUARDRAILS = require('./guardrail-manager');
 const CHECKPOINTS = require('./checkpoint-manager');
-// S1 — path security guardrail (always-on, blocks writes to system dirs,
+// S1 â€” path security guardrail (always-on, blocks writes to system dirs,
 // .ssh, .aws, .gnupg, .kube, .docker, and paths outside the project root
 // unless operator-initiated). Eddie's #1 audit ask.
 const PATH_SECURITY = require('./path-security');
@@ -86,7 +86,7 @@ class ToolRuntime extends EventEmitter {
     }
     const inputGuard=await GUARDRAILS.runParallel(args,context.inputGuardrails||this.inputGuardrails,{...context,tool:name,stage:'input'});
     if(!inputGuard.ok){const failure={ok:false,error:`tool input guardrail tripped: ${inputGuard.reason}`,code:'TOOL_GUARDRAIL_TRIPPED',tripwire:inputGuard.tripwire,retryable:true};this.emit('tool.guardrail.tripped',{call_id:callId,tool:name,stage:'input',...inputGuard});return failure;}
-    // S1 — always-on path security guardrail. Runs after schema/guardrail
+    // S1 â€” always-on path security guardrail. Runs after schema/guardrail
     // check, before permission/governance. Hard-blocks writes to system
     // dirs and credential paths. Eddie audit ask 2026-07-17.
     const pathCheck = PATH_SECURITY.check(args, { ...context, tool: name });
@@ -95,6 +95,41 @@ class ToolRuntime extends EventEmitter {
       this.emit('path.security.blocked', { call_id: callId, tool: name, reason: pathCheck.reason });
       return failure;
     }
+    // S2 — steering capsule enforcement (Phase 3). A capsule on the context
+    // is executable law: applyToAction decides, the prompt never does.
+    if (context.steeringCapsule) {
+      const STEER = require('./steering-middleware');
+      const denial = STEER.gateTool(context.steeringCapsule, name, args);
+      if (denial) {
+        this.emit('steering.denied', { call_id: callId, tool: name, capsule_id: denial.capsuleId, reason: denial.error });
+        return denial;
+      }
+    }
+    // S14 — device-control consent gate (SPEC-014). Device-class tools map
+    // to capabilities with consent tiers: BLOCKED → hard deny; ASK_EACH →
+    // operator-initiated only; SESSION/ALWAYS → pass to the normal ladder.
+    const DEVICE_CAPABILITY = {
+      clipboard_read: 'clipboard', clipboard_write: 'clipboard',
+      window_list: 'screen', notify: 'notifications', local_tts_generate: 'audio',
+    };
+    if (DEVICE_CAPABILITY[name]) {
+      let DC = null;
+      try { DC = require('./device-control'); } catch { /* optional */ }
+      if (DC) {
+        // This runtime executes on the local machine — consent is recorded
+        // against the 'local' device identity (SPEC-014 consent whitelist).
+        const consent = DC.check('local', DEVICE_CAPABILITY[name]);
+        if (!consent.allowed) {
+          const operatorAsked = context.operatorInitiated === true;
+          if (consent.tier === 'BLOCKED' || (consent.tier === 'ASK_EACH' && !operatorAsked)) {
+            const failure = { ok: false, error: `device capability '${DEVICE_CAPABILITY[name]}' not consented (${consent.tier})${consent.reason ? ': ' + consent.reason : ''}`, code: 'DEVICE_CONSENT_DENIED', retryable: false };
+            this.emit('device.consent.denied', { call_id: callId, tool: name, capability: DEVICE_CAPABILITY[name], tier: consent.tier });
+            return failure;
+          }
+        }
+      }
+    }
+
     const pre = await plugins.emitMutable('pre_tool_call', { name, args, context, callId });
     if (pre.blocked) return { ok: false, error: pre.reason || `blocked by plugin hook: ${name}`, code: 'PLUGIN_BLOCKED' };
     args=pre.context.args||args;context=pre.context.context||context;
@@ -108,18 +143,63 @@ class ToolRuntime extends EventEmitter {
     const cacheKey = `${context.sessionId || 'global'}:${name}`;
     const cached = this.approvalCache.get(cacheKey) === 'allow';
     const permissionAllows = permission.action === 'allow';
-    const needsApproval = !cached && !permissionAllows && (permission.action === 'ask' || !governance.allowed);
+    // Operator-initiated + defer (trusted profile) is the Grok Bot analog of
+    // "the user asked, auto-review allows". Without a listener, waitForApproval
+    // deadlocked for 60s then denied. Still ask when profile says ask, or when
+    // a non-operator / untrusted path hits governance.
+    const operatorDefer = context.operatorInitiated === true && permission.action === 'defer';
+    const needsApproval = !cached && !permissionAllows && !operatorDefer && (permission.action === 'ask' || !governance.allowed);
     if (needsApproval) {
-      const request = GOVERNANCE.requestApproval(ROOT, context.sessionId || callId, command, {}, governance);
-      this.emit('approval.request', { request_id: request.id, call_id: callId, tool: name, arguments: args, risks: governance.risks });
-      const callback = context.approvalCallback || this.approvalCallback;
-      const choice = callback ? await callback({ ...request, callId, tool: name, arguments: args, risks: governance.risks }) : 'deny';
-      if (!['once', 'session', 'always', 'approve', 'approved'].includes(String(choice).toLowerCase())) {
-        GOVERNANCE.setApprovalStatus(ROOT, request.id, 'denied');
-        return { ok: false, error: `approval denied for ${name}`, code: 'APPROVAL_DENIED', approvalId: request.id };
+      // S6 — approval triage: learn from operator history. 3+ prior denials of
+      // the same (tool, args) pattern auto-block; 3+ prior approvals of a
+      // non-destructive pattern auto-pass; everything else escalates as before.
+      // This never weakens the HIGH_STAKES/destructive escalation path.
+      let triageVerdict = null;
+      let TRIAGE = null;
+      try { TRIAGE = require('./approval-triage'); } catch { /* optional */ }
+      if (TRIAGE) {
+        try {
+          triageVerdict = TRIAGE.triage({ tool: name, arguments: args, sessionId: context.sessionId, risks: governance.risks });
+          if (triageVerdict.decision === 'auto_denied') {
+            TRIAGE.record({ tool: name, arguments: args, sessionId: context.sessionId, decision: 'denied', reason: triageVerdict.reason });
+            this.emit('approval.triage', { call_id: callId, tool: name, verdict: triageVerdict });
+            return { ok: false, error: `approval auto-denied: ${triageVerdict.reason}`, code: 'APPROVAL_AUTO_DENIED', approvalId: null };
+          }
+          if (triageVerdict.decision === 'auto_approved') {
+            TRIAGE.record({ tool: name, arguments: args, sessionId: context.sessionId, decision: 'approved', reason: triageVerdict.reason });
+            this.emit('approval.triage', { call_id: callId, tool: name, verdict: triageVerdict });
+          }
+        } catch { /* triage is an optimisation, never a bypass — on error, escalate */ }
       }
-      GOVERNANCE.setApprovalStatus(ROOT, request.id, 'approved');
-      if (['session','always'].includes(String(choice).toLowerCase())) this.approvalCache.set(cacheKey,'allow');
+
+      if (!triageVerdict || triageVerdict.decision !== 'auto_approved') {
+        const request = GOVERNANCE.requestApproval(ROOT, context.sessionId || callId, command, {}, governance);
+        this.emit('approval.request', { request_id: request.id, call_id: callId, tool: name, arguments: args, risks: governance.risks });
+        const callback = context.approvalCallback || this.approvalCallback;
+        // S13 — remote approval transport: with no local callback, a context
+        // may opt into the durable queue resolvable from ANY surface
+        // (CLI/TUI/Web/Desktop/Mobile via /api/approvals). Explicit opt-in
+        // only — headless paths keep their existing instant-deny behaviour.
+        let choice;
+        if (callback) {
+          choice = await callback({ ...request, callId, tool: name, arguments: args, risks: governance.risks });
+        } else if (context.remoteApprovals === true) {
+          const REMOTE = require('./remote-approvals');
+          const queued = REMOTE.queue({ tool: name, args, context: { callId, sessionId: context.sessionId, risks: governance.risks, approvalId: request.id }, ttlSeconds: context.remoteApprovalTtl || 300 });
+          this.emit('approval.queued', { request_id: request.id, remote_request_id: queued.requestId, call_id: callId, tool: name, expiresAt: queued.expiresAt });
+          const verdict = await REMOTE.wait(queued.requestId, { timeoutMs: (context.remoteApprovalTtl || 300) * 1000 });
+          choice = verdict.decision === 'approved' ? 'approve' : 'deny';
+          if (TRIAGE) { try { TRIAGE.record({ tool: name, arguments: args, sessionId: context.sessionId, decision: verdict.decision === 'approved' ? 'approved' : 'denied', reason: 'remote approval' }); } catch {} }
+        } else {
+          choice = 'deny';
+        }
+        if (!['once', 'session', 'always', 'approve', 'approved'].includes(String(choice).toLowerCase())) {
+          GOVERNANCE.setApprovalStatus(ROOT, request.id, 'denied');
+          return { ok: false, error: `approval denied for ${name}`, code: 'APPROVAL_DENIED', approvalId: request.id };
+        }
+        GOVERNANCE.setApprovalStatus(ROOT, request.id, 'approved');
+        if (['session','always'].includes(String(choice).toLowerCase())) this.approvalCache.set(cacheKey,'allow');
+      }
     }
 
     let checkpoint = null;
@@ -153,3 +233,4 @@ class ToolRuntime extends EventEmitter {
 }
 
 module.exports = { ToolRuntime, mutationPaths, CHECKPOINTED_TOOLS };
+

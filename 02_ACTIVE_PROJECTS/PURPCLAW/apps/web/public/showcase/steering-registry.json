@@ -1,0 +1,295 @@
+{
+  "items": {
+    "S0": {
+      "name": "Trusted Execution Envelope",
+      "implemented": false,
+      "spec_path": null,
+      "probe_path": null,
+      "probe_status": null,
+      "probe_date": null,
+      "probe_output": null,
+      "verdict": "UNIMPLEMENTED",
+      "surfaces": [],
+      "providers": [],
+      "blockers": [],
+      "honesty_label": null
+    },
+    "S1": {
+      "name": "Lifecycle Event Bus",
+      "implemented": false,
+      "spec_path": null,
+      "probe_path": null,
+      "probe_status": null,
+      "probe_date": null,
+      "probe_output": null,
+      "verdict": "UNIMPLEMENTED",
+      "surfaces": [],
+      "providers": [],
+      "blockers": [],
+      "honesty_label": null
+    },
+    "S2": {
+      "name": "Scoped Memory Model",
+      "implemented": true,
+      "spec_path": null,
+      "probe_path": "tests/steering/test-live-turn.js",
+      "probe_status": "PASS",
+      "probe_date": "2026-08-19",
+      "probe_output": "[SKILLS] Registered 102 Hermes skills as native tools\n✔ resolveForTurn: capsule from real sources, deterministic id, checksummed manifest (34.2875ms)\n✔ gateTool: built-in safety law blocks destructive tools, allows benign ones (4.4617ms)\n✔ ToolRuntime boundary: steering denial is a real deterministic denial (14.2146ms)\n✔ completionBlocked: unresolved conflicts block DONE, clean capsule does not (3.4935ms)\n✔ .steering/ records: validFrom / validUntil / supersedes are honoured (6.1162ms)\n✔ preambl",
+      "verdict": "NATIVE",
+      "surfaces": [
+        "CLI",
+        "TUI",
+        "Web"
+      ],
+      "providers": [
+        "minimax",
+        "openai",
+        "anthropic"
+      ],
+      "blockers": [],
+      "honesty_label": "NATIVE"
+    },
+    "S3": {
+      "name": "Verified Learning",
+      "implemented": false,
+      "spec_path": "docs/parity/specifications/SPEC-003_VERIFIED_LEARNING.md",
+      "probe_path": null,
+      "probe_status": null,
+      "probe_date": null,
+      "probe_output": null,
+      "verdict": "UNIMPLEMENTED",
+      "surfaces": [],
+      "providers": [],
+      "blockers": [],
+      "honesty_label": null
+    },
+    "S4": {
+      "name": "Priority Steer",
+      "implemented": true,
+      "spec_path": "docs/parity/specifications/SPEC-004_PRIORITY_STEER.md",
+      "probe_path": "tests/steering/test-s-modules.js",
+      "probe_status": "PASS",
+      "probe_date": "2026-08-19",
+      "probe_output": "[SKILLS] Registered 102 Hermes skills as native tools\n✔ S6 triage: learned patterns decide, HIGH_STAKES always escalates (11.4598ms)\n✔ S13 remote-approvals: queue → approve/deny round-trip, expiry, no donor paths (213.2585ms)\n✔ S6+S13 in ToolRuntime: remote transport resolves an approval-blocked tool (212.9647ms)\n✔ S4 priority-steer: interrupt + queued directive consumed by the loop (1.5171ms)\n✔ S12 session-persistence: suspend → resume round-trip survives on disk (24.8828ms)\n✔ S14 device-contro",
+      "verdict": "NATIVE",
+      "surfaces": [
+        "CLI",
+        "TUI",
+        "Web"
+      ],
+      "providers": [
+        "minimax",
+        "openai",
+        "anthropic"
+      ],
+      "blockers": [],
+      "honesty_label": "NATIVE"
+    },
+    "S5": {
+      "name": "Structured Rejection Feedback",
+      "implemented": false,
+      "spec_path": null,
+      "probe_path": null,
+      "probe_status": null,
+      "probe_date": null,
+      "probe_output": null,
+      "verdict": "UNIMPLEMENTED",
+      "surfaces": [],
+      "providers": [],
+      "blockers": [],
+      "honesty_label": null
+    },
+    "S6": {
+      "name": "Approval Triage",
+      "implemented": true,
+      "spec_path": "docs/parity/specifications/SPEC-006_APPROVAL_TRIAGE.md",
+      "probe_path": "tests/steering/test-s-modules.js",
+      "probe_status": "PASS",
+      "probe_date": "2026-08-19",
+      "probe_output": "[SKILLS] Registered 102 Hermes skills as native tools\n✔ S6 triage: learned patterns decide, HIGH_STAKES always escalates (13.9664ms)\n✔ S13 remote-approvals: queue → approve/deny round-trip, expiry, no donor paths (213.6475ms)\n✔ S6+S13 in ToolRuntime: remote transport resolves an approval-blocked tool (213.7562ms)\n✔ S4 priority-steer: interrupt + queued directive consumed by the loop (1.4375ms)\n✔ S12 session-persistence: suspend → resume round-trip survives on disk (22.7433ms)\n✔ S14 device-contro",
+      "verdict": "NATIVE",
+      "surfaces": [
+        "CLI",
+        "TUI",
+        "Web"
+      ],
+      "providers": [
+        "minimax",
+        "openai",
+        "anthropic"
+      ],
+      "blockers": [],
+      "honesty_label": "NATIVE"
+    },
+    "S7": {
+      "name": "Continuity and Recovery",
+      "implemented": false,
+      "spec_path": null,
+      "probe_path": null,
+      "probe_status": null,
+      "probe_date": null,
+      "probe_output": null,
+      "verdict": "UNIMPLEMENTED",
+      "surfaces": [],
+      "providers": [],
+      "blockers": [],
+      "honesty_label": null
+    },
+    "S8": {
+      "name": "Model-Per-Phase Routing",
+      "implemented": false,
+      "spec_path": null,
+      "probe_path": null,
+      "probe_status": null,
+      "probe_date": null,
+      "probe_output": null,
+      "verdict": "UNIMPLEMENTED",
+      "surfaces": [],
+      "providers": [],
+      "blockers": [],
+      "honesty_label": null
+    },
+    "S9": {
+      "name": "Swarm Verification",
+      "implemented": true,
+      "spec_path": "docs/parity/specifications/SPEC-009_SWARM_VERIFICATION.md",
+      "probe_path": "tests/steering/test-s-modules.js",
+      "probe_status": "PASS",
+      "probe_date": "2026-08-19",
+      "probe_output": "[SKILLS] Registered 102 Hermes skills as native tools\n✔ S6 triage: learned patterns decide, HIGH_STAKES always escalates (9.6678ms)\n✔ S13 remote-approvals: queue → approve/deny round-trip, expiry, no donor paths (213.7318ms)\n✔ S6+S13 in ToolRuntime: remote transport resolves an approval-blocked tool (215.0709ms)\n✔ S4 priority-steer: interrupt + queued directive consumed by the loop (2.0291ms)\n✔ S12 session-persistence: suspend → resume round-trip survives on disk (25.4504ms)\n✔ S14 device-control",
+      "verdict": "NATIVE",
+      "surfaces": [
+        "CLI",
+        "TUI",
+        "Web"
+      ],
+      "providers": [
+        "minimax",
+        "openai",
+        "anthropic"
+      ],
+      "blockers": [],
+      "honesty_label": "NATIVE"
+    },
+    "S10": {
+      "name": "Team Coordination",
+      "implemented": true,
+      "spec_path": "docs/parity/specifications/SPEC-010_TEAM_COORDINATION.md",
+      "probe_path": "tests/steering/test-s-modules.js",
+      "probe_status": "PASS",
+      "probe_date": "2026-08-19",
+      "probe_output": "[SKILLS] Registered 102 Hermes skills as native tools\n✔ S6 triage: learned patterns decide, HIGH_STAKES always escalates (8.782ms)\n✔ S13 remote-approvals: queue → approve/deny round-trip, expiry, no donor paths (211.8735ms)\n✔ S6+S13 in ToolRuntime: remote transport resolves an approval-blocked tool (253.2527ms)\n✔ S4 priority-steer: interrupt + queued directive consumed by the loop (2.7731ms)\n✔ S12 session-persistence: suspend → resume round-trip survives on disk (23.7267ms)\n✔ S14 device-control:",
+      "verdict": "NATIVE",
+      "surfaces": [
+        "CLI",
+        "TUI",
+        "Web"
+      ],
+      "providers": [
+        "minimax",
+        "openai",
+        "anthropic"
+      ],
+      "blockers": [],
+      "honesty_label": "NATIVE"
+    },
+    "S11": {
+      "name": "Vision Lane",
+      "implemented": false,
+      "spec_path": "docs/parity/specifications/SPEC-011_VISION_LANE.md",
+      "probe_path": null,
+      "probe_status": null,
+      "probe_date": null,
+      "probe_output": null,
+      "verdict": "UNIMPLEMENTED",
+      "surfaces": [],
+      "providers": [],
+      "blockers": [],
+      "honesty_label": null
+    },
+    "S12": {
+      "name": "Persistent Sessions",
+      "implemented": true,
+      "spec_path": "docs/parity/specifications/SPEC-012_PERSISTENT_SESSIONS.md",
+      "probe_path": "tests/steering/test-s-modules.js",
+      "probe_status": "PASS",
+      "probe_date": "2026-08-19",
+      "probe_output": "[SKILLS] Registered 102 Hermes skills as native tools\n✔ S6 triage: learned patterns decide, HIGH_STAKES always escalates (11.7725ms)\n✔ S13 remote-approvals: queue → approve/deny round-trip, expiry, no donor paths (219.1368ms)\n✔ S6+S13 in ToolRuntime: remote transport resolves an approval-blocked tool (214.6704ms)\n✔ S4 priority-steer: interrupt + queued directive consumed by the loop (1.3905ms)\n✔ S12 session-persistence: suspend → resume round-trip survives on disk (26.6864ms)\n✔ S14 device-contro",
+      "verdict": "NATIVE",
+      "surfaces": [
+        "CLI",
+        "TUI",
+        "Web"
+      ],
+      "providers": [
+        "minimax",
+        "openai",
+        "anthropic"
+      ],
+      "blockers": [],
+      "honesty_label": "NATIVE"
+    },
+    "S13": {
+      "name": "Remote Approvals",
+      "implemented": true,
+      "spec_path": "docs/parity/specifications/SPEC-013_REMOTE_APPROVALS.md",
+      "probe_path": "tests/steering/test-s-modules.js",
+      "probe_status": "PASS",
+      "probe_date": "2026-08-19",
+      "probe_output": "[SKILLS] Registered 102 Hermes skills as native tools\n✔ S6 triage: learned patterns decide, HIGH_STAKES always escalates (10.2319ms)\n✔ S13 remote-approvals: queue → approve/deny round-trip, expiry, no donor paths (215.9463ms)\n✔ S6+S13 in ToolRuntime: remote transport resolves an approval-blocked tool (212.8005ms)\n✔ S4 priority-steer: interrupt + queued directive consumed by the loop (3.019ms)\n✔ S12 session-persistence: suspend → resume round-trip survives on disk (53.7642ms)\n✔ S14 device-control",
+      "verdict": "NATIVE",
+      "surfaces": [
+        "CLI",
+        "TUI",
+        "Web"
+      ],
+      "providers": [
+        "minimax",
+        "openai",
+        "anthropic"
+      ],
+      "blockers": [],
+      "honesty_label": "NATIVE"
+    },
+    "S14": {
+      "name": "Device Control",
+      "implemented": true,
+      "spec_path": "docs/parity/specifications/SPEC-014_DEVICE_CONTROL.md",
+      "probe_path": "tests/steering/test-s-modules.js",
+      "probe_status": "PASS",
+      "probe_date": "2026-08-19",
+      "probe_output": "[SKILLS] Registered 102 Hermes skills as native tools\n✔ S6 triage: learned patterns decide, HIGH_STAKES always escalates (71.5684ms)\n✔ S13 remote-approvals: queue → approve/deny round-trip, expiry, no donor paths (222.4774ms)\n✔ S6+S13 in ToolRuntime: remote transport resolves an approval-blocked tool (234.7505ms)\n✔ S4 priority-steer: interrupt + queued directive consumed by the loop (1.4474ms)\n✔ S12 session-persistence: suspend → resume round-trip survives on disk (30.4476ms)\n✔ S14 device-contro",
+      "verdict": "NATIVE",
+      "surfaces": [
+        "CLI",
+        "TUI",
+        "Web"
+      ],
+      "providers": [
+        "minimax",
+        "openai",
+        "anthropic"
+      ],
+      "blockers": [],
+      "honesty_label": "NATIVE"
+    },
+    "S15": {
+      "name": "Steering Registry",
+      "implemented": false,
+      "spec_path": "docs/parity/specifications/SPEC-015_STEERING_REGISTRY.md",
+      "probe_path": null,
+      "probe_status": null,
+      "probe_date": null,
+      "probe_output": null,
+      "verdict": "UNIMPLEMENTED",
+      "surfaces": [],
+      "providers": [],
+      "blockers": [],
+      "honesty_label": null
+    }
+  },
+  "last_updated": "2026-08-19T16:08:27.440Z",
+  "total": 16,
+  "implemented": 8
+}

@@ -1695,10 +1695,14 @@ async function cmdRegistry(args) {
       for (const n of fs.readdirSync(path.join(PURP_DIR, 'skills')).filter(d => fs.existsSync(path.join(PURP_DIR, 'skills', d, 'SKILL.md')))) {
         skills.push({ name: n, file: 'skills/' + n + '/SKILL.md' });
       }
-      for (const f of fs.readdirSync(path.join(PURP_DIR, 'agents')).filter(f => f.endsWith('.md'))) {
-        const name = f.replace('.md', '');
-        const content = fs.readFileSync(path.join(PURP_DIR, 'agents', f), 'utf8');
-        agents.push({ name, file: 'agents/' + f, description: (content.split('\n')[0] || '').trim() });
+      // agents/ is optional — the tree may not carry local agent definitions.
+      const agentsDir = path.join(PURP_DIR, 'agents');
+      if (fs.existsSync(agentsDir)) {
+        for (const f of fs.readdirSync(agentsDir).filter(f => f.endsWith('.md'))) {
+          const name = f.replace('.md', '');
+          const content = fs.readFileSync(path.join(agentsDir, f), 'utf8');
+          agents.push({ name, file: 'agents/' + f, description: (content.split('\n')[0] || '').trim() });
+        }
       }
       
       const idx = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf8'));
