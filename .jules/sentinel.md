@@ -1,0 +1,4 @@
+## 2026-08-19 - [CRITICAL] Insecure eval() in Memory Matrix API
+**Vulnerability:** The `/react` endpoint in `memory_matrix.py` uses Python's built-in `eval()` function on arbitrary user input (`trigger_fn` and `action_fn` from the JSON payload) to register reaction patterns.
+**Learning:** This is a classic Code Injection / Remote Code Execution (RCE) vulnerability. Exposing `eval()` to network requests allows an attacker to send a payload that executes arbitrary Python code within the context of the application.
+**Prevention:** Never use `eval()` on untrusted user input. For evaluating dynamic rules or logic, use safe alternatives like `ast.literal_eval` (for simple data structures) or implement a secure expression parser/sandboxed environment. In this specific case, replacing dynamic code execution via API with pre-defined functions or a safe rule engine is required.
