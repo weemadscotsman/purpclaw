@@ -762,6 +762,20 @@ function getToolRuntime() {
   return _toolRuntime;
 }
 
+// Agent roster from the canonical registry file, read fresh (runtime truth) —
+// NOT a baked constant. Satisfies acceptance gate registry-dynamic-counts and
+// spec §9/§K: surfaces derive counts from registries, never hard-coded arrays.
+function loadAgentRoster() {
+  try {
+    const fs = require('fs'), path = require('path');
+    const profiles = JSON.parse(fs.readFileSync(path.join(__dirname, 'agent_profiles.json'), 'utf8'));
+    return Object.values(profiles).map(a => ({
+      name: a.name, emoji: a.emoji, role: a.role,
+      skills: a.skills || [], division: a.division, tier: a.tier,
+    }));
+  } catch { return []; }
+}
+
 async function ps(cmd, timeout = 15000) {
   try {
     const { stdout, stderr } = await execAsync(`${PS_PREFIX} "${cmd}"`, { timeout, maxBuffer: 5 * 1024 * 1024 });
@@ -3295,7 +3309,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === '/api/agents/registry' && method === 'GET') {
-      const registry = [{ name: 'axolotl', emoji: '🧠', role: 'Regenerator', skills: ['heal', 'recover'] }, { name: 'bee', emoji: '🐝', role: 'Worker', skills: ['execute', 'build'] }, { name: 'cactus', emoji: '🌵', role: 'Survivor', skills: ['endure', 'thrive'] }, { name: 'chonk', emoji: '🐕', role: 'Comfy', skills: ['comfort', 'support'] }, { name: 'claw', emoji: '🦀', role: 'Builder', skills: ['code', 'create'] }, { name: 'crow', emoji: '🐦', role: 'Intelligence', skills: ['learn', 'pattern'] }, { name: 'dragon', emoji: '🐉', role: 'Warrior', skills: ['combat', 'defend'] }, { name: 'duck', emoji: '🦆', role: 'Utility', skills: ['debug', 'assist'] }, { name: 'fox', emoji: '🦊', role: 'Trickster', skills: ['humor', 'chaos'] }, { name: 'ghost', emoji: '👻', role: 'Infiltrator', skills: ['stealth', 'hide'] }, { name: 'goose', emoji: '🪿', role: 'Defender', skills: ['guard', 'alert'] }, { name: 'guardian', emoji: '🛡️', role: 'Security', skills: ['protect', 'scan'] }, { name: 'karen', emoji: '👩', role: 'Manager', skills: ['handle', 'escalate'] }, { name: 'mantis', emoji: '🐜', role: 'Predator', skills: ['debug', 'optimize'] }, { name: 'mushroom', emoji: '🍄', role: 'Trippy', skills: ['hallucinate', 'weird'] }, { name: 'octopus', emoji: '🐙', role: 'Multitasker', skills: ['parallel', '8arms'] }, { name: 'owl', emoji: '🦉', role: 'Wise', skills: ['analyze', 'know'] }, { name: 'penguin', emoji: '🐧', role: 'Cool', skills: ['cold', 'calculate'] }, { name: 'phoenix', emoji: '🔥', role: 'Rebirth', skills: ['restart', 'recover'] }, { name: 'rabbit', emoji: '🐰', role: 'Speed', skills: ['fast', 'race'] }, { name: 'robot', emoji: '🤖', role: 'Machine', skills: ['precise', 'repeat'] }, { name: 'snake', emoji: '🐍', role: 'Coder', skills: ['python', 'coiled'] }, { name: 'spider', emoji: '🕷️', role: 'Web', skills: ['scrape', 'crawl'] }, { name: 'turtle', emoji: '🐢', role: 'Steady', skills: ['slow', 'stable'] }, { name: 'void', emoji: '🕳️', role: 'Eraser', skills: ['delete', 'null'] }, { name: 'wolf', emoji: '🐺', role: 'Pack Leader', skills: ['command', 'alpha'] }];
+      const registry = loadAgentRoster();
       return sendJson(res, 200, { agents: registry, count: registry.length });
     }
 
@@ -3315,7 +3329,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (pathname === '/api/pipeline' && method === 'GET') {
-      const registry = [{ name: 'axolotl', emoji: '🧠', role: 'Regenerator', skills: ['heal', 'recover'], division: 'Infrastructure' }, { name: 'bee', emoji: '🐝', role: 'Worker', skills: ['execute', 'build'], division: 'Engineering' }, { name: 'cactus', emoji: '🌵', role: 'Survivor', skills: ['endure', 'thrive'], division: 'Design' }, { name: 'chonk', emoji: '🐕', role: 'Comfy', skills: ['comfort', 'support'], division: 'Operations' }, { name: 'claw', emoji: '🦀', role: 'Builder', skills: ['code', 'create'], division: 'Management' }, { name: 'crow', emoji: '🐦', role: 'Intelligence', skills: ['learn', 'pattern'], division: 'Management' }, { name: 'dragon', emoji: '🐉', role: 'Warrior', skills: ['combat', 'defend'], division: 'Engineering' }, { name: 'duck', emoji: '🦆', role: 'Utility', skills: ['debug', 'assist'], division: 'Design' }, { name: 'elephant', emoji: '🐘', role: 'Memory', skills: ['remember', 'store'], division: 'Infrastructure' }, { name: 'fox', emoji: '🦊', role: 'Trickster', skills: ['humor', 'chaos'], division: 'Operations' }, { name: 'ghost', emoji: '👻', role: 'Infiltrator', skills: ['stealth', 'hide'], division: 'Security' }, { name: 'goose', emoji: '🪿', role: 'Defender', skills: ['guard', 'alert'], division: 'Media Ops' }, { name: 'gorilla', emoji: '🦍', role: 'Heavy', skills: ['lift', 'power'], division: 'Infrastructure' }, { name: 'guardian', emoji: '🛡️', role: 'Security', skills: ['protect', 'scan'], division: 'Security' }, { name: 'hawk', emoji: '🦅', role: 'Scout', skills: ['spot', 'vision'], division: 'Operations' }, { name: 'jellyfish', emoji: '🪼', role: 'Drifter', skills: ['float', 'drift'], division: 'Infrastructure' }, { name: 'karen', emoji: '👩', role: 'Manager', skills: ['handle', 'escalate'], division: 'Media Ops' }, { name: 'kraken', emoji: '🦑', role: 'Deep Thinker', skills: ['analyze', 'deep'], division: 'Data Mining' }, { name: 'lemur', emoji: '🦝', role: 'Nimble', skills: ['climb', 'adapt'], division: 'Infrastructure' }, { name: 'mantis', emoji: '🐜', role: 'Predator', skills: ['debug', 'optimize'], division: 'Management' }, { name: 'moth', emoji: '🦋', role: 'Nighter', skills: ['night', 'light'], division: 'Lobby' }, { name: 'mushroom', emoji: '🍄', role: 'Trippy', skills: ['hallucinate', 'weird'], division: 'Design' }, { name: 'numbers', emoji: '🔢', role: 'Calculator', skills: ['count', 'math'], division: 'Data Mining' }, { name: 'octopus', emoji: '🐙', role: 'Multitasker', skills: ['parallel', '8arms'], division: 'Engineering' }, { name: 'owl', emoji: '🦉', role: 'Wise', skills: ['analyze', 'know'], division: 'Engineering' }, { name: 'panda', emoji: '🐼', role: 'Peaceful', skills: ['calm', 'bamboo'], division: 'Lobby' }, { name: 'parrot', emoji: '🦜', role: 'Repeater', skills: ['repeat', 'mimic'], division: 'Media Ops' }, { name: 'penguin', emoji: '🐧', role: 'Cool', skills: ['cold', 'calculate'], division: 'Design' }, { name: 'phoenix', emoji: '🔥', role: 'Rebirth', skills: ['restart', 'recover'], division: 'Management' }, { name: 'rabbit', emoji: '🐰', role: 'Speed', skills: ['fast', 'race'], division: 'Engineering' }, { name: 'robot', emoji: '🤖', role: 'Machine', skills: ['precise', 'repeat'], division: 'Engineering' }, { name: 'shark', emoji: '🦈', role: 'Hunter', skills: ['hunt', 'track'], division: 'Lobby' }, { name: 'scientist', emoji: '🔬', role: 'Researcher', skills: ['research', 'test'], division: 'Data Mining' }, { name: 'snake', emoji: '🐍', role: 'Coder', skills: ['python', 'coiled'], division: 'Security' }, { name: 'spider', emoji: '🕷️', role: 'Web', skills: ['scrape', 'crawl'], division: 'Security' }, { name: 'turtle', emoji: '🐢', role: 'Steady', skills: ['slow', 'stable'], division: 'Operations' }, { name: 'void', emoji: '🕳️', role: 'Eraser', skills: ['delete', 'null'], division: 'Engineering' }, { name: 'wolf', emoji: '🐺', role: 'Pack Leader', skills: ['command', 'alpha'], division: 'Design' }];
+      const registry = loadAgentRoster();
       const swarm = Object.entries(state.swarmAgents).map(([id, a]) => {
         const procInfo = state.activeProcesses[a.pid];
         let cpu = 0, memory = 0;

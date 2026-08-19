@@ -1,8 +1,8 @@
 {
   "tally": {
     "NOT_IMPLEMENTED": 13,
-    "PASS": 5,
-    "FAIL": 2
+    "PASS": 6,
+    "FAIL": 1
   },
   "results": [
     {
@@ -107,8 +107,8 @@
       "id": "registry-dynamic-counts",
       "must_pass": true,
       "assert": "surfaces derive counts from registries, never baked constants",
-      "status": "FAIL",
-      "evidence": "unified_api.js hard-codes an agent roster array (~line 3298); must read from registry at runtime"
+      "status": "PASS",
+      "evidence": "no baked agent roster arrays found in unified_api.js"
     },
     {
       "id": "workflow-single-authority",
