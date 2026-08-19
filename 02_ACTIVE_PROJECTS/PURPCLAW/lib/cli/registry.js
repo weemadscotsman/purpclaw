@@ -1136,6 +1136,16 @@ const COMMANDS = [
     "inSwitch": false
   },
   {
+    "name": "update",
+    "aliases": ["up", "upgrade"],
+    "module": "update",
+    "category": "systems",
+    "description": "Show version/commit and reload to newest code (--restart backend, --log, --pull)",
+    "json": true,
+    "legacyFn": false,
+    "inSwitch": false
+  },
+  {
     "name": "config",
     "aliases": [],
     "module": null,
