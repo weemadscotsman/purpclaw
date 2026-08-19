@@ -46,7 +46,15 @@
     "!**/*.bak",
     "!lib/control/native-control/",
     "!**/apply-patch.debug.js",
-    "!**/skills.js.debug"
+    "!**/skills.js.debug",
+    "!lib/reports/",
+    "!**/*.test.js",
+    "!lib/__tests__/",
+    "!lib/harness/__tests__/",
+    "!lib/goop-playground/*.jsonl",
+    "!apps/extensions/**/marketing/",
+    "!lib/AGENT.md",
+    "!lib/STANDARDS.md"
   ],
   "scripts": {
     "dev": "next dev",
@@ -58,7 +66,8 @@
     "pm2:restart": "pm2 restart ecosystem.config.js",
     "pm2:status": "pm2 list",
     "lint": "eslint .",
-    "clean": "next clean"
+    "clean": "next clean",
+    "test": "node --test tests/cli/test_cli.js tests/steering/test-live-turn.js tests/steering/test-s-modules.js tests/tool-bridge/test-bridge.js"
   },
   "dependencies": {
     "@google/genai": "^1.17.0",
