@@ -108,6 +108,15 @@ body.running #composer{border-color:#cbb6ff;box-shadow:0 3px 22px rgba(139,92,24
    box-shadow:0 16px 44px rgba(20,20,30,.16);max-height:60vh;overflow:auto}
 .menu.right{left:auto;right:0}
 .c.open .menu{display:block}
+/* Inside the ⋯ tray, a collapsed control's own popover would nest one absolute
+   layer inside another and overflow. Flatten them: the pill becomes a heading
+   and its options list inline, so the tray reads as one scrollable stack. */
+.tray>.menu{overflow-x:hidden;min-width:248px}
+.tray>.menu .c{position:static}
+.tray>.menu .c>.b{width:100%;justify-content:flex-start;color:var(--dim);
+   font:600 9.5px var(--sans);letter-spacing:1.2px;padding:9px 9px 3px;pointer-events:none}
+.tray>.menu .c .menu{position:static;display:block;border:none;box-shadow:none;
+   padding:0;max-width:none;min-width:0;max-height:none;overflow:visible}
 .mh{color:var(--dim);font:600 9.5px var(--sans);letter-spacing:1.2px;padding:8px 9px 4px}
 .mi{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:9px;cursor:pointer;font-size:12.5px}
 .mi:hover{background:var(--line2)}
@@ -341,9 +350,11 @@ function paintCtl(){
    runs only on repaint and resize. */
 function fitRail(){
   const c=$('#ctl');if(!c)return;
-  const tray=c.querySelector('.tray');if(tray)tray.remove();
+  // Collapsed pills live INSIDE the tray, so removing the tray would delete
+  // them outright — widening the window silently lost Memory, Workspace, Chips
+  // and the token meter. Repaint from canonical order instead of un-moving.
+  if(c.querySelector('.tray'))return paintCtl();
   const movable=[...c.children].filter(n=>n.dataset&&n.dataset.pri==='2');
-  movable.forEach(n=>n.style.display='');
   if(c.scrollWidth<=c.clientWidth||!movable.length)return;
 
   const t=el('c tray');const tb=document.createElement('button');
@@ -359,8 +370,12 @@ function fitRail(){
   }
   if(!tm.querySelector('.c'))t.remove();
 }
-addEventListener('resize',()=>{clearTimeout(fitRail._t);fitRail._t=setTimeout(fitRail,120)});
-document.addEventListener('click',()=>document.querySelectorAll('.c').forEach(x=>x.classList.remove('open')));
+addEventListener('resize',()=>{clearTimeout(fitRail._t);fitRail._t=setTimeout(paintCtl,120)});
+const closeMenus=()=>document.querySelectorAll('.c').forEach(x=>x.classList.remove('open'));
+document.addEventListener('click',closeMenus);
+// Escape closes any open popover — a menu left hanging over the conversation
+// during a resize is exactly the Windows-95-toolbar behaviour we're avoiding.
+addEventListener('keydown',e=>{if(e.key==='Escape')closeMenus()});
 
 function note(msg){const s=C();if(!s)return;s.msgs.push({role:'assistant',text:'ℹ '+msg,meta:'cockpit'});sv();paintLog()}
 
