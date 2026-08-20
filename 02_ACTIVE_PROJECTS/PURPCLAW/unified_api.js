@@ -369,6 +369,27 @@ async function composerContextHandler(req, res) {
 //   token  → {content, model}
 //   done   → {reply, model, providerStatus, kernelJobId?}
 //   error  → {error}
+// ── Conversation memory ─────────────────────────────────────────────────────
+// This gateway was stateless: every /api/chat call ran runAgent() with NO
+// history, so each message started a fresh brain. The model said so itself:
+// "No prior turn on record ... headless / no context carried over between turns
+// on this gateway." Chat surfaces now carry their turns here, keyed by session.
+const CHAT_SESSIONS = new Map();               // sessionId -> [{role, content}]
+const CHAT_HISTORY_TURNS = Number(process.env.PURPCLAW_CHAT_HISTORY_TURNS || 40);
+
+function getChatHistory(sessionId) {
+  if (!sessionId) return [];
+  return CHAT_SESSIONS.get(sessionId) || [];
+}
+function appendChatTurn(sessionId, role, content) {
+  if (!sessionId || !content) return;
+  const hist = CHAT_SESSIONS.get(sessionId) || [];
+  hist.push({ role, content: String(content) });
+  // Keep the tail so long sessions stay inside the context window.
+  CHAT_SESSIONS.set(sessionId, hist.slice(-CHAT_HISTORY_TURNS));
+  if (CHAT_SESSIONS.size > 200) CHAT_SESSIONS.delete(CHAT_SESSIONS.keys().next().value);
+}
+
 async function handleChatStream(req, res) {
   let body = null;
   try { body = await parseBody(req); }
@@ -378,6 +399,10 @@ async function handleChatStream(req, res) {
     return res.end();
   }
   const { message, spawnAgents = false, source = 'chat' } = body;
+  // Accept a client session id; fall back to the surface name so a surface that
+  // does not send one still gets continuity instead of amnesia.
+  const sessionId = body.session_id || body.sessionId || `surface:${source}`;
+  const priorHistory = getChatHistory(sessionId);
   if (!message) {
     sseStart(res);
     sseEvent(res, 'error', { error: 'message required' });
@@ -398,7 +423,8 @@ async function handleChatStream(req, res) {
 
     for await (const ev of runAgent({
       prompt: message,
-      opts: { maxTokens: 2048, temperature: 0.7 },
+      history: priorHistory,                    // ← the fix: carry the conversation
+      opts: { maxTokens: 2048, temperature: 0.7, sessionId },
     })) {
       if (ev.type === 'token') {
         fullReply += ev.content;
@@ -426,6 +452,11 @@ async function handleChatStream(req, res) {
         throw new Error(ev.error);
       }
     }
+    // Commit the exchange so the NEXT message sees it. Without this the
+    // gateway answered every turn from a blank slate.
+    appendChatTurn(sessionId, 'user', message);
+    appendChatTurn(sessionId, 'assistant', fullReply);
+
     sseEvent(res, 'phase', { phase: 'done' });
     sseEvent(res, 'done', {
       reply: fullReply,
@@ -433,6 +464,8 @@ async function handleChatStream(req, res) {
       providerStatus: 'answered',
       toolCalls: toolCallsUsed,
       source,
+      sessionId,
+      historyTurns: getChatHistory(sessionId).length,
     });
     return res.end();
   } catch (e) {
@@ -3467,6 +3500,10 @@ const server = http.createServer(async (req, res) => {
         const body = await parseBody(req);
         const { message, spawnAgents = true } = body;
         if (!message) return sendJson(res, 400, { error: 'message required' });
+        // Same conversation memory as the SSE path — both are /api/chat, so a
+        // surface must not lose context by choosing the non-streaming variant.
+        const chatSessionId = body.session_id || body.sessionId || `surface:${body.source || 'chat'}`;
+        const chatHistory = getChatHistory(chatSessionId);
 
         // Use the real agent-loop (same tool-calling brain as CLI ask and SSE chat).
         // This kills the keyword if-ladder that was routing to one-shot tower calls.
@@ -3479,7 +3516,8 @@ const server = http.createServer(async (req, res) => {
 
         for await (const ev of runAgent({
           prompt: message,
-          opts: { maxTokens: 2048, temperature: 0.7 },
+          history: chatHistory,                 // ← carry the conversation here too
+          opts: { maxTokens: 2048, temperature: 0.7, sessionId: chatSessionId },
         })) {
           if (ev.type === 'token') {
             fullReply += ev.content;
@@ -3499,10 +3537,15 @@ const server = http.createServer(async (req, res) => {
           }
         }
 
+        appendChatTurn(chatSessionId, 'user', message);
+        appendChatTurn(chatSessionId, 'assistant', fullReply);
+
         return sendJson(res, 200, {
           ok: true,
           reply: fullReply,
           model: modelName,
+          sessionId: chatSessionId,
+          historyTurns: getChatHistory(chatSessionId).length,
           capsuleId: steeringCapsuleId || undefined,
           tool_calls: toolCalls,
           errors: errors.length > 0 ? errors : undefined,

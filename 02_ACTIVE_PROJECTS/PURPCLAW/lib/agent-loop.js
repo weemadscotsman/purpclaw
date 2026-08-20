@@ -510,7 +510,26 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       // ── Personal model growth: capture tool result ─────────────────
       if (FEEDBACK) FEEDBACK.captureToolResult(call.tool, result, { provider, model, turn });
 
-      yield { type: 'tool-result', tool: call.tool, id: call.id || null, ok: result.ok, content: result.content || result.stdout || '', error: result.error, capsuleId: capId() };
+      // Tools do not agree on a payload field: shell uses stdout, read uses
+      // content, web-fetch/curl use body, others use text/output/message. This
+      // only read content||stdout, so `web-fetch` (which returns {ok, status,
+      // body}) handed the model an EMPTY result — the model concluded the fetch
+      // failed and started escalating: retrying, spawning a builder, poking at
+      // shell. Take the first field that actually carries the payload.
+      const payload = (() => {
+        for (const k of ['content', 'stdout', 'body', 'text', 'output', 'message', 'data', 'result']) {
+          const v = result?.[k];
+          if (typeof v === 'string' && v.length) return v;
+          if (v && typeof v === 'object') { try { return JSON.stringify(v); } catch { /* fall through */ } }
+        }
+        if (result && typeof result === 'object') {
+          const { ok, error, ...rest } = result;      // eslint-disable-line no-unused-vars
+          const keys = Object.keys(rest);
+          if (keys.length) { try { return JSON.stringify(rest); } catch { /* ignore */ } }
+        }
+        return '';
+      })();
+      yield { type: 'tool-result', tool: call.tool, id: call.id || null, ok: result.ok, content: payload, error: result.error, capsuleId: capId() };
       // Capture last failure for the next-turn system prompt.
       if (!result.ok && result.error) {
         opts.lastFailure = `${call.tool}: ${String(result.error).slice(0, 200)}`;
@@ -519,7 +538,7 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       // This lets the LLM see what the tool returned without requiring tool_call_id
       // (which becomes stale/invalid across multi-turn boundaries with MiniMax).
       const toolContent = result.ok
-        ? `[${call.tool}] ${typeof result.content === 'string' ? result.content : JSON.stringify(result.content || '')}`
+        ? `[${call.tool}] ${payload || '(tool returned no output)'}`
         : `[${call.tool}] error: ${result.error}`;
       messages.push({ role: 'user', content: toolContent });
     }

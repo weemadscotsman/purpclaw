@@ -108,12 +108,35 @@ function registerAll(registry) {
   registry.register({
     name: 'curl', description: 'Make an HTTP request. Returns status, headers, body.',
     inputSchema: { type:'object', properties: { url:{type:'string'}, method:{type:'string',default:'GET'}, headers:{type:'object'}, body:{type:'string'} }, required: ['url'] },
+    // Was fake-green: it .bind()'d http.get without ever calling it, then
+    // returned a hardcoded {ok:true, content:'HTTP response received',
+    // status:200} for ANY url — including dead ones. The agent got no body, so
+    // it re-called curl and escalated. Now it performs the request and reports
+    // the real status, headers and body.
     execute: async (args) => {
+      if (!args?.url) return { ok: false, error: 'curl requires a "url"' };
+      const ctl = new AbortController();
+      const timer = setTimeout(() => ctl.abort(), 20000);
       try {
-        const resp = await (require('https').get || require('http').get).bind(null,
-          new (require('url').URL)(args.url), { method: args.method||'GET', headers: args.headers||{}, timeout: 15000 });
-        return { ok: true, content: `HTTP response received`, status: 200 };
-      } catch (e) { return { ok: false, error: e.message }; }
+        const res = await fetch(args.url, {
+          method: (args.method || 'GET').toUpperCase(),
+          headers: args.headers || {},
+          body: args.body || undefined,
+          signal: ctl.signal,
+          redirect: 'follow',
+        });
+        const body = (await res.text()).slice(0, 100_000);
+        const headers = Object.fromEntries(res.headers.entries());
+        return {
+          ok: res.ok,
+          status: res.status,
+          content: `HTTP ${res.status} ${res.statusText}\n${JSON.stringify(headers)}\n\n${body}`,
+          body, headers, url: res.url,
+          ...(res.ok ? {} : { error: `HTTP ${res.status} ${res.statusText}` }),
+        };
+      } catch (e) {
+        return { ok: false, error: e.name === 'AbortError' ? 'request timed out after 20s' : e.message };
+      } finally { clearTimeout(timer); }
     },
   });
   registry.register({

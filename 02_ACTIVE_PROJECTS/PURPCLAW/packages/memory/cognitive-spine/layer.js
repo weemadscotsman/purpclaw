@@ -56,7 +56,15 @@ function makeLayer(name) {
         // whole point of having a retention policy.
         return { ok: true, persisted: false, reason: 'retention=ephemeral', layer: name };
       }
-      const result = await this.client.ingest(enriched.content, {
+      // The spine's ingest() signature is ingest(content: str). Envelope content
+      // is usually an object ({text: '...'}), and posting an object where a
+      // string was expected meant nothing usable was ever stored. Flatten to
+      // text here, at the boundary, rather than letting each caller guess.
+      const contentText = typeof enriched.content === 'string'
+        ? enriched.content
+        : (enriched.content && (enriched.content.text || enriched.content.summary))
+          || (() => { try { return JSON.stringify(enriched.content); } catch { return String(enriched.content); } })();
+      const result = await this.client.ingest(contentText, {
         layer: name,
         scope: enriched.scope,
         source: enriched.source || options.source,
