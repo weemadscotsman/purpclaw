@@ -997,6 +997,32 @@ function ActiveWorkBoard({ data }: { data: MissionData }) {
 // Auto-router: pick the right mode from what the user actually asked, so the
 // stack just begins the work instead of refusing "wrong mode". Order matters —
 // most specific intent wins.
+/**
+ * Strip model reasoning before anything reaches the operator.
+ *
+ * Reasoning models (MiniMax-M2/M3) emit <think>…</think> inline. This panel was
+ * appending raw stream tokens straight into the bubble, so saying "hi" printed
+ * the model's entire internal monologue instead of the answer.
+ *
+ * Streaming-safe: a <think> that has not closed yet is dropped along with
+ * everything after it, so reasoning never flashes on screen while it arrives.
+ */
+function visibleText(raw: string): string {
+  let out = String(raw ?? '').replace(/<think>[\s\S]*?<\/think>/gi, '');
+  const open = out.lastIndexOf('<think>');
+  if (open !== -1) out = out.slice(0, open); // still thinking — hide the tail
+
+  // Tool calls are rendered as badges by this panel, so the literal JSON the
+  // model emits must not also appear as prose. Without this the reply read:
+  //   Yo! All good here. Let me take a peek: {"tool":"systeminfo","args":{}} …
+  out = out.replace(/\{\s*"tool"\s*:\s*"[^"]*"\s*,\s*"args"\s*:\s*\{[^{}]*\}\s*\}/g, '');
+  // A half-streamed tool call ({"tool": "cpu", "arg…) — drop the dangling tail.
+  const partial = out.search(/\{\s*"tool"\s*:\s*"[^"]*"?[^{}]*$/);
+  if (partial !== -1) out = out.slice(0, partial);
+
+  return out.replace(/[ \t]{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trimStart();
+}
+
 function classifyRoute(text: string): Route {
   const t = text.toLowerCase().trim();
 
@@ -1362,8 +1388,8 @@ export function CommandPanel({ data }: { data: MissionData }) {
           if (targetId) {
             const prev = tokenBodies[agentId] || '';
             const next = prev + (data.content || '');
-            tokenBodies[agentId] = next;
-            updateMsg(targetId, { content: next });
+            tokenBodies[agentId] = next;           // keep raw so </think> can match later
+            updateMsg(targetId, { content: visibleText(next) });
           }
         } else if (ev === 'agent_done') {
           const id = agentBubbles.get(data.id);
@@ -1556,7 +1582,10 @@ export function CommandPanel({ data }: { data: MissionData }) {
       } else if (ev === 'token') {
         fullReply += data.content || '';
         model = data.model || model;
-        updateMsg(msgId, { content: fullReply, meta: `streaming · ${model}`, pending: true });
+        // Show the answer, never the reasoning. fullReply keeps the raw text so
+        // the closing </think> can still be matched as more tokens arrive.
+        const shown = visibleText(fullReply);
+        updateMsg(msgId, { content: shown, meta: shown ? `streaming · ${model}` : '🧠 thinking…', pending: true });
       } else if (ev === 'tool-call') {
         // Animate a new tool badge in
         const tc = {
@@ -1577,7 +1606,9 @@ export function CommandPanel({ data }: { data: MissionData }) {
         const reply = (data && data.reply) || fullReply;
         const toolCalls = (data && data.tool_calls) || [];
         updateMsg(msgId, {
-          content: reply,
+          // Final render must strip reasoning too — otherwise the completed
+          // message re-introduced the <think> block the stream had hidden.
+          content: visibleText(reply),
           model: (data && data.model) || model || 'Quill',
           meta: [data?.providerStatus, data?.model].filter(Boolean).join(' · '),
           pending: false,
