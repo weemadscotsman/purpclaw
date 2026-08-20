@@ -26,7 +26,7 @@ interface Tab {
   id: TabId;
   label: string;
   icon: string;
-  stage: 'start' | 'build' | 'observe' | 'control';
+  stage: 'start' | 'observe' | 'control';
   purpose: string;
 }
 
@@ -36,16 +36,9 @@ const TABS: Tab[] = [
   // is already the default screen, so the rail button just re-rendered what the
   // operator was already looking at. CommandPanel itself is untouched — it is
   // still the main chat surface.
-  { id: 'harness', label: 'Execution Harness', icon: 'HX', stage: 'build', purpose: 'Run and inspect autonomous harness missions with verification gates.' },
-  { id: 'agents', label: 'Agent Workforce', icon: 'AG', stage: 'build', purpose: 'See which specialist agents exist, what they are doing, and where work is stuck.' },
   // 'tower' (Tower State) merged into Agent Workforce — both answered "which
   // agents exist and what are they doing", split across two rail buttons. The
   // TowerPanel now renders inside the Agents panel, under the roster.
-  { id: 'swarm', label: 'Delegation Graph', icon: 'DG', stage: 'build', purpose: 'Inspect swarm delegation: who got the work, what happened, and what failed.' },
-  { id: 'pipeline', label: 'Workflow Flow', icon: 'WF', stage: 'observe', purpose: 'Follow workflow state from queued to active to archived.' },
-  { id: 'timeline', label: 'Event Lens', icon: 'EL', stage: 'observe', purpose: 'Read the event timeline when you need exact runtime history.' },
-  { id: 'sampler', label: 'Live Metrics', icon: 'SP', stage: 'observe', purpose: 'Sampler-style live dashboards from shell metrics (config/samplers.yml).' },
-  { id: 'logs', label: 'Raw Signals', icon: 'LG', stage: 'observe', purpose: 'Drop to raw signal logs when the pretty panels are not enough.' },
   { id: 'dream', label: 'Dream Swarm', icon: 'DR', stage: 'observe', purpose: 'Live altered-states WebGL swarm telemetry visualizer.' },
   { id: 'gatekeeper', label: 'Risk Gate', icon: 'GK', stage: 'control', purpose: 'Check safety gates, approvals, and blocked risky operations.' },
   { id: 'abliterator', label: 'Abliterator', icon: 'AB', stage: 'control', purpose: 'OBLITERATUS refusal weight excision and red-team sandbox.' },
@@ -632,7 +625,7 @@ function FloatingTabRail({ openDrawer, onToggle, data, onMochiToggle, mochiOpen 
   mochiOpen: boolean;
 }) {
   const [hovered, setHovered] = useState<TabId | null>(null);
-  const stages: Tab['stage'][] = ['start', 'build', 'observe', 'control'];
+  const stages: Tab['stage'][] = ['start', 'observe', 'control'];
   const stageColors: Record<Tab['stage'], string> = {
     start:   'text-cyan-400',
     build:   'text-violet-400',
@@ -785,7 +778,7 @@ function FlowRibbon({ data }: { data: MissionData }) {
 }
 
 function TabRail({ activeTab, onSelect }: { activeTab: TabId; onSelect: (tab: TabId) => void }) {
-  const stages: Tab['stage'][] = ['start', 'build', 'observe', 'control'];
+  const stages: Tab['stage'][] = ['start', 'observe', 'control'];
   return (
     <nav className="relative z-10 shrink-0 border-b border-white/5 bg-black/30 px-3 py-2 backdrop-blur-xl overflow-x-auto">
       <div className="flex min-w-max items-stretch gap-3">
@@ -821,7 +814,6 @@ function ActiveTabGuide({ tab }: { tab: TabId }) {
   const active = TABS.find(item => item.id === tab) || TABS[0];
   const stageSteps = [
     { stage: 'start', label: 'Start', body: 'Ask, launch, or inspect the latest job.' },
-    { stage: 'build', label: 'Build', body: 'Agents, harness, and swarm do the work.' },
     { stage: 'observe', label: 'Observe', body: 'Follow workflows, events, and raw signals.' },
     { stage: 'control', label: 'Control', body: 'Review safety, memory, maps, and learning.' },
   ] as const;
