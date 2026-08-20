@@ -32,10 +32,15 @@ interface Tab {
 
 const TABS: Tab[] = [
   { id: 'overview', label: 'Mission Spine', icon: 'MS', stage: 'start', purpose: 'Start here. See the whole system, then launch or inspect the latest job.' },
-  { id: 'command', label: 'Control Room', icon: 'CM', stage: 'start', purpose: 'Talk to the stack directly: chat, API command, kernel job, mission, agent, or research room.' },
+  // 'command' (Control Room) removed: it opened the SAME CommandPanel chat that
+  // is already the default screen, so the rail button just re-rendered what the
+  // operator was already looking at. CommandPanel itself is untouched — it is
+  // still the main chat surface.
   { id: 'harness', label: 'Execution Harness', icon: 'HX', stage: 'build', purpose: 'Run and inspect autonomous harness missions with verification gates.' },
   { id: 'agents', label: 'Agent Workforce', icon: 'AG', stage: 'build', purpose: 'See which specialist agents exist, what they are doing, and where work is stuck.' },
-  { id: 'tower', label: 'Tower State', icon: 'TW', stage: 'build', purpose: 'Manage spawned agents and the tower runtime that executes direct assignments.' },
+  // 'tower' (Tower State) merged into Agent Workforce — both answered "which
+  // agents exist and what are they doing", split across two rail buttons. The
+  // TowerPanel now renders inside the Agents panel, under the roster.
   { id: 'swarm', label: 'Delegation Graph', icon: 'DG', stage: 'build', purpose: 'Inspect swarm delegation: who got the work, what happened, and what failed.' },
   { id: 'pipeline', label: 'Workflow Flow', icon: 'WF', stage: 'observe', purpose: 'Follow workflow state from queued to active to archived.' },
   { id: 'timeline', label: 'Event Lens', icon: 'EL', stage: 'observe', purpose: 'Read the event timeline when you need exact runtime history.' },
@@ -567,7 +572,8 @@ function tabPreviewData(tab: TabId, data: MissionData): { label: string; value: 
     case 'agents': return [
       { label: 'Working',   value: `${working} active`, ok: working > 0 },
       { label: 'Total',     value: `${agents.length} agents`, ok: true },
-      { label: 'Top agent', value: agents[0]?.name || '—', ok: true },
+      // Tower State merged in here — surface its health alongside the roster.
+      { label: 'Tower',     value: data.towerConnected ? 'online' : 'offline', ok: !!data.towerConnected },
     ];
     case 'tower': return [
       { label: 'Tower',     value: data.towerConnected ? 'online' : 'offline', ok: data.towerConnected },
@@ -941,8 +947,9 @@ function PanelContent({ tab, data, iframeRef }: { tab: TabId; data: MissionData;
       case 'evolution': return <SelfEvolutionLens data={data} />;
       case 'graph': return <LiveSystemMap data={data} />;
       case 'harness': return <AutonomousHarnessPanel data={data} />;
-      case 'agents': return <AgentRosterPanel data={data} />;
-      case 'tower': return <TowerPanel data={data} />;
+      // Agents = roster + tower runtime in one place (Tower State was merged in).
+      case 'agents': return (<><AgentRosterPanel data={data} /><TowerPanel data={data} /></>);
+      case 'tower': return (<><AgentRosterPanel data={data} /><TowerPanel data={data} /></>); // legacy deep-links
       case 'swarm': return <SwarmPanel data={data} />;
       case 'pipeline': return <PipelinePanel data={data} />;
       case 'timeline': return <EventTimelinePanel data={data} />;
