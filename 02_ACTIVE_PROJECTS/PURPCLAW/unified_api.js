@@ -2840,6 +2840,19 @@ const server = http.createServer(async (req, res) => {
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
 
+    // ── Cockpit: the light UI, served same-origin from this API ───────────
+    // No bundler, no dev server, no build step. Same origin means SSE streaming
+    // needs no CORS and the page cannot drift onto a stale port.
+    if ((pathname === '/' || pathname === '/ui' || pathname === '/cockpit') && method === 'GET') {
+      try {
+        const html = require('fs').readFileSync(require('path').join(__dirname, 'public', 'cockpit.html'));
+        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+        return res.end(html);
+      } catch (e) {
+        return sendText(res, 500, `cockpit.html not readable: ${e.message}`);
+      }
+    }
+
     if (pathname === '/api/health' && method === 'GET') { let runtime = null; try { runtime = require('./lib/runtime/identity').identity(); } catch {} return sendJson(res, 200, { status: 'healthy', runtime, timestamp: new Date().toISOString(), uptime: process.uptime(), memory: process.memoryUsage(), cpu: os.loadavg(), bridgeConnected: bridgeWs && !bridgeWs.destroyed }); }
     if (pathname === '/api/version' && method === 'GET') return sendJson(res, 200, { name: 'PURPCLAW', version: '7.0', codename: 'The Purple King', protocol: 'TURING v7.0', build: process.env.BUILD_HASH || 'dev' });
     // ── Mochi state bridge (unified pet across terminal + browser) ──────
