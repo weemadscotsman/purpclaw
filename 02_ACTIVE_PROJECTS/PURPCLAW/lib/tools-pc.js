@@ -492,16 +492,34 @@ function registerAll(registry) {
   });
 
   // ── POWER ─────────────────────────────────────────────────────
-  registry.register({
-    name: 'shutdown', description: 'Shutdown the computer.',
-    inputSchema: { type:'object', properties: { force:{type:'boolean'} } },
-    execute: async (args) => { const c = IS_WIN?cmd(`shutdown /s /t 60`):['sh','-c','sudo shutdown -h +1']; const r = await sh(c); return { ok:r.ok, content:'shutdown in 60s. cancel with: shutdown /a' }; },
+  // A model calling `shutdown` by mistake — or a stray test loading the tool
+  // registry — must NOT be able to halt the operator's machine. The driver's
+  // power.shutdown already returns confirmation_required and never executes; the
+  // legacy tool did NOT, and that inconsistency shut a PC down on 2026-08-20.
+  // These now REFUSE unless args.confirm === true, log every attempt loudly, and
+  // use a cancellable delay with the abort command in the response.
+  const guardedPower = (name, action, run) => registry.register({
+    name, description: `${action} the computer (requires confirm:true; cancellable).`,
+    inputSchema: { type:'object', properties: {
+      confirm: { type:'boolean', description: `MUST be true to actually ${action.toLowerCase()}. Without it this is a no-op.` },
+      force: { type:'boolean' } } },
+    execute: async (args = {}) => {
+      const at = new Date().toISOString();
+      if (args.confirm !== true) {
+        console.warn(`[POWER] ${name} requested WITHOUT confirm at ${at} — refused (no-op).`);
+        return { ok:false, code:'CONFIRM_REQUIRED',
+          error:`${name} is a host-level power action and will NOT run without confirm:true. `
+               +`Re-issue with {"confirm":true} only if the operator explicitly asked to ${action.toLowerCase()} the machine.` };
+      }
+      console.warn(`[POWER] ${name} CONFIRMED at ${at} — executing.`);
+      const r = await sh(run());
+      return { ok:r.ok, content:`${action} scheduled (~60s). Cancel with: shutdown /a`, code:r.code };
+    },
   });
-  registry.register({
-    name: 'restart', description: 'Restart the computer.',
-    inputSchema: { type:'object', properties: { force:{type:'boolean'} } },
-    execute: async () => { const c = IS_WIN?cmd(`shutdown /r /t 30`):['sh','-c','sudo shutdown -r +1']; const r = await sh(c); return { ok:r.ok, content:'restart in 30s' }; },
-  });
+  guardedPower('shutdown', 'Shutdown', () =>
+    IS_WIN ? cmd('shutdown /s /t 60') : ['sh','-c','sudo shutdown -h +1']);
+  guardedPower('restart', 'Restart', () =>
+    IS_WIN ? cmd('shutdown /r /t 60') : ['sh','-c','sudo shutdown -r +1']);
   registry.register({
     name: 'lock', description: 'Lock the workstation.',
     inputSchema: { type:'object', properties: {} },

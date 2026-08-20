@@ -734,8 +734,10 @@ async function drawer(id,label){
     load('');
     return}
   if(id==='settings'){
-    const [h2,mem]=await Promise.all([j('/api/health'),j('/api/settings/memory')]);
+    const [h2,mem,bk,st]=await Promise.all([j('/api/health'),j('/api/settings/memory'),j('/api/backends'),j('/api/settings')]);
     const rt=h2&&h2.runtime;
+    const backends=(bk&&bk.backends)||[];
+    const activeBackend=(st&&st.activeBackend)||null;
     const c=(mem&&mem.config)||null;
     const sw=(on,label,pathStr)=>`<div class="it" style="cursor:pointer;display:flex;align-items:center;gap:9px"
         data-set="${pathStr}" data-val="${on?'0':'1'}">
@@ -745,6 +747,19 @@ async function drawer(id,label){
     body.innerHTML=`<div class="card"><h3>RUNTIME</h3><div style="font:12px var(--mono);color:#5a5a66">${
         rt?`${esc(rt.runtimeId)}<br>profile ${esc(rt.profile)} · workspace ${esc(rt.workspace)}<br>v${esc(rt.version)}`
           :'runtime identity unavailable'}</div></div>`+
+      (backends.length?`<div class="card"><h3>AI & PROVIDERS</h3>
+        <div style="color:var(--dim);font-size:11.5px;padding-bottom:9px">
+          One provider config, not a separate page. Active provider serves every turn unless the composer overrides it.</div>
+        ${backends.map(b=>{const on=b.id===activeBackend;const hasKey=!!(b.apiKey&&String(b.apiKey).length);
+          return `<div class="it" style="margin-bottom:6px;display:flex;align-items:center;gap:9px">
+            <span style="color:${on?'#15803d':'var(--dim)'};font-size:14px">${on?'●':'○'}</span>
+            <div style="flex:1"><b>${esc(b.name||b.id)}${on?' · active':''}</b>
+              <span>${esc(b.provider||'')} · ${esc(b.model||'no model')}</span>
+              <span style="color:${hasKey?'#15803d':'#c2410c'};font-size:10.5px">${hasKey?'API key set':(b.provider==='local'?'local — no key needed':'no API key')}</span></div>
+            ${on?'':`<button class="b" style="border:1px solid var(--line)" data-backend="${esc(b.id)}">Set active</button>`}
+          </div>`;}).join('')}
+        <div style="color:var(--dim);font-size:11px;padding-top:6px">
+          API keys are entered server-side (.env / settings store) — never shown here.</div></div>`:'')+
       (!c?'<div class="card">memory settings unavailable</div>':
       `<div class="card"><h3>MEMORY — MASTER</h3>
         ${sw(c.enabled,'Memory enabled','enabled')}
@@ -770,6 +785,10 @@ async function drawer(id,label){
         ${sw(c.write.derivedRequireEvidence,'Derived conclusions require evidence','write.derivedRequireEvidence')}
         <div style="color:var(--dim);font-size:11.5px;padding-top:8px">
           Inference is never silently promoted to fact — a derived memory carries its evidence and stays unverified until checked.</div></div>`);
+    body.querySelectorAll('[data-backend]').forEach(b=>b.onclick=async()=>{
+      await fetch(API+'/api/backends/switch',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({backendId:b.dataset.backend})});
+      drawer('settings','Settings');});   // repaint from the saved active backend
     if(!c)return;
     const put=async patch=>{await fetch(API+'/api/settings/memory',{method:'POST',
         headers:{'Content-Type':'application/json'},body:JSON.stringify(patch)});
