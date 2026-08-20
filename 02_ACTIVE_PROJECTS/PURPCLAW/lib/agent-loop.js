@@ -198,10 +198,13 @@ function extractToolCalls(text) {
  * them, parses for tool calls, executes them, returns the final
  * messages array and the assistant's last text.
  */
-async function* agentTurn({ messages, model, provider, opts = {} }) {
-  const llm = require('./llm-provider');
-  // Mission envelope: the operator's composer selections for THIS turn.
-  // Advisory in the prompt, enforced at the dispatch gate below.
+/**
+ * Resolve the mission envelope and the tool-dispatch context from a turn's
+ * opts. Both agentTurn (prompt) and runAgent (enforcement) need this; deriving
+ * it in one place stops the advisory prompt and the enforced profile drifting
+ * apart, which is exactly the bug that makes a permission dial decorative.
+ */
+function envelopeContext(opts = {}) {
   const envelope = ENVELOPE ? ENVELOPE.normalize(opts.envelope || {}) : null;
   const toolContext = envelope ? {
     permissionProfile: ENVELOPE.permissionProfile(envelope),
@@ -209,6 +212,14 @@ async function* agentTurn({ messages, model, provider, opts = {} }) {
     sessionId: opts.sessionId || null,
     operatorInitiated: opts.operatorInitiated !== false,
   } : { sessionId: opts.sessionId || null };
+  return { envelope, toolContext };
+}
+
+async function* agentTurn({ messages, model, provider, opts = {} }) {
+  const llm = require('./llm-provider');
+  // Mission envelope: the operator's composer selections for THIS turn.
+  // Advisory in the prompt, enforced at the dispatch gate in runAgent.
+  const { envelope, toolContext } = envelopeContext(opts);
   const systemPrompt = buildSystemPrompt({ model, ...opts })
     + (envelope ? '\n\n' + ENVELOPE.toPromptBlock(envelope) : '');
 
@@ -294,6 +305,8 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   if (prompt) messages.push({ role: 'user', content: prompt });
   let totalContent = '';
   let turn = 0;
+  // Same envelope the prompt describes — this copy is the enforced one.
+  const { envelope, toolContext } = envelopeContext(opts);
   // Session state passed into the system prompt for every turn.
   // This is the canonical answer to "is this the first message?"
   // ── Memory recall (before the model sees anything) ──────────────────────

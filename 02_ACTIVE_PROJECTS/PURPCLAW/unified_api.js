@@ -3537,7 +3537,10 @@ const server = http.createServer(async (req, res) => {
         for await (const ev of runAgent({
           prompt: message,
           history: chatHistory,                 // ← carry the conversation here too
-          opts: { maxTokens: 2048, temperature: 0.7, sessionId: chatSessionId },
+          // Envelope travels on BOTH /api/chat variants. It rode only the SSE
+          // path at first, so a non-streaming client silently ran ungoverned —
+          // the access dial has to hold whichever transport the caller picks.
+          opts: { maxTokens: 2048, temperature: 0.7, sessionId: chatSessionId, envelope: body.envelope || {} },
         })) {
           if (ev.type === 'token') {
             fullReply += ev.content;

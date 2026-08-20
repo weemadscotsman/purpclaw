@@ -94,7 +94,12 @@ const BUILTINS = Object.freeze({
       'svc_restart', 'shutdown', 'restart', 'lock', 'browser_open', 'clipboard_write',
       'notify', 'traceroute', 'portscan', 'curl', 'wget', '*_mcp', 'mcp__*', 'mcp.*',
       'win_powershell', 'win_registry', 'win_process', 'win_filesystem', 'win_*',
-      'shell', 'bash', 'terminal', 'execute'],
+      'shell', 'bash', 'terminal', 'execute',
+      // Catch-all. A read-only tier defined by a blocklist is not read-only:
+      // any tool the list forgot (write_file, fs_write, edit_file, …) fell
+      // through to 'ask', and operator-initiated calls treat 'ask' as yes.
+      // Explicit entries in `allow` still win — they are matched before this.
+      '*'],
   },
   sandboxed: {
     description: 'Only sandboxed execution (temp dir, stripped env, no filesystem outside sandbox)',

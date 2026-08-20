@@ -85,7 +85,16 @@ body.running #composer{border-color:#cbb6ff;box-shadow:0 3px 22px rgba(139,92,24
 #in{width:100%;border:none;outline:none;resize:none;background:transparent;color:var(--ink);
     font:14px/1.6 var(--sans);padding:15px 17px 6px;min-height:52px;max-height:180px}
 #in::placeholder{color:#a8a8b4}
-.ctl{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:8px 10px 10px;border-top:1px solid var(--line2)}
+/* ONE control rail. Never wraps to a second row — the composer must read as a
+   single command console, not a toolbar scattered under a text box. Overflow is
+   handled by collapsing secondary pills into ＋ (see fitRail), not by wrapping. */
+.ctl{display:flex;align-items:center;gap:4px;flex-wrap:nowrap;overflow:visible;
+     padding:8px 10px 10px;border-top:1px solid var(--line2)}
+.b{flex:none}
+/* Access is the supervision dial, so it wears the permission colour, not purple. */
+.b.acc{background:#fff4ed;color:#c2410c;border-color:#fed7aa;font-weight:600}
+.b.acc.lo{background:#effaf1;color:#15803d;border-color:#bbf7d0}
+.b.acc.hi{background:#fef1f1;color:#b91c1c;border-color:#fecaca}
 .c{position:relative}
 .b{display:inline-flex;align-items:center;gap:5px;border:1px solid transparent;background:transparent;
    color:#5a5a66;border-radius:10px;padding:6px 9px;font:500 12px var(--sans);cursor:pointer;white-space:nowrap}
@@ -168,6 +177,8 @@ const WORKSPACES=[['dreamforge','DreamForge'],['omnicode','OmniCode'],['gotham',
                   ['openclaw','OpenClaw'],['current','Current Folder'],['custom','Custom Project']];
 const CHIPS=['Search','Think','Research','Code','Explain','Design','Debug','Write','Market','Legal','OSINT','Voice','Video','Image'];
 const ACCESS=[['readOnly','🟢 Read Only'],['review','🟡 Review'],['agentActions','🟠 Agent Actions'],['fullSystem','🔴 Full System']];
+/* UI id → wire value the backend envelope enforces. Keep in step with lib/mission-envelope.js. */
+const ACCESS_WIRE={readOnly:'read-only',review:'review',agentActions:'agent-actions',fullSystem:'full-system'};
 const LAUNCHER=[
   ['Attach',[['file','Files','📄'],['folder','Folder','📁'],['image','Images','🖼️'],['audio','Audio','🎵'],
              ['video','Video','🎬'],['url','URL','🔗'],['clipboard','Clipboard','📋'],['recent','Recent Files','🕐']]],
@@ -230,6 +241,8 @@ function opt(label,selected,onPick,tick){
   return i;
 }
 
+/* Mark a control as collapsible into the ⋯ tray when the rail runs out of room. */
+const pri2=n=>{n.dataset.pri='2';return n};
 function paintCtl(){
   const c=$('#ctl');c.innerHTML='';
 
@@ -264,47 +277,50 @@ function paintCtl(){
   }));
 
   // Provider / Speed / Intelligence
-  c.appendChild(dropdown(`🤖 ${lbl(PROVIDERS,S.provider)}`,'',m=>{
+  c.appendChild(pri2(dropdown(`🤖 ${lbl(PROVIDERS,S.provider)}`,'',m=>{
     m.appendChild(el('mh','PROVIDER'));
     PROVIDERS.forEach(([id,label])=>m.appendChild(opt(label,S.provider===id,()=>S.provider=id,true)));
     m.appendChild(el('mh','SPEED'));
     SPEEDS.forEach(([id,label])=>m.appendChild(opt(label,S.speed===id,()=>S.speed=id,true)));
     m.appendChild(el('mh','INTELLIGENCE'));
     INTEL.forEach(([id,label])=>m.appendChild(opt(label,S.intelligence===id,()=>S.intelligence=id,true)));
-  }));
+  })));
 
   // Memory Level
-  c.appendChild(dropdown(`🧠 ${lbl(MEMORY,S.memory).replace(/^\S+\s/,'')}`,'',m=>{
+  c.appendChild(pri2(dropdown(`🧠 ${lbl(MEMORY,S.memory).replace(/^\S+\s/,'')}`,'',m=>{
     m.appendChild(el('mh','MEMORY LEVEL'));
     MEMORY.forEach(([id,label])=>m.appendChild(opt(label,S.memory===id,()=>S.memory=id,true)));
-  }));
+  })));
 
   // Workspace
-  c.appendChild(dropdown(`📂 ${lbl(WORKSPACES,S.workspace)}`,'',m=>{
+  c.appendChild(pri2(dropdown(`📂 ${lbl(WORKSPACES,S.workspace)}`,'',m=>{
     m.appendChild(el('mh','WORKSPACE'));
     WORKSPACES.forEach(([id,label])=>m.appendChild(opt(label,S.workspace===id,()=>S.workspace=id,true)));
-  }));
+  })));
 
   // Quick Actions (chips)
-  c.appendChild(dropdown(`⚡ Chips${S.chips.length?' ('+S.chips.length+')':''}`,'',m=>{
+  c.appendChild(pri2(dropdown(`⚡ Chips${S.chips.length?' ('+S.chips.length+')':''}`,'',m=>{
     m.appendChild(el('mh','QUICK ACTIONS'));
     const g=el('mgrid');
     CHIPS.forEach(ch=>g.appendChild(opt(ch,S.chips.includes(ch),
       ()=>{S.chips=S.chips.includes(ch)?S.chips.filter(x=>x!==ch):[...S.chips,ch]})));
     m.appendChild(g);
-  }));
+  })));
 
   c.appendChild(el('sp'));
 
   // token meter
   const t=document.createElement('button');t.className='b';t.innerHTML=`${S.tokens} tk <span style="opacity:.5">▴</span>`;
-  t.onclick=()=>drawer('context','Active Context');c.appendChild(t);
+  t.onclick=()=>drawer('context','Active Context');c.appendChild(pri2(t));
 
-  // Access Control
-  c.appendChild(dropdown(lbl(ACCESS,S.access),'',m=>{
+  // Access Control — the four-rung supervision dial. Enforced server-side.
+  const accTone={readOnly:'lo',review:'',agentActions:'',fullSystem:'hi'}[S.access]||'';
+  const acc=dropdown(lbl(ACCESS,S.access).replace(/^\S+\s/,'').toUpperCase(),'',m=>{
     m.appendChild(el('mh','ACCESS CONTROL'));
     ACCESS.forEach(([id,label])=>m.appendChild(opt(label,S.access===id,()=>S.access=id,true)));
-  },true));
+  },true);
+  acc.querySelector('.b').className='b acc '+accTone;
+  c.appendChild(acc);
 
   // voice
   const v=document.createElement('button');v.className='b'+(S.voice?' on':'');v.textContent='🎤';
@@ -314,7 +330,36 @@ function paintCtl(){
 
   // send
   const go=document.createElement('button');go.id='go';go.textContent='→';go.onclick=send;c.appendChild(go);
+  fitRail();
 }
+
+/* Keep the rail to ONE row. When it overflows, drop the least-essential pills
+   into the ⋯ tray from the right, rather than wrapping into toolbar spaghetti.
+   Nodes are MOVED, not rebuilt, so each control keeps its state and handlers.
+   Send, access and the mode pill are never collapsed — they are the identity of
+   the bar. ponytail: measure-and-move; a ResizeObserver would be tidier but this
+   runs only on repaint and resize. */
+function fitRail(){
+  const c=$('#ctl');if(!c)return;
+  const tray=c.querySelector('.tray');if(tray)tray.remove();
+  const movable=[...c.children].filter(n=>n.dataset&&n.dataset.pri==='2');
+  movable.forEach(n=>n.style.display='');
+  if(c.scrollWidth<=c.clientWidth||!movable.length)return;
+
+  const t=el('c tray');const tb=document.createElement('button');
+  tb.className='b';tb.textContent='⋯';tb.title='More controls';
+  const tm=el('menu right');tm.appendChild(el('mh','MORE CONTROLS'));
+  tb.onclick=e=>{e.stopPropagation();
+    document.querySelectorAll('.c').forEach(x=>x!==t&&x.classList.remove('open'));t.classList.toggle('open')};
+  t.append(tb,tm);c.insertBefore(t,c.querySelector('.sp'));
+
+  // Collapse from the right until it fits, or nothing movable is left.
+  for(let i=movable.length-1;i>=0&&c.scrollWidth>c.clientWidth;i--){
+    tm.insertBefore(movable[i],tm.children[1]||null);
+  }
+  if(!tm.querySelector('.c'))t.remove();
+}
+addEventListener('resize',()=>{clearTimeout(fitRail._t);fitRail._t=setTimeout(fitRail,120)});
 document.addEventListener('click',()=>document.querySelectorAll('.c').forEach(x=>x.classList.remove('open')));
 
 function note(msg){const s=C();if(!s)return;s.msgs.push({role:'assistant',text:'ℹ '+msg,meta:'cockpit'});sv();paintLog()}
@@ -366,7 +411,12 @@ async function send(){
   const bub=el('msg a',''),mt=el('mt','thinking…');bub.appendChild(mt);
   $('#log').appendChild(bub);$('#log').scrollTop=1e9;
 
-  // The full operator context travels with the turn; the backend stays canonical.
+  // The mission envelope — the canonical execution contract (lib/mission-envelope.js).
+  // These are not UI preferences: `access` resolves to a permission profile the
+  // tool dispatcher enforces, and `memory` bounds how far recall may reach.
+  const envelope={mode:S.mode,agents:S.agents,provider:S.provider,speed:S.speed,
+    intelligence:S.intelligence,memory:S.memory,workspace:S.workspace,chips:S.chips,
+    attachments:S.attachments,access:ACCESS_WIRE[S.access]||'review'};
   const operatorContext={composerMode:S.mode,accessMode:S.access,memoryMode:S.memory,
     workspace:S.workspace,enabledAgents:S.agents,quickChips:S.chips,
     modelControl:{speed:S.speed,intelligence:S.intelligence,provider:S.provider},
@@ -376,7 +426,7 @@ async function send(){
   try{
     const r=await fetch(API+'/api/chat',{method:'POST',
       headers:{'Content-Type':'application/json','Accept':'text/event-stream'},
-      body:JSON.stringify({message:text,session_id:cur,source:'cockpit',
+      body:JSON.stringify({message:text,session_id:cur,source:'cockpit',envelope,
         route:ROUTES[S.mode]||'/api/chat',operatorContext,
         provider:S.provider,mode:S.mode,memory:S.memory,workspace:S.workspace,
         access:S.access,agents:S.agents,chips:S.chips,voice:S.voice})});
