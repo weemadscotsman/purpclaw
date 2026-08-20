@@ -487,6 +487,58 @@ async function send(){
 
 /* ── drawers ────────────────────────────────────────────────────────── */
 async function j(u){try{const r=await fetch(API+u);return r.ok?await r.json():null}catch{return null}}
+/* Focused single-mission record — the full ledger entry, nothing truncated. */
+function missionDetail(x){
+  document.body.classList.add('drawer');
+  const d=$('#drawer');d.innerHTML='';
+  const tone={complete:'#15803d',partial:'#c2410c',failed:'#b91c1c',unverified:'#c2410c'};
+  const e=x.envelope||{};
+  const h=el('dh');
+  const back=document.createElement('button');back.className='x';back.textContent='←';back.title='All missions';
+  back.onclick=()=>drawer('missions','Missions');
+  const ttl=document.createElement('h2');ttl.textContent='Mission';
+  const close=document.createElement('button');close.className='x';close.textContent='✕';
+  close.onclick=()=>document.body.classList.remove('drawer');
+  h.append(back,ttl,close);d.appendChild(h);
+  const b=el('dbody');d.appendChild(b);
+  const kv=(k,v)=>`<div class="it"><b>${esc(String(v??'—'))}</b><span>${esc(k)}</span></div>`;
+  const fish=x.fishVerdict?`${esc(x.fishVerdict)}${x.fishCertainty?' · '+esc(x.fishCertainty):''}${
+    x.fishReleaseReady!=null?' · '+(x.fishReleaseReady?'release-ready':'not release-ready'):''}${
+    x.fishSlapCount?' · '+x.fishSlapCount+' slaps':''}`:'not audited';
+  b.innerHTML=`
+    <div class="card"><h3 style="color:${tone[x.status]||'var(--dim)'}">${esc((x.status||'').toUpperCase())}</h3>
+      <div style="font-size:14px;padding-bottom:10px">${esc(x.prompt||'')}</div>
+      <div style="font:11px var(--mono);color:var(--dim)">
+        ${x.createdAt?new Date(x.createdAt).toLocaleString():''} → ${x.completedAt?new Date(x.completedAt).toLocaleTimeString():''}
+        ${x.durationMs!=null?' · '+(x.durationMs/1000).toFixed(1)+'s':''}</div></div>
+    <div class="card"><h3>MISSION ENVELOPE</h3><div class="g">
+      ${kv('mode',e.mode)}${kv('access',e.access)}${kv('memory scope',e.memory)}
+      ${kv('provider',e.provider||x.provider)}${kv('speed',e.speed)}${kv('intelligence',e.intelligence)}
+      ${kv('workspace',x.project||e.workspace)}${kv('model served',x.model)}
+      ${kv('agents',(e.agents||[]).join(', ')||'none')}${kv('chips',(e.chips||[]).join(', ')||'none')}
+    </div></div>
+    <div class="card"><h3>EXECUTION — ${(x.toolCalls||[]).length} TOOL CALL(S)</h3>
+      ${(x.toolCalls||[]).length?(x.toolCalls||[]).map((c,i)=>
+        `<div class="it" style="margin-bottom:5px"><b style="color:${c.ok===false?'#b91c1c':'#15803d'};font:600 12px var(--mono)">
+          ${c.ok===false?'✗':'✓'} ${i+1}. ${esc(c.tool)}</b>
+          ${c.err?`<span style="color:#b91c1c;white-space:pre-wrap">${esc(String(c.err))}</span>`:''}</div>`).join('')
+        :'<div style="color:var(--dim);font-size:12px">no tools ran this mission</div>'}</div>
+    ${(x.approvals||[]).length?`<div class="card"><h3>APPROVALS</h3>${(x.approvals||[]).map(a=>
+      `<div class="it"><b>${esc(a.tool)}</b><span>${esc(a.decision)}</span></div>`).join('')}</div>`:''}
+    <div class="card"><h3>VERIFICATION & MEMORY</h3><div class="g">
+      ${kv('accuracy fish',fish)}
+      ${kv('déjà vu',x.dejavu?(typeof x.dejavu==='object'?JSON.stringify(x.dejavu).slice(0,60):x.dejavu):'no match')}
+      ${kv('memory writes',x.memoryWrites)}
+      ${kv('status',x.status)}
+    </div></div>
+    ${x.result?`<div class="card"><h3>RESULT</h3>
+      <div style="font-size:12.5px;color:#5a5a66;white-space:pre-wrap">${esc(x.result)}</div></div>`:''}
+    ${x.error?`<div class="card"><h3 style="color:#b91c1c">ERROR</h3>
+      <div style="font:11.5px var(--mono);color:#b91c1c;white-space:pre-wrap">${esc(x.error)}</div></div>`:''}
+    <div class="card"><h3>IDENTIFIERS</h3><div style="font:11px var(--mono);color:var(--dim)">
+      mission ${esc(x.missionId||'—')}<br>session ${esc(x.sessionId||'—')}</div></div>`;
+}
+
 async function drawer(id,label){
   document.body.classList.add('drawer');
   const d=$('#drawer');d.innerHTML='';
@@ -555,7 +607,7 @@ async function drawer(id,label){
         <div style="color:var(--dim);font-size:11.5px;padding-top:6px">${
           ledger?'Durable ledger — survives restarts.':esc(m&&m.note||'')}</div></div>`+
       (ledger?rows.map(x=>{const e=x.envelope||{};
-        return `<div class="card"><h3 style="color:${tone[x.status]||'var(--dim)'}">${esc(x.status).toUpperCase()} · ${
+        return `<div class="card mcard" data-mid="${esc(x.missionId||'')}" style="cursor:pointer"><h3 style="color:${tone[x.status]||'var(--dim)'}">${esc(x.status).toUpperCase()} · ${
             x.completedAt?new Date(x.completedAt).toLocaleString():''}</h3>
           <div style="font-size:13px;padding-bottom:10px">${esc(x.prompt)}</div>
           <div class="g">
@@ -579,6 +631,11 @@ async function drawer(id,label){
       `<div class="card"><h3>THIS BROWSER</h3>${sess.length?sess.map(s=>
         `<div class="it" style="margin-bottom:7px"><b>${esc(s.title)}</b><span>${s.msgs.length} messages</span></div>`).join('')
         :'<div style="color:var(--dim)">no local sessions</div>'}</div>`;
+    // Click a mission -> its full record. Rows already carry every field, so no
+    // extra fetch: look the record up by id and render the detail view.
+    const byId=Object.fromEntries(rows.filter(x=>x.missionId).map(x=>[x.missionId,x]));
+    body.querySelectorAll('.mcard').forEach(cd=>cd.onclick=()=>{
+      const rec=byId[cd.dataset.mid]; if(rec) missionDetail(rec);});
     return}
   if(id==='tools'){
     // The truth surface: every registered tool and what each rung of the access
