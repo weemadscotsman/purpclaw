@@ -29,6 +29,8 @@ const fs   = require('fs');
 const TOOLS = require('./tools');
 const FEEDBACK = (() => { try { return require('./user-feedback'); } catch { return null; } })();
 const IDLE_ENGINE = (() => { try { return require('./idle-engine'); } catch { return null; } })();
+// Canonical memory gateway — recall before the turn, record after it.
+const MEMORY = (() => { try { return require('./memory-gateway'); } catch { return null; } })();
 const { enforceToolUse } = (() => { try { return require('./tools/tool-intent-gate'); } catch { return null; } })();
 const { IdleScheduler } = (() => { try { return require('./runtime/idle-scheduler'); } catch { return null; } })();
 
@@ -280,6 +282,26 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   let turn = 0;
   // Session state passed into the system prompt for every turn.
   // This is the canonical answer to "is this the first message?"
+  // ── Memory recall (before the model sees anything) ──────────────────────
+  // The memory system existed, was healthy, and was never called by the turn
+  // path — zero references to the gateway in this file. Recall relevant durable
+  // memories and put them in front of the model, then record the exchange at
+  // the end. Failure here degrades to no-memory; it never breaks the turn.
+  if (MEMORY && prompt) {
+    try {
+      const recalled = await MEMORY.recall({ query: prompt, limit: 5 });
+      const items = (recalled && recalled.items) || [];
+      if (items.length) {
+        const lines = items.map(i => `- ${String(i.content ?? i.text ?? '').slice(0, 300)}`).join('\n');
+        messages.unshift({
+          role: 'user',
+          content: `[recalled memory — things you already know about this operator/project]\n${lines}\n[end memory]`,
+        });
+        yield { type: 'memory', phase: 'recalled', count: items.length };
+      }
+    } catch { /* memory down — carry on without it */ }
+  }
+
   opts.historyLength = history.filter(m => m.role === 'user').length;
   opts.turnNumber = 1;
   // Repeat-call guard. Observed live: one "check the stack" prompt fired 47
@@ -452,6 +474,25 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       if (idleScheduler) idleScheduler.touch('agent-loop-done');
       else if (IDLE_ENGINE) IDLE_ENGINE.markIdle('agent-loop-done');
       if (PSTEER) PSTEER.turnEnded();
+      // Record the exchange so the next session can recall it. Durable archive
+      // + spine; failure never blocks completion.
+      if (MEMORY && prompt && totalContent) {
+        try {
+          await MEMORY.record({
+            layer: 'episodic', kind: 'conversation',
+            // Store the ANSWER, not the machinery: reasoning and raw tool JSON
+            // make memories unsearchable noise.
+            content: { text: `User asked: ${String(prompt).slice(0, 400)}\nAgent answered: ${
+              String(totalContent)
+                .replace(/<think>[\s\S]*?<\/think>/g, '')
+                .replace(/\{\s*"tool"\s*:\s*"[^"]*"\s*,\s*"args"\s*:\s*\{[^{}]*\}\s*\}/g, '')
+                .replace(/\s+/g, ' ').trim().slice(0, 800)
+            }` },
+            scope: { user: 'operator', session: opts.sessionId || null },
+            source: 'agent-loop',
+          });
+        } catch { /* memory down — the answer still stands */ }
+      }
       yield { type: 'done', turns: turn, totalContent, capsuleId: capId() };
       return;
     }

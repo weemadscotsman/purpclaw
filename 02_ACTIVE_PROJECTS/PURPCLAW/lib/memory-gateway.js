@@ -46,7 +46,14 @@ function _getGateway() {
 function recall(opts = {}) {
   const gw = _getGateway();
   if (!gw) return { ok: false, items: [], tokenCount: 0, errors: ['gateway unavailable'] };
-  return gw.recall(opts);
+  // MemoryGateway.recall(query, options) takes the query POSITIONALLY. This
+  // passed the whole opts object as `query`, so every layer ran its search
+  // against "[object Object]" and matched nothing — recall was structurally
+  // incapable of returning a result. Unpack it, and map the plural `layers`
+  // used by callers onto the singular `layer` the gateway understands.
+  const { query = '', layers, layer, ...rest } = opts;
+  const target = layer || (Array.isArray(layers) && layers.length === 1 ? layers[0] : undefined);
+  return gw.recall(String(query), { ...rest, ...(target ? { layer: target } : {}) });
 }
 
 /** record(opts) → { ok, memoryId, envelope } */

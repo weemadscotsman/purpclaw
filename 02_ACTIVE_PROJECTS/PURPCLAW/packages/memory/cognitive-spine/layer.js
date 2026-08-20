@@ -20,6 +20,8 @@
 const MemoryClientAdapter = require('../adapters/memory-client-wrapper');
 const CONTRACT = require('../contract');
 const POLICY = require('../policy');
+// Durable file-backed archive — the persistence floor under the volatile spine.
+const ARCHIVE = (() => { try { return require('../../../lib/memory-store'); } catch { return null; } })();
 
 const NOT_IMPLEMENTED = op => ({
   ok: false,
@@ -41,8 +43,27 @@ function makeLayer(name) {
 
     async recall(query, options = {}) {
       const result = await this.client.recall(query, { ...options, layer: name });
-      const items = (result && (result.items || result.results || result.memories)) || [];
-      return { items: items.map(i => ({ ...i, layer: name })), layer: name };
+      const live = (result && (result.items || result.results || result.memories)) || [];
+
+      // Union with the durable archive. The spine's matrix is volatile —
+      // working/scratch entries decay and it boots with "No readable archive
+      // found" — so spine-only recall silently forgot everything. The archive
+      // is the floor; the spine still contributes associative/emotional hits.
+      let durable = [];
+      try {
+        durable = ARCHIVE.recall({ query, layers: [name], limit: options.limit || 5 }).items || [];
+      } catch { /* archive unavailable — degrade to spine-only, never throw */ }
+
+      const seen = new Set();
+      const items = [...live, ...durable]
+        .map(i => ({ ...i, layer: name }))
+        .filter(i => {
+          const key = String(i.content ?? i.text ?? '').slice(0, 200);
+          if (!key || seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      return { items, layer: name, durableCount: durable.length, liveCount: live.length };
     }
 
     async record(memory, options = {}) {
@@ -64,6 +85,16 @@ function makeLayer(name) {
         ? enriched.content
         : (enriched.content && (enriched.content.text || enriched.content.summary))
           || (() => { try { return JSON.stringify(enriched.content); } catch { return String(enriched.content); } })();
+      // Write to the durable archive FIRST. If the spine is down, decays, or
+      // returns a sentinel, the memory still exists on disk and is recallable.
+      let durableId = null;
+      if (ARCHIVE) {
+        try {
+          const d = ARCHIVE.record({ ...enriched, layer: name, content: contentText });
+          if (d && d.ok) durableId = d.memoryId;
+        } catch { /* never let archiving break the turn */ }
+      }
+
       const result = await this.client.ingest(contentText, {
         layer: name,
         scope: enriched.scope,
@@ -72,13 +103,19 @@ function makeLayer(name) {
       });
       // ingest() returns a memoryId string or null — not a result object.
       // Handle both: raw string (spine v2) and {ok, memoryId} (future contract).
-      if (typeof result === 'string') {
-        return { ok: true, layer: name, memoryId: result, persisted: result != null };
-      }
-      if (result == null) {
-        return { ok: false, layer: name, memoryId: enriched.memoryId, persisted: false };
-      }
-      return { ...result, layer: name, memoryId: enriched.memoryId, persisted: result.ok !== false };
+      // 'no_base' is a spine SENTINEL (base matrix unavailable), not an id —
+      // treating it as one is how this reported persisted:true while storing
+      // nothing. Durable success stands on its own regardless of the spine.
+      const spineOk = typeof result === 'string' ? result !== 'no_base' : result != null && result.ok !== false;
+      const spineId = typeof result === 'string' ? (result === 'no_base' ? null : result) : (result && result.memoryId) || null;
+      return {
+        ok: spineOk || !!durableId,
+        layer: name,
+        memoryId: spineId || durableId || enriched.memoryId,
+        persisted: spineOk || !!durableId,
+        durable: !!durableId,
+        spine: spineOk ? 'stored' : 'unavailable',
+      };
     }
 
     async promote(memoryId, targetLayer) { return { ...NOT_IMPLEMENTED('promote'), memoryId, targetLayer, layer: name }; }
