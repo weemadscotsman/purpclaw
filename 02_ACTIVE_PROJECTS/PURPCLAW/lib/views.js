@@ -65,9 +65,14 @@ function tools(registry) {
 
   const summary = { registered: items.length, categories: byCategory, missingSchema: items.filter(i => !i.hasSchema).length };
   for (const r of rungs) {
+    // ask and defer are NOT the same thing and must not be added together:
+    // 'ask' parks the turn for a human, 'defer' hands off to governance and
+    // proceeds. Merging them made Agent Actions look like it prompts for 167
+    // tools when it actually prompts for the irreversible ones only.
     summary[r] = {
-      allowed: items.filter(i => i.access[r] === 'allow').length,
-      approval: items.filter(i => i.access[r] === 'ask' || i.access[r] === 'defer').length,
+      allowed:  items.filter(i => i.access[r] === 'allow').length,
+      prompts:  items.filter(i => i.access[r] === 'ask').length,
+      governed: items.filter(i => i.access[r] === 'defer').length,
       denied:   items.filter(i => i.access[r] === 'deny').length,
     };
   }

@@ -35,6 +35,8 @@ const MEMORY = (() => { try { return require('./memory-gateway'); } catch { retu
 const DEJAVU = (() => { try { return require('./dejavu'); } catch { return null; } })();
 // Mission envelope — the composer's execution contract, shared by every surface.
 const ENVELOPE = (() => { try { return require('./mission-envelope'); } catch { return null; } })();
+// Memory engine settings — the operator's standing configuration.
+const MEMCFG = (() => { try { return require('./memory-config'); } catch { return null; } })();
 const { enforceToolUse } = (() => { try { return require('./tools/tool-intent-gate'); } catch { return null; } })();
 const { IdleScheduler } = (() => { try { return require('./runtime/idle-scheduler'); } catch { return null; } })();
 
@@ -80,10 +82,10 @@ const AGENT_TOOLS = TOOLS.list().map(t => ({
     parameters: t.inputSchema || { type: 'object', properties: {} },
   },
 }));
-const SYSTEM_PROMPT_BASE = `You are Quill, the PurpClaw AI Workstation OS agent. You have full access to this machine — files, processes, network, packages, and a swarm of 152 specialized sub-agents.
+const SYSTEM_PROMPT_BASE = `You are Quill, the PurpClaw AI Workstation OS agent. You have full access to this machine — files, processes, network, packages, and a roster of specialized sub-agents.
 
 # Your job
-Take ANY user request — no matter how vague, complex, or "dumb" — and figure out what needs to happen. You have 110+ tools and 152 agents. Use them.
+Take ANY user request — no matter how vague, complex, or "dumb" — and figure out what needs to happen. Your tools are listed below and your agents come from the canonical registry. Use them.
 
 # Smart delegation
 - Simple tasks (read a file, check status, run a command) → use tools directly
@@ -109,7 +111,7 @@ Example: 'spawn a builder to create the API endpoint'
 The agent runs independently and returns its result.
 
 # Tool usage
-- You have 110+ tools. Don't list them all — use the right one for the job.
+- Use the right tool for the job; the full list is below. Never quote a tool or agent COUNT — the registry is the only truth and any number here would drift.
 - Tools are listed below. Pick the one that matches the task.
 - If you're not sure which tool, try the most obvious one. It'll work or you'll learn.
 - Output tool calls as JSON: {"tool": "<name>", "args": {...}}
@@ -150,8 +152,8 @@ Ask about THAT. Nothing else.
 # Context
 - You are running on the user's actual machine.
 - The working directory is the project root.
-- 25 PM2 services are running in the background. You can check them with tools.
-- OmniCode has indexed 3478 files. Use MCP tools for code search to save tokens.
+- Background services run under PM2; check them with tools rather than assuming a count.
+- Use code-search / MCP tools for code lookup to save tokens.
 `;
 
 /**
@@ -206,10 +208,18 @@ function buildSystemPrompt(opts = {}) {
 function extractToolCalls(text) {
   const calls = [];
   let cleanText = text;
+  // Models sometimes open a tool call inside <think> and close it after the
+  // tag: `Let me do it.{"` … `</think>` … `tool": "delete", …}`. The JSON is
+  // valid once the TAGS are removed, but split by them, so a naive scan finds
+  // nothing and the call is silently dropped — the tool never runs and no gate
+  // ever sees it. Strip the tags (not the content) before scanning.
+  // Removing the tags leaves the key split as `{"\n\ntool"`, so the key
+  // pattern must tolerate whitespace INSIDE the quotes as well as around them.
+  const scan = /<\/?think>/i.test(text) ? text.replace(/<\/?think>/gi, '') : text;
   // Match {"tool": "...", "args": {...}} JSON objects
-  const re = /\{\s*"tool"\s*:\s*"([^"]+)"\s*,\s*"args"\s*:\s*(\{[\s\S]*?\})\s*\}/g;
+  const re = /\{\s*"\s*tool\s*"\s*:\s*"([^"]+)"\s*,\s*"\s*args\s*"\s*:\s*(\{[\s\S]*?\})\s*\}/g;
   let m;
-  while ((m = re.exec(text)) !== null) {
+  while ((m = re.exec(scan)) !== null) {
     try {
       const args = JSON.parse(m[2]);
       calls.push({ tool: m[1], args, raw: m[0] });
@@ -340,9 +350,15 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   // path — zero references to the gateway in this file. Recall relevant durable
   // memories and put them in front of the model, then record the exchange at
   // the end. Failure here degrades to no-memory; it never breaks the turn.
-  if (MEMORY && prompt) {
+  // Settings owns HOW memory behaves; the composer scope owns HOW FAR this
+  // mission may reach. The narrower of the two wins.
+  const memCfg = MEMCFG
+    ? MEMCFG.effective(envelope && ENVELOPE ? ENVELOPE.memoryReach(envelope) : null)
+    : { enabled: true, limit: 5, dejaVu: true, write: { conversations: true } };
+
+  if (MEMORY && prompt && memCfg.enabled && memCfg.limit > 0 && memCfg.layers.length) {
     try {
-      const recalled = await MEMORY.recall({ query: prompt, limit: 5 });
+      const recalled = await MEMORY.recall({ query: prompt, limit: memCfg.limit, layers: memCfg.layers });
       const items = (recalled && recalled.items) || [];
       if (items.length) {
         const lines = items.map(i => `- ${String(i.content ?? i.text ?? '').slice(0, 300)}`).join('\n');
@@ -358,7 +374,7 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   // ── Déjà Vu: recognise the shape before spending tokens on it ──────────
   // Evidence only. It informs the model; steering and the ToolRuntime gate
   // still decide what may actually run.
-  if (DEJAVU && prompt) {
+  if (DEJAVU && prompt && memCfg.enabled && memCfg.dejaVu) {
     try {
       const dv = DEJAVU.match({ intent: prompt });
       if (dv.matched) {
@@ -553,7 +569,7 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       if (PSTEER) PSTEER.turnEnded();
       // Record the exchange so the next session can recall it. Durable archive
       // + spine; failure never blocks completion.
-      if (MEMORY && prompt && totalContent) {
+      if (MEMORY && prompt && totalContent && memCfg.enabled && memCfg.write.conversations !== false) {
         try {
           await MEMORY.record({
             layer: 'episodic', kind: 'conversation',
@@ -572,7 +588,7 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       }
       // Déjà Vu: record the execution SHAPE (ordered tools + outcome), not just
       // the narrative, so future runs can recognise this pattern.
-      if (DEJAVU && toolSequence.length) {
+      if (DEJAVU && toolSequence.length && memCfg.enabled && memCfg.dejaVu) {
         try {
           await DEJAVU.record({
             intent: prompt, sequence: toolSequence,
@@ -643,7 +659,11 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       // human. Read Only stays a hard deny; Agent Actions and Full System are
       // unaffected because their profiles return allow/defer, not ask.
       let approval = null;
-      if (verdict && verdict.action === 'ask' && envelope.access === 'review') {
+      // Review asks about everything mutating; Agent Actions asks only about
+      // the irreversible/system-level set in the `trusted` profile. Full System
+      // never reaches here (its profile returns allow for everything).
+      if (verdict && verdict.action === 'ask'
+          && (envelope.access === 'review' || envelope.access === 'agent-actions')) {
         try {
           const REMOTE = require('./remote-approvals');
           const q = REMOTE.queue({

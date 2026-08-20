@@ -3142,6 +3142,18 @@ const server = http.createServer(async (req, res) => {
           limit: Math.min(parseInt(q.get('limit') || '50', 10) || 50, 300) }));
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
+    // Settings → Memory: the engine room. Every field here is read at a real
+    // call site in the turn path, so changing it changes behaviour.
+    if (pathname === '/api/settings/memory' && (method === 'GET' || method === 'POST')) {
+      try {
+        const MC = require('./lib/memory-config');
+        if (method === 'GET') {
+          return sendJson(res, 200, { ok: true, config: MC.load(), layers: MC.ALL_LAYERS, defaults: MC.DEFAULTS });
+        }
+        const body = await parseBody(req);
+        return sendJson(res, 200, { ok: true, config: MC.save(body || {}) });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
     if (pathname === '/api/missions' && method === 'GET') {
       try { return sendJson(res, 200, require('./lib/views').missions({})); }
       catch (e) { return sendJson(res, 500, { error: e.message }); }

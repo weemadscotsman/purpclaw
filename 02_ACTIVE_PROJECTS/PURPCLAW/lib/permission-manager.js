@@ -52,14 +52,34 @@ const BUILTINS = Object.freeze({
   },
   standard: {
     description: 'Read automatically; ask before mutation or execution',
-    allow: ['read', 'list', 'glob', 'search', 'repo.map', 'event.list', 'event.replay',
-      'attachment.get', 'attachment.list', 'artifact.get', 'artifact.list'],
+    // Real registry names. With 'list'/'glob'/'search' — which no tool is
+    // called — the Review rung prompted for every ls and grep, which trains an
+    // operator to click Approve without reading it. Reads are free; mutation asks.
+    allow: ['read', 'ls', 'find', 'grep', 'tree', 'du', 'code-search', 'web-fetch',
+      'repo.map', 'event.list', 'event.replay',
+      'attachment.get', 'attachment.list', 'artifact.get', 'artifact.list',
+      'cpu', 'memory', 'disk', 'drives', 'uptime', 'osinfo', 'sensors', 'systeminfo',
+      'whoami', 'window_list', 'tasklist', 'top', 'netstat', 'ping', 'dns', 'ifconfig'],
     ask: ['*'],
   },
   trusted: {
-    description: 'Allow workspace reads and edits; retain governance for shell/network/destructive actions',
-    allow: ['read', 'list', 'glob', 'search', 'write', 'edit', 'repo.map',
-      'attachment.*', 'artifact.*'],
+    description: 'Agent works freely; only irreversible or system-level actions need the operator',
+    // The Agent Actions rung. It exists to let the agent get on with real work
+    // — write, edit, shell, git, browser, packages of its own workspace — while
+    // still stopping at things that cannot be undone or that reach outside the
+    // work at hand. Without this list `defer: ['*']` matched everything and the
+    // rung behaved identically to Full System.
+    ask: [
+      'delete', 'symlink',                                  // destroys or redirects data
+      'shutdown', 'restart', 'lock', 'power',               // ends the operator's session
+      'taskkill', 'svc_start', 'svc_stop', 'svc_restart',   // kills running work
+      'npm_install', 'pip_install', 'choco',                // mutates the machine's toolchain
+      'reg_write', 'reg_delete', 'win_registry', 'win_process', 'win_filesystem',
+      'obliteratus_*', 'chaos_campaign', 'chaos_round',     // model surgery / attacks the swarm
+      'godmode', 'phone_adb',
+    ],
+    allow: ['read', 'ls', 'find', 'grep', 'tree', 'du', 'code-search', 'write', 'edit',
+      'mkdir', 'copy', 'move', 'touch', 'repo.map', 'attachment.*', 'artifact.*'],
     defer: ['*'],
   },
   autonomous: {
