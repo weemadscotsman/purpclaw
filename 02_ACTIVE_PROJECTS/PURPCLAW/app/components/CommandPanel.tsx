@@ -4,39 +4,6 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import type { MissionData } from '../hooks/useMissionData';
 import { ComposerInput } from './composer';
 import ToolCallBadge from './ToolCallBadge';
-import { SessionSidebar } from './SessionSidebar';
-import { TraceTerminal } from './TraceTerminal';
-
-// ── TTS via voice_bridge :7792/api/speak ──────────────────────────────────────
-// One-shot client-side speak. Fire-and-forget; we don't await it because the
-// audio plays in the OS media player and the UI doesn't block on it. Logs a
-// warning if the bridge is offline or no TTS key is configured — neither is
-// fatal. Used to make the chat voice-first by default.
-async function speakReply(text: string): Promise<{ ok: boolean; reason?: string }> {
-  if (!text || !text.trim()) return { ok: false, reason: 'empty' };
-  const configuredVoiceBridge =
-    (typeof window !== 'undefined' && (window as any).__PURPCLAW_VOICE_BRIDGE_URL) ||
-    process.env.NEXT_PUBLIC_VOICE_BRIDGE_URL ||
-    '';
-  const speakUrl = configuredVoiceBridge
-    ? `${configuredVoiceBridge.replace(/\/+$/, '')}/api/speak`
-    : `/api/service-proxy?port=7792&path=${encodeURIComponent('/api/speak')}`;
-  try {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 5000);
-    const r = await fetch(speakUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: text.slice(0, 800) }), // cap to keep TTS fast
-      signal: ctrl.signal,
-    });
-    clearTimeout(t);
-    if (!r.ok) return { ok: false, reason: `http_${r.status}` };
-    return { ok: true };
-  } catch (e: any) {
-    return { ok: false, reason: e?.message || 'unreachable' };
-  }
-}
 
 // ── Mochi Narrator ────────────────────────────────────────────────────────────
 
@@ -98,7 +65,7 @@ const MOOD_COLOR: Record<NarratorLine['mood'], string> = {
 };
 
 function serviceReachable(status?: string) {
-  return status === 'online' || status === 'healthy' || status === 'ok' || status === 'degraded';
+  return status === 'online' || status === 'degraded';
 }
 
 function coreServices(services: MissionData['services']) {
@@ -384,7 +351,7 @@ export function MochiNarrator({ data, onNarratorReady }: { data: MissionData; on
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const res = await fetch('/api/kernel/jobs?limit=10');
+        const res = await fetch('/api/service-proxy?port=7780&path=%2Fapi%2Fkernel%2Fjobs%3Flimit%3D10');
         const raw = await res.json();
         const jobs: any[] = raw.data?.jobs || raw.jobs || [];
         const now = Date.now();
@@ -554,7 +521,7 @@ type MemoryMode = 'off' | 'session' | 'project' | 'persistent';
 type ComposerSpeed = 'fast' | 'balanced' | 'deep';
 type IntelligenceLevel = 'low' | 'medium' | 'high' | 'extreme';
 type ProviderId = 'auto' | 'openai' | 'claude' | 'gemini' | 'deepseek' | 'kimi' | 'qwen' | 'local';
-type WorkspaceId = 'dreamforge' | 'omnicode' | 'gotham' | 'purpclaw' | 'current' | 'custom';
+type WorkspaceId = 'dreamforge' | 'omnicode' | 'gotham' | 'openclaw' | 'current' | 'custom';
 type AgentId = 'planner' | 'researcher' | 'builder' | 'security' | 'designer' | 'video' | 'audio' | 'custom';
 type OperatorContext = {
   composerMode: ComposerMode;
@@ -672,7 +639,7 @@ const WORKSPACES: { id: WorkspaceId; label: string }[] = [
   { id: 'dreamforge', label: 'DreamForge' },
   { id: 'omnicode', label: 'OmniCode' },
   { id: 'gotham', label: 'Gotham' },
-  { id: 'purpclaw', label: 'PURPCLAW' },
+  { id: 'openclaw', label: 'OpenClaw' },
   { id: 'current', label: 'Current Folder' },
   { id: 'custom', label: 'Custom Project' },
 ];
@@ -1031,7 +998,20 @@ function ActiveWorkBoard({ data }: { data: MissionData }) {
 // stack just begins the work instead of refusing "wrong mode". Order matters —
 // most specific intent wins.
 function classifyRoute(text: string): Route {
-  const t = text.toLowerCase();
+  const t = text.toLowerCase().trim();
+
+  // ── Conversation is the default. ────────────────────────────────────────
+  // The capability chips (Full System / Agent Actions / agents / project) GRANT
+  // access; they are not "execute this way" switches. Saying "hi" must not
+  // delegate a swarm. Escalation requires explicit intent, so anything that
+  // reads as talking — greetings, reactions, short remarks, questions about
+  // state — stays in chat and the agent can still reach for a tool itself.
+  const words = t.split(/\s+/).filter(Boolean);
+  const isGreetingOrBanter = /^(yo+|hi+|hey+|hello|sup|wassup|yoo+|oi|alright|morning|evening|thanks?|ta|cheers|nice|cool|lol|lmao|haha|ok(ay)?|yes|no|yep|nah|wtf|bruh|dude|mate|good|u good|you good)\b/.test(t);
+  const isQuestionAboutState = /^(what|who|why|when|where|how|is|are|can|do(es)?|did|should|could|would)\b/.test(t) && !/\b(build|implement|fix|refactor|create|deploy|migrate)\b/.test(t);
+  if (isGreetingOrBanter) return 'chat';
+  if (words.length <= 4 && !/\b(build|implement|fix|refactor|deploy|swarm|mission|research)\b/.test(t)) return 'chat';
+  if (isQuestionAboutState) return 'chat';
   // Acting on its OWN code / stack / files / systems → real tool-using agent
   // (kernel → swarm → tower → OpenClaude with filesystem access). This is the
   // "just go do it" path — catches "go look into ur files", "learn about your
@@ -1046,8 +1026,11 @@ function classifyRoute(text: string): Route {
   if (/\b(build|implement|fix|refactor|create|add (a |the )?feature|write (the )?code|audit|run tests?|debug|wire|patch|optimi[sz]e|migrate)\b/.test(t)) return 'kernel';
   // Web/topic research (only when NOT about its own stack)
   if (!selfTarget && /\b(research|look ?up|find out|sources?|cite|latest on|news on|deep[- ]?dive)\b/.test(t)) return 'research';
-  // Generic action verb with no clear target still goes to the executor, not chat
-  if (actionVerb) return 'kernel';
+  // A bare action verb with NO target used to fall through to the executor.
+  // That was the main over-escalator: "check", "read", "review", "understand"
+  // appear constantly in ordinary conversation, so normal talk got delegated to
+  // the kernel/swarm. If the user has not named a target, this is conversation —
+  // the agent can still call a tool itself when it decides one is needed.
   return 'chat';
 }
 
@@ -1076,16 +1059,7 @@ export function CommandPanel({ data }: { data: MissionData }) {
   const [selectedModels, setSelectedModels] = useState<string[]>(FREE_MODELS.filter(m => m.fast).slice(0, 3).map(m => m.id));
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [sessionTitle, setSessionTitle] = useState('New Chat');
-  const [sessionDrawerOpen, setSessionDrawerOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Voice-first: every Quill reply speaks by default. Track current TTS
-  // state so the composer can show a "now speaking" pulse.
-  const [speaking, setSpeaking] = useState<'idle' | 'speaking' | 'silent' | 'error'>('idle');
-  const [speakingText, setSpeakingText] = useState<string>('');
-  const [ttsEnabled, setTtsEnabled] = useState<boolean>(true);
   const mochiReactRef = useRef<((text: string, mood: 'happy' | 'alert' | 'curious' | 'proud' | 'worried' | 'chill') => void) | null>(null);
   const setMochiReact = useCallback((react: (text: string, mood: 'happy' | 'alert' | 'curious' | 'proud' | 'worried' | 'chill') => void) => {
     mochiReactRef.current = react;
@@ -1131,23 +1105,6 @@ export function CommandPanel({ data }: { data: MissionData }) {
   const LS_KEY_MESSAGES = 'purpclaw.chat.messages.v1';
   const LS_KEY_DRAFTS   = 'purpclaw.chat.drafts.v1';
   const LS_KEY_SETTINGS = 'purpclaw.chat.settings.v1';
-  const LS_KEY_SESSION  = 'purpclaw.chat.activeSession.v1';
-
-  const trace = useCallback((action: string, status = 'info', detail = '', extra: Record<string, any> = {}) => {
-    fetch('/api/trace/recent', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        source: 'chat-ui',
-        route,
-        sessionId: activeSessionId || '',
-        action,
-        status,
-        detail,
-        ...extra,
-      }),
-    }).catch(() => {});
-  }, [activeSessionId, route]);
 
   useEffect(() => {
     try {
@@ -1156,10 +1113,6 @@ export function CommandPanel({ data }: { data: MissionData }) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) setMessages(parsed);
       }
-    } catch {}
-    try {
-      const raw = window.localStorage.getItem(LS_KEY_SESSION);
-      if (raw) setActiveSessionId(raw);
     } catch {}
     try {
       const raw = window.localStorage.getItem(LS_KEY_DRAFTS);
@@ -1175,70 +1128,6 @@ export function CommandPanel({ data }: { data: MissionData }) {
     if (!hydrated) return;
     try { window.localStorage.setItem(LS_KEY_MESSAGES, JSON.stringify(messages.slice(-500))); } catch {}
   }, [messages, hydrated]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      if (activeSessionId) window.localStorage.setItem(LS_KEY_SESSION, activeSessionId);
-      else window.localStorage.removeItem(LS_KEY_SESSION);
-    } catch {}
-  }, [activeSessionId, hydrated]);
-
-  const saveCurrentSession = useCallback(async () => {
-    const firstUser = messages.find(m => m.role === 'user')?.content?.slice(0, 70).replace(/\s+/g, ' ');
-    const title = sessionTitle && sessionTitle !== 'New Chat' ? sessionTitle : (firstUser || 'New Chat');
-    const res = await fetch('/api/sessions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: activeSessionId || undefined,
-        title,
-        messages,
-        provider,
-        model: selectedModels[0] || provider,
-      }),
-    });
-    const data = await res.json().catch(() => null);
-    if (data?.session?.id) {
-      setActiveSessionId(data.session.id);
-      setSessionTitle(data.session.title || title);
-      trace('save_session', 'ok', `${messages.length} message(s)`, { sessionId: data.session.id });
-    } else {
-      trace('save_session', 'error', 'session API did not return an id');
-    }
-  }, [activeSessionId, messages, provider, selectedModels, sessionTitle, trace]);
-
-  useEffect(() => {
-    if (!hydrated || messages.length === 0) return;
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => { saveCurrentSession().catch(() => {}); }, 1200);
-    return () => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    };
-  }, [messages, hydrated, saveCurrentSession]);
-
-  const loadSession = useCallback(async (id: string) => {
-    const res = await fetch(`/api/sessions/${encodeURIComponent(id)}`);
-    const data = await res.json().catch(() => null);
-    if (!res.ok || !data?.session) {
-      trace('load_session', 'error', id);
-      return;
-    }
-    const loaded = Array.isArray(data.session.messages) ? data.session.messages : [];
-    setMessages(loaded);
-    setActiveSessionId(data.session.id);
-    setSessionTitle(data.session.title || 'Loaded Chat');
-    trace('load_session', 'ok', `${loaded.length} message(s)`, { sessionId: data.session.id });
-  }, [trace]);
-
-  const newSession = useCallback(() => {
-    setMessages([]);
-    setInput('');
-    setDrafts({ chat: '', plan: '', kernel: '', swarm: '', research: '', groupchat: '', mission: '' });
-    setActiveSessionId(null);
-    setSessionTitle('New Chat');
-    trace('new_session', 'ok', 'blank chat');
-  }, [trace]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -1329,7 +1218,7 @@ export function CommandPanel({ data }: { data: MissionData }) {
   }, [fullExecution]);
 
   useEffect(() => {
-    fetch('/api/governance/policy')
+    fetch('/api/service-proxy?port=7780&path=%2Fapi%2Fgovernance%2Fpolicy')
       .then(r => r.ok ? r.json() : null)
       .then(raw => {
         const mode = raw?.data?.policy?.mode || raw?.policy?.mode;
@@ -1420,14 +1309,13 @@ export function CommandPanel({ data }: { data: MissionData }) {
     const setMeta = (m: string) => updateMsg(msgId, { meta: m });
     let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
     try {
-      const res = await fetch('/api/chat/swarm', {
+      const res = await fetch('http://localhost:7780/api/chat/swarm', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'text/event-stream',
         },
         body: JSON.stringify({ message: body.message || body.goal || '', agents: body.agents }),
-        signal: AbortSignal.timeout(120000),
       });
       if (!res.ok || !res.body) {
         const txt = await res.text().catch(() => '');
@@ -1641,17 +1529,17 @@ export function CommandPanel({ data }: { data: MissionData }) {
     }
   }, []);
 
-  // Streaming chat send. POSTs through Next's same-origin /api/chat proxy.
-  // The proxy preserves SSE while normalizing upstream provider failures into
-  // real SSE error events instead of browser-level "Failed to fetch".
+  // Streaming chat send. POSTs to the unified_api directly on port 7780
+  // (bypassing the service-proxy, which buffers responses). Backend
+  // emits: phase, token, done, error.
   const streamChatSend = useCallback(async (msgId: string, apiPath: string, body: any) => {
-    const res = await fetch(apiPath, {
+    const res = await fetch(`http://127.0.0.1:7780${apiPath}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'text/event-stream',
       },
-      body: JSON.stringify({ ...body, sessionId: activeSessionId || undefined }),
+      body: JSON.stringify(body),
     });
     if (!res.ok || !res.body) {
       const txt = await res.text().catch(() => '');
@@ -1702,35 +1590,11 @@ export function CommandPanel({ data }: { data: MissionData }) {
               }))
             : undefined,
         });
-
-        // Voice-first: speak the reply out loud by default. Fire-and-forget;
-        // surface a small "now speaking" indicator in the composer. If TTS is
-        // disabled in this session or the bridge is down, log it and move on.
-        if (ttsEnabled && reply && reply.trim().length > 0) {
-          setSpeaking('speaking');
-          setSpeakingText(reply);
-          speakReply(reply).then(r => {
-            if (!r.ok) {
-              setSpeaking('silent');
-              // Only log once per failure mode to keep the console clean
-              if (!(window as any).__purpclawTtsWarned) {
-                (window as any).__purpclawTtsWarned = true;
-                console.warn(`[Quill TTS] voice bridge unavailable (${r.reason}); reply not spoken. Set MATRIX_API_KEY or MINIMAX_TTS_USE_MAIN_KEY=1 in .env to enable.`);
-              }
-              // Auto-clear the indicator after a few seconds in silent mode
-              setTimeout(() => setSpeaking('idle'), 4000);
-            } else {
-              // Approximate the audio duration so the pulse doesn't linger
-              const approxMs = Math.max(1500, reply.length * 65 + 1000);
-              setTimeout(() => setSpeaking('idle'), approxMs);
-            }
-          });
-        }
       } else if (ev === 'error') {
         updateMsg(msgId, { content: 'error: ' + (data?.error || 'unknown'), meta: 'stream error', pending: false });
       }
     });
-  }, [activeSessionId, updateMsg, streamReadSSE]);
+  }, [updateMsg, streamReadSSE]);
 
   const executePlan = useCallback(async (msgId: string, steps: PlanStep[]) => {
     updateMsg(msgId, { planState: 'executing', planStepResults: [] });
@@ -1776,31 +1640,14 @@ export function CommandPanel({ data }: { data: MissionData }) {
   // placeholder message with per-model bubbles + synthesis (the "real
   // chat room" feel). The original placeholder gets removed.
   const pollJob = useCallback(async (jobId: string, msgId: string) => {
-    const maxPolls = 240; // 12 minutes. Real swarm runs can exceed 3 minutes.
-    const terminalStates = new Set(['completed', 'failed', 'blocked', 'stopped', 'aborted', 'waiting_approval']);
-    let lastSeenState = 'queued';
+    const maxPolls = 60;
     for (let i = 0; i < maxPolls; i++) {
       await new Promise(r => setTimeout(r, 3000));
       try {
-        const res = await fetch(`/api/kernel/jobs/${encodeURIComponent(jobId)}`);
-        if (!res.ok) {
-          updateMsg(msgId, { meta: `polling failed: HTTP ${res.status}` });
-          continue;
-        }
+        const res = await fetch(`/api/service-proxy?port=7780&path=${encodeURIComponent(`/api/kernel/jobs/${jobId}`)}`);
         const raw = await res.json();
         const job = raw.data?.job ?? raw.job ?? raw.data ?? raw;
-        lastSeenState = String(job.state || lastSeenState || 'queued');
-        const latestEvent = Array.isArray(job.events) && job.events.length
-          ? job.events[job.events.length - 1]
-          : null;
-        updateMsg(msgId, {
-          meta: [
-            lastSeenState,
-            latestEvent?.stage,
-            latestEvent?.message,
-          ].filter(Boolean).join(' - ').slice(0, 180),
-        });
-        if (terminalStates.has(lastSeenState)) {
+        if (['completed', 'failed', 'blocked'].includes(job.state)) {
           // Find the placeholder's route so we can label the new bubbles
           // consistently. We need the route to know whether to use the
           // groupchat (🤖) or research (🔬) avatar.
@@ -1842,7 +1689,7 @@ export function CommandPanel({ data }: { data: MissionData }) {
             } else {
               // Single-result job (kernel, mission, etc.) — keep the
               // original "one big reply" model. Just update the placeholder.
-              const report = job.finalReport || job.researchRun?.synthesis || job.error || `Job ${job.state}`;
+              const report = job.finalReport || job.researchRun?.synthesis || `Job ${job.state}`;
               const modelInfo = job.researchRun ? `${job.researchRun.successCount}/${job.researchRun.memberCount} models answered` : '';
               additions.push({
                 id: uid(),
@@ -1861,11 +1708,7 @@ export function CommandPanel({ data }: { data: MissionData }) {
         }
       } catch {}
     }
-    updateMsg(msgId, {
-      content: `Job polling timed out after 12 minutes. Last seen state: ${lastSeenState}. Check the Workflow Flow or Kernel Jobs panel for the archived trace.`,
-      meta: `timeout - ${lastSeenState}`,
-      pending: false,
-    });
+    updateMsg(msgId, { content: 'Job timed out — check kernel jobs panel', pending: false });
   }, [updateMsg]);
 
   const send = async () => {
@@ -1918,7 +1761,6 @@ export function CommandPanel({ data }: { data: MissionData }) {
     const outText = `${text}${attachmentBlock}${contextBlock}`.trim();
     const shownText = text + (attachments.length ? `\n📎 ${attachments.map(a => a.name).join(', ')}` : '');
     push({ role: 'user', route, content: shownText });
-    trace('send_message', 'ok', `${route}: ${text.slice(0, 140)}`);
     const sentAttachments = attachments;
     setAttachments([]);
 
@@ -1930,6 +1772,7 @@ export function CommandPanel({ data }: { data: MissionData }) {
     };
 
     try {
+      const proxyUrl = `/api/service-proxy?port=7780&path=${encodeURIComponent(r.api)}`;
       const body = r.body(outText, opts) as Record<string, any>;
       body.operatorContext = operatorContext;
 
@@ -1955,7 +1798,7 @@ export function CommandPanel({ data }: { data: MissionData }) {
         return;
       }
 
-      const res  = await fetch(r.api, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const res  = await fetch(proxyUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       // Defensive: upstream may return HTML (404 page) instead of JSON
       const rawText = await res.text();
       let raw: any;
@@ -2165,7 +2008,7 @@ export function CommandPanel({ data }: { data: MissionData }) {
     const next = governanceMode === 'autonomous' ? 'supervised' : 'autonomous';
     setGovernanceMode(next);
     try {
-      const res = await fetch('/api/governance/policy', {
+      const res = await fetch('/api/service-proxy?port=7780&path=%2Fapi%2Fgovernance%2Fpolicy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mode: next }),
@@ -2212,28 +2055,10 @@ export function CommandPanel({ data }: { data: MissionData }) {
   };
 
   return (
-    <div className="relative grid h-full min-h-0 grid-rows-[minmax(0,1fr)_260px] overflow-hidden lg:grid-cols-[minmax(0,1fr)_clamp(360px,29vw,460px)] lg:grid-rows-1">
-      {sessionDrawerOpen && (
-        <>
-          <button
-            type="button"
-            aria-label="Close sessions drawer"
-            onClick={() => setSessionDrawerOpen(false)}
-            className="absolute inset-0 z-30 bg-black/45 backdrop-blur-sm lg:hidden"
-          />
-          <div className="absolute bottom-0 left-0 top-0 z-40 w-[min(22rem,calc(100vw-3rem))] border-r border-cyan-300/15 bg-black/95 shadow-2xl">
-            <SessionSidebar
-              activeSessionId={activeSessionId}
-              onNew={() => { newSession(); setSessionDrawerOpen(false); }}
-              onLoad={(id) => { loadSession(id); setSessionDrawerOpen(false); }}
-              onSave={() => saveCurrentSession().catch(() => {})}
-            />
-          </div>
-        </>
-      )}
+    <div className="flex h-full overflow-hidden">
 
       {/* Mochi narrator sidebar — visible on wide screens */}
-      <aside className="hidden w-64 shrink-0 flex-col gap-3 border-r border-white/6 bg-black/50 p-3 overflow-y-auto">
+      <aside className="hidden 2xl:flex w-64 shrink-0 flex-col gap-3 border-r border-white/6 bg-black/50 p-3 overflow-y-auto">
         {/* Connection dots — compact */}
         <div className="flex items-center gap-3 px-1">
           {[
@@ -2269,33 +2094,21 @@ export function CommandPanel({ data }: { data: MissionData }) {
       </aside>
 
       {/* Chat */}
-      <div className="flex min-w-0 flex-col overflow-hidden text-[15px]">
-        <div className="flex items-center justify-between gap-3 border-b border-white/8 bg-black/35 px-5 py-2">
-          <div className="min-w-0">
-            <div className="truncate text-sm font-black uppercase tracking-[0.16em] text-cyan-100">{sessionTitle}</div>
-            <div className="text-[11px] font-mono text-white/35">{activeSessionId || 'unsaved local chat'}</div>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={() => setSessionDrawerOpen(true)} className="rounded border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs font-bold text-cyan-100">Sessions</button>
-            <button onClick={newSession} className="rounded border border-white/10 px-3 py-1.5 text-xs font-bold text-white/65">New</button>
-            <button onClick={() => saveCurrentSession().catch(() => {})} className="rounded border border-emerald-300/25 bg-emerald-300/10 px-3 py-1.5 text-xs font-bold text-emerald-100">Save</button>
-            <button onClick={exportLog} className="rounded border border-white/10 px-3 py-1.5 text-xs font-bold text-white/65">Export</button>
-          </div>
-        </div>
-        <div ref={scrollContainerRef} className={`flex-1 min-h-0 overflow-y-auto px-5 py-4 space-y-3 ${messages.length === 0 ? 'flex flex-col items-center justify-center' : ''}`}>
+      <div className="flex flex-1 flex-col min-w-0 relative">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
           {messages.length === 0 && (
-            <div className="select-none text-center text-[11px] font-mono text-white/25">Type anything. Ctrl+Enter to send.</div>
+            <div className="text-[11px] font-mono text-white/25 pt-8 text-center">Type anything. Ctrl+Enter to send.</div>
           )}
           {messages.map(msg => (
-            <div key={msg.id} className={`flex ${msg.role === 'assistant' ? 'justify-end' : 'justify-start'}`}
+            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               style={{ animation: 'fadeSlideUp 140ms ease-out forwards' }}>
 
               {msg.role === 'user' && (
-                <div className="max-w-[66%]">
-                  <div className={`rounded-2xl rounded-tl-sm px-4 py-3 text-[15px] leading-relaxed border ${msg.route ? C[ROUTES.find(r=>r.id===msg.route)!.color].pill : c.pill}`}>
+                <div className="max-w-[72%]">
+                  <div className={`rounded-2xl rounded-tr-sm px-4 py-3 text-sm leading-relaxed border ${msg.route ? C[ROUTES.find(r=>r.id===msg.route)!.color].pill : c.pill}`}>
                     {msg.content}
                   </div>
-                  <div className="mt-0.5 flex justify-start gap-2 text-[10px] font-mono">
+                  <div className="mt-0.5 flex justify-end gap-2 text-[8px] font-mono">
                     {msg.route && <span className={C[ROUTES.find(r=>r.id===msg.route)!.color].text}>{ROUTES.find(r=>r.id===msg.route)!.label}</span>}
                     <span className="text-white/18">{msg.ts}</span>
                   </div>
@@ -2303,8 +2116,8 @@ export function CommandPanel({ data }: { data: MissionData }) {
               )}
 
               {(msg.role === 'assistant') && (
-                <div className="max-w-[74%]">
-                  <div className={`rounded-2xl rounded-tr-sm border ${msg.pending ? 'border-white/8 bg-white/[0.02]' : 'border-white/10 bg-white/[0.04]'} px-4 py-3`}>
+                <div className="max-w-[82%]">
+                  <div className={`rounded-2xl rounded-tl-sm border ${msg.pending ? 'border-white/8 bg-white/[0.02]' : 'border-white/10 bg-white/[0.04]'} px-4 py-3`}>
                     {/* Header — show model name if this bubble is one of N
                         in a group room, otherwise show the route. The avatar
                         emoji gives it the "real chat participant" feel. */}
@@ -2342,7 +2155,7 @@ export function CommandPanel({ data }: { data: MissionData }) {
                         <span className="text-[10px] font-mono text-white/35">{msg.content}</span>
                       </div>
                     ) : (
-                      <pre className="text-[15px] text-white/85 leading-relaxed whitespace-pre-wrap font-sans">{msg.content}</pre>
+                      <pre className="text-[13px] text-white/82 leading-relaxed whitespace-pre-wrap font-sans">{msg.content}</pre>
                     )}
                     {msg.meta && !msg.pending && (
                       <div className="mt-2 rounded border border-white/6 bg-black/30 px-2 py-1 text-[8px] font-mono text-white/30">{msg.meta}</div>
@@ -2430,7 +2243,7 @@ export function CommandPanel({ data }: { data: MissionData }) {
                       </div>
                     )}
                   </div>
-                  <div className="mt-0.5 flex justify-end gap-2 text-[10px] font-mono">
+                  <div className="mt-0.5 flex gap-2 text-[8px] font-mono">
                     <span className="text-white/18">{msg.ts}</span>
                   </div>
                 </div>
@@ -2489,43 +2302,6 @@ export function CommandPanel({ data }: { data: MissionData }) {
           </div>
         )}
 
-        {/* ── Voice-first reply indicator ───────────────────────────────
-            Tiny pulse strip above the composer so you can see at a glance
-            whether Quill's last reply is being spoken. Tap to toggle TTS
-            off if you don't want every reply out loud. */}
-        <div className="flex items-center gap-2 px-1 mb-1 select-none">
-          <button
-            type="button"
-            onClick={() => setTtsEnabled(v => !v)}
-            className={`flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-mono px-2 py-1 rounded border transition-colors ${
-              speaking === 'speaking'
-                ? 'border-emerald-400/40 bg-emerald-400/10 text-emerald-200'
-                : speaking === 'silent' || speaking === 'error'
-                ? 'border-amber-400/30 bg-amber-400/5 text-amber-300/80'
-                : ttsEnabled
-                ? 'border-white/10 bg-white/[0.02] text-white/40 hover:text-white/60'
-                : 'border-white/5 bg-transparent text-white/20'
-            }`}
-            title={ttsEnabled ? 'Voice replies on — click to mute' : 'Voice replies muted — click to enable'}
-          >
-            <span className={`inline-block w-1.5 h-1.5 rounded-full ${
-              speaking === 'speaking'
-                ? 'bg-emerald-300 animate-pulse'
-                : speaking === 'silent'
-                ? 'bg-amber-300/70'
-                : ttsEnabled
-                ? 'bg-white/40'
-                : 'bg-white/15'
-            }`} />
-            {speaking === 'speaking' ? 'speaking' : speaking === 'silent' ? 'voice offline' : ttsEnabled ? 'voice on' : 'voice off'}
-          </button>
-          {speaking === 'speaking' && speakingText && (
-            <span className="text-[10px] text-emerald-200/70 font-mono truncate max-w-[28rem]" title={speakingText}>
-              {speakingText.slice(0, 80)}{speakingText.length > 80 ? '…' : ''}
-            </span>
-          )}
-        </div>
-
         {/* ── Composer V1 — integrated chatbox with flyout menus ── */}
         <ComposerInput
           composerMode={composerMode}
@@ -2562,9 +2338,6 @@ export function CommandPanel({ data }: { data: MissionData }) {
           selectedModels={selectedModels}
         />
       </div>
-      {/* Right dock: fill the grid column as a proper full-height side panel
-          (compact = h-full + left border), not a floating h-72 box at the top. */}
-      <TraceTerminal compact />
     </div>
   );
 }
