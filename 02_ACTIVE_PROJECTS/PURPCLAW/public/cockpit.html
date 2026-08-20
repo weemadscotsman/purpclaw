@@ -859,9 +859,30 @@ async function drawer(id,label){
         <div class="stat"><b>${tot.layers}</b><span>LAYERS</span></div>
         <div class="stat"><b>${tot.traces}</b><span>DÉJÀ VU TRACES</span></div>
         <div class="stat"><b>${tot.verifiedTraces}</b><span>VERIFIED</span></div></div>
-      <div class="card"><h3>LAYERS</h3><div class="g">${((v0&&v0.layers)||[]).map(l=>
-        `<div class="it"><b>${l.atoms}</b><span>${esc(l.layer)}</span>
-         <span>${l.newest?new Date(l.newest).toLocaleString():'—'}</span></div>`).join('')}</div></div>
+      ${(()=>{
+        // The seven canonical layers, always shown — even the empty ones — so the
+        // spine's real shape is visible instead of only the layers that happen to
+        // have a file on disk. dejavu-index is the recognition accelerator, not one
+        // of the seven; it stays in the traces stat above.
+        const CANON=[
+          ['episodic','what happened — conversations, events'],
+          ['semantic','what is known — facts, concepts'],
+          ['procedural','how things were done — routes, traces'],
+          ['symbolic','named rules and relationships'],
+          ['temporal','when — ordering and change over time'],
+          ['counterfactual','what did NOT happen / alternatives'],
+          ['affective','interaction tone and preference'],
+        ];
+        const onDisk=Object.fromEntries(((v0&&v0.layers)||[]).map(l=>[l.layer,l]));
+        const populated=CANON.filter(([n])=>onDisk[n]&&onDisk[n].atoms).length;
+        return `<div class="card"><h3>SEVEN-LAYER SPINE · ${populated}/7 populated</h3><div class="g">${
+          CANON.map(([name,desc])=>{const l=onDisk[name];const n=l?l.atoms:0;
+            return `<div class="it"><b style="color:${n?'var(--purple)':'var(--dim)'}">${n} <span style="font-weight:400;font-size:11px">${esc(name)}</span></b>
+              <span>${esc(desc)}</span>
+              <span style="font-size:10.5px;color:var(--dim)">${n?(l.newest?new Date(l.newest).toLocaleString():'no timestamp'):'empty'}</span></div>`;}).join('')}</div>
+          <div style="color:var(--dim);font-size:11px;padding-top:6px">
+            Empty layers are real: those subsystems exist but nothing has been written to them yet — not hidden, not faked.</div></div>`;
+      })()}
       <div class="card"><h3>SEARCH EVERYTHING</h3>
         <input id="mq" placeholder="why did we stop using X…" style="width:100%;padding:8px 10px;
           border:1px solid var(--line);border-radius:10px;font:13px var(--sans);outline:none">
