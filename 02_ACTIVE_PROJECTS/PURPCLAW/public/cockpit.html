@@ -734,10 +734,11 @@ async function drawer(id,label){
     load('');
     return}
   if(id==='settings'){
-    const [h2,mem,bk,st]=await Promise.all([j('/api/health'),j('/api/settings/memory'),j('/api/backends'),j('/api/settings')]);
+    const [h2,mem,bk,st,lg]=await Promise.all([j('/api/health'),j('/api/settings/memory'),j('/api/backends'),j('/api/settings'),j('/api/logs')]);
     const rt=h2&&h2.runtime;
     const backends=(bk&&bk.backends)||[];
     const activeBackend=(st&&st.activeBackend)||null;
+    const events=Array.isArray(lg)?lg:((lg&&lg.logs)||[]);
     const c=(mem&&mem.config)||null;
     const sw=(on,label,pathStr)=>`<div class="it" style="cursor:pointer;display:flex;align-items:center;gap:9px"
         data-set="${pathStr}" data-val="${on?'0':'1'}">
@@ -760,6 +761,17 @@ async function drawer(id,label){
           </div>`;}).join('')}
         <div style="color:var(--dim);font-size:11px;padding-top:6px">
           API keys are entered server-side (.env / settings store) — never shown here.</div></div>`:'')+
+      `<div class="card"><h3>DIAGNOSTICS</h3>
+        <div class="stat"><b style="color:${rt?'#15803d':'#b91c1c'}">${rt?'online':'down'}</b><span>UNIFIED API</span></div>
+        <div class="stat"><b>${esc(String(rt&&rt.version||'—'))}</b><span>VERSION</span></div>
+        <div class="stat"><b>${events.length}</b><span>RECENT EVENTS</span></div>
+        ${events.length?`<div style="padding-top:8px">${events.slice(0,6).map(e=>{
+          const t=e.timestamp?new Date(e.timestamp).toLocaleTimeString():'';
+          return `<div class="it" style="margin-bottom:5px"><b style="font:600 11px var(--mono)">${esc(e.type||'event')}</b>
+            <span>${esc(t)}${e.data&&e.data.division?' · '+esc(e.data.division):''}${e.data&&e.data.exitCode!=null?' · exit '+e.data.exitCode:''}</span></div>`;}).join('')}</div>`
+          :'<div style="color:var(--dim);font-size:11.5px">no recent events</div>'}
+        <div style="color:var(--dim);font-size:11px;padding-top:6px">
+          Live from /api/health and /api/logs. Full activity lives in Missions.</div></div>`+
       (!c?'<div class="card">memory settings unavailable</div>':
       `<div class="card"><h3>MEMORY — MASTER</h3>
         ${sw(c.enabled,'Memory enabled','enabled')}
