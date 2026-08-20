@@ -3134,6 +3134,26 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, require('./lib/views').tools(require('./lib/tools')));
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
+    // Projects: registered folder roots. The composer's workspace menu must
+    // read this same list — two sources would drift immediately.
+    if (pathname === '/api/projects' && method === 'GET') {
+      try { return sendJson(res, 200, require('./lib/projects').list({})); }
+      catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname === '/api/projects' && method === 'POST') {
+      try {
+        const body = await parseBody(req);
+        const P = require('./lib/projects');
+        if (body && body.unregister) return sendJson(res, 200, P.unregister(body.unregister));
+        if (!body || !body.root) return sendJson(res, 400, { error: 'root required' });
+        const r = P.register(body.root, body.meta || {});
+        return sendJson(res, r.ok ? 200 : 400, r);
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname === '/api/skills/registry' && method === 'GET') {
+      try { return sendJson(res, 200, require('./lib/views').skills(require('./lib/tools'))); }
+      catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
     if (pathname === '/api/memory/vault' && method === 'GET') {
       try {
         const q = new URL(req.url, 'http://x').searchParams;

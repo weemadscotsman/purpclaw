@@ -188,8 +188,12 @@ const PROVIDERS=[['auto','Auto'],['openai','OpenAI'],['claude','Claude'],['gemin
 const SPEEDS=[['fast','⚡ Fast'],['balanced','⚡⚡ Balanced'],['deep','⚡⚡⚡ Deep']];
 const INTEL=[['low','🟢 Low'],['medium','🟡 Medium'],['high','🟠 High'],['extreme','🔴 Extreme']];
 const MEMORY=[['off','○ Off'],['session','◐ Session'],['project','◉ Project'],['persistent','🧠 Persistent']];
-const WORKSPACES=[['dreamforge','DreamForge'],['omnicode','OmniCode'],['gotham','Gotham'],
-                  ['openclaw','OpenClaw'],['current','Current Folder'],['custom','Custom Project']];
+/* Workspaces are NOT a hardcoded list. They come from the project registry, so
+   a name appears only when its folder actually exists and is registered — the
+   old list offered OpenClaw, which is not a folder on this machine. Seeded with
+   the current folder so the composer works before anything is registered, then
+   replaced by /api/projects on boot. */
+let WORKSPACES=[['current','Current Folder']];
 const CHIPS=['Search','Think','Research','Code','Explain','Design','Debug','Write','Market','Legal','OSINT','Voice','Video','Image'];
 const ACCESS=[['readOnly','🟢 Read Only'],['review','🟡 Review'],['agentActions','🟠 Agent Actions'],['fullSystem','🔴 Full System']];
 /* UI id → wire value the backend envelope enforces. Keep in step with lib/mission-envelope.js. */
@@ -537,18 +541,44 @@ async function drawer(id,label){
   if(id==='missions'){
     // Missions come from the episodic memory layer, plus whatever this browser
     // is holding locally. There is deliberately no separate mission store.
-    const m=await j('/api/missions');const durable=(m&&m.missions)||[];
-    body.innerHTML=`<div class="card"><h3>MISSIONS</h3>
-        <div class="stat"><b>${durable.length}</b><span>IN MEMORY</span></div>
-        <div class="stat"><b>${sess.length}</b><span>THIS BROWSER</span></div></div>`+
-      (durable.length?`<div class="card"><h3>FROM THE EPISODIC LAYER</h3>${durable.map(x=>
-        `<div class="it" style="margin-bottom:7px"><b>${esc(x.title||x.session)}</b>
-         <span>${x.turns} turns · ${x.session}</span>
-         <span>${x.first?new Date(x.first).toLocaleString():''} → ${x.last?new Date(x.last).toLocaleTimeString():''}</span></div>`).join('')}</div>`:'')+
+    const m=await j('/api/missions');const rows=(m&&m.missions)||[];
+    const t=(m&&m.totals)||{};
+    const ledger=m&&m.source==='mission-ledger';
+    const tone={complete:'#15803d',partial:'#c2410c',failed:'#b91c1c'};
+    body.innerHTML=`<div class="card"><h3>OPERATING HISTORY</h3>
+        <div class="stat"><b>${t.all??rows.length}</b><span>MISSIONS</span></div>
+        <div class="stat"><b>${t.complete??'—'}</b><span>COMPLETE</span></div>
+        <div class="stat"><b>${t.partial??'—'}</b><span>PARTIAL</span></div>
+        <div class="stat"><b>${t.failed??'—'}</b><span>FAILED</span></div>
+        <div class="stat"><b>${t.toolCalls??'—'}</b><span>TOOL CALLS</span></div>
+        <div class="stat"><b>${t.approvals??'—'}</b><span>APPROVALS</span></div>
+        <div style="color:var(--dim);font-size:11.5px;padding-top:6px">${
+          ledger?'Durable ledger — survives restarts.':esc(m&&m.note||'')}</div></div>`+
+      (ledger?rows.map(x=>{const e=x.envelope||{};
+        return `<div class="card"><h3 style="color:${tone[x.status]||'var(--dim)'}">${esc(x.status).toUpperCase()} · ${
+            x.completedAt?new Date(x.completedAt).toLocaleString():''}</h3>
+          <div style="font-size:13px;padding-bottom:10px">${esc(x.prompt)}</div>
+          <div class="g">
+            <div class="it"><b>${esc(e.mode||'—')}</b><span>mode</span></div>
+            <div class="it"><b>${esc(e.access||'—')}</b><span>access</span></div>
+            <div class="it"><b>${esc(e.memory||'—')}</b><span>memory scope</span></div>
+            <div class="it"><b>${esc(x.project||e.workspace||'—')}</b><span>project</span></div>
+            <div class="it"><b>${esc(x.model||'—')}</b><span>model</span></div>
+            <div class="it"><b>${x.durationMs!=null?(x.durationMs/1000).toFixed(1)+'s':'—'}</b><span>duration</span></div>
+          </div>
+          ${(x.toolCalls||[]).length?`<div style="padding-top:9px">${x.toolCalls.map(c=>
+            `<span class="tool ${c.ok===false?'bad':'ok'}" style="margin:2px 5px 2px 0;display:inline-flex">
+              ${c.ok===false?'✗':'✓'} ${esc(c.tool)}${c.err?' — '+esc(String(c.err)).slice(0,40):''}</span>`).join('')}</div>`
+            :'<div style="color:var(--dim);font-size:11.5px;padding-top:8px">no tools ran</div>'}
+          ${(x.approvals||[]).length?`<div style="padding-top:7px;font-size:11.5px;color:var(--amber)">
+            approvals: ${x.approvals.map(a=>esc(a.tool)+' → '+esc(a.decision)).join(', ')}</div>`:''}
+          ${x.result?`<div style="color:#5a5a66;font-size:12px;padding-top:9px;white-space:pre-wrap">${
+            esc(x.result).slice(0,320)}</div>`:''}</div>`;}).join('')
+        :rows.map(x=>`<div class="it" style="margin-bottom:7px"><b>${esc(x.title||x.session)}</b>
+           <span>${x.turns} turns · ${esc(x.session)}</span></div>`).join(''))+
       `<div class="card"><h3>THIS BROWSER</h3>${sess.length?sess.map(s=>
         `<div class="it" style="margin-bottom:7px"><b>${esc(s.title)}</b><span>${s.msgs.length} messages</span></div>`).join('')
-        :'<div style="color:var(--dim)">no local sessions</div>'}</div>`+
-      (m&&m.note?`<div style="color:var(--dim);font-size:11.5px;padding:2px 4px">${esc(m.note)}</div>`:'');
+        :'<div style="color:var(--dim)">no local sessions</div>'}</div>`;
     return}
   if(id==='tools'){
     // The truth surface: every registered tool and what each rung of the access
@@ -585,6 +615,93 @@ async function drawer(id,label){
       $('#tlist').innerHTML=f.slice(0,200).map(rowHtml).join('')+
         (f.length>200?`<div style="color:var(--dim);font-size:11.5px">showing 200 of ${f.length}</div>`:'');};
     draw('');$('#tq').oninput=e=>draw(e.target.value.toLowerCase().trim());
+    return}
+  if(id==='projects'){
+    // A project is a registered folder. Counts are derived at read time from
+    // canonical state, so nothing here can go stale against the runtime.
+    const p=await j('/api/projects');
+    if(!p||!p.projects){body.innerHTML='<div class="card">project registry unavailable</div>';return}
+    body.innerHTML=`<div class="card"><h3>PROJECTS</h3>
+        <div class="stat"><b>${p.projects.filter(x=>x.registered).length}</b><span>REGISTERED</span></div>
+        <div class="stat"><b>${p.projects.filter(x=>x.manifestPresent).length}</b><span>WITH MANIFEST</span></div>
+        <div style="color:var(--dim);font-size:11.5px;padding-top:6px">${esc(p.note||'')}</div></div>`+
+      p.projects.map(x=>`<div class="card"><h3>${esc(x.name)}${x.isCwd?' · CURRENT FOLDER':''}</h3>
+        <div style="font:11.5px var(--mono);color:#5a5a66;padding-bottom:10px">${esc(x.root)}</div>
+        <div class="g">
+          <div class="it"><b>${x.fileCountTruncated?x.files+'+':x.files}</b><span>files${x.fileCountTruncated?' (capped)':''}</span></div>
+          <div class="it"><b>${x.dirs}</b><span>folders</span></div>
+          <div class="it"><b>${x.memoryAtoms}</b><span>memory atoms</span></div>
+          <div class="it"><b>${x.snapshots}</b><span>snapshots</span></div>
+          <div class="it"><b>${x.hasGit?'yes':'no'}</b><span>git repo</span></div>
+          <div class="it"><b>${x.registered?'registered':'unregistered'}</b><span>${x.manifestPresent?'manifest on disk':'no manifest'}</span></div>
+        </div>
+        <div class="g" style="margin-top:9px">
+          <div class="it"><b>${esc(x.defaultMemoryScope)}</b><span>default memory scope</span></div>
+          <div class="it"><b>${esc(x.defaultAccess)}</b><span>default access</span></div>
+          <div class="it"><b>${esc(x.memoryNamespace)}</b><span>memory namespace</span></div>
+        </div>
+        <div style="margin-top:11px">
+          <button class="b" style="border:1px solid var(--line)" data-use="${esc(x.id)}">Use as workspace</button>
+          ${x.registered?`<button class="b" style="border:1px solid var(--line)" data-unreg="${esc(x.root)}">Unregister</button>`:
+                         `<button class="b" style="border:1px solid var(--line)" data-reg="${esc(x.root)}">Register</button>`}
+        </div></div>`).join('')+
+      `<div class="card"><h3>REGISTER A FOLDER</h3>
+        <input id="pnew" placeholder="E:\\path\\to\\project" style="width:100%;padding:8px 10px;border:1px solid var(--line);
+          border-radius:10px;font:12px var(--mono);outline:none">
+        <div style="color:var(--dim);font-size:11.5px;padding-top:7px">
+          Writes &lt;root&gt;/.purpclaw/project.json. The folder must already exist —
+          a project name only appears here if its folder is real.</div>
+        <button class="b" id="pgo" style="border:1px solid var(--line);margin-top:9px">Register</button></div>`;
+    const post=async b=>{await fetch(API+'/api/projects',{method:'POST',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});drawer('projects','Projects')};
+    body.querySelectorAll('[data-use]').forEach(b=>b.onclick=()=>{
+      S.workspace=b.dataset.use;paintCtl();document.body.classList.remove('drawer')});
+    body.querySelectorAll('[data-unreg]').forEach(b=>b.onclick=()=>post({unregister:b.dataset.unreg}));
+    body.querySelectorAll('[data-reg]').forEach(b=>b.onclick=()=>post({root:b.dataset.reg}));
+    $('#pgo').onclick=()=>{const v=$('#pnew').value.trim();if(v)post({root:v})};
+    return}
+  if(id==='skills'){
+    // Tools answer "what can PurpClaw physically do"; Skills answer "what does
+    // it know how to accomplish". A skill without a script is still a skill.
+    const k=await j('/api/skills/registry');
+    if(!k||!k.skills){body.innerHTML='<div class="card">skill registry unavailable</div>';return}
+    const s=k.summary;
+    body.innerHTML=`<div class="card"><h3>SKILL REGISTRY</h3>
+        <div class="stat"><b>${s.onDisk}</b><span>ON DISK</span></div>
+        <div class="stat"><b>${s.executable}</b><span>EXECUTABLE</span></div>
+        <div class="stat"><b>${s.knowledge}</b><span>KNOWLEDGE ONLY</span></div>
+        <div class="stat"><b>${s.callable}</b><span>CALLABLE AS TOOLS</span></div>
+        ${s.unregistered?`<div class="stat"><b style="color:var(--red)">${s.unregistered}</b><span>NOT REGISTERED</span></div>`:''}
+        <div class="stat"><b>${s.undocumented}</b><span>NO SKILL.MD</span></div>
+        <div style="color:var(--dim);font-size:11.5px;padding-top:6px">
+          Executable skills are callable tools. Knowledge skills are procedure the agent follows —
+          real, but not invocable.${s.unregistered?' The unregistered ones are capability the agent cannot reach.':''}</div></div>
+      <div class="card"><h3>SKILLS</h3>
+        <input id="kq" placeholder="filter skills…" style="width:100%;padding:8px 10px;border:1px solid var(--line);
+          border-radius:10px;font:13px var(--sans);margin-bottom:10px;outline:none">
+        <div id="kfil" style="padding-bottom:9px">
+          ${[['all','All'],['executable','Executable'],['knowledge','Knowledge']].map(([v,l])=>
+            `<button class="b" data-kind="${v}" style="border:1px solid var(--line)">${l}</button>`).join(' ')}</div>
+        <div id="klist"></div></div>`;
+    let kind='all';
+    const row=x=>`<div class="it" style="margin-bottom:6px">
+      <b>${esc(x.name)} <span style="font-weight:400;font-size:10px;color:${x.kind==='executable'?'var(--purple)':'var(--dim)'}">
+        ${x.kind}</span></b>
+      <span>${esc(x.description||'no description')}</span>
+      ${x.callableAs?`<span style="font:11px var(--mono);color:var(--purple)">${esc(x.callableAs)}</span>`:''}
+      ${x.script?`<span style="font-size:10.5px;color:var(--dim)">${esc(x.script)}</span>`:''}
+      ${x.requires.length?`<span style="font-size:10.5px;color:var(--amber)">requires ${esc(x.requires.join(', '))}</span>`:''}
+      ${x.hasDoc?'':'<span style="font-size:10.5px;color:var(--red)">no SKILL.md</span>'}</div>`;
+    const draw=q=>{const f=k.skills.filter(x=>(kind==='all'||x.kind===kind)&&
+        (!q||x.name.toLowerCase().includes(q)||(x.description||'').toLowerCase().includes(q)));
+      $('#klist').innerHTML=f.slice(0,150).map(row).join('')+
+        (f.length>150?`<div style="color:var(--dim);font-size:11.5px">showing 150 of ${f.length}</div>`:'');};
+    body.querySelectorAll('[data-kind]').forEach(b=>b.onclick=()=>{
+      kind=b.dataset.kind;
+      body.querySelectorAll('[data-kind]').forEach(o=>o.className='b'+(o===b?' on':''));
+      draw(($('#kq').value||'').toLowerCase().trim());});
+    $('#kq').oninput=e=>draw(e.target.value.toLowerCase().trim());
+    draw('');
     return}
   if(id==='memory'){
     // The vault: search across every durable layer at once.
@@ -688,6 +805,14 @@ setInterval(()=>$('#clock').textContent=new Date().toLocaleTimeString(),1000);
   const rt=h&&h.runtime;$('#rt').textContent=rt?`${rt.profile}/${rt.workspace} · v${rt.version}`:'runtime offline';
   if(rt&&rt.profile)$('#who').textContent=rt.profile.replace(/^\w/,c=>c.toUpperCase())})();
 setInterval(async()=>{const h=await j('/api/health');$('#dot').className='status'+(h?'':' off')},15000);
+/* One workspace truth source: the composer menu is built from the same registry
+   the Projects page reads. */
+(async()=>{const p=await j('/api/projects');
+  if(p&&p.projects&&p.projects.length){
+    WORKSPACES=p.projects.map(x=>[x.id,x.name+(x.isCwd?' (current)':'')]);
+    if(!WORKSPACES.some(w=>w[0]===S.workspace)){
+      const cwd=p.projects.find(x=>x.isCwd);S.workspace=cwd?cwd.id:WORKSPACES[0][0];}
+    paintCtl();}})();
 paintRail();paintCtl();
 if(!sess.length||!C())newMission();else paintLog();
 </script>

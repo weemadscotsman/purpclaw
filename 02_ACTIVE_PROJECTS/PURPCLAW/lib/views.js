@@ -146,6 +146,14 @@ function memoryVault({ query = '', layer = null, limit = 50 } = {}) {
  * database — if it had one, it would immediately disagree with memory.
  */
 function missions({ limit = 40 } = {}) {
+  // Prefer the durable ledger. Deriving missions from episodic memory was a
+  // stopgap while nothing survived a restart; it can only ever reconstruct a
+  // title and a turn count, never the envelope, tool calls or approvals.
+  try {
+    const L = require('./missions').list({ limit });
+    if (L.missions.length) return { ...L, source: 'mission-ledger' };
+  } catch {}
+
   const rows = readJsonl(path.join(MEM_DIR, 'episodic.jsonl'));
   const bySession = new Map();
   for (const r of rows) {
@@ -161,8 +169,88 @@ function missions({ limit = 40 } = {}) {
     bySession.set(id, e);
   }
   const list = [...bySession.values()].sort((a, b) => String(b.last || '').localeCompare(String(a.last || '')));
-  return { ok: true, count: list.length, missions: list.slice(0, limit),
-           note: 'derived from the episodic memory layer — there is no separate mission store' };
+  return { ok: true, count: list.length, missions: list.slice(0, limit), source: 'episodic-fallback',
+           note: 'no durable missions recorded yet — reconstructed from the episodic memory layer' };
 }
 
-module.exports = { tools, memoryVault, missions, layers, categorise };
+/**
+ * Skills: what PurpClaw knows how to accomplish, as opposed to what it can
+ * physically execute (that is Tools).
+ *
+ * The registry's own scan drops any skill without a runnable script, which hid
+ * most of them. A SKILL.md with no script is still a skill — it is procedure
+ * the agent can follow — it just is not a callable tool. Both are shown, and
+ * which is which is stated rather than blurred.
+ */
+function skills(registry) {
+  const dir = path.join(ROOT, 'skills');
+  let entries = [];
+  // Skip dotfile directories — .hub and .curator_reports are bookkeeping, not
+  // skills, and counting them inflates the registry.
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true })
+      .filter(e => e.isDirectory() && !e.name.startsWith('.'));
+  } catch {}
+
+  const registered = new Set(registry.list().map(t => t.name).filter(n => n.startsWith('skill_')));
+  const toolName = n => 'skill_' + n.replace(/[^a-zA-Z0-9_]/g, '_');
+
+  const hasScript = (p, depth = 0) => {
+    if (depth > 3) return null;
+    let items = [];
+    try { items = fs.readdirSync(p, { withFileTypes: true }); } catch { return null; }
+    for (const it of items) {
+      const full = path.join(p, it.name);
+      if (it.isFile() && /\.(sh|py|js)$/.test(it.name)) return full;
+      if (it.isDirectory() && it.name !== 'node_modules' && !it.name.startsWith('.')) {
+        const found = hasScript(full, depth + 1);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const items = entries.map(e => {
+    const p = path.join(dir, e.name);
+    const md = path.join(p, 'SKILL.md');
+    let description = '', requires = [];
+    try {
+      const c = fs.readFileSync(md, 'utf8');
+      // Frontmatter description, quoted or bare — the registry only matched the
+      // quoted form, so most descriptions came back empty.
+      const m = c.match(/^description:\s*["']?(.+?)["']?\s*$/m)
+             || c.match(/^#\s+(.+)$/m);
+      if (m) description = m[1].trim();
+      const r = c.match(/^requires:\s*\[([^\]]+)\]/m);
+      if (r) requires = r[1].split(',').map(s => s.trim()).filter(Boolean);
+    } catch {}
+    const script = hasScript(p);
+    return {
+      name: e.name,
+      description: description.slice(0, 200),
+      kind: script ? 'executable' : 'knowledge',
+      script: script ? path.relative(ROOT, script) : null,
+      hasDoc: fs.existsSync(md),
+      requires,
+      callableAs: registered.has(toolName(e.name)) ? toolName(e.name) : null,
+    };
+  }).sort((a, b) => a.name.localeCompare(b.name));
+
+  const exec = items.filter(i => i.kind === 'executable');
+  return {
+    ok: true,
+    summary: {
+      onDisk: items.length,
+      executable: exec.length,
+      knowledge: items.filter(i => i.kind === 'knowledge').length,
+      callable: items.filter(i => i.callableAs).length,
+      // An executable skill that never registered is capability the agent
+      // cannot reach — worth naming rather than quietly losing.
+      unregistered: exec.filter(i => !i.callableAs).length,
+      undocumented: items.filter(i => !i.hasDoc).length,
+    },
+    skills: items,
+  };
+}
+
+module.exports = { tools, memoryVault, missions, layers, categorise, skills };

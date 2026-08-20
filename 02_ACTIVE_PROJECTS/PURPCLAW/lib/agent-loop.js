@@ -37,6 +37,8 @@ const DEJAVU = (() => { try { return require('./dejavu'); } catch { return null;
 const ENVELOPE = (() => { try { return require('./mission-envelope'); } catch { return null; } })();
 // Memory engine settings — the operator's standing configuration.
 const MEMCFG = (() => { try { return require('./memory-config'); } catch { return null; } })();
+// Durable mission ledger — what PurpClaw actually did, surviving restarts.
+const MISSIONS = (() => { try { return require('./missions'); } catch { return null; } })();
 const { enforceToolUse } = (() => { try { return require('./tools/tool-intent-gate'); } catch { return null; } })();
 const { IdleScheduler } = (() => { try { return require('./runtime/idle-scheduler'); } catch { return null; } })();
 
@@ -405,6 +407,10 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   // Bounded retries when an action prompt produces zero tool calls.
   // Ordered execution trace for this run: [{tool, ok}] in the order they fired.
   const toolSequence = [];
+  const runStartedAt = Date.now();
+  // Approval decisions taken during this run, for the mission record.
+  const approvalLog = [];
+  let servedByModel = null;
   let toolEnforcementRetries = 0;
   const MAX_TOOL_ENFORCEMENT_RETRIES = Number(process.env.PURPCLAW_MAX_TOOL_ENFORCEMENT_RETRIES || 2);
   // Run-level count of tools actually executed. Enforcement asks "did this RUN
@@ -512,6 +518,10 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
     let toolCalls = [];
     for await (const ev of agentTurn({ messages, model, provider, opts })) {
       if (ev.type === 'token') {
+        // Record the model that ACTUALLY served the turn, not the one requested
+        // — with provider 'auto' the requested value is null and the mission
+        // record would claim nothing ran it.
+        if (ev.model) servedByModel = ev.model;
         yield ev;
         turnText += ev.content;
         totalContent += ev.content;
@@ -596,6 +606,22 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
           });
         } catch { /* recognition is an optimisation, never a blocker */ }
       }
+      // Durable mission record. Missions previously lived in an in-process Map
+      // and vanished on restart, which left the system unable to say what it
+      // had actually done. Best-effort: never fail a completed turn over it.
+      if (MISSIONS) {
+        try {
+          MISSIONS.record({
+            sessionId: opts.sessionId || null, prompt, envelope,
+            startedAt: new Date(runStartedAt).toISOString(),
+            durationMs: Date.now() - runStartedAt,
+            model: servedByModel || model || null,
+            provider: provider || (envelope && envelope.provider) || null,
+            toolCalls: toolSequence, approvals: approvalLog,
+            result: totalContent,
+          });
+        } catch { /* history is best-effort */ }
+      }
       yield { type: 'done', turns: turn, totalContent, capsuleId: capId() };
       return;
     }
@@ -674,6 +700,7 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
           yield { type: 'approval-request', requestId: q.requestId, tool: call.tool,
                   args: call.args, expiresAt: q.expiresAt, capsuleId: capId() };
           approval = await REMOTE.wait(q.requestId, { timeoutMs: (opts.approvalTtlSeconds || 300) * 1000 });
+          approvalLog.push({ tool: call.tool, requestId: q.requestId, decision: approval.decision });
           yield { type: 'approval-resolved', requestId: q.requestId, tool: call.tool,
                   decision: approval.decision, capsuleId: capId() };
         } catch (e) {
