@@ -284,14 +284,15 @@ export default function InterventionPanel() {
 
               {/* Value slider */}
               <div>
-                <label className="block text-xs text-zinc-500 mb-2">VALUE: {value}%</label>
+                <label htmlFor="value-slider" className="block text-xs text-zinc-500 mb-2">VALUE: {value}%</label>
                 <input
+                  id="value-slider"
                   type="range"
                   min="0"
                   max="100"
                   value={value}
                   onChange={e => setValue(parseInt(e.target.value))}
-                  className="w-full accent-cyan-500"
+                  className="w-full accent-cyan-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 rounded"
                 />
               </div>
 
@@ -343,7 +344,9 @@ export default function InterventionPanel() {
                             }`}>{agent.status}</span>
                             <button
                               onClick={() => handleInterrupt(agent.id, 'kill')}
-                              className="text-xs text-rose-500 hover:text-rose-400 ml-1"
+                              className="text-xs text-rose-500 hover:text-rose-400 ml-1 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-rose-500 rounded px-1"
+                              aria-label={`Kill agent ${agent.name || 'unnamed'}`}
+                              title="Kill agent"
                             >✕</button>
                           </div>
                         </div>
@@ -366,7 +369,8 @@ export default function InterventionPanel() {
               <select
                 value={reallocateFrom}
                 onChange={e => setReallocateFrom(e.target.value)}
-                className="bg-[#09090b] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-cyan-500/50"
+                aria-label="Source division for reallocation"
+                className="bg-[#09090b] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus:border-cyan-500/50"
               >
                 <option value="">FROM</option>
                 {divisions.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}
@@ -374,7 +378,8 @@ export default function InterventionPanel() {
               <select
                 value={reallocateTo}
                 onChange={e => setReallocateTo(e.target.value)}
-                className="bg-[#09090b] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-cyan-500/50"
+                aria-label="Target division for reallocation"
+                className="bg-[#09090b] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus:border-cyan-500/50"
               >
                 <option value="">TO</option>
                 {divisions.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}
@@ -384,7 +389,8 @@ export default function InterventionPanel() {
                 min="1"
                 value={reallocateCount}
                 onChange={e => setReallocateCount(parseInt(e.target.value) || 1)}
-                className="bg-[#09090b] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-cyan-500/50"
+                aria-label="Number of agents to reallocate"
+                className="bg-[#09090b] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus:border-cyan-500/50"
               />
             </div>
             <button
