@@ -12,29 +12,12 @@
  *     guidance message instead of crashing on ImportError.
  *   - The skill is marked as "degraded" in its metadata so health checks
  *     can report on it.
- *
- * Skill usage telemetry:
- *   - bumpUse  — called when a skill is actively executed
- *   - bumpView — called when a skill is loaded as a reference/prompt
- *   - bumpPatch — called by skill editing tools (lib/skill-patch.js etc.)
  */
 const fs = require('fs');
 const path = require('path');
 const { execSafe } = require('../child-registry');
 
-// Skill usage telemetry (lazy-loaded to avoid circular deps)
-let _skillUsage = null;
-function skillUsage() {
-  if (!_skillUsage) {
-    try { _skillUsage = require('../skill-usage'); } catch { _skillUsage = null; }
-  }
-  return _skillUsage;
-}
-
-const PROJECT_SKILLS_DIR = path.join(process.cwd(), 'skills');
-const SKILLS_DIR = fs.existsSync(PROJECT_SKILLS_DIR)
-  ? PROJECT_SKILLS_DIR
-  : path.join(__dirname, '..', '..', 'skills');
+const SKILLS_DIR = path.join(__dirname, '..', '..', 'skills');
 const REQUIREMENTS_GROUPS = {
   ml: 'requirements.skills.ml.txt',
   media: 'requirements.skills.media.txt',
@@ -52,14 +35,14 @@ function registerAllSkills(registry) {
   let degraded = 0;
 
   for (const skill of skills) {
+    if (!skill.hasScript) continue;
+
     // Probe for missing optional deps
     const missing = probeMissingDeps(skill);
     skill.missingDeps = missing;
     skill.degraded = missing.length > 0;
 
-    let description = skill.description || (skill.hasScript
-      ? `Execute the ${skill.name} skill`
-      : `Reference the ${skill.name} skill instructions`);
+    let description = skill.description || `Execute the ${skill.name} skill`;
     if (skill.degraded) {
       description += ` [DEGRADED: missing ${missing.join(', ')}]`;
     }
@@ -68,6 +51,7 @@ function registerAllSkills(registry) {
       type: 'object',
       properties: {
         args: { type: 'string', description: 'Arguments to pass to the skill executor (optional)' },
+        query: { type: 'string', description: 'Alias for args — search/query text' },
       },
     };
 
@@ -76,10 +60,6 @@ function registerAllSkills(registry) {
       description: description.substring(0, 300),
       inputSchema,
       execute: async (args) => {
-        // ── Skill telemetry: bumpUse on active execution ──────────────────
-        const su = skillUsage();
-        if (su) { try { su.bumpUse(skill.name); } catch {} }
-
         if (skill.degraded) {
           // Graceful: return guidance, don't crash
           return {
@@ -91,12 +71,16 @@ function registerAllSkills(registry) {
             skill: skill.name,
           };
         }
-        if (!skill.hasScript) {
-          // Reference-only skill — bumpView
-          if (su) { try { su.bumpView(skill.name); } catch {} }
-          return referenceSkill(skill);
+        // Models reasonably call a search skill with {query:…}, {input:…} or
+        // {text:…}; only `args` was read, so the script got no argv and printed
+        // its usage banner — which looks like a broken tool, not a bad call.
+        const a = args || {};
+        if (!a.args && !a.argv) {
+          const alias = a.query ?? a.input ?? a.text ?? a.prompt ?? a.q ?? a.search;
+          // One logical value → one argv entry, so a multi-word query survives.
+          if (alias != null) a.argv = [String(alias)];
         }
-        return executeSkill(skill, args);
+        return executeSkill(skill, a);
       },
     });
     count++;
@@ -176,89 +160,34 @@ function isImportable(pkgName) {
   }
 }
 
-// Collect every skill directory under SKILLS_DIR. A directory IS a skill if it
-// contains a SKILL.md; we then stop descending (a skill's internals are not
-// sub-skills). Top-level script-only dirs (no SKILL.md) are still treated as
-// skills for backwards-compat. This recursion means skills grouped into
-// category subfolders are no longer invisible to the runtime.
-function collectSkillDirs(dir, out, depth = 0) {
-  if (depth > 4) return;
-  let entries;
-  try { entries = fs.readdirSync(dir); } catch { return; }
-  for (const entry of entries) {
-    if (entry.startsWith('_') || entry.startsWith('.')) continue;
-    if (entry === 'node_modules' || entry === '__pycache__') continue;
-    const p = path.join(dir, entry);
-    let st; try { st = fs.statSync(p); } catch { continue; }
-    if (!st.isDirectory()) continue;
-    if (fs.existsSync(path.join(p, 'SKILL.md'))) {
-      out.push(p);                 // it's a skill — do not descend into it
-    } else if (depth === 0) {
-      out.push(p);                 // top-level script-only skill (legacy behavior)
-      collectSkillDirs(p, out, depth + 1); // but still look deeper for nested skills
-    } else {
-      collectSkillDirs(p, out, depth + 1); // category subfolder — keep walking
-    }
-  }
-}
-
-// Extract the `description:` field from SKILL.md frontmatter. Handles all three
-// YAML styles seen in the corpus: double-quoted, plain unquoted single-line, and
-// block scalars (`>` / `|`) that fold across multiple indented lines.
-function extractDescription(content) {
-  const quoted = content.match(/^\s*description:\s*"([^"]+)"/m);
-  if (quoted) return quoted[1].trim();
-
-  // Block scalar: description: > (or |) followed by indented continuation lines.
-  const block = content.match(/^\s*description:\s*[>|][-+]?\s*\n([\s\S]*?)(?=^\S|\n\s*\n|^\s*\w+:)/m);
-  if (block) {
-    return block[1].split('\n').map(l => l.trim()).filter(Boolean).join(' ').trim();
-  }
-
-  // Plain unquoted single line.
-  const plain = content.match(/^\s*description:\s*([^\n>|"][^\n]*)/m);
-  if (plain) return plain[1].trim();
-
-  return '';
-}
-
 function scanSkills() {
   const skills = [];
   if (!fs.existsSync(SKILLS_DIR)) return skills;
 
-  const skillDirs = [];
-  collectSkillDirs(SKILLS_DIR, skillDirs);
-  const seen = new Set();
-
-  for (const skillPath of skillDirs) {
-    const entry = path.basename(skillPath);
-    if (seen.has(entry)) continue;   // first wins; guards against name collisions
-    seen.add(entry);
+  for (const entry of fs.readdirSync(SKILLS_DIR)) {
+    const skillPath = path.join(SKILLS_DIR, entry);
+    if (!fs.statSync(skillPath).isDirectory()) continue;
 
     const skillMd = path.join(skillPath, 'SKILL.md');
     let description = '';
     let name = entry;
     const requirements = extractRequirements(skillMd);
 
-    let instructions = '';
     if (fs.existsSync(skillMd)) {
       try {
         const content = fs.readFileSync(skillMd, 'utf8');
-        instructions = content;
-        if (/purpclaw_active:\s*false/i.test(content) || /legacy_only:\s*true/i.test(content)) {
-          continue;
-        }
-        description = extractDescription(content);
+        const m = content.match(/description:\s*"([^"]+)"/);
+        if (m) description = m[1];
       } catch {}
     }
 
     const scripts = [];
     findScripts(skillPath, scripts);
 
-    if (fs.existsSync(skillMd) || scripts.length > 0) {
+    if (scripts.length > 0) {
       skills.push({
         name, description, path: skillPath,
-        hasScript: scripts.length > 0, scripts, requirements, instructions,
+        hasScript: true, scripts, requirements,
       });
     }
   }
@@ -303,13 +232,23 @@ async function executeSkill(skill, args) {
       return { ok: false, error: `Unknown script type: ${ext}` };
     }
 
-    if (args && args.args) {
-      cmdArgs.push(...args.args.split(' ').filter(Boolean));
+    // argv wins: it is already a list of discrete arguments, so a multi-word
+    // value stays one argument. The `args` string is tokenized quote-aware —
+    // a naive split(' ') turned the query "purpclaw ai" into query="purpclaw"
+    // and max_results="ai", which the search CLI rejected as a usage error.
+    if (args && Array.isArray(args.argv)) {
+      cmdArgs.push(...args.argv.map(String));
+    } else if (args && args.args) {
+      const toks = String(args.args).match(/"[^"]*"|'[^']*'|\S+/g) || [];
+      cmdArgs.push(...toks.map(t => t.replace(/^["']|["']$/g, '')));
     }
 
     const result = await execSafe(command, cmdArgs, { timeoutMs: 30000 });
     return {
-      ok: result.ok,
+      // execSafe reports `code`, not `ok`. Reading result.ok gave undefined, so
+      // EVERY skill returned ok:false — a successful search with 2.3KB of
+      // results still read as a failure. Judge it by the exit code.
+      ok: result.code === 0,
       stdout: result.stdout?.substring(0, 5000),
       stderr: result.stderr?.substring(0, 1000),
       exitCode: result.code,
@@ -317,17 +256,6 @@ async function executeSkill(skill, args) {
   } catch (e) {
     return { ok: false, error: e.message };
   }
-}
-
-function referenceSkill(skill) {
-  return {
-    ok: true,
-    reference: true,
-    skill: skill.name,
-    description: skill.description || '',
-    content: String(skill.instructions || '').substring(0, 12000),
-    message: 'Prompt/reference skill loaded. Use this SKILL.md content as the execution instructions for the requested task.',
-  };
 }
 
 function findBestScript(scripts) {

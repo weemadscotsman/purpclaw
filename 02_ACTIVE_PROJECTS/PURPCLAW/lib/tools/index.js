@@ -78,6 +78,12 @@ class ToolRegistry {
       const tool = this.tools.get(name);
       try {
         const result = await tool.execute(args || {});
+        // A tool that fails must say why. Several return {ok:false, content:"…"}
+        // with no `error`, which surfaced as "undefined" and read like the call
+        // was still running. Promote whatever explanation exists.
+        if (result && result.ok === false && !result.error) {
+          result.error = String(result.content || result.stderr || result.stdout || 'tool reported failure with no message').slice(0, 500);
+        }
         return { ok: true, ...result };
       } catch (e) {
         return { ok: false, error: e.message || String(e) };

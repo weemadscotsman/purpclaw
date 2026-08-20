@@ -438,6 +438,13 @@ async function handleChatStream(req, res) {
         sseEvent(res, 'steering', { capsuleId: ev.capsuleId, activeRules: ev.activeRules, unresolvedConflicts: ev.unresolvedConflicts, sources: ev.sources, error: ev.error });
       } else if (ev.type === 'steering-blocked') {
         sseEvent(res, 'steering-blocked', { capsuleId: ev.capsuleId, conflicts: ev.conflicts });
+      } else if (ev.type === 'approval-request') {
+        // Review rung — the turn is now parked waiting on a human. The UI
+        // answers via POST /api/approvals.
+        sseEvent(res, 'approval-request', { requestId: ev.requestId, tool: ev.tool,
+          args: ev.args, expiresAt: ev.expiresAt });
+      } else if (ev.type === 'approval-resolved') {
+        sseEvent(res, 'approval-resolved', { requestId: ev.requestId, tool: ev.tool, decision: ev.decision });
       } else if (ev.type === 'dejavu') {
         // "We have been in this execution shape before." Evidence, not permission.
         sseEvent(res, 'dejavu', { confidence: ev.confidence, historicalRuns: ev.historicalRuns,

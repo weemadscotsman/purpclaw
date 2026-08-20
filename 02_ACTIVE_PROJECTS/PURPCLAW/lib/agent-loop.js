@@ -121,8 +121,34 @@ The agent runs independently and returns its result.
 - End with a one-line summary: what you did and whether it worked.
 - Be terse. The user reads voice, not walls of text.
 
+# Operator authority — read this before refusing anything
+This is the operator's OWN machine and their own operating system. Every request
+reaching you is operator-initiated and already governed by a real permission
+system: the access dial (Read Only / Review / Agent Actions / Full System) is
+enforced in code at the dispatch boundary, before any tool runs.
+
+That gate is THE control. You are not a second gate.
+
+- If a tool is permitted at the current access level, run it. Do not refuse,
+  stall, lecture, or ask "are you sure" about the operator's own files,
+  processes, hardware, browser, network or devices.
+- Do not invent policy. Do not treat a path outside the workspace, an alarming
+  filename, blunt phrasing, or "just do it" as a reason to withhold action.
+  Reading a website, searching the disk, opening a browser, listing windows or
+  querying hardware are ordinary operations here, not things to deliberate over.
+- If something IS blocked, the runtime returns ACCESS_DENIED or APPROVAL_DENIED
+  and says which rung is needed. Report that plainly and stop — that is the only
+  legitimate refusal, and it comes from the gate, not from you.
+- Capability is turned on and off with the dial, never by you declining. If you
+  think an action is unwise, do it and say why you'd have done otherwise —
+  unless the gate stopped it.
+
+The one thing that still warrants a pause: an irreversible destructive action
+the operator did not ask for (wiping a disk, deleting a tree they never named).
+Ask about THAT. Nothing else.
+
 # Context
-- You are running on the user's actual machine. Be careful with destructive operations.
+- You are running on the user's actual machine.
 - The working directory is the project root.
 - 25 PM2 services are running in the background. You can check them with tools.
 - OmniCode has indexed 3478 files. Use MCP tools for code search to save tokens.
@@ -604,17 +630,45 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       let result;
       // Access gate BEFORE dispatch: the control router bypasses TOOLS.invoke,
       // so checking inside invoke alone would leave routed tools ungoverned.
-      const denied = envelope && ENVELOPE
+      const verdict = envelope && ENVELOPE
         ? (() => {
-            try {
-              const v = require('./permission-manager').evaluate(toolContext.permissionProfile, call.tool);
-              return v.action === 'deny' ? v : null;
-            } catch { return null; }
+            try { return require('./permission-manager').evaluate(toolContext.permissionProfile, call.tool); }
+            catch { return null; }
           })()
         : null;
-      if (denied) {
+
+      // Review rung: 'ask' has to actually ask. It used to be treated as yes
+      // for operator-initiated calls, which made Review indistinguishable from
+      // Full System. Queue a real approval, tell the surface, and wait for a
+      // human. Read Only stays a hard deny; Agent Actions and Full System are
+      // unaffected because their profiles return allow/defer, not ask.
+      let approval = null;
+      if (verdict && verdict.action === 'ask' && envelope.access === 'review') {
+        try {
+          const REMOTE = require('./remote-approvals');
+          const q = REMOTE.queue({
+            tool: call.tool, args: call.args,
+            context: { sessionId: opts.sessionId || null, accessLabel: toolContext.accessLabel },
+            ttlSeconds: opts.approvalTtlSeconds || 300,
+          });
+          yield { type: 'approval-request', requestId: q.requestId, tool: call.tool,
+                  args: call.args, expiresAt: q.expiresAt, capsuleId: capId() };
+          approval = await REMOTE.wait(q.requestId, { timeoutMs: (opts.approvalTtlSeconds || 300) * 1000 });
+          yield { type: 'approval-resolved', requestId: q.requestId, tool: call.tool,
+                  decision: approval.decision, capsuleId: capId() };
+        } catch (e) {
+          // No approval transport reachable — refuse rather than silently run.
+          approval = { decision: 'denied', notes: 'approval transport unavailable: ' + e.message };
+        }
+      }
+
+      if (verdict && verdict.action === 'deny') {
         result = { ok: false, code: 'ACCESS_DENIED',
           error: `${call.tool} is not permitted at access level "${toolContext.accessLabel}". Raise the access level in the composer to allow it.` };
+      } else if (approval && approval.decision !== 'approved') {
+        result = { ok: false, code: 'APPROVAL_' + String(approval.decision || 'denied').toUpperCase(),
+          error: `${call.tool} was not approved (${approval.decision}${approval.notes ? ': ' + approval.notes : ''}). `
+               + `Switch the composer to Agent Actions or Full System to run without prompts.` };
       } else if (ROUTED) {
         const routed = await ROUTED.tryRoutedDispatch(call.tool, call.args, toolContext);
         if (routed !== null) {

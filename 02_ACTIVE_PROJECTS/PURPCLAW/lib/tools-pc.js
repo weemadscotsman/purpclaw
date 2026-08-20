@@ -37,6 +37,15 @@ const PLAT = process.platform;
 const IS_WIN = PLAT === 'win32';
 
 function cmd(c, ...args) {
+  // A PowerShell pipeline routed through cmd.exe breaks: cmd consumes the `|`
+  // and tries to run the next cmdlet itself ("'Where-Object' is not recognized").
+  // Any powershell invocation must reach powershell.exe with the script as ONE
+  // argument, so redirect it here rather than at each of the call sites that
+  // kept re-introducing the bug.
+  if (IS_WIN && /^powershell(\.exe)?$/i.test(c)) {
+    const script = args.filter(a => !/^-(c|Command|NoProfile)$/i.test(a)).join(' ');
+    return ['powershell.exe', '-NoProfile', '-Command', script];
+  }
   return IS_WIN ? ['cmd.exe', '/c', c + ' ' + args.join(' ')] : ['sh', '-c', c + ' ' + args.join(' ')];
 }
 
