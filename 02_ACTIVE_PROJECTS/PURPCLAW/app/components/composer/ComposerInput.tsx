@@ -119,6 +119,9 @@ export interface ComposerInputProps {
   setInput: (val: string) => void;
   onSend: () => void;
   busy: boolean;
+  // Sessions — a chat is a session, and a new chat means a new memory scope.
+  onNewChat?: () => void;
+  sessionLabel?: string;
   // Attachments
   attachments: Attachment[];
   setAttachments: React.Dispatch<React.SetStateAction<Attachment[]>>;
@@ -143,7 +146,7 @@ export function ComposerInput(props: ComposerInputProps) {
     provider, setProvider, speed, setSpeed,
     intelligence, setIntelligence,
     enabledAgents, toggleAgent, quickChips, toggleQuickChip,
-    input, setInput, onSend, busy,
+    input, setInput, onSend, busy, onNewChat, sessionLabel,
     attachments, setAttachments, uploadFiles, uploading,
     activeContext, estimatedTokens,
     voiceOnline, onLauncherAction,
@@ -155,34 +158,6 @@ export function ComposerInput(props: ComposerInputProps) {
   const [contextExpanded, setContextExpanded] = useState(false);
   const textRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // ── Local voice input (STT) ──────────────────────────────────────────────
-  // Two-way voice is ON BY DEFAULT, not an optional extra: clicking the mic
-  // uses the browser's built-in SpeechRecognition to transcribe speech straight
-  // into the composer. No backend voice service required.
-  const [listening, setListening] = useState(false);
-  const recognitionRef = useRef<{ stop: () => void } | null>(null);
-  const toggleMic = () => {
-    if (typeof window === 'undefined') return;
-    const SR = (window as unknown as { SpeechRecognition?: new () => any; webkitSpeechRecognition?: new () => any })
-      .SpeechRecognition || (window as unknown as { webkitSpeechRecognition?: new () => any }).webkitSpeechRecognition;
-    if (!SR) { alert('Voice input needs a Chromium-based browser (SpeechRecognition API not found).'); return; }
-    if (listening) { try { recognitionRef.current?.stop(); } catch {} return; }
-    const rec = new SR();
-    rec.lang = 'en-US';
-    rec.interimResults = true;
-    rec.continuous = false;
-    const base = input;
-    rec.onresult = (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => {
-      let txt = '';
-      for (let i = 0; i < e.results.length; i++) txt += e.results[i][0].transcript;
-      setInput((base ? base + ' ' : '') + txt);
-    };
-    rec.onend = () => setListening(false);
-    rec.onerror = () => setListening(false);
-    recognitionRef.current = rec;
-    try { rec.start(); setListening(true); } catch { setListening(false); }
-  };
 
   // Close flyout on click outside
   useEffect(() => {
@@ -330,6 +305,20 @@ export function ComposerInput(props: ComposerInputProps) {
               ))}
             </Flyout>
           </div>
+
+          <div className="w-px h-4 bg-white/8 mx-1" />
+
+          {/* New Chat — starts a fresh session, which is also a fresh memory
+              scope. Without this every message piled into one session forever. */}
+          <ToolbarPill
+            active={false}
+            color="emerald"
+            onClick={() => onNewChat && onNewChat()}
+            title={sessionLabel ? `New chat (current: ${sessionLabel})` : 'Start a new chat session'}
+          >
+            <span className="text-xs">＋</span>
+            New
+          </ToolbarPill>
 
           <div className="w-px h-4 bg-white/8 mx-1" />
 
@@ -508,13 +497,11 @@ export function ComposerInput(props: ComposerInputProps) {
             </Flyout>
           </div>
 
-          {/* Voice input — local browser STT, on by default (no service needed) */}
+          {/* Voice */}
           <button
-            onClick={toggleMic}
-            className={`h-7 w-7 rounded-lg border text-xs transition-all ${listening
-              ? 'border-rose-400/60 bg-rose-500/20 text-rose-300 animate-pulse'
-              : 'border-white/8 bg-white/[0.02] text-white/45 hover:text-white/70 hover:bg-white/[0.05]'}`}
-            title={listening ? 'Listening… click to stop' : 'Voice input — speak into chat'}
+            disabled={!voiceOnline}
+            className="h-7 w-7 rounded-lg border border-white/8 bg-white/[0.02] text-xs text-white/35 disabled:opacity-20 hover:text-white/60 hover:bg-white/[0.05] transition-all"
+            title="Voice input"
           >🎤</button>
 
           {/* Send */}

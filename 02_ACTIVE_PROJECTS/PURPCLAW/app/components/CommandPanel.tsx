@@ -544,6 +544,7 @@ type RouteOptions = {
   modelCount?: number;
   fullExecution?: boolean;
   operatorContext?: OperatorContext;
+  sessionId?: string;          // scopes gateway history + memory to this chat
 };
 
 interface Msg {
@@ -599,7 +600,7 @@ const FREE_MODELS = [
 ];
 
 const ROUTES: { id: Route; label: string; color: string; api: string; body: (t: string, opts?: RouteOptions) => object }[] = [
-  { id: 'chat',      label: 'Chat',         color: 'cyan',    api: '/api/chat',               body: t => ({ message: t, spawnAgents: false, forceDelegate: false, source: 'mission-control' }) },
+  { id: 'chat',      label: 'Chat',         color: 'cyan',    api: '/api/chat',               body: (t, opts) => ({ message: t, spawnAgents: false, forceDelegate: false, source: 'mission-control', session_id: opts?.sessionId }) },
   { id: 'plan',      label: 'Plan',         color: 'orange',  api: '/api/llm/plan',           body: t => ({ goal: t, modelLimit: 5, source: 'mission-control-plan' }) },
   { id: 'kernel',    label: 'Kernel+Swarm', color: 'violet',  api: '/api/kernel/jobs',        body: t => ({ goal: t, route: 'swarm-coordinator', source: 'chat-room' }) },
   { id: 'groupchat', label: 'Group Chat',   color: 'fuchsia', api: '/api/research/group',     body: (t, opts) => ({ query: t, depth: 1, modelLimit: opts?.modelCount || 5, selectedModels: opts?.selectedModels, kernelJob: true }) },
@@ -1085,6 +1086,52 @@ export function CommandPanel({ data }: { data: MissionData }) {
   const [selectedModels, setSelectedModels] = useState<string[]>(FREE_MODELS.filter(m => m.fast).slice(0, 3).map(m => m.id));
   const [showModelPicker, setShowModelPicker] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
+
+  // ── Chat sessions ───────────────────────────────────────────────────────
+  // The UI sent no session_id, so the gateway bucketed EVERY chat under
+  // "surface:mission-control" — one endless conversation with one shared
+  // memory scope and no way to start clean. A chat is a session.
+  const [sessionId, setSessionId] = useState<string>('');
+  const [sessions, setSessions] = useState<{ id: string; title: string; at: string }[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem('purpclaw.chat.sessions') || '[]');
+      if (Array.isArray(saved) && saved.length) setSessions(saved);
+      const last = window.localStorage.getItem('purpclaw.chat.sessionId');
+      setSessionId(last || `mc-${Date.now().toString(36)}`);
+    } catch { setSessionId(`mc-${Date.now().toString(36)}`); }
+  }, []);
+
+  useEffect(() => {
+    if (!sessionId) return;
+    try {
+      window.localStorage.setItem('purpclaw.chat.sessionId', sessionId);
+      setSessions(prev => {
+        const exists = prev.some(s => s.id === sessionId);
+        const next = exists ? prev : [{ id: sessionId, title: 'New chat', at: new Date().toISOString() }, ...prev].slice(0, 25);
+        try { window.localStorage.setItem('purpclaw.chat.sessions', JSON.stringify(next)); } catch {}
+        return next;
+      });
+    } catch {}
+  }, [sessionId]);
+
+  /** Start a fresh chat: new session id, cleared transcript, new memory scope. */
+  const newChat = useCallback(() => {
+    const id = `mc-${Date.now().toString(36)}`;
+    setMessages([]);
+    setSessionId(id);
+  }, []);
+
+  /** Label the session by its first user message so the list is readable. */
+  const titleSession = useCallback((text: string) => {
+    setSessions(prev => {
+      const next = prev.map(s => (s.id === sessionId && s.title === 'New chat')
+        ? { ...s, title: text.slice(0, 42) } : s);
+      try { window.localStorage.setItem('purpclaw.chat.sessions', JSON.stringify(next)); } catch {}
+      return next;
+    });
+  }, [sessionId]);
   const [hydrated, setHydrated] = useState(false);
   const mochiReactRef = useRef<((text: string, mood: 'happy' | 'alert' | 'curious' | 'proud' | 'worried' | 'chill') => void) | null>(null);
   const setMochiReact = useCallback((react: (text: string, mood: 'happy' | 'alert' | 'curious' | 'proud' | 'worried' | 'chill') => void) => {
@@ -1792,6 +1839,7 @@ export function CommandPanel({ data }: { data: MissionData }) {
     const outText = `${text}${attachmentBlock}${contextBlock}`.trim();
     const shownText = text + (attachments.length ? `\n📎 ${attachments.map(a => a.name).join(', ')}` : '');
     push({ role: 'user', route, content: shownText });
+    titleSession(text);   // name the session from its first real message
     const sentAttachments = attachments;
     setAttachments([]);
 
@@ -1799,6 +1847,7 @@ export function CommandPanel({ data }: { data: MissionData }) {
     const opts: RouteOptions = {
       fullExecution,
       operatorContext,
+      sessionId,
       ...((route === 'groupchat' || route === 'research') ? { selectedModels, modelCount: selectedModels.length } : {}),
     };
 
@@ -2335,6 +2384,8 @@ export function CommandPanel({ data }: { data: MissionData }) {
 
         {/* ── Composer V1 — integrated chatbox with flyout menus ── */}
         <ComposerInput
+          onNewChat={newChat}
+          sessionLabel={sessions.find(x => x.id === sessionId)?.title}
           composerMode={composerMode}
           setComposerMode={setComposerMode}
           accessMode={accessMode}
