@@ -458,7 +458,7 @@ async function handleChatStream(req, res) {
           ok: ev.ok,
           code: ev.code,
           capsuleId: ev.capsuleId,
-          content: (ev.content || ev.error || '').substring(0, 500),
+          content: (ev.content || ev.error || '').substring(0, 2000),
         });
       } else if (ev.type === 'done') {
         break;

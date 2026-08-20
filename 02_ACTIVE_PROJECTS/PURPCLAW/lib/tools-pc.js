@@ -36,6 +36,9 @@ const { execSafe, trackedSpawn } = require('./child-registry');
 const PLAT = process.platform;
 const IS_WIN = PLAT === 'win32';
 
+// Lazy so a missing playwright only breaks browser tools, not the whole registry.
+function BROWSER() { return require('./browser-session'); }
+
 function cmd(c, ...args) {
   // A PowerShell pipeline routed through cmd.exe breaks: cmd consumes the `|`
   // and tries to run the next cmdlet itself ("'Where-Object' is not recognized").
@@ -336,14 +339,119 @@ function registerAll(registry) {
 
   // ── BROWSER CONTROL ───────────────────────────────────────────
   registry.register({
-    name: 'browser_open', description: 'Open a URL in the default browser.',
-    inputSchema: { type:'object', properties: { url:{type:'string'} }, required:['url'] },
-    execute: async (args) => { const c = IS_WIN?cmd('start','""',args.url):['sh','-c',`open "${args.url}" || xdg-open "${args.url}"`]; const r = await sh(c); return { ok:true, content:'opened '+args.url }; },
+    // ── BROWSER ─────────────────────────────────────────────────────
+    // One persistent, visible browser (lib/browser-session.js) drives all of
+    // these. Previously browser_open shelled out to `start`, handing the URL to
+    // a separate process, while browser_screenshot built a throwaway headless
+    // Chromium — two unrelated browsers, so nothing could act on the page that
+    // had just been opened. These names and shapes match what the CLI
+    // (packages/tools/browser.js) has always called.
+    name: 'browser_open',
+    description: 'Open a URL in PurpClaw\'s browser (visible, persistent, stays logged in). Reuses the current tab unless newTab is true. WORKFLOW: open then browser_click (by visible text) or browser_play to start media, then browser_observe to verify. Prefer these named tools over browser_js.',
+    inputSchema: { type:'object', properties: { url:{type:'string'}, newTab:{type:'boolean'} }, required:['url'] },
+    execute: async (args) => {
+      try { const r = await BROWSER().open(args.url, { newTab: !!args.newTab });
+        return { ok:true, content:`opened ${r.url}${r.title?' — '+r.title:''}` }; }
+      // The old version returned ok:true unconditionally, so a failed open still
+      // reported success and the agent carried on as if the page were up.
+      catch(e) { return { ok:false, error:e.message }; }
+    },
   });
   registry.register({
-    name: 'browser_screenshot', description: 'Take a screenshot using Playwright or fallback.',
-    inputSchema: { type:'object', properties: { url:{type:'string'}, path:{type:'string'} }, required:['url'] },
-    execute: async (args) => { try { const { chromium } = require('playwright-core'); const browser = await chromium.launch(); const page = await browser.newPage(); await page.goto(args.url,{waitUntil:'domcontentloaded'}); await page.screenshot({path:args.path||'screenshot.png'}); await browser.close(); return { ok:true, content:'screenshot saved' }; } catch(e) { return { ok:false, error:e.message }; } },
+    name: 'browser_screenshot',
+    description: 'Screenshot the page currently open in PurpClaw\'s browser. No URL needed.',
+    inputSchema: { type:'object', properties: { path:{type:'string'}, fullPage:{type:'boolean'}, url:{type:'string'} } },
+    execute: async (args = {}) => {
+      try {
+        // A url is accepted but optional: navigate first, then capture.
+        if (args.url) await BROWSER().open(args.url);
+        const r = await BROWSER().screenshot({ path: args.path, fullPage: !!args.fullPage });
+        return { ok:true, content:`screenshot saved: ${r.path} (${r.url})`, path:r.path };
+      } catch(e) { return { ok:false, error:e.message }; }
+    },
+  });
+  registry.register({
+    name: 'browser_get_content',
+    description: 'Read the visible text of the page currently open in PurpClaw\'s browser.',
+    inputSchema: { type:'object', properties: { max_length:{type:'number'} } },
+    execute: async (args = {}) => {
+      try { const r = await BROWSER().getContent({ maxLength: args.max_length || 5000 });
+        return { ok:true, content:`${r.title}\n${r.url}\n\n${r.content}` }; }
+      catch(e) { return { ok:false, error:e.message }; }
+    },
+  });
+  registry.register({
+    name: 'browser_click',
+    description: 'Click something on the current page by visible text or CSS selector.',
+    inputSchema: { type:'object', properties: { target:{type:'string'} }, required:['target'] },
+    execute: async (args) => {
+      try { const r = await BROWSER().click(args.target);
+        return { ok:true, content:`clicked "${r.clicked}" by ${r.by} — now at ${r.url}` }; }
+      catch(e) { return { ok:false, error:e.message }; }
+    },
+  });
+  registry.register({
+    name: 'browser_type',
+    description: 'Type into the first visible input on the current page. Set submit to press Enter.',
+    inputSchema: { type:'object', properties: { text:{type:'string'}, submit:{type:'boolean'}, selector:{type:'string'} }, required:['text'] },
+    execute: async (args) => {
+      try { const r = await BROWSER().type(args.text, { submit: !!args.submit, selector: args.selector || null });
+        return { ok:true, content:`typed "${r.typed}"${r.submitted?' and submitted':''} — now at ${r.url}` }; }
+      catch(e) { return { ok:false, error:e.message }; }
+    },
+  });
+  registry.register({
+    name: 'browser_tabs',
+    description: 'List the tabs open in PurpClaw\'s browser.',
+    inputSchema: { type:'object', properties: {} },
+    execute: async () => {
+      try { const r = await BROWSER().tabs();
+        return { ok:true, content: r.running
+          ? r.tabs.map(t=>`[${t.index}] ${t.title||'(untitled)'} — ${t.url}`).join('\n') || '(no tabs)'
+          : 'browser not running' }; }
+      catch(e) { return { ok:false, error:e.message }; }
+    },
+  });
+  registry.register({
+    name: 'browser_observe',
+    description: 'Get structured, machine-readable state of the current page: url, title, interactive elements, focused element, tabs, and media state. Use this to VERIFY what happened instead of guessing from a screenshot you cannot read.',
+    inputSchema: { type:'object', properties: {} },
+    execute: async () => {
+      try { const r = await BROWSER().observe();
+        return { ok:true, content: JSON.stringify(r).slice(0, 6000) }; }
+      catch(e) { return { ok:false, error:e.message }; }
+    },
+  });
+  registry.register({
+    name: 'browser_play',
+    description: 'Start the video or audio on the current page. Use after opening a media page.',
+    inputSchema: { type:'object', properties: {} },
+    execute: async () => {
+      try { const r = await BROWSER().play();
+        return r.played
+          ? { ok:true, content:`playing (${Math.round(r.currentTime||0)}s${r.duration?' of '+Math.round(r.duration)+'s':''}) — ${r.url}` }
+          : { ok:false, error:`could not play: ${r.reason}` }; }
+      catch(e) { return { ok:false, error:e.message }; }
+    },
+  });
+  registry.register({
+    name: 'browser_js',
+    description: 'Evaluate a JavaScript expression on the current page and return its value.',
+    inputSchema: { type:'object', properties: { expression:{type:'string'} }, required:['expression'] },
+    execute: async (args) => {
+      try { const r = await BROWSER().evaluate(args.expression);
+        return { ok:true, content: JSON.stringify(r.value).slice(0, 4000) }; }
+      catch(e) { return { ok:false, error:e.message }; }
+    },
+  });
+  registry.register({
+    name: 'browser_close',
+    description: 'Close PurpClaw\'s browser.',
+    inputSchema: { type:'object', properties: {} },
+    execute: async () => {
+      try { const r = await BROWSER().close(); return { ok:true, content: r.closed?'browser closed':'browser was not running' }; }
+      catch(e) { return { ok:false, error:e.message }; }
+    },
   });
 
   // ── CLIPBOARD ──────────────────────────────────────────────────
