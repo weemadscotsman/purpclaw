@@ -137,6 +137,9 @@ body.drawer #drawer{display:block}
 .g{display:grid;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));gap:9px}
 .it{border:1px solid var(--line);border-radius:11px;padding:10px;background:var(--canvas)}
 .it b{display:block;font-size:12.5px}.it span{display:block;color:var(--dim);font-size:11px}
+.dbody{max-width:1080px}
+.dbody .it b{white-space:normal;word-break:break-word}
+.dbody .it span{white-space:normal}
 .stat{display:inline-block;margin:0 26px 10px 0}
 .stat b{display:block;font:600 21px var(--sans);color:var(--purple)}
 .stat span{color:var(--dim);font-size:10.5px;letter-spacing:.8px}
@@ -172,6 +175,9 @@ body.drawer #drawer{display:block}
 <script>
 const API=location.origin,$=s=>document.querySelector(s);
 const el=(c,t)=>{const d=document.createElement('div');d.className=c;if(t!=null)d.textContent=t;return d};
+/* Memory atoms, tool descriptions and mission titles are arbitrary recorded
+   text — never interpolate them into HTML raw. */
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ── constants: verbatim from app/components/composer/types.ts ──────── */
 const MODES=[['chat','Chat','💬'],['plan','Plan','📋'],['execute','Execute','⚡'],['swarm','Swarm','🐝']];
@@ -483,7 +489,9 @@ async function drawer(id,label){
   const h=el('dh');const t=document.createElement('h2');t.textContent=label;h.appendChild(t);
   const x=document.createElement('button');x.className='x';x.textContent='✕';
   x.onclick=()=>document.body.classList.remove('drawer');h.appendChild(x);d.appendChild(h);
-  const body=el('b');d.appendChild(body);body.innerHTML='<div class="card">loading…</div>';
+  // NOT class "b" — that is the composer pill (inline-flex, nowrap), which
+  // squeezed every drawer into a narrow scrolling column.
+  const body=el('dbody');d.appendChild(body);body.innerHTML='<div class="card">loading…</div>';
 
   if(id==='context'){
     body.innerHTML=`<div class="card"><h3>ACTIVE CONTEXT</h3>
@@ -507,13 +515,87 @@ async function drawer(id,label){
         `<div class="it"><b>${a.emoji||''} ${a.name||''}</b><span>${a.role||''}</span><span>${a.division||''}</span></div>`).join('')}</div></div>`:'');
     return}
   if(id==='missions'){
-    body.innerHTML=`<div class="card"><h3>MISSIONS</h3>${sess.length?sess.map(s=>
-      `<div class="it" style="margin-bottom:7px"><b>${s.title}</b><span>${s.msgs.length} messages</span></div>`).join('')
-      :'<div style="color:var(--dim)">no missions yet</div>'}</div>`;return}
+    // Missions come from the episodic memory layer, plus whatever this browser
+    // is holding locally. There is deliberately no separate mission store.
+    const m=await j('/api/missions');const durable=(m&&m.missions)||[];
+    body.innerHTML=`<div class="card"><h3>MISSIONS</h3>
+        <div class="stat"><b>${durable.length}</b><span>IN MEMORY</span></div>
+        <div class="stat"><b>${sess.length}</b><span>THIS BROWSER</span></div></div>`+
+      (durable.length?`<div class="card"><h3>FROM THE EPISODIC LAYER</h3>${durable.map(x=>
+        `<div class="it" style="margin-bottom:7px"><b>${esc(x.title||x.session)}</b>
+         <span>${x.turns} turns · ${x.session}</span>
+         <span>${x.first?new Date(x.first).toLocaleString():''} → ${x.last?new Date(x.last).toLocaleTimeString():''}</span></div>`).join('')}</div>`:'')+
+      `<div class="card"><h3>THIS BROWSER</h3>${sess.length?sess.map(s=>
+        `<div class="it" style="margin-bottom:7px"><b>${esc(s.title)}</b><span>${s.msgs.length} messages</span></div>`).join('')
+        :'<div style="color:var(--dim)">no local sessions</div>'}</div>`+
+      (m&&m.note?`<div style="color:var(--dim);font-size:11.5px;padding:2px 4px">${esc(m.note)}</div>`:'');
+    return}
   if(id==='tools'){
-    const cap=await j('/api/capabilities');const n=cap?(cap.count||(cap.capabilities||[]).length||0):0;
-    body.innerHTML=`<div class="card"><h3>TOOLRUNTIME</h3><div class="stat"><b>${n||'—'}</b><span>CAPABILITIES</span></div>
-      <div style="color:var(--dim);font-size:12px">Every tool call passes the governed ToolRuntime: scope, schema, path-security, permissions, steering, approval.</div></div>`;return}
+    // The truth surface: every registered tool and what each rung of the access
+    // dial would actually do with it, computed by the same evaluator the
+    // dispatcher uses. If this disagrees with the runtime, this is wrong.
+    const t=await j('/api/tools');
+    if(!t||!t.tools){body.innerHTML='<div class="card">tool registry unavailable</div>';return}
+    const rungs=[['read-only','Read Only'],['review','Review'],['agent-actions','Agent Actions'],['full-system','Full System']];
+    const dot=a=>({allow:'#15803d',ask:'#c2410c',defer:'#c2410c',deny:'#b91c1c'})[a]||'#8b8b96';
+    body.innerHTML=`<div class="card"><h3>REGISTRY</h3>
+        <div class="stat"><b>${t.summary.registered}</b><span>REGISTERED</span></div>
+        <div class="stat"><b>${t.summary.missingSchema}</b><span>NO SCHEMA</span></div>
+        </div>
+      <div class="card"><h3>WHAT EACH ACCESS RUNG DOES</h3><div class="g">${rungs.map(([k,l])=>{
+        const s=t.summary[k];
+        return `<div class="it"><b>${esc(l)}</b>
+          <span style="color:#15803d">${s.allowed} run straight away</span>
+          <span style="color:#c2410c">${s.approval} ${k==='review'?'need approval':'go through governance'}</span>
+          <span style="color:#b91c1c">${s.denied} refused</span></div>`;}).join('')}</div>
+        <div style="color:var(--dim);font-size:11.5px;padding-top:8px">
+          Computed live by the same evaluator the dispatcher uses, so this cannot drift from the runtime.</div></div>
+      <div class="card"><h3>BY CATEGORY</h3><div class="g">${Object.entries(t.summary.categories)
+        .sort((a,b)=>b[1]-a[1]).map(([c,n])=>`<div class="it"><b>${n}</b><span>${esc(c)}</span></div>`).join('')}</div></div>
+      <div class="card"><h3>TOOLS</h3>
+        <input id="tq" placeholder="filter tools…" style="width:100%;padding:8px 10px;border:1px solid var(--line);
+          border-radius:10px;font:13px var(--sans);margin-bottom:10px;outline:none">
+        <div id="tlist"></div></div>`;
+    const rowHtml=x=>`<div class="it" style="margin-bottom:6px"><b style="font:600 12px var(--mono)">${esc(x.name)}</b>
+      <span>${esc(x.description).slice(0,120)}</span>
+      <span style="margin-top:4px">${rungs.map(([k,l])=>
+        `<span style="color:${dot(x.access[k])};font-size:10px;margin-right:9px">● ${l}: ${x.access[k]}</span>`).join('')}
+        ${x.hasSchema?'':'<span style="color:#b91c1c;font-size:10px">● no schema</span>'}</span></div>`;
+    const draw=q=>{const f=t.tools.filter(x=>!q||x.name.toLowerCase().includes(q)||x.category.includes(q));
+      $('#tlist').innerHTML=f.slice(0,200).map(rowHtml).join('')+
+        (f.length>200?`<div style="color:var(--dim);font-size:11.5px">showing 200 of ${f.length}</div>`:'');};
+    draw('');$('#tq').oninput=e=>draw(e.target.value.toLowerCase().trim());
+    return}
+  if(id==='memory'){
+    // The vault: search across every durable layer at once.
+    const load=async q=>{
+      const v=await j('/api/memory/vault?limit=60&q='+encodeURIComponent(q||''));
+      if(!v){$('#mres').innerHTML='<div style="color:var(--dim)">memory unavailable</div>';return}
+      $('#mres').innerHTML=v.results.length?v.results.map(r=>
+        `<div class="it" style="margin-bottom:6px"><b>${esc(r.layer)}${r.source?' · '+esc(r.source):''}</b>
+         <span style="white-space:pre-wrap">${esc(r.text).slice(0,300)}</span>
+         <span>${r.at?new Date(r.at).toLocaleString():''}</span></div>`).join('')
+        :'<div style="color:var(--dim)">nothing matched</div>';
+      $('#mcount').textContent=v.matched+' matched';
+    };
+    const v0=await j('/api/memory/vault?limit=1');
+    const tot=(v0&&v0.totals)||{atoms:0,layers:0,traces:0,verifiedTraces:0};
+    body.innerHTML=`<div class="card"><h3>MEMORY VAULT</h3>
+        <div class="stat"><b>${tot.atoms}</b><span>ATOMS</span></div>
+        <div class="stat"><b>${tot.layers}</b><span>LAYERS</span></div>
+        <div class="stat"><b>${tot.traces}</b><span>DÉJÀ VU TRACES</span></div>
+        <div class="stat"><b>${tot.verifiedTraces}</b><span>VERIFIED</span></div></div>
+      <div class="card"><h3>LAYERS</h3><div class="g">${((v0&&v0.layers)||[]).map(l=>
+        `<div class="it"><b>${l.atoms}</b><span>${esc(l.layer)}</span>
+         <span>${l.newest?new Date(l.newest).toLocaleString():'—'}</span></div>`).join('')}</div></div>
+      <div class="card"><h3>SEARCH EVERYTHING</h3>
+        <input id="mq" placeholder="why did we stop using X…" style="width:100%;padding:8px 10px;
+          border:1px solid var(--line);border-radius:10px;font:13px var(--sans);outline:none">
+        <div id="mcount" style="color:var(--dim);font-size:11px;padding:7px 2px"></div>
+        <div id="mres"></div></div>`;
+    let t2;$('#mq').oninput=e=>{clearTimeout(t2);const q=e.target.value;t2=setTimeout(()=>load(q),220)};
+    load('');
+    return}
   if(id==='settings'){
     const h2=await j('/api/health');const rt=h2&&h2.runtime;
     body.innerHTML=`<div class="card"><h3>RUNTIME</h3><div style="font:12px var(--mono);color:#5a5a66">${

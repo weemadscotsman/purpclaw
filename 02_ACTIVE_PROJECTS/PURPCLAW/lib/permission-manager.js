@@ -85,14 +85,29 @@ const BUILTINS = Object.freeze({
   },
   'workspace-read-only': {
     description: 'Read-only access to workspace; all mutations blocked',
-    allow: ['read', 'list', 'glob', 'search', 'repo.map', 'event.list', 'event.replay',
-      'attachment.get', 'attachment.list', 'artifact.get', 'artifact.list', 'cpu', 'memory',
-      'disk', 'uptime', 'osinfo', 'env', 'sensors', 'drives', 'whoami', 'hosts',
-      'systeminfo', 'window_list', 'netstat', 'ping', 'dns', 'ifconfig'],
+    // These are the REGISTERED tool names. The list previously used 'list',
+    // 'glob' and 'search', which no tool is called, so Read Only refused ls,
+    // find, grep, tree, code-search, web-fetch and curl — every one of them a
+    // pure read. Read Only means "read anything, change nothing", including
+    // reading websites and searching the machine.
+    allow: ['read', 'ls', 'find', 'grep', 'tree', 'du', 'code-search', 'repo.map',
+      'event.list', 'event.replay',
+      'attachment.get', 'attachment.list', 'artifact.get', 'artifact.list',
+      // web-fetch only: `curl` accepts arbitrary methods and `git` can commit,
+      // so neither belongs on a read-only rung. Both stay available from
+      // Review upward, which is where mutation is meant to happen.
+      'web-fetch', 'news', 'weather', 'csv_analyze',
+      'cpu', 'memory', 'memory_check', 'disk', 'uptime', 'osinfo', 'env', 'sensors',
+      'drives', 'whoami', 'hosts', 'systeminfo', 'window_list', 'resolution',
+      'tasklist', 'top', 'svc_list', 'clipboard_read',
+      'netstat', 'ping', 'dns', 'ifconfig', 'traceroute',
+      'stm', 'neo_ledger', 'chaos_status'],
     deny: ['write', 'edit', 'delete', 'mkdir', 'copy', 'move', 'symlink', 'touch',
       'npm_install', 'pip_install', 'choco', 'taskkill', 'svc_start', 'svc_stop',
       'svc_restart', 'shutdown', 'restart', 'lock', 'browser_open', 'clipboard_write',
-      'notify', 'traceroute', 'portscan', 'curl', 'wget', '*_mcp', 'mcp__*', 'mcp.*',
+      // traceroute is a pure read and lives in `allow` above; leaving it here
+      // too meant deny silently won and the allow entry was dead.
+      'notify', 'portscan', 'curl', 'wget', '*_mcp', 'mcp__*', 'mcp.*',
       'win_powershell', 'win_registry', 'win_process', 'win_filesystem', 'win_*',
       'shell', 'bash', 'terminal', 'execute',
       // Catch-all. A read-only tier defined by a blocklist is not read-only:

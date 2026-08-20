@@ -3125,6 +3125,28 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/settings' && method === 'GET') return sendJson(res, 200, state.settings);
     if (pathname === '/api/settings' && method === 'POST') { const body = await parseBody(req); Object.assign(state.settings, body); saveSettings(); return sendJson(res, 200, { ok: true, settings: state.settings }); }
 
+    // ========== CANONICAL VIEWS (read-only projections) =====================
+    // Tools / Memory / Missions pages read these. They own no state — every
+    // number is computed live from the tool registry, the permission evaluator
+    // and the durable memory layers, so a page cannot drift from the runtime.
+    if (pathname === '/api/tools' && method === 'GET') {
+      try {
+        return sendJson(res, 200, require('./lib/views').tools(require('./lib/tools')));
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname === '/api/memory/vault' && method === 'GET') {
+      try {
+        const q = new URL(req.url, 'http://x').searchParams;
+        return sendJson(res, 200, require('./lib/views').memoryVault({
+          query: q.get('q') || '', layer: q.get('layer') || null,
+          limit: Math.min(parseInt(q.get('limit') || '50', 10) || 50, 300) }));
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname === '/api/missions' && method === 'GET') {
+      try { return sendJson(res, 200, require('./lib/views').missions({})); }
+      catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
     // ========== REMOTE APPROVALS (S13 — universal approval surface) ==========
     // Any first-class surface (CLI/TUI/Web/Desktop/Mobile) can list, inspect,
     // approve or deny queued approvals. ToolRuntime contexts with
