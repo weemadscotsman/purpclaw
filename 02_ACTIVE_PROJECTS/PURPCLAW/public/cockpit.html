@@ -1,386 +1,408 @@
 <!doctype html>
 <meta charset="utf-8">
-<title>PURPCLAW — Cockpit</title>
+<title>PURPCLAW</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!--
-  PURPCLAW Cockpit — the light UI, cloned from the Next.js Mission Control.
+  PURPCLAW Cockpit.
 
-  Same layout: header (LIVE / OP / clock), the left rail with its stage groups
-  and two-letter codes, the chat transcript, and the full composer bar with its
-  flyout menus. Plus the two things Mission Control lacked: a sessions sidebar
-  and a single consolidated Work panel.
+  Architecture rule this file obeys:
+    UI displays state. Backend owns state. UI requests actions. Backend acts.
+  Nothing canonical lives here. Kill this file and PurpClaw still runs from CLI,
+  TUI and API. Redesign it tomorrow and nothing underneath changes.
 
-  Served BY the unified API on :7780, so it is same-origin — SSE streaming needs
-  no CORS, there is no bundler, no dev server, no turbopack cache to corrupt,
-  and no build step between an edit and the running UI.
+  Served BY unified_api on :7780 (/, /ui, /cockpit) so it is same-origin: SSE
+  streams need no CORS, no bundler, no dev server, no build step.
+
+  Visual grammar: calm cream canvas inside a pale mint frame, slim rail, large
+  quiet workspace, composer as the front door with every capability embedded in
+  it. PurpClaw purple is the EXECUTION colour — the shell warms into it while an
+  agent is actually working, then settles back.
 -->
 <style>
-  :root{
-    --bg:#07070c; --panel:#0e0e18; --panel2:#12121f; --line:#20202f; --ink:#e9e9f4; --dim:#7c7c99;
-    --violet:#a855f7; --cyan:#22d3ee; --amber:#f59e0b; --red:#f43f5e; --green:#34d399; --pink:#ec4899;
-    --mono:ui-monospace,"Cascadia Mono","Cascadia Code",Consolas,monospace;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:0;background:var(--bg);color:var(--ink);font:13px/1.55 var(--mono);overflow:hidden;
-       display:grid;grid-template-rows:46px 1fr;grid-template-columns:64px 232px 1fr;
-       grid-template-areas:"hd hd hd" "rail side main"}
+:root{
+  --frame:#dcebe2; --canvas:#faf9f6; --card:#fff; --ink:#24242b; --dim:#8b8b96;
+  --line:#e8e6df; --line2:#efeee9;
+  --purple:#8b5cf6; --purple-soft:#f3eeff; --mint:#3fae7f; --amber:#d97706; --red:#e11d48;
+  --sans:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--frame);font:14px/1.6 var(--sans);color:var(--ink);
+     padding:10px;display:flex;gap:10px;overflow:hidden;transition:background .5s ease}
+/* Execution state: the shell warms into PurpClaw purple while work is running. */
+body.running{background:#ece4ff}
 
-  /* ── header ────────────────────────────────────────────────────────── */
-  header{grid-area:hd;display:flex;align-items:center;gap:14px;padding:0 14px;
-         border-bottom:1px solid var(--line);background:var(--panel)}
-  .logo{width:30px;height:30px;border-radius:7px;background:
-        radial-gradient(circle at 30% 30%,var(--violet),#3b0764);box-shadow:0 0 14px rgba(168,85,247,.45)}
-  .live{display:flex;align-items:center;gap:6px;color:var(--green);font-size:11px;letter-spacing:1px}
-  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green)}
-  .dot.off{background:var(--red);box-shadow:0 0 7px var(--red)}
-  .spacer{flex:1}
-  .op{font-size:11px;color:var(--dim)}
-  .op b{color:var(--cyan)}
-  #clock{font-size:11px;color:var(--dim)}
-  .hbtn{width:24px;height:24px;border-radius:50%;border:1px solid var(--line);background:transparent;
-        color:var(--dim);cursor:pointer;font:inherit;font-size:11px}
+/* ── rail ───────────────────────────────────────────────────────────── */
+#rail{width:236px;flex:none;background:var(--canvas);border-radius:var(--r);
+      display:flex;flex-direction:column;min-height:0;padding:14px 10px}
+.wordmark{display:flex;align-items:center;gap:8px;padding:4px 8px 14px}
+.wordmark b{font-weight:700;letter-spacing:.3px;font-size:15px}
+.wordmark .p{color:var(--purple)}
+.status{margin-left:auto;width:7px;height:7px;border-radius:50%;background:var(--mint)}
+.status.off{background:var(--red)}
+#newmission{width:100%;padding:10px;border-radius:11px;border:1px solid var(--purple);
+   background:var(--purple);color:#fff;font:600 13px var(--sans);cursor:pointer;margin-bottom:12px}
+#newmission:hover{filter:brightness(1.07)}
+.nav{display:flex;flex-direction:column;gap:1px}
+.nv{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:10px;
+    cursor:pointer;color:#4a4a55;font-size:13px}
+.nv:hover{background:var(--line2)}
+.nv.on{background:var(--purple-soft);color:var(--purple);font-weight:600}
+.nv .ic{width:17px;text-align:center}
+.rhead{padding:16px 10px 6px;color:var(--dim);font-size:10px;letter-spacing:1.2px;font-weight:600}
+#recent{flex:1;overflow:auto;min-height:0;display:flex;flex-direction:column;gap:1px}
+.rc{padding:7px 10px;border-radius:9px;cursor:pointer;color:#5a5a66;font-size:12.5px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc:hover{background:var(--line2)}
+.rc.on{background:var(--purple-soft);color:var(--purple)}
+.me{margin-top:8px;padding:9px 10px;border-radius:11px;display:flex;align-items:center;gap:9px;
+    border:1px solid var(--line);cursor:pointer;font-size:12.5px}
+.me:hover{background:var(--line2)}
+.av{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--purple),#c4b5fd)}
 
-  /* ── left rail ─────────────────────────────────────────────────────── */
-  #rail{grid-area:rail;background:var(--panel);border-right:1px solid var(--line);
-        overflow-y:auto;padding:10px 0;display:flex;flex-direction:column;align-items:center;gap:4px}
-  .stage{color:var(--amber);font-size:8px;letter-spacing:1.5px;margin:12px 0 4px}
-  .rb{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);
-      color:var(--dim);cursor:pointer;font:inherit;font-size:11px;position:relative;flex:none}
-  .rb:hover{color:var(--ink);border-color:var(--violet)}
-  .rb.on{color:var(--cyan);border-color:var(--cyan);box-shadow:0 0 10px rgba(34,211,238,.25)}
+/* ── canvas ─────────────────────────────────────────────────────────── */
+main{flex:1;background:var(--canvas);border-radius:var(--r);display:flex;flex-direction:column;
+     min-width:0;min-height:0;position:relative}
+#top{display:flex;align-items:center;gap:10px;padding:12px 18px;color:var(--dim);font-size:12px}
+#top .sp{flex:1}
+.pill{border:1px solid var(--line);border-radius:20px;padding:4px 11px;font-size:11.5px;color:#5a5a66;background:#fff}
+#stage{flex:1;overflow:auto;display:flex;flex-direction:column;min-height:0}
+.hero{margin:auto;text-align:center;padding:0 20px}
+.hero .orb{width:46px;height:46px;border-radius:50%;margin:0 auto 16px;
+   background:radial-gradient(circle at 32% 30%,#c4b5fd,var(--purple));box-shadow:0 8px 26px rgba(139,92,246,.32)}
+.hero h1{font:600 25px var(--sans);margin:0 0 6px}
+.hero p{color:var(--dim);margin:0;font-size:13.5px}
+#log{padding:22px 26px;display:flex;flex-direction:column;gap:14px}
+.msg{max-width:min(760px,88%);padding:12px 15px;border-radius:15px;white-space:pre-wrap;word-wrap:break-word;font-size:13.5px}
+.msg.u{align-self:flex-end;background:var(--purple);color:#fff;border-bottom-right-radius:5px}
+.msg.a{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:5px}
+.msg .mt{font:400 10.5px var(--mono);color:var(--dim);margin-top:7px}
+.msg.u .mt{color:#e9ddff}
+.tool{align-self:flex-start;display:inline-flex;align-items:center;gap:7px;font:500 11.5px var(--mono);
+   color:var(--purple);background:var(--purple-soft);border-radius:20px;padding:5px 12px}
+.tool.bad{color:var(--red);background:#ffe9ee}
+.tool.ok{color:var(--mint);background:#e6f5ee}
 
-  /* ── sessions sidebar ──────────────────────────────────────────────── */
-  #side{grid-area:side;background:var(--panel);border-right:1px solid var(--line);
-        display:flex;flex-direction:column;min-height:0}
-  #newchat{margin:10px;padding:8px;border:1px solid var(--violet);background:transparent;color:var(--violet);
-           border-radius:8px;cursor:pointer;font:inherit;font-size:12px}
-  #newchat:hover{background:rgba(168,85,247,.13)}
-  .shead{padding:6px 14px;color:var(--dim);font-size:9px;letter-spacing:1.5px}
-  #sessions{flex:1;overflow:auto;min-height:0}
-  .s{padding:8px 14px;cursor:pointer;border-left:2px solid transparent;color:var(--dim);font-size:12px;
-     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .s:hover{background:rgba(255,255,255,.04);color:var(--ink)}
-  .s.on{border-left-color:var(--violet);background:rgba(168,85,247,.1);color:var(--ink)}
+/* ── composer: the front door ───────────────────────────────────────── */
+#composer{margin:0 auto 18px;width:min(820px,calc(100% - 44px));background:var(--card);
+   border:1px solid var(--line);border-radius:18px;box-shadow:0 2px 14px rgba(20,20,30,.05);
+   transition:border-color .3s,box-shadow .3s}
+body.running #composer{border-color:#cbb6ff;box-shadow:0 3px 22px rgba(139,92,246,.16)}
+#in{width:100%;border:none;outline:none;resize:none;background:transparent;color:var(--ink);
+    font:14px/1.6 var(--sans);padding:15px 17px 6px;min-height:52px;max-height:190px}
+#in::placeholder{color:#a8a8b4}
+.ctl{display:flex;align-items:center;gap:6px;flex-wrap:wrap;padding:8px 11px 11px;border-top:1px solid var(--line2)}
+.c{position:relative}
+.b{display:inline-flex;align-items:center;gap:6px;border:1px solid transparent;background:transparent;
+   color:#5a5a66;border-radius:10px;padding:6px 9px;font:500 12px var(--sans);cursor:pointer;white-space:nowrap}
+.b:hover{background:var(--line2)}
+.b.on{background:var(--purple-soft);color:var(--purple)}
+.b .cv{font-weight:600}
+.sp{flex:1}
+#go{width:34px;height:34px;border-radius:50%;border:none;background:var(--purple);color:#fff;
+    cursor:pointer;font-size:15px;flex:none}
+#go:disabled{opacity:.4;cursor:not-allowed}
+.menu{position:absolute;bottom:40px;left:0;min-width:206px;background:#fff;border:1px solid var(--line);
+   border-radius:13px;padding:6px;display:none;z-index:60;box-shadow:0 14px 40px rgba(20,20,30,.14)}
+.c.open .menu{display:block}
+.mh{color:var(--dim);font:600 9.5px var(--sans);letter-spacing:1.2px;padding:7px 10px 4px}
+.mi{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;cursor:pointer;font-size:12.5px}
+.mi:hover{background:var(--line2)}
+.mi.sel{color:var(--purple);font-weight:600;background:var(--purple-soft)}
+.foot{text-align:center;color:var(--dim);font-size:11px;padding-bottom:12px}
 
-  /* ── main ──────────────────────────────────────────────────────────── */
-  main{grid-area:main;display:flex;flex-direction:column;min-width:0;min-height:0}
-  #log{flex:1;overflow:auto;padding:22px;display:flex;flex-direction:column;gap:13px}
-  .m{max-width:min(780px,90%);padding:11px 14px;border-radius:11px;white-space:pre-wrap;word-wrap:break-word}
-  .me{align-self:flex-end;background:rgba(168,85,247,.15);border:1px solid rgba(168,85,247,.42)}
-  .ai{align-self:flex-start;background:var(--panel2);border:1px solid var(--line)}
-  .meta{font-size:10px;color:var(--dim);margin-top:6px}
-  .tool{align-self:flex-start;font-size:11px;color:var(--cyan);border:1px dashed rgba(34,211,238,.35);
-        padding:4px 9px;border-radius:7px;background:rgba(34,211,238,.06)}
-  .tool.bad{color:var(--red);border-color:rgba(244,63,94,.45);background:rgba(244,63,94,.08)}
-  .empty{margin:auto;color:var(--dim)}
-
-  /* ── panel drawer (rail targets) ───────────────────────────────────── */
-  #panel{position:absolute;inset:46px 0 0 296px;background:var(--bg);overflow:auto;padding:20px;display:none;z-index:20}
-  body.panel #panel{display:block}
-  .ptitle{display:flex;align-items:center;gap:10px;margin-bottom:16px}
-  .ptitle b{font-size:15px}
-  .ptitle .x{margin-left:auto;cursor:pointer;color:var(--dim);border:1px solid var(--line);
-             border-radius:50%;width:24px;height:24px;text-align:center;line-height:22px}
-  .card{border:1px solid var(--line);background:var(--panel);border-radius:11px;padding:15px;margin-bottom:14px}
-  .card h3{margin:0 0 11px;font-size:10px;letter-spacing:1.6px;color:var(--cyan);font-weight:600}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:9px}
-  .a{border:1px solid var(--line);border-radius:9px;padding:9px;background:var(--panel2)}
-  .a b{color:var(--ink);font-size:12px}.a span{display:block;color:var(--dim);font-size:10px}
-  .stat{display:inline-block;margin-right:26px;margin-bottom:8px}
-  .stat b{display:block;font-size:21px;color:var(--violet)}
-  .stat span{color:var(--dim);font-size:10px;letter-spacing:1px}
-
-  /* ── composer ──────────────────────────────────────────────────────── */
-  #bar{border-top:1px solid var(--line);background:var(--panel);padding:10px 12px 4px}
-  #in{width:100%;resize:none;min-height:42px;max-height:180px;padding:10px 12px;border-radius:10px;
-      background:var(--bg);border:1px solid var(--line);color:var(--ink);font:inherit}
-  #in:focus{outline:none;border-color:var(--violet);box-shadow:0 0 0 2px rgba(168,85,247,.14)}
-  .chips{display:flex;align-items:center;gap:7px;padding:8px 2px 0;flex-wrap:wrap}
-  .chip{border:1px solid var(--line);background:var(--panel2);color:var(--dim);border-radius:20px;
-        padding:5px 11px;font-size:11px;cursor:pointer;white-space:nowrap;position:relative}
-  .chip:hover{color:var(--ink);border-color:var(--violet)}
-  .chip.on{color:var(--cyan);border-color:rgba(34,211,238,.5)}
-  .chip.danger{color:var(--red);border-color:rgba(244,63,94,.5)}
-  .chip.violet{color:var(--violet);border-color:rgba(168,85,247,.5)}
-  .push{margin-left:auto}
-  #send{border:none;background:var(--violet);color:#fff;border-radius:20px;padding:6px 16px;cursor:pointer;font:inherit}
-  #send:disabled{opacity:.45;cursor:not-allowed}
-  .hint{padding:6px 4px 9px;color:var(--dim);font-size:10px}
-  .menu{position:absolute;bottom:34px;left:0;min-width:190px;background:var(--panel2);
-        border:1px solid var(--line);border-radius:10px;padding:6px;display:none;z-index:40;
-        box-shadow:0 12px 34px rgba(0,0,0,.6)}
-  .chip.open .menu{display:block}
-  .mh{color:var(--dim);font-size:9px;letter-spacing:1.4px;padding:5px 9px}
-  .mi{padding:6px 9px;border-radius:7px;cursor:pointer;color:var(--ink);font-size:12px}
-  .mi:hover{background:rgba(168,85,247,.16)}
-  .mi.sel{color:var(--cyan)}
-  @media(max-width:900px){
-    body{grid-template-columns:56px 1fr;grid-template-areas:"hd hd" "rail main"}
-    #side{display:none} #panel{left:56px}
-  }
+/* ── drawer for rail destinations (agents/tools/skills/…) ───────────── */
+#drawer{position:absolute;inset:0;background:var(--canvas);border-radius:var(--r);
+        padding:22px 26px;overflow:auto;display:none;z-index:40}
+body.drawer #drawer{display:block}
+.dh{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.dh h2{font:600 18px var(--sans);margin:0}
+.dh .x{margin-left:auto;cursor:pointer;color:var(--dim);border:1px solid var(--line);background:#fff;
+   border-radius:50%;width:28px;height:28px;font-size:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px;margin-bottom:14px}
+.card h3{font:600 10px var(--sans);letter-spacing:1.4px;color:var(--dim);margin:0 0 12px}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));gap:9px}
+.it{border:1px solid var(--line);border-radius:11px;padding:10px;background:var(--canvas)}
+.it b{display:block;font-size:12.5px}.it span{display:block;color:var(--dim);font-size:11px}
+.stat{display:inline-block;margin:0 26px 10px 0}
+.stat b{display:block;font:600 21px var(--sans);color:var(--purple)}
+.stat span{color:var(--dim);font-size:10.5px;letter-spacing:.8px}
+@media(max-width:860px){ #rail{display:none} body{padding:6px} }
 </style>
 
-<header>
-  <div class="logo"></div>
-  <div class="live"><span class="dot" id="live"></span>LIVE</div>
-  <div class="spacer"></div>
-  <div class="op">OP: <b>Admin</b></div>
-  <div id="clock"></div>
-  <button class="hbtn" title="Onboarding / how it works">?</button>
-  <button class="hbtn" title="Settings">◈</button>
-</header>
-
-<nav id="rail"></nav>
-
-<aside id="side">
-  <button id="newchat">＋ New chat</button>
-  <div class="shead">SESSIONS</div>
-  <div id="sessions"></div>
-</aside>
+<nav id="rail">
+  <div class="wordmark"><span class="p">🟣</span><b>PURP<span class="p">CLAW</span></b><span class="status" id="dot"></span></div>
+  <button id="newmission">＋ New Mission</button>
+  <div class="nav" id="nav"></div>
+  <div class="rhead">RECENT</div>
+  <div id="recent"></div>
+  <div class="me" id="identity"><span class="av"></span><span id="who">Admin</span></div>
+</nav>
 
 <main>
-  <div id="log"><div class="empty">Type anything. Enter to send.</div></div>
-  <div id="bar">
-    <textarea id="in" placeholder="Message PURPCLAW…  (Enter to send, Shift+Enter newline)"></textarea>
-    <div class="chips" id="chips"></div>
-    <div class="hint">Enter to send · Shift+Enter newline · menus above ↑</div>
+  <div id="top">
+    <span class="pill" id="rt">runtime …</span>
+    <span class="sp"></span>
+    <span class="pill" id="clock"></span>
   </div>
+
+  <div id="stage">
+    <div class="hero" id="hero">
+      <div class="orb"></div>
+      <h1>What's the mission?</h1>
+      <p>Ask PurpClaw anything — it has your machine, your agents and your tools.</p>
+    </div>
+    <div id="log" style="display:none"></div>
+  </div>
+
+  <div id="composer">
+    <textarea id="in" placeholder="Ask PurpClaw anything…"></textarea>
+    <div class="ctl" id="ctl"></div>
+  </div>
+  <div class="foot">Enter to send · Shift+Enter for a new line</div>
+
+  <div id="drawer"></div>
 </main>
 
-<div id="panel"></div>
-
 <script>
-const API = location.origin;                       // same-origin — no CORS, no config
-const $  = s => document.querySelector(s);
-const el = (c,t)=>{const d=document.createElement('div');d.className=c;if(t!=null)d.textContent=t;return d;};
+const API=location.origin, $=s=>document.querySelector(s);
+const el=(c,t)=>{const d=document.createElement('div');d.className=c;if(t!=null)d.textContent=t;return d};
 
-/* ── rail: same stage groups + codes as Mission Control ─────────────── */
-const RAIL = [
-  ['START',   [['MS','Mission Spine','overview'],['AS','Asher','asher']]],
-  ['WORK',    [['WK','Work','work']]],
-  ['OBSERVE', [['DR','Dream Swarm','dream'],['DA','Data Analysis','data']]],
-  ['CONTROL', [['GK','Risk Gate','gate'],['AB','Abliterator','abl'],['CG','Cognitive Mesh','cog'],
-               ['EV','Self-Evolution','evo'],['SM','System Map','map']]],
-];
-function renderRail(){
-  const r=$('#rail'); r.innerHTML='';
-  RAIL.forEach(([stage,items])=>{
-    r.appendChild(el('stage',stage));
-    items.forEach(([code,label,id])=>{
-      const b=document.createElement('button');
-      b.className='rb'; b.textContent=code; b.title=label; b.dataset.panel=id;
-      b.onclick=()=>openPanel(id,label);
-      r.appendChild(b);
-    });
-  });
-}
-
-/* ── composer chips (cloned from the Next bottom bar) ───────────────── */
-const state={ mode:'Chat', agents:2, auto:true, memory:'Project', folder:'Current Folder', access:'Full System', tokens:0 };
-const MENUS={
-  mode:   ['Chat','Plan','Execute','Swarm'],
-  memory: ['Off','Session','Project','Persistent'],
-  access: ['Read Only','Review','Agent Actions','Full System'],
+/* ── state: mirrors what the backend accepts. UI never owns truth. ──── */
+const S={
+  mode:'Chat', provider:'Auto', model:'Auto', thinking:'Balanced',
+  approve:'Agent Actions', memory:'Project', project:'Current Folder',
+  agents:[], tools:{search:false,code:false,files:false,voice:false,mcp:false,council:false,skills:false},
+  tokens:0,
 };
-function renderChips(){
-  const c=$('#chips'); c.innerHTML='';
-  const mk=(txt,cls,menuKey,onPick)=>{
-    const b=el('chip'+(cls?' '+cls:''),null);
-    b.textContent=txt;
-    if(menuKey){
-      const m=el('menu'); m.appendChild(el('mh',menuKey.toUpperCase()));
-      MENUS[menuKey].forEach(opt=>{
-        const i=el('mi'+(state[menuKey]===opt?' sel':''),opt);
-        i.onclick=e=>{e.stopPropagation();onPick(opt);renderChips();};
-        m.appendChild(i);
-      });
-      b.appendChild(m);
-      b.onclick=e=>{e.stopPropagation();document.querySelectorAll('.chip').forEach(x=>x!==b&&x.classList.remove('open'));b.classList.toggle('open');};
-    }
-    c.appendChild(b); return b;
-  };
-  mk('＋');
-  mk('💬 '+state.mode,'on','mode',v=>state.mode=v);
-  mk('👤 '+state.agents);
-  mk((state.auto?'🤖 AUTO':'🤖 MANUAL'), state.auto?'on':'').onclick=()=>{state.auto=!state.auto;renderChips();};
-  mk('🧠 '+state.memory,'violet','memory',v=>state.memory=v);
-  mk('📂 '+state.folder);
-  mk('⚡ Chips');
-  const t=mk(state.tokens+' tk'); t.classList.add('push');
-  mk('🔴 '+state.access,'danger','access',v=>state.access=v);
-  const s=document.createElement('button'); s.id='send'; s.textContent='→'; s.onclick=send; c.appendChild(s);
-}
-document.addEventListener('click',()=>document.querySelectorAll('.chip').forEach(x=>x.classList.remove('open')));
+const MENU={
+  mode:['Chat','Plan','Execute','Swarm'],
+  provider:['Auto','MiniMax','OpenAI','Claude','Gemini','DeepSeek','Kimi','Qwen','Local'],
+  thinking:['Fast','Balanced','Deep','Extreme'],
+  approve:['Read Only','Review','Agent Actions','Full System'],
+  memory:['Off','Session','Project','Persistent'],
+  project:['Current Folder','DreamForge','OmniCode','Gotham','OpenClaw','Custom Project'],
+};
+const NAV=[['🧠','Missions','missions'],['🤖','Agents','agents'],['🔧','Tools','tools'],
+           ['🧩','Skills','skills'],['📁','Projects','projects'],['🧠','Memory','memory'],['⚙️','Settings','settings']];
 
-/* ── sessions ───────────────────────────────────────────────────────── */
-const LS='purpclaw.cockpit.sessions', LS_CUR='purpclaw.cockpit.current';
-let sessions=load(LS,[]), current=localStorage.getItem(LS_CUR)||'';
-function load(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
-function save(){try{localStorage.setItem(LS,JSON.stringify(sessions));localStorage.setItem(LS_CUR,current)}catch{}}
-function cur(){return sessions.find(s=>s.id===current)}
-function newChat(){
-  current='ck-'+Date.now().toString(36);
-  sessions.unshift({id:current,title:'New chat',msgs:[]}); sessions=sessions.slice(0,40);
-  state.tokens=0; save(); renderSessions(); renderLog(); renderChips(); $('#in').focus();
+/* ── sessions (missions) ────────────────────────────────────────────── */
+const K='purpclaw.cockpit.v2', KC=K+'.cur';
+let sess=ld(K,[]), cur=localStorage.getItem(KC)||'';
+function ld(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}}
+function sv(){try{localStorage.setItem(K,JSON.stringify(sess));localStorage.setItem(KC,cur)}catch{}}
+function C(){return sess.find(x=>x.id===cur)}
+function newMission(){
+  cur='m-'+Date.now().toString(36);
+  sess.unshift({id:cur,title:'New mission',msgs:[]}); sess=sess.slice(0,40);
+  S.tokens=0; sv(); paintRail(); paintLog(); paintCtl(); $('#in').focus();
 }
-function renderSessions(){
-  const b=$('#sessions'); b.innerHTML='';
-  sessions.forEach(s=>{const d=el('s'+(s.id===current?' on':''),s.title||'New chat');
-    d.onclick=()=>{current=s.id;save();renderSessions();renderLog();}; b.appendChild(d);});
+
+/* ── render ─────────────────────────────────────────────────────────── */
+function paintRail(){
+  const n=$('#nav'); n.innerHTML='';
+  NAV.forEach(([ic,label,id])=>{
+    const d=el('nv'); d.innerHTML=`<span class="ic">${ic}</span><span>${label}</span>`;
+    d.onclick=()=>drawer(id,label); n.appendChild(d);
+  });
+  const r=$('#recent'); r.innerHTML='';
+  sess.forEach(s=>{const d=el('rc'+(s.id===cur?' on':''),s.title||'New mission');
+    d.onclick=()=>{cur=s.id;sv();paintRail();paintLog()}; r.appendChild(d)});
 }
-function renderLog(){
-  const log=$('#log'); log.innerHTML=''; const s=cur();
-  if(!s||!s.msgs.length){log.appendChild(el('empty','Type anything. Enter to send.'));return;}
-  s.msgs.forEach(m=>{const d=el('m '+(m.role==='user'?'me':'ai'),m.text);
-    if(m.meta)d.appendChild(el('meta',m.meta)); log.appendChild(d);});
+function paintLog(){
+  const s=C(), log=$('#log'), hero=$('#hero');
+  if(!s||!s.msgs.length){ hero.style.display=''; log.style.display='none'; return }
+  hero.style.display='none'; log.style.display='flex'; log.innerHTML='';
+  s.msgs.forEach(m=>{const d=el('msg '+(m.role==='user'?'u':'a'),m.text);
+    if(m.meta)d.appendChild(el('mt',m.meta)); log.appendChild(d)});
   log.scrollTop=log.scrollHeight;
 }
+function paintCtl(){
+  const c=$('#ctl'); c.innerHTML='';
+  const drop=(icon,key,label)=>{
+    const w=el('c'); const b=document.createElement('button'); b.className='b';
+    b.innerHTML=`${icon} <span class="cv">${label?label+' ':''}${S[key]}</span> <span style="opacity:.5">▾</span>`;
+    const m=el('menu'); m.appendChild(el('mh',key.toUpperCase()));
+    MENU[key].forEach(o=>{const i=el('mi'+(S[key]===o?' sel':''),o);
+      i.onclick=e=>{e.stopPropagation();S[key]=o;paintCtl()}; m.appendChild(i)});
+    b.onclick=e=>{e.stopPropagation();document.querySelectorAll('.c').forEach(x=>x!==w&&x.classList.remove('open'));w.classList.toggle('open')};
+    w.append(b,m); c.appendChild(w); return w;
+  };
+  const tog=(icon,key,label)=>{
+    const b=document.createElement('button'); b.className='b'+(S.tools[key]?' on':'');
+    b.innerHTML=`${icon} ${label}`;
+    b.onclick=()=>{S.tools[key]=!S.tools[key];paintCtl()};
+    c.appendChild(b);
+  };
+  drop('🛡️','approve','');
+  tog('🌐','search','Search'); tog('&lt;/&gt;','code','Code'); tog('📎','files','Files');
+  tog('🎙️','voice','Voice'); tog('🧠','council','Council'); tog('🧩','skills','Skills'); tog('🔌','mcp','MCP');
+  c.appendChild(el('sp'));
+  drop('💬','mode','');
+  drop('🧠','memory','');
+  drop('⚡','thinking','');
+  drop('🤖','provider','');
+  const t=document.createElement('button'); t.className='b'; t.textContent=S.tokens+' tk'; c.appendChild(t);
+  const go=document.createElement('button'); go.id='go'; go.textContent='↑'; go.onclick=send; c.appendChild(go);
+}
+document.addEventListener('click',()=>document.querySelectorAll('.c').forEach(x=>x.classList.remove('open')));
 
-/* Reasoning and raw tool JSON are internals — never shown. */
+/* Reasoning and raw tool JSON are internals. Brace-counted: real args nest. */
 function clean(t){
   let o=String(t||'').replace(/<think>[\s\S]*?<\/think>/gi,'');
   const k=o.lastIndexOf('<think>'); if(k!==-1)o=o.slice(0,k);
-
-  // Strip {"tool": …} blocks by COUNTING braces. A regex with [^{}]* cannot do
-  // this: real args nest (a PowerShell command contains @{N='Free(GB)';…}) and
-  // the whole block leaked into the reply as prose. Tool activity is already
-  // shown as badges above the bubble.
   for(;;){
-    const start=o.search(/\{\s*"tool"\s*:/);
-    if(start===-1)break;
-    let depth=0,end=-1,inStr=false,esc=false;
-    for(let i=start;i<o.length;i++){
-      const c=o[i];
-      if(esc){esc=false;continue}
-      if(c==='\\'){esc=true;continue}
-      if(c==='"'){inStr=!inStr;continue}
-      if(inStr)continue;
-      if(c==='{')depth++;
-      else if(c==='}'){depth--; if(depth===0){end=i+1;break}}
-    }
-    if(end===-1){o=o.slice(0,start);break}   // unterminated: still streaming
-    o=o.slice(0,start)+o.slice(end);
+    const st=o.search(/\{\s*"tool"\s*:/); if(st===-1)break;
+    let d=0,end=-1,q=false,esc=false;
+    for(let i=st;i<o.length;i++){const ch=o[i];
+      if(esc){esc=false;continue} if(ch==='\\'){esc=true;continue}
+      if(ch==='"'){q=!q;continue} if(q)continue;
+      if(ch==='{')d++; else if(ch==='}'){d--;if(d===0){end=i+1;break}}}
+    if(end===-1){o=o.slice(0,st);break}
+    o=o.slice(0,st)+o.slice(end);
   }
   return o.replace(/[ \t]{2,}/g,' ').replace(/\n{3,}/g,'\n\n').trimStart();
 }
 
-/* ── send (SSE) ─────────────────────────────────────────────────────── */
+/* ── send ───────────────────────────────────────────────────────────── */
 let busy=false;
 async function send(){
-  const box=$('#in'); const text=box.value.trim(); if(!text||busy)return;
-  if(!cur())newChat(); const s=cur();
-  if(s.title==='New chat')s.title=text.slice(0,38);
-  s.msgs.push({role:'user',text}); box.value=''; renderSessions(); renderLog();
+  const box=$('#in'), text=box.value.trim(); if(!text||busy) return;
+  if(!C()) newMission();
+  const s=C(); if(s.title==='New mission') s.title=text.slice(0,40);
+  s.msgs.push({role:'user',text}); box.value=''; paintRail(); paintLog();
 
-  busy=true; const sendBtn=$('#send'); if(sendBtn)sendBtn.disabled=true;
-  const bubble=el('m ai',''); const meta=el('meta','…');
-  bubble.appendChild(meta); $('#log').appendChild(bubble); $('#log').scrollTop=1e9;
+  busy=true; document.body.classList.add('running');
+  const go=$('#go'); if(go) go.disabled=true;
+  const bub=el('msg a',''), mt=el('mt','thinking…'); bub.appendChild(mt);
+  $('#log').appendChild(bub); $('#log').scrollTop=1e9;
 
   let raw='';
   try{
     const r=await fetch(API+'/api/chat',{method:'POST',
       headers:{'Content-Type':'application/json','Accept':'text/event-stream'},
-      body:JSON.stringify({message:text,session_id:current,source:'cockpit'})});
-    if(!r.ok||!r.body)throw new Error('HTTP '+r.status);
-    const rd=r.body.getReader(),dec=new TextDecoder(); let buf='';
+      // The backend stays canonical: it receives intent + selected capabilities.
+      body:JSON.stringify({message:text,session_id:cur,source:'cockpit',
+        mode:S.mode,provider:S.provider,thinking:S.thinking,memory:S.memory,
+        project:S.project,approve:S.approve,tools:S.tools})});
+    if(!r.ok||!r.body) throw new Error('HTTP '+r.status);
+    const rd=r.body.getReader(), dec=new TextDecoder(); let buf='';
     for(;;){
-      const{value,done}=await rd.read(); if(done)break;
+      const {value,done}=await rd.read(); if(done) break;
       buf+=dec.decode(value,{stream:true});
-      const blocks=buf.split('\n\n'); buf=blocks.pop()||'';
-      for(const b of blocks){
+      const parts=buf.split('\n\n'); buf=parts.pop()||'';
+      for(const p of parts){
         let ev='message',data='';
-        for(const ln of b.split('\n')){
+        for(const ln of p.split('\n')){
           if(ln.startsWith('event:'))ev=ln.slice(6).trim();
           else if(ln.startsWith('data:'))data+=ln.slice(5).trim();
         }
-        if(!data)continue; let d; try{d=JSON.parse(data)}catch{continue}
+        if(!data) continue; let d; try{d=JSON.parse(data)}catch{continue}
         if(ev==='token'){
-          raw+=d.content||'';
-          bubble.textContent=clean(raw); bubble.appendChild(meta);
-          meta.textContent=d.model||'streaming…';
-          state.tokens=Math.round(raw.length/4); renderChips();
+          raw+=d.content||''; bub.textContent=clean(raw); bub.appendChild(mt);
+          mt.textContent=d.model||'…'; S.tokens=Math.round(raw.length/4); paintCtl();
           $('#log').scrollTop=1e9;
-        }else if(ev==='tool-call'){
-          $('#log').insertBefore(el('tool','◌ '+d.tool),bubble);
-        }else if(ev==='tool-result'){
+        } else if(ev==='tool-call'){
+          $('#log').insertBefore(el('tool','◌ '+d.tool),bub);
+        } else if(ev==='tool-result'){
           const last=[...document.querySelectorAll('.tool')].pop();
-          if(last){
-            const ok=d.ok!==false;
+          if(last){ const ok=d.ok!==false;
             last.textContent=(ok?'✓ ':'✗ ')+(d.tool||'')+(ok?'':' — '+String(d.error||'failed').slice(0,80));
-            if(!ok)last.classList.add('bad');     // a failure must LOOK failed, not spin
+            last.className='tool '+(ok?'ok':'bad');   // a failure must LOOK failed
           }
-        }else if(ev==='error'){
-          bubble.textContent='error: '+(d.error||'unknown'); bubble.appendChild(meta); meta.textContent='failed';
-        }else if(ev==='done'){
+        } else if(ev==='error'){
+          bub.textContent='⚠ '+(d.error||'unknown'); bub.appendChild(mt); mt.textContent='failed';
+        } else if(ev==='done'){
           const fin=clean(d.reply||raw)||'(no output)';
-          bubble.textContent=fin; bubble.appendChild(meta);
-          meta.textContent=[d.model,d.toolCalls?d.toolCalls+' tools':''].filter(Boolean).join(' · ')||'done';
-          s.msgs.push({role:'assistant',text:fin,meta:meta.textContent});
+          bub.textContent=fin; bub.appendChild(mt);
+          mt.textContent=[d.model,d.toolCalls?d.toolCalls+' tools':''].filter(Boolean).join(' · ')||'done';
+          s.msgs.push({role:'assistant',text:fin,meta:mt.textContent});
         }
       }
     }
   }catch(e){
-    bubble.textContent='error: '+e.message; bubble.appendChild(meta); meta.textContent='failed';
-    s.msgs.push({role:'assistant',text:'error: '+e.message,meta:'failed'});
+    bub.textContent='⚠ '+e.message; bub.appendChild(mt); mt.textContent='failed';
+    s.msgs.push({role:'assistant',text:'⚠ '+e.message,meta:'failed'});
   }finally{
-    busy=false; const sb=$('#send'); if(sb)sb.disabled=false; save(); renderSessions();
+    busy=false; document.body.classList.remove('running');
+    const g=$('#go'); if(g) g.disabled=false; sv(); paintRail();
   }
 }
 
-/* ── panels ─────────────────────────────────────────────────────────── */
-async function openPanel(id,label){
-  document.body.classList.add('panel');
-  const p=$('#panel'); p.innerHTML='';
-  const head=el('ptitle'); const b=document.createElement('b'); b.textContent=label; head.appendChild(b);
-  const x=el('x','✕'); x.onclick=()=>document.body.classList.remove('panel'); head.appendChild(x);
-  p.appendChild(head);
-  const body=el('body-wrap'); p.appendChild(body);
+/* ── drawers: rail destinations backed by real endpoints ────────────── */
+async function j(u){try{const r=await fetch(API+u);return r.ok?await r.json():null}catch{return null}}
+async function drawer(id,label){
+  document.body.classList.add('drawer');
+  const d=$('#drawer'); d.innerHTML='';
+  const h=el('dh'); const t=document.createElement('h2'); t.textContent=label; h.appendChild(t);
+  const x=document.createElement('button'); x.className='x'; x.textContent='✕';
+  x.onclick=()=>document.body.classList.remove('drawer'); h.appendChild(x); d.appendChild(h);
+  const body=el('b'); d.appendChild(body); body.innerHTML='<div class="card">loading…</div>';
 
-  if(id==='work'){ body.innerHTML='<div class="card">loading…</div>'; body.innerHTML=await workHtml(); return; }
-  if(id==='overview'){ body.innerHTML=await overviewHtml(); return; }
-  body.innerHTML='<div class="card"><h3>'+label.toUpperCase()+
-    '</h3><div style="color:var(--dim)">Not wired in the cockpit yet. It exists in the Next UI; '+
-    'say the word and it gets ported here with a real data source.</div></div>';
-}
-
-async function getJSON(u){ try{ const r=await fetch(API+u); return r.ok?await r.json():null }catch{ return null } }
-
-async function overviewHtml(){
-  const h=await getJSON('/api/health'); const rt=h&&h.runtime;
-  return `<div class="card"><h3>RUNTIME</h3>
-    <div class="stat"><b>${h?'LIVE':'DOWN'}</b><span>STATUS</span></div>
-    <div class="stat"><b>${h?Math.round(h.uptime/60)+'m':'—'}</b><span>UPTIME</span></div>
-    <div style="margin-top:10px;color:var(--dim);font-size:11px">${
-      rt?rt.runtimeId+' · '+rt.profile+'/'+rt.workspace+' · v'+rt.version:'runtime identity unavailable'}</div></div>`;
-}
-
-/* One consolidated Work panel: roster + tower + jobs, instead of three rail buttons. */
-async function workHtml(){
-  const [h,reg,pipe]=await Promise.all([getJSON('/api/health'),getJSON('/api/agents/registry'),getJSON('/api/pipeline')]);
-  const roster=(reg&&(reg.agents||reg.registry?.agents))||(pipe&&pipe.registry?.agents)||[];
-  const swarm=(pipe&&pipe.swarm?.agents)||[];
-  const working=swarm.filter(a=>a.status==='working').length;
-  let out=`<div class="card"><h3>WORKFORCE</h3>
-    <div class="stat"><b>${roster.length}</b><span>AGENTS</span></div>
-    <div class="stat"><b>${working}</b><span>WORKING</span></div>
-    <div class="stat"><b>${swarm.length}</b><span>SPAWNED</span></div>
-    <div class="stat"><b>${h?'ONLINE':'DOWN'}</b><span>TOWER</span></div></div>`;
-  out += roster.length
-    ? `<div class="card"><h3>AGENT ROSTER</h3><div class="grid">${
-        roster.map(a=>`<div class="a"><b>${a.emoji||''} ${a.name||''}</b><span>${a.role||''}</span><span>${a.division||''}</span></div>`).join('')
-      }</div></div>`
-    : `<div class="card"><h3>AGENT ROSTER</h3><div style="color:var(--dim)">roster endpoint returned nothing</div></div>`;
-  return out;
+  if(id==='agents'){
+    const [reg,pipe]=await Promise.all([j('/api/agents/registry'),j('/api/pipeline')]);
+    const roster=(reg&&(reg.agents||reg.registry?.agents))||(pipe&&pipe.registry?.agents)||[];
+    const swarm=(pipe&&pipe.swarm?.agents)||[];
+    body.innerHTML=`<div class="card"><h3>WORKFORCE</h3>
+      <div class="stat"><b>${roster.length}</b><span>AGENTS</span></div>
+      <div class="stat"><b>${swarm.filter(a=>a.status==='working').length}</b><span>WORKING</span></div>
+      <div class="stat"><b>${swarm.length}</b><span>SPAWNED</span></div></div>`+
+      (roster.length?`<div class="card"><h3>ROSTER</h3><div class="g">${roster.map(a=>
+        `<div class="it"><b>${a.emoji||''} ${a.name||''}</b><span>${a.role||''}</span><span>${a.division||''}</span></div>`).join('')}</div></div>`
+        :`<div class="card"><h3>ROSTER</h3><div style="color:var(--dim)">roster endpoint returned nothing</div></div>`);
+    return;
+  }
+  if(id==='missions'){
+    body.innerHTML=`<div class="card"><h3>MISSIONS</h3>${sess.length?sess.map(s=>
+      `<div class="it" style="margin-bottom:7px"><b>${s.title}</b><span>${s.msgs.length} messages</span></div>`).join('')
+      :'<div style="color:var(--dim)">no missions yet — start one from the composer</div>'}</div>`;
+    return;
+  }
+  if(id==='tools'){
+    const cap=await j('/api/capabilities');
+    const n=cap?(cap.count||(cap.capabilities||[]).length||0):0;
+    body.innerHTML=`<div class="card"><h3>TOOLRUNTIME</h3>
+      <div class="stat"><b>${n||'—'}</b><span>CAPABILITIES</span></div>
+      <div style="color:var(--dim);font-size:12px">Tools execute through the governed ToolRuntime — scope, schema, path-security, permissions, steering, approval. Toggle the ones this mission may reach for in the composer.</div></div>`;
+    return;
+  }
+  if(id==='memory'){
+    const h2=await j('/api/health');
+    body.innerHTML=`<div class="card"><h3>MEMORY</h3>
+      <div class="stat"><b>${S.memory}</b><span>MODE</span></div>
+      <div style="color:var(--dim);font-size:12px">Durable archive + cognitive spine. Recall runs before each turn; the exchange is recorded after it. Scope follows the mission you are in.</div></div>`;
+    return;
+  }
+  if(id==='settings'){
+    const h2=await j('/api/health'); const rt=h2&&h2.runtime;
+    body.innerHTML=`<div class="card"><h3>RUNTIME</h3>
+      <div style="font:12px var(--mono);color:#5a5a66">${rt?
+        `${rt.runtimeId}<br>profile ${rt.profile} · workspace ${rt.workspace}<br>v${rt.version}`
+        :'runtime identity unavailable'}</div></div>`;
+    return;
+  }
+  body.innerHTML=`<div class="card"><h3>${label.toUpperCase()}</h3>
+    <div style="color:var(--dim);font-size:12.5px">Not wired to a data source yet. The controls for this live in the composer; this drawer gets a real view when you tell me which one matters.</div></div>`;
 }
 
 /* ── boot ───────────────────────────────────────────────────────────── */
-$('#newchat').onclick=newChat;
-$('#in').addEventListener('keydown',e=>{ if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send();} });
-function tick(){ $('#clock').textContent=new Date().toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
-tick(); setInterval(tick,1000);
-async function ping(){ try{const r=await fetch(API+'/api/health');$('#live').className=r.ok?'dot':'dot off';}catch{$('#live').className='dot off';} }
-ping(); setInterval(ping,15000);
-renderRail(); renderChips();
-if(!sessions.length||!cur())newChat(); else {renderSessions();renderLog();}
+$('#newmission').onclick=newMission;
+$('#identity').onclick=()=>drawer('settings','Settings');
+$('#in').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+$('#in').addEventListener('input',e=>{e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,190)+'px'});
+setInterval(()=>$('#clock').textContent=new Date().toLocaleTimeString(),1000);
+(async function boot(){
+  const h=await j('/api/health');
+  $('#dot').className='status'+(h?'':' off');
+  const rt=h&&h.runtime;
+  $('#rt').textContent=rt?`${rt.profile}/${rt.workspace} · v${rt.version}`:'runtime offline';
+  if(rt&&rt.profile)$('#who').textContent=rt.profile.replace(/^\w/,c=>c.toUpperCase());
+})();
+setInterval(async()=>{const h=await j('/api/health');$('#dot').className='status'+(h?'':' off')},15000);
+paintRail(); paintCtl();
+if(!sess.length||!C()) newMission(); else paintLog();
 </script>
