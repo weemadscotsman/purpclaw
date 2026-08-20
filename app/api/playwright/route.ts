@@ -8,6 +8,8 @@ import { chromium } from 'playwright';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
+import { checkOperator } from '../_lib/operator-auth';
+import { checkRateLimit } from '../_lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -34,6 +36,11 @@ async function capture(): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = checkOperator(req);
+  if (!auth.ok) return auth.response;
+  const limited = checkRateLimit(req, 'playwright', 20);
+  if (limited) return limited;
+
   const body = await req.json().catch(() => ({}));
   const { action } = body;
 
@@ -124,7 +131,12 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = checkOperator(req);
+  if (!auth.ok) return auth.response;
+  const limited = checkRateLimit(req, 'playwright', 20);
+  if (limited) return limited;
+
   try {
     const sp = await capture();
     const buf = fs.readFileSync(sp);
