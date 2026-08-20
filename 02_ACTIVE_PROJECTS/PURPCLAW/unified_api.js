@@ -215,6 +215,13 @@ function sseStart(res) {
     'Cache-Control': 'no-cache, no-transform',
     'Connection': 'keep-alive',
     'X-Accel-Buffering': 'no',
+    // CORS on the ACTUAL response, not just the OPTIONS preflight. Mission
+    // Control streams chat by POSTing to http://127.0.0.1:7780 directly (it
+    // bypasses the buffering service-proxy for SSE), which is cross-origin
+    // from the UI on :3000. The preflight returned CORS but this response did
+    // not, so the browser refused to read the stream and the panel showed
+    // "error: Failed to fetch / stream failed".
+    'Access-Control-Allow-Origin': '*',
   });
   if (res.flushHeaders) res.flushHeaders();
 }
