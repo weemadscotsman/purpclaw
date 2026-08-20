@@ -60,7 +60,19 @@ class ToolRegistry {
     return [...builtin, ...mcp];
   }
   has(name) { return this.tools.has(name) || _mcpTools.some(t => t.name === name); }
-  async invoke(name, args) {
+  async invoke(name, args, context = {}) {
+    // Access enforcement. Every surface funnels through invoke(), so the
+    // supervision dial is checked here once rather than in each caller —
+    // a caller that forgets cannot silently gain privilege.
+    if (context.permissionProfile) {
+      try {
+        const verdict = require('../permission-manager').evaluate(context.permissionProfile, name);
+        if (verdict.action === 'deny') {
+          return { ok: false, code: 'ACCESS_DENIED',
+            error: `${name} is not permitted at access level "${context.accessLabel || context.permissionProfile}". Raise the access level in the composer to allow it.` };
+        }
+      } catch { /* evaluator unavailable — fall through to normal dispatch */ }
+    }
     // Built-in tool?
     if (this.tools.has(name)) {
       const tool = this.tools.get(name);

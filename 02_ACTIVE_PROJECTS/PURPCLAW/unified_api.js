@@ -424,7 +424,10 @@ async function handleChatStream(req, res) {
     for await (const ev of runAgent({
       prompt: message,
       history: priorHistory,                    // ← the fix: carry the conversation
-      opts: { maxTokens: 2048, temperature: 0.7, sessionId },
+      // Mission envelope: the composer's controls are execution state, not
+      // decoration. Normalised in lib/mission-envelope.js so a surface that
+      // sends nothing still gets safe defaults.
+      opts: { maxTokens: 2048, temperature: 0.7, sessionId, envelope: body.envelope || {} },
     })) {
       if (ev.type === 'token') {
         fullReply += ev.content;
@@ -435,6 +438,10 @@ async function handleChatStream(req, res) {
         sseEvent(res, 'steering', { capsuleId: ev.capsuleId, activeRules: ev.activeRules, unresolvedConflicts: ev.unresolvedConflicts, sources: ev.sources, error: ev.error });
       } else if (ev.type === 'steering-blocked') {
         sseEvent(res, 'steering-blocked', { capsuleId: ev.capsuleId, conflicts: ev.conflicts });
+      } else if (ev.type === 'dejavu') {
+        // "We have been in this execution shape before." Evidence, not permission.
+        sseEvent(res, 'dejavu', { confidence: ev.confidence, historicalRuns: ev.historicalRuns,
+          verifiedRuns: ev.verifiedRuns, continuations: ev.continuations, closest: ev.closest });
       } else if (ev.type === 'tool-call') {
         toolCallsUsed++;
         sseEvent(res, 'tool-call', { tool: ev.tool, args: ev.args, capsuleId: ev.capsuleId });

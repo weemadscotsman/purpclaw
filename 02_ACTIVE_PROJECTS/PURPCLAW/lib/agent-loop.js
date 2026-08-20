@@ -31,6 +31,10 @@ const FEEDBACK = (() => { try { return require('./user-feedback'); } catch { ret
 const IDLE_ENGINE = (() => { try { return require('./idle-engine'); } catch { return null; } })();
 // Canonical memory gateway — recall before the turn, record after it.
 const MEMORY = (() => { try { return require('./memory-gateway'); } catch { return null; } })();
+// Déjà Vu — execution-pattern recognition over the same memory spine.
+const DEJAVU = (() => { try { return require('./dejavu'); } catch { return null; } })();
+// Mission envelope — the composer's execution contract, shared by every surface.
+const ENVELOPE = (() => { try { return require('./mission-envelope'); } catch { return null; } })();
 const { enforceToolUse } = (() => { try { return require('./tools/tool-intent-gate'); } catch { return null; } })();
 const { IdleScheduler } = (() => { try { return require('./runtime/idle-scheduler'); } catch { return null; } })();
 
@@ -196,7 +200,17 @@ function extractToolCalls(text) {
  */
 async function* agentTurn({ messages, model, provider, opts = {} }) {
   const llm = require('./llm-provider');
-  const systemPrompt = buildSystemPrompt({ model, ...opts });
+  // Mission envelope: the operator's composer selections for THIS turn.
+  // Advisory in the prompt, enforced at the dispatch gate below.
+  const envelope = ENVELOPE ? ENVELOPE.normalize(opts.envelope || {}) : null;
+  const toolContext = envelope ? {
+    permissionProfile: ENVELOPE.permissionProfile(envelope),
+    accessLabel: ENVELOPE.ACCESS[envelope.access].label,
+    sessionId: opts.sessionId || null,
+    operatorInitiated: opts.operatorInitiated !== false,
+  } : { sessionId: opts.sessionId || null };
+  const systemPrompt = buildSystemPrompt({ model, ...opts })
+    + (envelope ? '\n\n' + ENVELOPE.toPromptBlock(envelope) : '');
 
   // Strip tool_call_id from historical tool-result messages.
   // MiniMax validates tool_call_id against the CURRENT streaming session only.
@@ -302,6 +316,28 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
     } catch { /* memory down — carry on without it */ }
   }
 
+  // ── Déjà Vu: recognise the shape before spending tokens on it ──────────
+  // Evidence only. It informs the model; steering and the ToolRuntime gate
+  // still decide what may actually run.
+  if (DEJAVU && prompt) {
+    try {
+      const dv = DEJAVU.match({ intent: prompt });
+      if (dv.matched) {
+        const routes = dv.continuations.length
+          ? `Historically the next step was: ${dv.continuations.map(c => `${c.action} (${Math.round(c.confidence * 100)}%)`).join(', ')}.`
+          : '';
+        messages.unshift({
+          role: 'user',
+          content: `[déjà vu — ${Math.round(dv.confidence * 100)}% match across ${dv.historicalRuns} comparable run(s), `
+            + `${dv.verifiedRuns} verified]\nClosest prior route: ${(dv.closest.route || []).join(' > ') || 'n/a'} → ${dv.closest.outcome}. `
+            + `${routes}\nThis is EVIDENCE, not permission — you must still justify each step, and every tool call is gated as normal.\n[end déjà vu]`,
+        });
+        yield { type: 'dejavu', confidence: dv.confidence, historicalRuns: dv.historicalRuns,
+                verifiedRuns: dv.verifiedRuns, continuations: dv.continuations, closest: dv.closest };
+      }
+    } catch { /* recognition is an optimisation, never a blocker */ }
+  }
+
   opts.historyLength = history.filter(m => m.role === 'user').length;
   opts.turnNumber = 1;
   // Repeat-call guard. Observed live: one "check the stack" prompt fired 47
@@ -312,6 +348,8 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
   const callCounts = new Map();
   const MAX_IDENTICAL_CALLS = Number(process.env.PURPCLAW_MAX_IDENTICAL_TOOL_CALLS || 2);
   // Bounded retries when an action prompt produces zero tool calls.
+  // Ordered execution trace for this run: [{tool, ok}] in the order they fired.
+  const toolSequence = [];
   let toolEnforcementRetries = 0;
   const MAX_TOOL_ENFORCEMENT_RETRIES = Number(process.env.PURPCLAW_MAX_TOOL_ENFORCEMENT_RETRIES || 2);
   // Run-level count of tools actually executed. Enforcement asks "did this RUN
@@ -493,6 +531,16 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
           });
         } catch { /* memory down — the answer still stands */ }
       }
+      // Déjà Vu: record the execution SHAPE (ordered tools + outcome), not just
+      // the narrative, so future runs can recognise this pattern.
+      if (DEJAVU && toolSequence.length) {
+        try {
+          await DEJAVU.record({
+            intent: prompt, sequence: toolSequence,
+            session: opts.sessionId || null, durationMs: Date.now() - runStartedAt,
+          });
+        } catch { /* recognition is an optimisation, never a blocker */ }
+      }
       yield { type: 'done', turns: turn, totalContent, capsuleId: capId() };
       return;
     }
@@ -527,6 +575,10 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       }
       callCounts.set(sig, priorCount + 1);
       executedToolCount++;
+      // Record the ORDER tools ran in. Déjà Vu matches execution prefixes
+      // (A→B→C) against history, which is impossible if only the prompt and the
+      // final answer are kept. Result status is filled in below.
+      toolSequence.push({ tool: call.tool, ok: null });
 
       yield { type: 'tool-call', tool: call.tool, args: call.args, capsuleId: capId() };
 
@@ -537,15 +589,28 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
       // Per LIVE_REPO_INTEGRATION_AUDIT.md: native drivers get priority over MCP fallback.
       // If no driver claims this tool, fall through to the legacy TOOLS.invoke.
       let result;
-      if (ROUTED) {
-        const routed = await ROUTED.tryRoutedDispatch(call.tool, call.args);
+      // Access gate BEFORE dispatch: the control router bypasses TOOLS.invoke,
+      // so checking inside invoke alone would leave routed tools ungoverned.
+      const denied = envelope && ENVELOPE
+        ? (() => {
+            try {
+              const v = require('./permission-manager').evaluate(toolContext.permissionProfile, call.tool);
+              return v.action === 'deny' ? v : null;
+            } catch { return null; }
+          })()
+        : null;
+      if (denied) {
+        result = { ok: false, code: 'ACCESS_DENIED',
+          error: `${call.tool} is not permitted at access level "${toolContext.accessLabel}". Raise the access level in the composer to allow it.` };
+      } else if (ROUTED) {
+        const routed = await ROUTED.tryRoutedDispatch(call.tool, call.args, toolContext);
         if (routed !== null) {
           result = routed;
         } else {
-          result = await TOOLS.invoke(call.tool, call.args);
+          result = await TOOLS.invoke(call.tool, call.args, toolContext);
         }
       } else {
-        result = await TOOLS.invoke(call.tool, call.args);
+        result = await TOOLS.invoke(call.tool, call.args, toolContext);
       }
 
       // ── Personal model growth: capture tool result ─────────────────
@@ -570,6 +635,15 @@ async function* runAgent({ prompt, history = [], model, provider, opts = {} }) {
         }
         return '';
       })();
+      // Close the trace entry for this call — Déjà Vu weights routes by whether
+      // the steps actually worked, not merely that they ran.
+      for (let i = toolSequence.length - 1; i >= 0; i--) {
+        if (toolSequence[i].tool === call.tool && toolSequence[i].ok === null) {
+          toolSequence[i].ok = result.ok !== false;
+          if (result.ok === false && result.error) toolSequence[i].err = String(result.error).slice(0, 120);
+          break;
+        }
+      }
       yield { type: 'tool-result', tool: call.tool, id: call.id || null, ok: result.ok, content: payload, error: result.error, capsuleId: capId() };
       // Capture last failure for the next-turn system prompt.
       if (!result.ok && result.error) {
