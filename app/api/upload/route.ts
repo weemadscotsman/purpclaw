@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { checkOperator } from '../_lib/operator-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,6 +28,9 @@ function stampPrefix() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = checkOperator(req);
+  if (!auth.ok && 'response' in auth) return auth.response;
+
   try {
     const form = await req.formData();
     const files = form.getAll('files').filter((f): f is File => f instanceof File);
