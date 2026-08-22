@@ -1,0 +1,3 @@
+## 2024-05-14 - Icon-only buttons lacking accessible names and focus styles
+**Learning:** Decorative icons from lucide-react were being announced by screen readers without useful context, and icon-only buttons lacked accessible labels and visible focus indicators for keyboard navigation.
+**Action:** Always add `aria-hidden="true"` to decorative icons (especially in icon-only buttons) to prevent redundant announcements. Always add `aria-label` (and often `title`) to provide accessible names for icon-only interactive elements. Use `focus:outline-none focus-visible:ring-2 focus-visible:ring-[color]` consistently across interactive elements to ensure clear keyboard navigation visibility.
