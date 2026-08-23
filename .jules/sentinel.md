@@ -1,0 +1,4 @@
+## 2025-02-14 - Add authentication and rate limiting to File Upload API
+**Vulnerability:** The `/api/upload` route was missing authentication (`checkOperator`) and rate limiting checks (`checkRateLimit`), meaning anyone on the network could bypass the frontend and directly upload potentially malicious or oversized files causing arbitrary file upload risks or storage resource exhaustion.
+**Learning:** Next.js API mutating endpoints must consistently apply the project-specific `checkOperator(req)` guard before processing input. The return type of `checkOperator` must be narrowed appropriately since it returns a union type: `const auth = checkOperator(req); if (!auth.ok && 'response' in auth) return auth.response;`
+**Prevention:** Future API endpoints manipulating state, files, or settings should import and invoke `checkOperator` and `checkRateLimit` at the beginning of the `POST` function block.
