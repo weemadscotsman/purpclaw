@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
+import { checkOperator } from '../_lib/operator-auth';
+import { checkRateLimit } from '../_lib/rate-limit';
 import path from 'path';
 
 export const runtime = 'nodejs';
@@ -27,6 +29,12 @@ function stampPrefix() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = checkOperator(req);
+  if (!auth.ok && 'response' in auth) return auth.response;
+
+  const limited = checkRateLimit(req, 'upload', 20);
+  if (limited) return limited;
+
   try {
     const form = await req.formData();
     const files = form.getAll('files').filter((f): f is File => f instanceof File);
