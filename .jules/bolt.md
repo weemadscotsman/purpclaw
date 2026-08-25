@@ -1,0 +1,3 @@
+## 2024-05-24 - Redundant Array Traversals in Multiple useMemos
+**Learning:** When derived data (like a deduplicated list of objects) is needed across multiple `useMemo` hooks, calling the processing function inside each `useMemo` causes redundant O(N) passes. In this app, `uniqueAgents(data.agents)` was called multiple times on every render cycle where `data` changed.
+**Action:** Memoize the intermediate processed collection first (`const uniqueAgentsList = useMemo(() => uniqueAgents(data.agents), [data.agents]);`), and then consume that memoized list as a dependency in downstream `useMemo` blocks to avoid redundant work.
