@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkOperator } from '../_lib/operator-auth';
+import { checkRateLimit } from '../_lib/rate-limit';
 import fs from 'fs';
 import path from 'path';
 
@@ -118,6 +120,12 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = checkOperator(req);
+  if (!auth.ok && 'response' in auth) return auth.response;
+
+  const limited = checkRateLimit(req, 'setup', 20);
+  if (limited) return limited;
+
   let payload: { key?: string; value?: string };
   try { payload = await req.json(); } catch { return NextResponse.json({ ok: false, error: 'invalid json' }, { status: 400 }); }
   const { key, value } = payload;

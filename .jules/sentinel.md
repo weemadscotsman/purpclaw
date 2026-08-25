@@ -1,0 +1,4 @@
+## 2024-05-18 - [Missing Auth and Rate Limiting on State-Changing API Endpoints]
+**Vulnerability:** Several API route endpoints (e.g. `app/api/setup/route.ts`, `app/api/playwright/route.ts`, `app/api/pipeline/route.ts`, `app/api/upload/route.ts`, `app/api/api-mega-list/route.ts`) have mutating methods (`POST`, `PUT`, `DELETE`, `PATCH`) but lack authentication checks via `checkOperator(req)` and rate limiting via `checkRateLimit(req, ...)`.
+**Learning:** These endpoints were missing the standard security protections found on other routes, potentially allowing unauthenticated access and lack of rate limiting.
+**Prevention:** All new Next.js API mutating endpoints within `app/api/**/route.ts` must be secured using `checkOperator(req)` and `checkRateLimit(req, scope, limit)` from `app/api/_lib/`.
