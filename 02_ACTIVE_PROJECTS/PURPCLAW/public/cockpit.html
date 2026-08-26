@@ -3401,19 +3401,21 @@ async function drawer(id,label){
         (!f.length?'<div class="quiet">nothing matched</div>':'');};
     draw('');$('#tq').oninput=e=>draw(e.target.value.toLowerCase().trim());
     if(cap&&cap.capabilities){
+      // Real served shape (snake_case): {capability_id,domain,action,description,eligible_drivers[],permission_class,status}
+      const drvList=x=>x.eligible_drivers||[];
       const capRow=x=>`<div class="it" style="margin-bottom:7px">
-        <b style="font:600 12px var(--mono)">${esc(x.capabilityId)}</b>
+        <b style="font:600 12px var(--mono)">${esc(x.capability_id)}</b>
         <span>${esc(x.description)}</span>
-        <span style="margin-top:4px;color:${capTone(x.availability)}">● ${esc(x.availability)}
-          · ${esc(x.permissionClass)} · verify ${esc(x.verification&&x.verification.mode||'NONE')}</span>
-        <span style="font:10.5px var(--mono);color:var(--dim)">${x.drivers.length?x.drivers.map(d=>
-          `${esc(d.id)} → ${esc(d.surface||'surface unknown')} → <span style="color:${capTone(d.status==='HEALTHY'?'READY':d.status)}">${esc(d.status)}</span>`).join(' · ')
+        <span style="margin-top:4px;color:${capTone(x.status)}">● ${esc(x.status)}
+          · ${esc(x.permission_class)}</span>
+        <span style="font:10.5px var(--mono);color:var(--dim)">${drvList(x).length?drvList(x).map(d=>
+          `${esc(typeof d==='string'?d:(d.id||d.driver_id||'?'))} → <span style="color:${capTone(d&&d.status)}">${esc(d&&(d.status||''))}</span>`).join(' · ')
           :'no eligible driver registered'}</span>
-        ${Object.keys(x.arguments||{}).length?`<span style="font-size:10.5px;color:var(--dim)">args: ${esc(Object.keys(x.arguments).join(', '))}</span>`:''}</div>`;
-      const drawCaps=q=>{const f=q?cap.capabilities.filter(x=>x.capabilityId.toLowerCase().includes(q)||
-          x.domain.toLowerCase().includes(q)||x.drivers.some(d=>d.id.toLowerCase().includes(q))):
-          cap.capabilities.filter(x=>x.availability!=='READY');
-        const lead=q?'':`<div class="quiet" style="margin-bottom:8px">Showing ${f.length} capability exception${f.length===1?'':'s'} first. Search to inspect ready capabilities and driver routes.</div>`;
+        ${x.action?`<span style="font-size:10.5px;color:var(--dim)">domain: ${esc(x.domain||'?')} · action: ${esc(x.action)}</span>`:''}</div>`;
+      const drawCaps=q=>{const f=q?cap.capabilities.filter(x=>(x.capability_id||'').toLowerCase().includes(q)||
+          (x.domain||'').toLowerCase().includes(q)||drvList(x).some(d=>(typeof d==='string'?d:(d.id||d.driver_id||'')).toLowerCase().includes(q))):
+          cap.capabilities.filter(x=>x.status!=='READY');
+        const lead=q?'':`<div class="quiet" style="margin-bottom:8px">Showing ${f.length} capability exception${f.length===1?'':'s'} first of ${cap.capabilities.length}. Search to inspect ready capabilities and driver routes.</div>`;
         $('#clist').innerHTML=lead+(f.map(capRow).join('')||'<div class="quiet">nothing matched</div>');};
       drawCaps('');$('#cq').oninput=e=>drawCaps(e.target.value.toLowerCase().trim());
     }
@@ -3546,7 +3548,7 @@ async function drawer(id,label){
           ['symbolic','named rules and relationships'],
           ['temporal','when — ordering and change over time'],
           ['counterfactual','what did NOT happen / alternatives'],
-          ['affective','interaction tone and preference'],
+          ['affective-interaction','interaction tone and preference'],
         ];
         const onDisk=Object.fromEntries(((v0&&v0.layers)||[]).map(l=>[l.layer,l]));
         const populated=CANON.filter(([n])=>onDisk[n]&&onDisk[n].atoms).length;

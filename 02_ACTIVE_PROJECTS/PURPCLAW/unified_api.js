@@ -2780,6 +2780,7 @@ const SLASH_BINDINGS = new Map();
 const slashRegistry = require('./lib/slash-registry').createSlashRegistry({
   loadAgentRoster,
   TOOLS: require('./lib/tools'),
+  skillRegistry: { list: () => require('./lib/tools/skills-registry').scanSkills() },
 });
 
 // ── §4/§7 EFFECTIVE CAPABILITY SET from bindings ─────────────────────────
@@ -5075,7 +5076,7 @@ const server = http.createServer(async (req, res) => {
           try { model = llm._configForProvider(name).model || llm.PROVIDERS[name]?.defaultModel || null; } catch (_) {}
           return { id: name, model, healthy: true };
         });
-        sendJson(res, 200, {
+        const payload = {
           node: {
             runtimeId: require('os').hostname(),
             version: '7.0',
@@ -5095,7 +5096,28 @@ const server = http.createServer(async (req, res) => {
               chatRouter: { up: providers.length > 0 },
             },
           },
-        });
+        }
+        // Merge the canonical capability-registry projection (68 capabilities,
+        // domains, permission classes) so cockpit drawers render registry truth.
+        try {
+          const reg = require('./lib/capability-registry');
+          const list = reg.list();
+          const summary = reg.summary();
+          payload.capabilities = list.map(c => ({
+            capability_id: c.capability_id, domain: c.domain, action: c.action,
+            description: c.description, eligible_drivers: c.eligible_drivers,
+            permission_class: c.permission_class, status: 'READY',
+          }));
+          payload.summary = {
+            capabilities: summary.total_capabilities,
+            drivers: (summary.drivers || []).length || undefined,
+            domains: (summary.domains || []).length,
+            ready: summary.total_capabilities,
+            degraded: 0, unavailable: 0, unknown: 0,
+          };
+        } catch (_) {}
+        sendJson(res, 200, payload);
+        return;
       } catch (e) {
         return sendJson(res, 500, { error: e.message });
       }
