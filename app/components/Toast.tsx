@@ -41,9 +41,10 @@ function Toast({ toast, onDismiss }: ToastProps) {
       <span className="text-xs font-mono">{toast.message}</span>
       <button
         onClick={() => onDismiss(toast.id)}
-        className="ml-2 text-white/30 hover:text-white/60 transition-colors"
+        className="ml-2 text-white/30 hover:text-white/60 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
+        aria-label="Dismiss notification"
       >
-        ✕
+        <span aria-hidden="true">✕</span>
       </button>
     </div>
   );
