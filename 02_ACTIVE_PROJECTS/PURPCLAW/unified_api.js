@@ -19,17 +19,42 @@ require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 try {
   const _envText = require('fs').readFileSync(require('path').join(__dirname, '.env'), 'utf8');
   for (const line of _envText.split('\n')) {
-    const m = line.match(/^\s*(LLM_[A-Z_]+|(?:MINIMAX|NVIDIA|GLM|DEEPSEEK|KIMI|GROQ|OPENAI)_API_KEY|OPENAI_BASE_URL)=(.*)$/);
+    const m = line.match(/^\s*(LLM_[A-Z_]+|(?:MINIMAX|NVIDIA|GLM|DEEPSEEK|KIMI|GROQ|OPENAI|OPENROUTER)_API_KEY|OPENAI_BASE_URL)=(.*)$/);
     if (m) process.env[m[1]] = m[2].trim();
   }
 } catch {}
 const http = require('http');
+// ── STDOUT/STDERR EPIPE SHIELD (process-lifetime) ──────────────────────────
+// A console.log writing to a broken pipe (dead parent, closed PM2 pipe) must
+// NEVER become an uncaughtException that takes the whole API down. This exact
+// crash killed the service on 2026-08-23 via unified_api.js handleChatStream
+// console.log → EPIPE. Swallow EPIPE/EPIPE-class errors on stdio streams.
+(function _installStdioEpipeShield() {
+  const _safe = (stream) => {
+    if (!stream || stream._epipeShield) return;
+    stream._epipeShield = true;
+    stream.on && stream.on('error', (e) => {
+      if (e && (e.code === 'EPIPE' || e.code === 'ERR_STREAM_DESTROYED' || e.code === 'ERR_STREAM_WRITE_AFTER_END')) return; // swallowed
+      throw e;
+    });
+  };
+  _safe(process.stdout); _safe(process.stderr);
+})();
 const https = require('https');
 const net = require('net');
 const url = require('url');
 const path = require('path');
 const fs = require('fs');
-const { spawn, exec, execSync } = require('child_process');
+const { spawn, exec, execSync, execFile } = require('child_process');
+
+// Safe logger — writes to file so EPIPE is a synchronous exception that try/catch
+// actually catches. console.log fires EPIPE asynchronously through Node's stdout
+// stream and bypasses all try/catch, crashing the process.
+const API_LOG = path.join(__dirname, 'var', 'purp-api.log');
+function safeLog(tag, msg) {
+  const entry = `[${new Date().toISOString()}] [${tag}] ${msg}\n`;
+  try { fs.appendFileSync(API_LOG, entry, 'utf8'); } catch {}
+}
 const { trackedSpawn, installCleanup, list: listChildren, killAll: killAllChildren } = require('./lib/child-registry');
 installCleanup(); // SIGINT/SIGTERM/uncaughtException → kill all tracked children
 const { promisify } = require('util');
@@ -40,6 +65,27 @@ const AgentTower = require('./agent_tower.js');
 
 // ── LLM provider for unified backend access ──
 const LLM = require('./lib/llm-provider');
+
+// ── MCP integration: load servers so the tool catalogue is complete ──
+// Mirrors what lib/commands/ask.js does for the CLI surface.
+// Without this, the HTTP API gets zero MCP tools.
+let _mcp = null;
+async function ensureMcp() {
+  if (_mcp) return _mcp;
+  try {
+    _mcp = require('./lib/mcp');
+    await _mcp.loadServers();
+    const TOOLS = require('./lib/tools');
+    TOOLS.__registerMcpTools(_mcp.listTools(), (server, tool, args) => _mcp.callMcpTool(server, tool, args));
+    console.log(`[MCP] ${_mcp.listTools().length} tools registered from ${_mcp._servers ? Object.keys(_mcp._servers).length : 0} servers`);
+  } catch (e) {
+    console.warn('[MCP] load failed — continuing without MCP tools:', e.message);
+    _mcp = { listTools: () => [] };
+  }
+  return _mcp;
+}
+// Kick off async MCP loading without blocking server startup.
+ensureMcp().catch(() => {});
 
 // ========== DIGITAL SHAMAN LAYER ==========
 let shaman = null;
@@ -80,11 +126,23 @@ const API_KEY = process.env.PURPCLAW_API_KEY || '';  // empty = no auth (local d
 const AUTH_REQUIRED = !!API_KEY && process.env.PURPCLAW_NO_AUTH !== '1';
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'DELETE', 'PATCH']);
 const XIAOZHI_WS_URL = process.env.XIAOZHI_WS_URL || process.env.XIAOZHI_MCP_URL || '';
+// XiaoZhi's MCP panel rotates endpoint tokens per browser session — a boot-time
+// const guarantees eventual permanent 401 loops (seen live 2026-08-25/26).
+// The link is therefore MUTABLE runtime state: reconnect always reads
+// xiaozhiLink.url, and POST /api/xiaozhi/link swaps it after a pass/fail probe.
+const xiaozhiLink = {
+  url: XIAOZHI_WS_URL || '',
+  status: 'idle',            // idle | connecting | connected | disconnected | unauthorized | error
+  lastError: null,
+  lastConnectedAt: null,
+};
 const PURP_DIR = __dirname;
-const PURP_STATE = path.join(PURP_DIR, 'loop_state.json');
+const INSTANCE_STATE = require('./lib/instance-state');
+const INSTANCE_DATA = INSTANCE_STATE.ensure();
+const PURP_STATE = path.join(INSTANCE_DATA, 'loop_state.json');
 const PURP_LOG = path.join(PURP_DIR, 'purpclaw_output.log');
-const SETTINGS_FILE = path.join(PURP_DIR, 'purpclaw_settings.json');
-const MEMORY_FILE = path.join(PURP_DIR, 'samantha_memory.json');
+const SETTINGS_FILE = INSTANCE_STATE.storePath('settings');
+const MEMORY_FILE = path.join(INSTANCE_STATE.storePath('memory'), 'legacy-facts.json');
 const SKILLS_DIR = path.join(PURP_DIR, 'skills');
 const PS_PREFIX = 'powershell.exe -NoProfile -NonInteractive -Command';
 const KOKORO = 'C:\\Users\\Admin\\.openclaw\\kokoro_send.bat';
@@ -96,6 +154,9 @@ const state = {
   skills: {},
   tasks: {},
   swarmAgents: {},
+  // v2.1 — whoami snapshot cache (15s TTL). Full whoami does 4 HTTP probes
+  // and a 20k-atom iteration; cache keeps UI polling responsive.
+  whoamiCache: { data: null, cachedAt: 0, TTL: 15000 },
   settings: { 
     OPENAI_API_KEY: '', 
     XIAOZHI_MCP_URL: '', 
@@ -210,6 +271,11 @@ function parsePlanJson(planText) {
 
 // SSE helpers
 function sseStart(res) {
+  // Idempotent: the RECONNECT path (Last-Event-ID replay at ~:1020) calls
+  // sseStart early, then control falls through to the main sseStart at
+  // ~:1104 — the second writeHead threw ERR_HTTP_HEADERS_SENT (crash-
+  // registry 1787582237130). Guard every entry.
+  if (res.headersSent) return;
   res.writeHead(200, {
     'Content-Type': 'text/event-stream; charset=utf-8',
     'Cache-Control': 'no-cache, no-transform',
@@ -225,12 +291,355 @@ function sseStart(res) {
   });
   if (res.flushHeaders) res.flushHeaders();
 }
+
+/**
+ * validateEvent — enforces the ZERO-UNDEFINED SSE event contract.
+ *
+ * Every event that reaches the cockpit must have:
+ *   eventId, type, timestamp, sessionId, missionId, runId, turnId,
+ *   state, phase, summary
+ *
+ * Optional fields default to null (never undefined).
+ * Missing critical fields → emit INTERNAL_EVENT_SCHEMA_ERROR instead.
+ * Never silently forward an undefined-filled blob.
+ */
+const { randomUUID } = require('crypto');
+const SCHEMA_REQUIRED = ['eventId','type','timestamp','sessionId','missionId','runId','turnId'];
+const SCHEMA_OPTIONAL = [
+  'capsuleId','operationId','actor','state','phase','summary','detail',
+  'tool','skill','agent','args','result','error',
+  'provider','model','tokens','tokenDelta',
+  'status','durationMs','completionReason','totalTokens',
+  'evidence','nextAction','verdict','progress','stallScore',
+  'requestId','requiredPermission','waitsFor','nextObjective','progressScore',
+  'ok','content','errorCode','failureKind','recoverable',
+  'maxTurns','turn','from','to','reason','defects','lastConfirmedSeq',
+  'expectedNextSeq','terminatorPresent','observedBytes','declaredBytes',
+  'classification','turns','capsule','maxTurnsHit',
+  'attemptId','attempt','terminal','retryOf',
+  'attempt1','attempt2',
+  'attemptActivity','failureClass',
+  'stepIndex','executedSteps','spentEstTokens','budgetTokens','step-receipt','lease-revoked','budget-exceeded','tool','tool2',
+];
+
+// ── SSE per-request context ─────────────────────────────────────────────────
+// Set by handleChatStream around its run loop. All validateEvent() calls inside
+// that stream inherit sessionId / missionId / runId from here instead of
+// fabricating synthetic values. Cleared on every stream exit (normal + error).
+// Also carries eventId and timestamp defaults so producers that omit them do
+// NOT get a schema violation — they get a sensible default and a console.warn.
+let SSE_CTX = {
+  eventId: null, timestamp: null,
+  sessionId: null, missionId: null, runId: null, turnId: null, turn: 0,
+  attemptId: null,
+};
+function SET_SSE_CTX(ctx) { SSE_CTX = ctx; }
+
+/**
+ * eventPayload — canonical SSE event envelope builder.
+ *
+ * RULES:
+ * 1. Identity fields (missionId, sessionId, runId, turnId) ALWAYS come from ctx,
+ *    never from data. A producer can never accidentally erase mission identity.
+ * 2. All other fields come from data, allowing producers to override ctx values
+ *    when they have more specific information (e.g. a turn event provides its
+ *    own turn number, which overrides ctx.turnId).
+ * 3. seq and emittedAt are ALWAYS fresh — never reused from ctx.
+ *
+ * @param {Object} ctx  — SSE_CTX at mission start (sessionId, missionId, runId, turnId, etc.)
+ * @param {Object} data — producer payload (type, phase, summary, tool, etc.)
+ * @param {Object} overrides — fields that MUST come from caller (e.g. eventName for sseEvent)
+ * @returns {Object} merged envelope — safe to pass to validateEvent
+ */
+let _seq = 0;
+/**
+ * eventPayload — canonical SSE event envelope builder.
+ *
+ * Priority for each field class:
+ *  IDENTITY  (missionId, sessionId, runId, turnId): ctx ONLY — never data.
+ *                                       ctx absent → null. data is ignored.
+ *  OPERATIONAL (provider, model, capsuleId, streamId): data wins if set,
+ *                                       else ctx, else null.
+ *  SEMANTIC  (all other producer fields): data ONLY — from producer.
+ *  METADATA  (seq, emittedAt): always fresh — never from ctx/data.
+ *  OVERRIDES: always win — used for SSE transport fields.
+ */
+function eventPayload(ctx, data = {}, overrides = {}) {
+  const ctxSeq = ++_seq;
+  return {
+    // Semantic fields from producer — these always win for non-identity/non-metadata fields
+    ...data,
+    // Explicit overrides — SSE transport metadata (eventName, etc.)
+    ...overrides,
+    // Fresh per-emission metadata
+    seq:       ctxSeq,
+    emittedAt: Date.now(),
+    // Identity fields — ONLY from ctx, never from data. Anti-sabotage.
+    // ctx absent (null/undefined) → null. data is completely ignored for these 4.
+    missionId:  (ctx && ctx.missionId)  ?? null,
+    sessionId:  (ctx && ctx.sessionId)  ?? null,
+    runId:      (ctx && ctx.runId)      ?? null,
+    turnId:     (ctx && ctx.turnId)     ?? null,
+    attemptId:  (ctx && ctx.attemptId)  ?? null,
+    // Operational fields — overrides > data > ctx (each can be absent/null)
+    provider:   (overrides && overrides.provider)  ?? (data && data.provider)  ?? (ctx && ctx.provider)  ?? null,
+    model:      (overrides && overrides.model)     ?? (data && data.model)     ?? (ctx && ctx.model)    ?? null,
+    capsuleId:  (overrides && overrides.capsuleId) ?? (data && data.capsuleId) ?? (ctx && ctx.capsuleId) ?? null,
+    streamId:   (ctx && ctx.streamId)    ?? null,
+  };
+}
+
+// eventType: the SSE event name (e.g. 'phase', 'tool-result') — used as the
+// summary lookup key when the producer didn't explicitly set data.type.
+// Only used for summary augmentation; the SSE event name itself stays on the
+// SSE transport layer (event: line) and is never mixed into data.type.
+function validateEvent(raw, fallbackSessionId = 'unknown', eventType = null) {
+  // PASS 1 — identity contract. These four fields are the absolute minimum
+  // required to route an event to any consumer. Missing = producer is broken.
+  // DO NOT fabricate. Throw EVENT_SCHEMA_VIOLATION and preserve the original.
+  // Exception: if SSE_CTX was set by handleChatStream, use its values so
+  // producers that rely on context-injection still work.
+  const eventId   = raw.eventId   || SSE_CTX.eventId   || null;
+  const timestamp = raw.timestamp || SSE_CTX.timestamp || null;
+  const sessionId = raw.sessionId || SSE_CTX.sessionId || fallbackSessionId || null;
+  // type: use data.type only when producer explicitly set it.
+  // SSE event name is SSE transport metadata — not mixed into data.type.
+  // eventType (SSE name) is used only for summary lookup below.
+  const type      = raw.type      || null;
+
+  if (!eventId || !type || !timestamp) {
+    const err = new Error('EVENT_SCHEMA_VIOLATION');
+    err.kind  = 'EVENT_SCHEMA_VIOLATION';
+    err.eventType   = type      || eventType || '** MISSING type **';
+    err.missingFields = [
+      ...(eventId   ? [] : ['eventId']),
+      ...(type      ? [] : ['type']),
+      ...(timestamp ? [] : ['timestamp']),
+    ];
+    err.rawPayload = raw;
+    throw err;
+  }
+
+  // PASS 2 — mission-scoped routing. If SSE_CTX was set by handleChatStream
+  // (i.e. a mission is active), these fields MUST be present. Null = either no
+  // mission active OR the producer failed to include them. Both are wrong.
+  const missionId = raw.missionId;       // null = producer says no mission; undefined = producer forgot
+  const runId     = raw.runId;
+  const turnId    = raw.turnId;
+
+  // If SSE_CTX has an active mission (sessionId set), producers MUST include
+  // missionId. A bare `null` from the producer means "I know about missions and
+  // this event isn't in one" — that's valid. But `undefined` (field absent)
+  // when SSE_CTX has a mission = producer forgot — throw.
+  if (SSE_CTX.sessionId && SSE_CTX.missionId != null && missionId == null) {
+    const err = new Error('EVENT_SCHEMA_VIOLATION');
+    err.kind  = 'EVENT_SCHEMA_VIOLATION';
+    err.eventType   = type;
+    err.missingFields = ['missionId'];
+    err.rawPayload = raw;
+    throw err;
+  }
+
+  // Apply SSE_CTX defaults only for fields the producer actually omitted.
+  const finalMissionId = missionId != null ? missionId : (SSE_CTX.missionId || null);
+  const finalRunId     = runId     != null ? runId     : (SSE_CTX.runId     || null);
+  const finalTurnId    = turnId    != null ? turnId    : (SSE_CTX.turnId    || null);
+
+  // PASS 3 — build the envelope. Optional fields default to null (never undefined).
+  // Summary augmentation: only add a summary when the producer left it empty AND
+  // we can compute one reliably from other fields the producer DID supply.
+  const base = {
+    eventId,
+    type,
+    timestamp,
+    sessionId,
+    missionId:  finalMissionId,
+    runId:      finalRunId,
+    turnId:     finalTurnId,
+    attemptId:  raw.attemptId != null ? raw.attemptId : (SSE_CTX.attemptId || null),
+    operationId: raw.operationId  || null,
+    capsuleId:   raw.capsuleId    || null,
+    actor:       raw.actor        || null,
+    state:       raw.state        || null,
+    phase:       raw.phase        || null,
+    summary:     raw.summary      || null,
+    detail:      raw.detail       || null,
+    tool:        raw.tool         || null,
+    skill:       raw.skill        || null,
+    agent:       raw.agent        || null,
+    args:        raw.args         || null,
+    result:      raw.result       || null,
+    error:       raw.error        || null,
+    provider:    raw.provider     || null,
+    model:       raw.model        || null,
+    tokens:      raw.tokens       ?? null,
+    tokenDelta:  raw.tokenDelta   ?? null,
+    status:      raw.status       || null,
+    durationMs:  raw.durationMs  ?? null,
+    completionReason: raw.completionReason || null,
+    totalTokens: raw.totalTokens  ?? null,
+    evidence: Array.isArray(raw.evidence) ? raw.evidence : (raw.evidence ? [raw.evidence] : null),
+    nextAction:  raw.nextAction   || null,
+    // Turn and maxTurns: emitted by the spin-loop turn boundary event.
+    // Must be explicitly listed — validateEvent strips unlisted fields.
+    turn:       raw.turn       ?? null,
+    maxTurns:   raw.maxTurns   ?? null,
+    // ruleCount: steering capsule rule count. Not in standard schema — add explicitly.
+    ruleCount:  raw.ruleCount  ?? null,
+    // content: streaming text delta from the model — not in standard schema,
+    // must be explicitly listed or token events arrive as empty strings.
+    content:    raw.content    ?? null,
+    // delta: reasoning stream text for the thinking bubble (reasoning SSE
+    // events). Same law as content — must be listed or thoughts arrive empty.
+    delta:      raw.delta      ?? null,
+    // delta: reasoning stream delta (thinking-bubble lane) — same law as content.
+    // slash: command name + ok/reply: terminal payload of slash-dispatched streams
+    // (sseFinal 'done' events). Must be listed or /tool, /help etc. arrive empty.
+    slash:      raw.slash      ?? null,
+    ok:         raw.ok         ?? null,
+    reply:      raw.reply      ?? null,
+    // claim-gate / contradiction-gate flags on done events (LARP gate wiring)
+    claimGate:            raw.claimGate ?? null,
+    runtimeContradiction: raw.runtimeContradiction ?? null,
+    // MODEL TRUTH RECEIPT — full telemetry object passes through untouched.
+    // Requested vs resolved provider/model + usage + timing (Phase: Model Truth).
+    telemetry:  raw.telemetry  ?? null,
+    requestedProvider: raw.requestedProvider ?? null,
+    requestedModel:    raw.requestedModel    ?? null,
+    route:             raw.route             ?? null,
+    lease:             raw.lease             ?? null,
+    toolCalls:         raw.toolCalls         ?? null,
+    agentCalls:        raw.agentCalls        ?? null,
+    skillCalls:        raw.skillCalls        ?? null,
+    fallbackCount:     raw.fallbackCount     ?? null,
+    fallbackPath:      Array.isArray(raw.fallbackPath) ? raw.fallbackPath : null,
+    providerAttempts:  Array.isArray(raw.providerAttempts) ? raw.providerAttempts : [],
+    promptTokens:      raw.promptTokens      ?? null,
+    completionTokens:  raw.completionTokens  ?? null,
+    reasoningTokens:   raw.reasoningTokens   ?? null,
+    reasoningState:    raw.reasoningState    ?? null,
+    ttftMs:            raw.ttftMs            ?? null,
+    capsCount:         raw.capsCount         ?? null,
+    bindings:          Array.isArray(raw.bindings) ? raw.bindings : null,
+    // MODE-OFFER LAW — runtime-detected intent mismatch (mode-offer events +
+    // done.modeOffer). Must be whitelisted or the cockpit never sees the offer.
+    modeOffer:   raw.modeOffer   ?? null,
+    kind:        raw.kind        ?? null,
+    capability:  raw.capability  ?? null,
+    offers:      Array.isArray(raw.offers) ? raw.offers : null,
+  };
+
+  // PASS 4 — summary augmentation only where the producer DID supply the data.
+  // Use raw.type (explicit producer value) when set; fall back to SSE event name
+  // for producers that didn't set data.type explicitly. This separates SSE
+  // transport (event: line) from semantic type (data.type).
+  if (!base.summary) {
+    const key = type || eventType; // explicit producer type wins; SSE name is fallback
+    if (key === 'phase')         base.summary = base.phase || 'phase';
+    else if (key === 'turn')     base.summary = `turn ${base.turn || '?'}/${base.maxTurns || '?'}`;
+    else if (key === 'steering') base.summary = base.capsuleId ? `capsule ${String(base.capsuleId).slice(0,14)} resolved` : 'steering';
+    else if (key === 'steer')   base.summary = base.detail ? String(base.detail).slice(0, 60) : 'steer injected';
+    else if (key === 'done') {
+      const s = base.status || 'unknown';
+      const d = base.durationMs ? ` · ${(base.durationMs/1000).toFixed(1)}s` : '';
+      const t = base.totalTokens ? ` · ${base.totalTokens.toLocaleString()} tk` : '';
+      base.summary = `${s}${d}${t}`;
+    }
+    else if (key === 'error')    base.summary = `${base.errorCode || 'ERROR'}: ${String(base.error || raw.message || 'unknown').slice(0, 80)}`;
+    else if (key === 'tool-call') base.summary = `${base.tool || '?'}${base.args ? ' · ' + JSON.stringify(base.args).slice(0,80) : ''}`;
+    else if (key === 'tool-result') { const ok = raw.ok !== false; base.summary = `${base.tool || '?'} → ${ok ? 'ok' : 'FAILED'}`; }
+    else if (key === 'reacharound') base.summary = `${base.verdict || '?'} · prog ${base.progress != null ? base.progress.toFixed(2) : '?'} · stall ${base.stallScore != null ? base.stallScore.toFixed(2) : '?'}`;
+    else if (key === 'reacharound-approval-required') base.summary = `WAITING · verdict: ${base.verdict || '?'} · reason: ${String(base.reason || '').slice(0, 60)}`;
+    else if (key === 'completion-gate') base.summary = `${base.status || '?'} · ${base.reason || ''}`.slice(0, 120);
+    else if (key === 'token') {
+      const preview = String(raw.content || '').slice(0, 40).replace(/\n/g, ' ');
+      base.summary = `${preview}${raw.provider ? ' · ' + raw.provider : ''}`;
+    }
+  }
+
+  return base;
+}
+
 function sseEvent(res, event, data) {
-  try { res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`); } catch {}
+  if (!res || !res.write) return;
+  try {
+    // Inject SSE_CTX into the payload BEFORE validation. Producers that omit
+    // sessionId/missionId/runId get it from context instead of fabricating it.
+    // Producer values take precedence over context (explicit > inferred).
+    // eventId and timestamp are ALWAYS fresh per emission — do not reuse.
+    //
+    // type: semantic event type for cockpit routing.
+    // Producer explicit value wins. Falls back to SSE event name so the cockpit
+    // always gets a valid routing type even when producers omit data.type.
+    const raw = Object.assign({}, SSE_CTX, data || {}, {
+      eventId:   (data && data.eventId)   || randomUUID(),
+      timestamp: (data && data.timestamp) || new Date().toISOString(),
+      type:      (data && data.type) || event || null,
+    });
+    const validated = validateEvent(raw, raw.sessionId || 'unknown', event);
+    try {
+      // Record for reconnect replay (best-effort; never blocks live stream)
+      try { SSE_REPLAY.record(validated.sessionId, event, validated); } catch {}
+      res.write(`id: ${validated.eventId}\nevent: ${event}\ndata: ${JSON.stringify(validated)}\n\n`);
+    } catch (werr) {
+      // Client vanished mid-stream (EPIPE / destroyed socket). Drop the event,
+      // never propagate — a disconnected browser must not kill the API.
+      if (werr && (werr.code === 'EPIPE' || werr.code === 'ERR_STREAM_WRITE_AFTER_END' || werr.code === 'ERR_STREAM_DESTROYED')) return false;
+      throw werr;
+    }
+  } catch (e) {
+    if (e && e.kind === 'EVENT_SCHEMA_VIOLATION') {
+      // Producer sent an event without required identity fields. Emit a named
+      // error event so the cockpit can display it, then continue streaming.
+      console.warn('[SSE schema] EVENT_SCHEMA_VIOLATION from producer:', e.missingFields, 'type:', e.eventType);
+      const errEvent = {
+        eventId:   (data && data.eventId)  || Date.now().toString(36),
+        type:      'INTERNAL_EVENT_SCHEMA_ERROR',
+        timestamp: new Date().toISOString(),
+        sessionId: (data && data.sessionId) || SSE_CTX.sessionId || 'unknown',
+        missionId: SSE_CTX.missionId || null,
+        runId:     SSE_CTX.runId     || null,
+        error:     'EVENT_SCHEMA_VIOLATION',
+        errorCode: 'EVENT_SCHEMA_VIOLATION',
+        summary:   `event dropped — missing: ${(e.missingFields || []).join(', ')}`,
+        detail:    null,
+        rawPayload: e.rawPayload || null,
+        missingFields: e.missingFields || [],
+        offendingEventType: e.eventType || null,
+      };
+      try { res.write(`event: error\ndata: ${JSON.stringify(errEvent)}\n\n`); } catch {}
+    } else {
+      // Non-schema error — something else broke. Log it, try to emit a last-resort
+      // error event, then re-throw so the caller knows something is wrong.
+      console.error('[sseEvent] unexpected error:', e && e.message ? e.message : String(e));
+      try {
+        res.write(`event: error\ndata: ${JSON.stringify({
+          eventId:   Date.now().toString(36),
+          type:      'error',
+          timestamp: new Date().toISOString(),
+          sessionId: (data && data.sessionId) || SSE_CTX.sessionId || 'unknown',
+          missionId: SSE_CTX.missionId || null,
+          runId:     SSE_CTX.runId     || null,
+          error:     'INTERNAL_EVENT_ERROR',
+          errorCode: 'INTERNAL_EVENT_ERROR',
+          summary:   'SSE event handler threw — see server log',
+          detail:    e && e.message ? e.message : String(e),
+        })}\n\n`);
+      } catch {}
+      throw e;
+    }
+  }
 }
 function sseComment(res, text) {
   // SSE comment — keeps the connection warm
   try { res.write(`: ${text}\n\n`); } catch {}
+}
+
+function sseFinal(res, payload) {
+  // Terminal 'done' event for a stream. sseFinal was referenced by the slash
+  // branch but never defined, crashing every slash-dispatched stream with
+  // "sseFinal is not defined".
+  sseEvent(res, 'done', Object.assign({ ok: true }, payload || {}));
 }
 
 // ── /api/composer/context — Active Context Panel data ─────────────────────────
@@ -370,27 +779,241 @@ async function composerContextHandler(req, res) {
 //   done   → {reply, model, providerStatus, kernelJobId?}
 //   error  → {error}
 // ── Conversation memory ─────────────────────────────────────────────────────
-// This gateway was stateless: every /api/chat call ran runAgent() with NO
-// history, so each message started a fresh brain. The model said so itself:
-// "No prior turn on record ... headless / no context carried over between turns
-// on this gateway." Chat surfaces now carry their turns here, keyed by session.
-const CHAT_SESSIONS = new Map();               // sessionId -> [{role, content}]
+// Core owns conversation state in the canonical SQLite repository. Browser
+// localStorage and process-global Maps may cache presentation state, but they
+// never own history: Chrome, Edge, CLI and a restarted API read these same rows.
+const SESSION_REPOSITORY = require('./lib/session-repository');
+const SSE_REPLAY = require('./lib/sse-replay');
+const SEMANTIC_CHAT = require('./lib/semantic-chat');
+const TA = require('./lib/turn-authority');          // classifyIntent + CHAT intent class
+const BABYSITTER = require('./lib/babysitter/pipeline'); // Capability Gate: intent-class tool narrowing
+const AUTO_PLAN = require('./lib/auto-plan');        // long-horizon PLAN→verify→EXECUTE state machine
+const _planApproved = new Set();                    // sessionIds whose plan passed verifyPlan()
+const EXEC = require('./lib/execution-lease');       // authorizeExecution + assertExecutionLease
+const CG = require('./lib/execution-claim-gate');    // LARP gate: claims vs real tool evidence
+const RT = require('./lib/runtime-truth');           // runtime truth: envelope injection + capability-promise gate
+const RR = require('./lib/routing-receipt');         // CANONICAL route truth: RoutingReceipt + router state + pin API
+const FILTER = require('./lib/stream-thinking-filter'); // STREAM LAW: stateful thinking filter
+// AUTO OUTPUT-QUALITY GATE: detect catastrophic joined-word model output (word soup).
+// Never auto-inserts spaces; in AUTO only, a souped candidate is retried on another provider.
+// PROVIDER TOOL SENTINEL LAW: models sometimes emit fake tool syntax
+// (<|tool_call_start|>[bash(...)]<|tool_call_end|>) inside plain CHAT. This is
+// LARP, not execution. Strip it from the visible reply, log the attempt, never
+// execute. Applies regardless of route — even lease paths parse canonically.
+// Streaming scrubber: sentinels split across chunks ("<|tool_" + "call_start|>"),
+// so we hold back a possible-partial tail and only release text that cannot be
+// part of a sentinel. Also suppresses the [bash(...)] payload between markers.
+class _SentinelScrubber {
+  constructor(sessionId) {
+    this.sessionId = sessionId || null;
+    this.buf = '';
+    this.inSentinel = false;
+    this.logged = false;
+    this.HOLD_MAX = 64;
+  }
+  _holdLen() {
+    // longest suffix that could be a sentinel prefix/suffix
+    for (let n = Math.min(this.HOLD_MAX, this.buf.length); n > 0; n--) {
+      const tail = this.buf.slice(-n);
+      if (this.inSentinel ? '<|tool_call_end|>'.startsWith(tail.slice(-17)) || '</|'.includes(tail[0]) === false && '<|tool_call_end|>'.startsWith(tail) : '<|tool_call_start|>'.startsWith(tail) || '<|tool_call_end|>'.startsWith(tail)) return n;
+    }
+    return 0;
+  }
+  push(chunk) {
+    this.buf += String(chunk || '');
+
+    // TOOL ECHO HOLD: if buffer begins with {"tool" (possibly split across chunks),
+    // wait until the JSON object closes before deciding to strip it.
+    const trimmed = this.buf.replace(/^\s+/, '');
+    // Hold while trimmed is a strict PREFIX of the echo opener too (split chunks).
+    if (!this.inSentinel && trimmed.length > 0 && trimmed.length < 7 && '{"tool"'.startsWith(trimmed)) {
+      return '';   // incomplete — keep buffering
+    }
+    if (!this.inSentinel && /^\{"tool"/.test(trimmed)) {
+      // count brace depth over trimmed
+      let depth = 0, q = false, esc = false, closed = -1;
+      for (let i = 0; i < trimmed.length; i++) {
+        const ch = trimmed[i];
+        if (esc) { esc = false; continue; }
+        if (ch === '\\') { esc = true; continue; }
+        if (ch === '"') { q = !q; continue; }
+        if (q) continue;
+        if (ch === '{') depth++;
+        else if (ch === '}') { depth--; if (depth === 0) { closed = i; break; } }
+      }
+      if (closed === -1) {
+        // Robustness: unbalanced quotes from a bad chunk split could buffer forever.
+        // Fail open past 4KB — release the text rather than eat the whole reply.
+        if (trimmed.length > 4096) {
+          this.buf = '';
+          return trimmed;
+        }
+        return '';   // incomplete — keep buffering
+      }
+      // complete object: drop it plus trailing whitespace/newlines
+      let dropEnd = closed + 1;
+      while (dropEnd < trimmed.length && /\s/.test(trimmed[dropEnd])) dropEnd++;
+      this.buf = trimmed.slice(dropEnd);
+      if (!this.logged) { safeLog('CHAT', `UNAUTHORIZED_TOOL_ATTEMPT session=${this.sessionId} — tool-call echo stripped from stream`); this.logged = true; }
+      return this.push('');           // continue processing remainder
+    }
+
+    let out = '';
+    for (;;) {
+      if (this.inSentinel) {
+        const end = this.buf.indexOf('<|tool_call_end|>');
+        if (end === -1) { this.buf = ''; return out; }   // swallow entire payload
+        this.buf = this.buf.slice(end + '<|tool_call_end|>'.length);
+        this.inSentinel = false;
+        continue;
+      }
+      const start = this.buf.indexOf('<|tool_call_start|>');
+      // also catch bare end-markers without a seen start
+      const bareEnd = this.buf.indexOf('<|tool_call_end|>');
+      if (start === -1 && bareEnd === -1) break;
+      const cut = start === -1 ? bareEnd : start;
+      out += this._emit(this.buf.slice(0, cut));
+      if (!this.logged) { safeLog('CHAT', `UNAUTHORIZED_TOOL_ATTEMPT session=${this.sessionId} — tool sentinel stripped from stream`); this.logged = true; }
+      if (start !== -1) { this.inSentinel = true; this.buf = this.buf.slice(start + '<|tool_call_start|>'.length); }
+      else { this.buf = this.buf.slice(bareEnd + '<|tool_call_end|>'.length); }
+    }
+    // hold back a partial-marker tail
+    let hold = 0;
+    for (let n = Math.min(this.HOLD_MAX, this.buf.length); n > 0; n--) {
+      const tail = this.buf.slice(this.buf.length - n);
+      if ('<|tool_call_start|>'.startsWith(tail) || '<|tool_call_end|>'.startsWith(tail)) { hold = n; break; }
+    }
+    if (hold) { out += this._emit(this.buf.slice(0, this.buf.length - hold)); this.buf = this.buf.slice(this.buf.length - hold); }
+    else { out += this._emit(this.buf); this.buf = ''; }
+    return out;
+  }
+  _emit(text) {
+    if (!text) return '';
+    // strip stray [bash(...)] payloads outside markers too
+    let cleaned = text.replace(/\[bash\([^\]]*\)\]\s*/g, '');
+    // TOOL ECHO LAW: models sometimes re-print their own call as text —
+    // {"tool":"ls","args":{...}} lines are LARP residue, never operator content.
+    cleaned = cleaned.replace(/\{\s*"tool"\s*:\s*"[^"]*"\s*,\s*"args"\s*:\s*\{[^{}]*(\{[^{}]*\}[^{}]*)*\}\s*\}\s*\n?/g, '');
+    return cleaned;
+  }
+  flush() {
+    // end of stream — release the hold EXCEPT an unterminated sentinel swallows all
+    if (this.inSentinel) { this.buf = ''; return ''; }
+    const rest = this.buf; this.buf = '';
+    return rest.replace(/\[bash\([^\]]*\)\]\s*/g, '');
+  }
+}
+function _stripToolSentinels(text, sessionId) {
+  const t = String(text || '');
+  if (!t.includes('<|')) return t;
+  if (TOOL_SENTINEL_RE.test(t)) {
+    safeLog('CHAT', `UNAUTHORIZED_TOOL_ATTEMPT session=${sessionId || '?'} — provider tool sentinel stripped from visible output`);
+    TOOL_SENTINEL_RE.lastIndex = 0;
+  }
+  return t.replace(TOOL_SENTINEL_RE, '').replace(/\[bash\([^\]]*\)\]\s*/g, '').replace(/\n{3,}/g, '\n\n').trimEnd();
+}
+function _isWordSoup(text) {
+  const t = String(text || '').trim();
+  if (t.length < 80) return false;                    // short replies can't prove soup
+  const words = t.split(/\s+/);
+  const avgLen = t.length / words.length;
+  if (words.length < 12 && avgLen > 14) return true;   // few very long unbroken tokens
+  const monsters = words.filter(w => w.length > 26 && !/[\/_\-.:@#]/.test(w)).length;
+  return monsters / words.length > 0.25;               // quarter of tokens are 26+ char blobs
+}
+// Module-level agent-loop binding — every chat surface (SSE + JSON) shares this.
+// Per-function destructuring previously caused TDZ ReferenceErrors across scopes.
+const { runAgent, getAgentTools, buildChatSystemPrompt } = require('./lib/agent-loop');
 const CHAT_HISTORY_TURNS = Number(process.env.PURPCLAW_CHAT_HISTORY_TURNS || 40);
+
+// ── Execution trace event store ─────────────────────────────────────────────────
+// Canonical durable record of every meaningful execution state transition.
+// Survives cockpit reload: the cockpit emits events as they arrive via SSE,
+// and reads them back on reload to reconstruct the full ordered trail.
+// Schema per event: { runId, seq, timestamp, type, tool, status, durationMs,
+//                     summary, provider, model, tokens, detail }
+const TRACE_EVENTS = new Map(); // key: sessionId → { events:[], seq:number }
+const TRACE_SEQ    = new Map(); // key: sessionId → running sequence counter
+const TRACE_META   = new Map(); // key: sessionId → { runId, startedAt, provider, model, tokens, status }
+// Reacharound state: keyed by sessionId → current verdict + scores for cockpit display
+const REACHAROUND_STATES = new Map();
+
+function traceAppend(sessionId, event) {
+  if (!sessionId) return;
+  if (!TRACE_EVENTS.has(sessionId)) { TRACE_EVENTS.set(sessionId, { events: [], seq: 0 }); TRACE_SEQ.set(sessionId, 0); }
+  const entry = TRACE_EVENTS.get(sessionId);
+  const seq = (TRACE_SEQ.get(sessionId) || 0) + 1;
+  TRACE_SEQ.set(sessionId, seq);
+  entry.events.push({ seq, timestamp: Date.now(), ...event });
+  if (entry.events.length > 2000) entry.events = entry.events.slice(-2000);
+}
+function traceSetMeta(sessionId, meta) {
+  if (!sessionId) return;
+  TRACE_META.set(sessionId, { ...(TRACE_META.get(sessionId) || {}), ...meta, updatedAt: Date.now() });
+}
+function traceGet(sessionId) {
+  return { events: (TRACE_EVENTS.get(sessionId || '') || { events: [] }).events, meta: TRACE_META.get(sessionId || '') || null };
+}
+function traceClear(sessionId) {
+  TRACE_EVENTS.delete(sessionId || ''); TRACE_SEQ.delete(sessionId || ''); TRACE_META.delete(sessionId || '');
+}
 
 function getChatHistory(sessionId) {
   if (!sessionId) return [];
-  return CHAT_SESSIONS.get(sessionId) || [];
+  const session = SESSION_REPOSITORY.loadSession(sessionId);
+  return session ? session.messages.slice(-CHAT_HISTORY_TURNS) : [];
 }
-function appendChatTurn(sessionId, role, content) {
+function appendChatTurn(sessionId, role, content, source = 'chat', telemetry = null) {
   if (!sessionId || !content) return;
-  const hist = CHAT_SESSIONS.get(sessionId) || [];
-  hist.push({ role, content: String(content) });
-  // Keep the tail so long sessions stay inside the context window.
-  CHAT_SESSIONS.set(sessionId, hist.slice(-CHAT_HISTORY_TURNS));
-  if (CHAT_SESSIONS.size > 200) CHAT_SESSIONS.delete(CHAT_SESSIONS.keys().next().value);
+  // AUTO-CREATE: unknown session ids (phone surfaces mint their own) get a
+  // session row on first write — otherwise appendMessage trips the FK gate.
+  if (!SESSION_REPOSITORY.loadSession(sessionId)) {
+    try {
+      SESSION_REPOSITORY.createSession(`Surface ${source || 'chat'}`, '', '', { id: sessionId, source });
+    } catch (e) { /* race: another lane created it first */ }
+  }
+  // P0 2026-08-24: append-only single-row INSERT. No read-modify-write of the
+  // whole transcript — the old loadSession→push→saveSession path was
+  // last-writer-wins and ate messages on any interleaved write.
+  const turn = SESSION_REPOSITORY.appendMessage(sessionId, {
+    role, content: String(content), metadata: { source, ...(telemetry && typeof telemetry === 'object' ? { telemetry } : {}) },
+  });
+  if (role === 'assistant' || role === 'system') {
+    try {
+      const fish = require('./lib/fish-runtime');
+      fish.runFishOnAssistantTurn({
+        sessionId, role, content: String(content), meta: { source },
+      });
+    } catch (_) { /* fish not wired or threw — never block the turn */ }
+  }
+  return turn;
 }
 
 async function handleChatStream(req, res) {
+  // Client disconnect must never kill the process or throw EPIPE out of
+  // res.write()/res.end() later in the stream loop. Mark the response dead and
+  // swallow write errors; the run loop checks sseDead before each event.
+  let sseDead = false;
+  res.on('error', (e) => { sseDead = true; try { res.destroy(); } catch (_) {} });
+  req.on('error', () => { sseDead = true; });
+  req.on('close', () => { sseDead = true; });
+  const _sseEvent = sseEvent;
+  // Shadow writes through a guard: if the socket is gone, drop events silently.
+  const resGuard = new Proxy(res, {
+    get(t, p) {
+      if (p === 'write' || p === 'end') {
+        return (...args) => {
+          if (sseDead) return false;
+          try { return t[p](...args); } catch (e) {
+            if (e && (e.code === 'EPIPE' || e.code === 'ERR_STREAM_WRITE_AFTER_END' || e.code === 'ERR_STREAM_DESTROYED')) { sseDead = true; return false; }
+            throw e;
+          }
+        };
+      }
+      return t[p];
+    },
+  });
+  void _sseEvent;
   let body = null;
   try { body = await parseBody(req); }
   catch (e) {
@@ -399,68 +1022,1152 @@ async function handleChatStream(req, res) {
     return res.end();
   }
   const { message, spawnAgents = false, source = 'chat' } = body;
+  // runAgent/getAgentTools/buildChatSystemPrompt now destructured ONCE at module
+  // level (see AGENT_LOOP binding near the top of this file) — both handleChatStream
+  // and the /api/chat JSON path use them; per-function re-destructuring caused TDZ.
   // Accept a client session id; fall back to the surface name so a surface that
   // does not send one still gets continuity instead of amnesia.
   const sessionId = body.session_id || body.sessionId || `surface:${source}`;
+  // TURN LINEAGE: a retry of a failed turn must join the SAME turn's lineage,
+  // not start a conceptually new one. The client sends attemptId on retry
+  // (same turnId + incremented attempt); server stamps every SSE event and the
+  // terminal event with both, so the UI can replace-in-place instead of
+  // stacking duplicate assistant cards.
+  const turnId = body.turnId || ('turn_' + Date.now().toString(36));
+  const attemptId = body.attemptId || (turnId + '_a1');
+  const attemptN = (Number(body.attempt) || 1);
+  // NOTE: missionId is resolved later (semantic intake, ~line 1412) — SET_SSE_CTX
+  // here carries only what exists at this point. The mission-scoped SET_SSE_CTX
+  // further down re-sets it with the real value.
+  SET_SSE_CTX({ sessionId, runId: null, turnId, attemptId });
+  // ── RECONNECT LAW: replay buffered events the client missed, then go live.
+  // Client sends Last-Event-ID header or lastSeenEventId in body; every missed
+  // event is re-emitted with its ORIGINAL id so dedupe stays idempotent.
+  const lastSeen = req.headers['last-event-id'] || body.lastSeenEventId || null;
+  if (lastSeen) {
+    sseStart(res);
+    for (const ev of SSE_REPLAY.replay(sessionId, String(lastSeen))) {
+      try {
+        res.write(`id: ${ev.id}\nevent: ${ev.event}\ndata: ${JSON.stringify(ev.data)}\n\n`);
+      } catch (_) { break; }
+    }
+  }
   const priorHistory = getChatHistory(sessionId);
   if (!message) {
     sseStart(res);
     sseEvent(res, 'error', { error: 'message required' });
     return res.end();
   }
+
+  // ── EXECUTION LEASE — Gate 1: authorizeExecution ────────────────────────
+  // Authorize execution BEFORE any routing. Explicit user gesture (slash or
+  // UI action) creates a lease; everything else returns null = no execution.
+  // The lease is threaded through runAgent → toolContext → TOOLS.invoke so that
+  // the actual executor can assert it even if routing is wrong.
+  const executionLease = EXEC.authorizeExecution({
+    message,
+    executionIntent: body.executionIntent,
+    executionAction: body.executionAction,
+    driveMode: body.driveMode,
+    autonomyGrant: body.autonomyGrant,
+    sessionId,
+  });
+
+  // ── WORK_SESSION AUTHORITY (two-mode law: CHAT = mouth, WORK = mouth+hands) ──
+  // operatorMode=WORK is a trusted operator gesture that mints ONE persistent
+  // session authority. It does NOT evaporate after each reply. CHAT revokes it.
+  // Per-turn leases still work; WORK_SESSION is the persistent layer above them.
+  let workSession = null;
+  const _opMode = String(body.operatorMode || '').toUpperCase();
+  if (_opMode === 'WORK') {
+    // Selector flip to WORK is itself the operator gesture (Eddie's law,
+    // 2026-08-24): mint/refresh the persistent session on EVERY WORK turn.
+    // A per-turn lease or executionIntent still refines it, but is no longer
+    // required — otherwise the next turn silently loses all tools again.
+    workSession = EXEC.mintWorkSession({ sessionId, source: 'UI_ACTION' });
+  } else if (_opMode === 'CHAT') {
+    EXEC.revokeWorkSession();
+  }
+  // WORK = Agent-Actions access rung (Eddie's law: no per-action re-approval
+  // inside a WORK session). The composer's explicit rung still wins if the
+  // client sent one; only the silent default ('review') gets upgraded.
+  if (_opMode === 'WORK' && (!body.envelope || !body.envelope.access)) {
+    body.envelope = Object.assign({}, body.envelope || {}, { access: 'agent-actions' });
+  }
+  // Authority for THIS turn = per-turn lease OR active WORK_SESSION.
+  const turnAuthority = executionLease
+    || (workSession ? {
+      executionId: 'work_' + (workSession.sessionId || 'session'),
+      sessionId,
+      initiatedBy: 'user',
+      source: 'WORK_SESSION',
+      command: null,
+      action: body.executionAction || 'RUN',
+      authorized: true,
+      createdAt: workSession.createdAt,
+      revoked: false,
+    } : null);
+
+  // ── BINDING RESOLUTION — SCOPE, NOT AUTHORITY ──────────────────────────
+  // GESTURE LAW (re-affirmed): bindings[] describe user-selected capability
+  // SCOPE. They are metadata, never proof of an execution gesture. A client
+  // that can POST /api/chat can fabricate bindings — so bindings alone mint
+  // NOTHING. Authority comes only from:
+  //   1. a typed canonical slash command        (authorizeExecution → SLASH_COMMAND)
+  //   2. an allowlisted explicit UI action       (authorizeExecution → UI_ACTION)
+  // When a legitimate lease DOES exist, bindings refine its capability scope
+  // via the side-map (leases are frozen — never mutated).
+  const bindings = Array.isArray(body.bindings) ? body.bindings : [];
+  // Effective authority: per-turn lease first, else persistent WORK_SESSION.
+  // WORK_SESSION keeps tools advertised across turns — no re-gesture per message.
+  const effectiveLease = turnAuthority;
+  if (effectiveLease && bindings.length) {
+    // LEASE FREEZE LAW: leases are Object.freeze'd. Never mutate them — the
+    // 22:02 crash (Cannot define property bindings, object is not extensible)
+    // was exactly that assignment. Side-map keyed by executionId carries scope.
+    try { SLASH_BINDINGS.set(effectiveLease.executionId, bindings); }
+    catch (_provErr) { safeLog('LEASE', 'binding scope store failed: ' + _provErr.message); }
+  }
+
   sseStart(res);
-  sseEvent(res, 'phase', { phase: 'received', message: message.slice(0, 100) });
-  sseEvent(res, 'phase', { phase: 'thinking' });
+  const _msgReceivedAt = Date.now();
+  sseEvent(res, 'phase', { phase: 'received', state: 'RECEIVED', durationMs: 0,
+    message: message.slice(0, 100) });
+  sseEvent(res, 'phase', { phase: 'thinking', state: 'THINKING',
+    durationMs: Date.now() - _msgReceivedAt });
+
+  // Approval heartbeat helpers MUST live at handleChatStream FUNCTION scope —
+  // NOT inside the try block. Block-scoped function declarations are invisible
+  // to the sibling catch below, which crashed every error-path stream with
+  // "clearApprovalHeartbeat is not a function" (recurring P0; this is the
+  // third time parallel edits have re-nested them).
+  let _approvalHeartbeat = null;
+  function clearApprovalHeartbeat() {
+    if (_approvalHeartbeat) { clearInterval(_approvalHeartbeat); _approvalHeartbeat = null; }
+  }
+  function startApprovalHeartbeat() {
+    clearApprovalHeartbeat();
+    _approvalHeartbeat = setInterval(() => {
+      sseComment(res, 'approval-wait');
+    }, 20_000);
+  }
 
   try {
+    // SLASH-ONLY EXECUTION LAW (SSE surface) — same table as CLI and /api/chat
+    // non-stream path. A message starting with '/' dispatches deterministically;
+    // it must never reach the LLM as chat text.
+    if (typeof message === 'string' && message.startsWith('/')) {
+      const ASK_CMDS = require('./lib/commands/ask.js');
+      const table = ASK_CMDS.SLASH_COMMANDS || ASK_CMDS.default?.SLASH_COMMANDS || ASK_CMDS;
+      const spaceIdx = message.indexOf(' ');
+      const rawName = spaceIdx === -1 ? message : message.slice(0, spaceIdx);
+      // SLASH LAW: command names are case-insensitive (/TOOLS === /tools).
+      // Table is lowercase; normalize the lookup so uppercase never falls
+      // through to "unknown".
+      const lookupName = rawName.toLowerCase();
+      const cmd = table[lookupName] || table[rawName];
+      const cmdName = cmd ? (table[rawName] ? rawName : lookupName) : rawName;
+      const cmdArgs = spaceIdx === -1 ? '' : message.slice(spaceIdx + 1);
+      const slashCtx = { model: process.env.LLM_MODEL || null, provider: process.env.LLM_PROVIDER || null };
+      if (cmd && typeof cmd.run === 'function') {
+        sseEvent(res, 'phase', { phase: 'slash', state: 'DISPATCHED', command: cmdName });
+        // async slash handlers (orchestrator) must be awaited — never String(Promise)
+        Promise.resolve()
+          .then(() => cmd.run(cmdArgs, slashCtx))
+          .then((out) => {
+            sseFinal(res, { ok: true, slash: cmdName, reply: String(out) });
+            res.end();
+          })
+          .catch((err) => {
+            sseEvent(res, 'phase', { phase: 'slash', state: 'FAILED', command: cmdName });
+            sseFinal(res, { ok: false, slash: cmdName, reply: `slash failed: ${err.message}`, code: err.code || null });
+            res.end();
+          });
+        return;
+      }
+      sseEvent(res, 'phase', { phase: 'slash', state: 'UNKNOWN', command: cmdName });
+      sseFinal(res, { ok: false, slash: cmdName, reply: `unknown command: ${cmdName}`, available: Object.keys(table) });
+      return res.end();
+    }
+    // Explicit, high-confidence computer commands are deterministic routing
+    // work, not language-model work. Resolve them before provider selection so
+    // a rate-limited cloud brain cannot prevent a native operation. Unknown or
+    // ambiguous language still falls through to the full agent loop below.
+    const semantic = await SEMANTIC_CHAT.execute({
+      message,
+      envelope: body.envelope || {},
+      sessionId,
+      source,
+      operatorConfirmed: body.operatorConfirmed === true,
+      context: { cwd: body.cwd || process.cwd(), workspaceRoot: PURP_DIR },
+    });
+    if (semantic.handled) {
+      // GATE LAW: deterministic execution is real capability execution.
+      // No user-originated lease → refuse, stay in CHAT, never dispatch.
+      if (!effectiveLease) {
+        const refused = 'That request needs execution, but no execution lease was created (plain chat mode). Use a slash command or an explicit Execute gesture.';
+        const _cap = semantic.resolution && semantic.resolution.matched && semantic.resolution.matched.capability || null;
+        safeLog('GATE1', `[deterministic-refused] capability=${_cap} msg="${String(message).slice(0, 40)}"`);
+        sseEvent(res, 'phase', { phase: 'routing', route: 'CHAT' });
+        sseEvent(res, 'token', { content: refused });
+        // MODE-OFFER LAW: the RUNTIME detected intent-mismatch (execution intent,
+        // CHAT authority) — it must tell the surface, never leave the LLM or the
+        // operator to guess. Structured field only; cockpit renders the controls.
+        sseEvent(res, 'mode-offer', {
+          kind: 'EXECUTION_INTENT_NO_LEASE',
+          capability: _cap,
+          offers: ['RUN_ONCE', 'SWITCH_TO_WORK'],
+        });
+        appendChatTurn(sessionId, 'user', message, source);
+        appendChatTurn(sessionId, 'assistant', refused, source);
+        sseEvent(res, 'phase', { phase: 'done' });
+        sseEvent(res, 'done', {
+          ok: true,
+          status: 'complete',
+          reply: refused,
+          model: null,
+          providerStatus: 'execution-not-user-initiated',
+          toolCalls: 0,
+          source,
+          sessionId,
+          modeOffer: { kind: 'EXECUTION_INTENT_NO_LEASE', capability: _cap, offers: ['RUN_ONCE', 'SWITCH_TO_WORK'] },
+          historyTurns: getChatHistory(sessionId).length,
+        });
+        return res.end();
+      }
+      const intent = semantic.resolution.matched;
+      sseEvent(res, 'phase', { phase: 'routing', route: 'deterministic-intent' });
+      sseEvent(res, 'tool-call', { tool: intent.capability, args: intent.args, capsuleId: null });
+      sseEvent(res, 'tool-result', {
+        tool: intent.capability,
+        ok: !!semantic.ok,   // always boolean
+        code: semantic.dispatch.result && semantic.dispatch.result.status || (semantic.ok ? 'SUCCESS' : 'FAILURE'),
+        capsuleId: null,
+        content: JSON.stringify(semantic.dispatch.result && semantic.dispatch.result.data || {
+          reason: semantic.dispatch.reason,
+          error: semantic.dispatch.error,
+        }).substring(0, 2000),
+      });
+      sseEvent(res, 'token', { content: semantic.reply, model: semantic.model });
+      appendChatTurn(sessionId, 'user', message, source);
+      appendChatTurn(sessionId, 'assistant', semantic.reply, source);
+      sseEvent(res, 'phase', { phase: 'done' });
+      sseEvent(res, 'done', {
+        ok: semantic.ok,
+        status: semantic.ok ? 'complete' : 'failed',   // explicit, never null
+        reply: semantic.reply,
+        model: semantic.model,
+        providerStatus: semantic.ok ? 'local-control' : 'refused-or-failed',
+        toolCalls: 1,
+        source,
+        sessionId,
+        missionId: semantic.mission && semantic.mission.missionId,
+        verification: semantic.dispatch.verification || null,
+        historyTurns: getChatHistory(sessionId).length,
+      });
+      return res.end();
+    }
+
+    // ── CHAT FAST PATH ─────────────────────────────────────────────────────────
+    // Conversational messages (greetings, casual chat, short exchanges) are
+    // replied to directly — no agent loop, no tool overhead, no tool-calling
+    // inference. Classify as CHAT or QUESTION here to fast-track them.
+    // buildChatSystemPrompt comes from the module-level AGENT_LOOP binding.
+    // This avoids MiniMax spending inference budget on "should I call a tool?"
+    // for messages that are clearly just conversation.
+    //
+    // GATE 1 — EXECUTION AUTHORIZATION OVERRIDE:
+    // Semantic intent (classifyIntentEx) tells WHAT the message describes.
+    // Execution authorization tells whether the user is ALLOWED to execute.
+    // These are separate. Even if semantic intent = EXECUTE:
+    //   - no effectiveLease → final route MUST BE CHAT
+    //   - lease exists     → may enter runAgent
+    // Plain conversational messages must never enter runAgent regardless of
+    // semantic content (action verbs, capability mentions, live-state queries).
+    const chatIntent = TA.classifyIntentEx(message);
+    const chatRoute = chatIntent.route;
+    // GATE 1 LAW: the lease selects the lane. Semantic intent is TELEMETRY ONLY —
+    // it never grants execution. No lease → finalRoute = CHAT, always.
+    // LEASE-DOWNGRADE LAW (P0 fix): a lease with semantic intent CHAT/QUESTION
+    // used to produce finalRoute=CHAT + tool schemas — the provider then emitted
+    // tool calls whose echoes were stripped mid-stream ("UNAUTHORIZED_TOOL_ATTEMPT"),
+    // so Purp narrated actions that never ran. A lease is an explicit operator
+    // gesture: it MUST route to EXECUTE, never downgrade to chat-with-tools.
+    const finalRoute = effectiveLease
+      ? (chatRoute === TA.INTENT_CLASSES.CHAT || chatRoute === TA.INTENT_CLASSES.QUESTION
+          // DRIVE AUTONOMOUS + minimum-necessary-action: an autonomy grant does
+          // NOT upgrade pure conversation to EXECUTE. Only gesture/action leases
+          // force the upgrade; autonomy leases respect semantic intent so "8 x 7"
+          // stays CHAT while "go on the hunt" (intent=EXECUTE) self-routes.
+          ? (effectiveLease.source === 'UI_AUTONOMY_GRANT'
+              ? 'CHAT'
+              : TA.INTENT_CLASSES.EXECUTE)
+          : chatRoute)
+      : 'CHAT';
+    // WORK SESSION LAW: an active execution lease means the operator armed
+    // WORK — the turn ALWAYS goes through the agent loop so tools can fire.
+    // The chat-fast lane is only for genuine no-lease conversation.
+    const IS_CHAT_FAST = !effectiveLease && (
+      finalRoute === TA.INTENT_CLASSES.CHAT
+      || finalRoute === TA.INTENT_CLASSES.QUESTION
+    );
+    // GATE 1 DIAGNOSTIC: log the decision so we can trace why plain chat enters runAgent.
+    safeLog('GATE1', `[chat] effectiveLease=${effectiveLease ? effectiveLease.source : 'null'} intent=${chatRoute} finalRoute=${finalRoute} IS_CHAT_FAST=${IS_CHAT_FAST} msg="${String(message).slice(0, 40)}"`);
+    let _chatOpts = null; // handler-scope: telemetry (providerAttempts receipt) reads it after the runAgent path too
+    let _envelope = null; // handler-scope: GATE3/4 capability-promise check reads it in the runAgent path too
+    let _streamOpts = null; // handler-scope: attempt-1 opts; receipts survive try-block scope exit
+    let _mode = 'CHAT'; // handler-scope: requested route; read by BOTH lanes (runAgent mode field at :1767 was TDZ-crashing on it)
+    // PROVIDER ATTEMPTS RECEIPT CONTRACT: every terminal telemetry object reads
+    // this. Declared at handler scope so BOTH lanes (chat-fast and runAgent)
+    // consume the same shape — never undefined, even with zero attempts.
+    let _providerAttemptsReceipt = [];
+    if (IS_CHAT_FAST) {
+      // ONE ROUTER LAW: the persisted operator pin (model-override.json via
+      // /api/llm/pin) is authority when the request body doesn't name a model.
+      // EXPLICIT AUTO LAW (TVG S6, 2026-08-26): a body naming provider OR model
+      // as 'auto' is an explicit scored-pool request — the persisted pin must
+      // NOT be adopted, or AUTO turns get silently stamped MANUAL. Parity with
+      // the nonstream lane's AUTO POOL ISOLATION LAW (~:6600). Only an ABSENT
+      // field defers to the operator's standing pin.
+      const _explicitAuto = (body.provider === 'auto' || body.provider === 'default' || body.model === 'auto');
+      const _routerPin = _explicitAuto ? null : RR.getRouterState().manual_pin;
+      const _chatModel = (body.model && body.model !== 'auto') ? body.model : (_routerPin && _routerPin.model ? _routerPin.model : undefined);
+      let _chatProvider = (!_explicitAuto && body.provider && body.provider !== 'auto' && body.provider !== 'default') ? body.provider : (_routerPin && !_explicitAuto && _routerPin.provider ? _routerPin.provider : undefined);
+      // MANUAL PIN FAIL-CLOSED LAW (boundary): an unknown provider name must
+      // 400 here — never fall through to a default pool. A pin that names a
+      // provider that does not exist is an operator error, and silently
+      // routing it to some other provider is the exact bug this lane kills.
+      if (_chatProvider && !LLM.PROVIDERS[_chatProvider]) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        return res.end(JSON.stringify({ ok: false, error: 'UNKNOWN_PROVIDER_PIN', detail: `provider '${_chatProvider}' is not registered; manual pins must fail closed`, knownProviders: Object.keys(LLM.PROVIDERS) }));
+      }
+      // 'auto'/'default' must fall through to streamChatAuto — pinning those
+      // strings takes the MANUAL streamChat path and silently bypasses
+      // affinity / quality-gate / failover.
+      const chatHistory = getChatHistory(sessionId);
+      // buildChatSystemPrompt = full PurpClaw identity/personality/context,
+      // with capability AWARENESS but no executable tool schemas.
+      // This is the key contract: chat knows what exists but cannot invoke it.
+      let chatSystemPrompt = buildChatSystemPrompt({
+        cwd: body.cwd || process.cwd(),
+        workspace: body.workspaceRoot || process.cwd(),
+        historyLength: chatHistory.length,
+        turnNumber: chatHistory.length + 1,
+        model: _chatModel || undefined,
+      });
+      // RUNTIME STATE TRUTH (Gate 1 of runtime-truth): authoritative envelope
+      // computed from REAL state — lease registry + tool registry + workspace
+      // fs probe. The model receives this BEFORE generation and never infers.
+      _mode = String(body.interactionMode || body.mode || 'CHAT').toUpperCase(); // assign handler-scope decl (was const here → TDZ crash in runAgent lane)
+      // NOTE: getAgentTools() only — _explicitTools (binding-narrowed set) is
+      // declared further down (TDZ). Binding narrowing still applies at
+      // provider time and its true count rides the done-event telemetry.
+      _envelope = RT.buildRuntimeEnvelope({
+        executionLease,
+        toolIds: (executionLease ? getAgentTools() : [])
+          .map(t => (t.function && t.function.name) || t.name),
+        body,
+        // ROUTE TRUTH: requested EXECUTE/SWARM without a valid gesture-minted
+        // lease downgrades to CHAT — the model must see that downgrade.
+        finalRoute: executionLease ? _mode : 'CHAT',
+        routeReason: !executionLease && _mode !== 'CHAT' ? 'EXECUTION_NOT_AUTHORISED' : null,
+        // INTAKE TRUTH: session attachment metadata rides the envelope so CHAT
+        // can name/see files with zero authority (knowledge ≠ analysis).
+        attachments: Array.isArray(body.attachments) ? body.attachments : [],
+        contextSources: { filesActuallyRead: [], toolReceipts: 0 },
+      });
+      chatSystemPrompt += RT.renderRuntimeStateBlock(_envelope);
+      // PROVIDER INPUT LAW: command-truth / capability block must ride EVERY
+      // chat-lane system prompt (was unwired → PROVIDER_INPUT_LAW_VIOLATION).
+      const _capBlock = require('./lib/capability-state').renderCapabilityBlock(
+        require('./lib/capability-state').buildCapabilityState({
+          tools: effectiveLease ? getAgentTools() : [],
+          hasExecutionLease: !!effectiveLease,
+          route: _mode || 'CHAT',
+          leaseAction: effectiveLease ? (effectiveLease.action || null) : null,
+        })
+      );
+      if (_capBlock) chatSystemPrompt += '\n\n' + _capBlock;
+      if (_mode === 'PLAN') {
+        // PLAN contract: structured plan output only. No effects, no tool calls —
+        // even if a lease somehow exists, PLAN is read-and-reason, never act.
+        chatSystemPrompt += `\n\nPLAN MODE CONTRACT\nYou are in PLAN mode. Produce a structured, numbered implementation plan for the request:\n- Goal restated in one line.\n- Numbered steps with concrete file paths / commands / capability names where relevant.\n- Risks & unknowns section.\n- Verification step last.\nDo NOT narrate executing anything. Do NOT claim actions were performed. Output the plan and stop.`;
+      }
+      const chatMessages = [
+        { role: 'system', content: chatSystemPrompt },
+        ...chatHistory,
+        { role: 'user', content: message },
+      ];
+      // GATE 2 LAW: no lease → zero tool schemas reach the provider.
+      // SLASH BINDINGS (§7): explicit bound set narrows the caps when present.
+      // BABYSITTER CAPABILITY GATE: granted caps are additionally intersected
+      // with an intent-class allowlist (EXECUTE → full set; STATUS_QUERY →
+      // read-only; CHAT/QUESTION → none). Denied names go to telemetry.
+      const _bindingCaps = bindings.length ? computeEffectiveCaps(bindings) : null;
+      const _intentAllow = TA.capabilityAllowlist(finalRoute);
+      const _queryIntent = finalRoute === TA.INTENT_CLASSES.STATUS_QUERY || finalRoute === TA.INTENT_CLASSES.PROVENANCE_QUERY;
+      let _explicitChatTools = null;
+      let _capDenied = [];
+      if (_bindingCaps && _bindingCaps.caps.length) {
+        _explicitChatTools = getAgentTools().filter(t => {
+          const n = (t.function && t.function.name) || t.name;
+          let ok = _bindingCaps.caps.includes(n);
+          if (ok && _intentAllow && typeof _intentAllow.has === 'function') ok = _intentAllow.has(n);
+          if (ok && _queryIntent && !TA.isReadonlyToolName(n)) ok = false;
+          if (!ok) _capDenied.push(n);
+          return ok;
+        });
+        if (_explicitChatTools.length === 0 && _capDenied.length > 0) _explicitChatTools = []; // hard-empty beats fallback
+      } else if (_intentAllow && typeof _intentAllow === 'object' && _intentAllow.size === 0) {
+        _explicitChatTools = []; // CHAT/QUESTION with no bindings: still zero tools
+      }
+      safeLog('GATE2', `[chat] intent=${finalRoute} allowSet=${_intentAllow ? _intentAllow.size : 'ALL'} denied=${JSON.stringify(_capDenied)}`);
+      try { const { announce } = require('./lib/events'); announce.tool('gate', { source: 'babysitter', step: 'capability_gate', route: finalRoute, denied: _capDenied }); } catch {}
+      // SAMPLING PASSTHROUGH (2026-08-26): client may send camelCase sampling
+      // opts (topP/topK/seed/frequencyPenalty/presencePenalty/maxTokens).
+      // llm-provider's samplingParams() capability-gates them per provider —
+      // unsupported keys are stripped before the wire, so this is always safe.
+      const _sampling = {};
+      for (const k of ['temperature','topP','topK','maxTokens','frequencyPenalty','presencePenalty','seed']) {
+        if (body[k] !== undefined && body[k] !== null) _sampling[k] = body[k];
+      }
+      _chatOpts = Object.assign({ model: _chatModel, provider: _chatProvider, tools: effectiveLease ? (_explicitChatTools !== null ? _explicitChatTools : getAgentTools()) : [], sessionId: sessionId || undefined }, _sampling);
+      // Attempt receipts live on _chatOpts so BOTH stream attempts and the
+      // final telemetry see the same chain (streamChatAuto writes
+      // opts.__providerAttempts onto the object we pass in).
+      let fullReply = '';
+      let servedModel = '';
+      let servedProvider = _chatProvider || '';  // MANUAL pin: streamChat chunks may not echo provider
+      let attempt1ok = false;
+      let attempt2ok = false;
+      let attempt1err = null;
+      let attempt2err = null;
+
+      // Attempt 1
+      try {
+        safeLog('CHAT', `attempt=1 provider=${_chatProvider || 'auto'} model=${_chatModel || 'default'} message=${String(message).slice(0, 30)}`);
+        // PROVIDER INPUT TRACE — persona deep-dive instrument (redacted manifest).
+        try {
+          const { buildTrace, assertTraceLaws } = require('./lib/provider-input-trace');
+          const _trace = buildTrace({
+            messages: chatMessages,
+            tools: _chatOpts.tools || [],
+            meta: {
+              sessionId, turnId: null, route: 'CHAT',
+              lease: effectiveLease || null,
+              leaseSource: effectiveLease ? effectiveLease.source : null,
+              leaseAction: effectiveLease ? effectiveLease.action : null,
+              // ROUTE TRUTH: trace must show the requested-vs-final split.
+              requestedMode: body.interactionMode || 'CHAT',
+              requestedProvider: body.provider || 'auto',
+              requestedModel: body.model || 'auto',
+              workspace: body.workspace || null, cwd: body.cwd || process.cwd(),
+            },
+          });
+          safeLog('PROVIDER_INPUT_TRACE', JSON.stringify(_trace).slice(0, 1500));
+          assertTraceLaws(_trace);
+        } catch (traceErr) {
+          if (traceErr.code === 'PROVIDER_INPUT_LAW_VIOLATION') {
+            safeLog('PROVIDER_INPUT_TRACE_LAW_VIOLATION', traceErr.message);
+          } // non-law errors: tracing must never break transport
+        }
+        // MODEL ROUTING AUTHORITY: MANUAL pin (explicit provider AND/OR model)
+        // uses streamChat directly — no silent provider roulette. streamChatAuto
+        // is reserved for AUTO mode where routing IS the contract.
+        // P0 PROVIDER TRANSPORT RECOVERY: in AUTO (unpinned), attempt 1 goes
+        // through streamChatAuto WITH allowPartialFailover so a dead first
+        // provider fails over to the next qualified candidate INSIDE this same
+        // turn — the operator must never have to manually defibrillate the UI.
+        const _autoMode = !_chatProvider && !_chatModel;
+        const _streamFn = _autoMode
+          ? LLM.streamChatAuto
+          : ((_chatProvider && LLM.streamChat) ? LLM.streamChat : (LLM.streamChatAuto || LLM.streamChat));
+        _streamOpts = Object.assign({}, _chatOpts);
+        if (_autoMode) { _streamOpts.allowPartialFailover = true; }
+        for await (const chunk of FILTER.filterVisibleStream(_streamFn(chatMessages, _streamOpts))) {
+          // provider-retry-reset = previous candidate abandoned mid-draft.
+          // Discard its partial text so the next provider's answer is clean,
+          // and surface it as in-turn activity, not a new failure card.
+          if (chunk.type === 'provider-retry-reset') {
+            fullReply = '';
+            sseEvent(res, 'attempt', eventPayload(SSE_CTX, {
+              attemptActivity: 'provider_reset', from: chunk.from || null, reason: chunk.reason || null,
+            }));
+            continue;
+          }
+          if (chunk.done) {
+            servedModel    = chunk.model    || servedModel;
+            servedProvider = chunk.provider || servedProvider;
+            break;
+          }
+          // STREAM LAW: filterVisibleStream yields ONLY visible content.
+          // reasoning arrives as chunk.reasoning (metadata) — never concatenated.
+          const rawReasoning = chunk.reasoning || '';
+          if (rawReasoning) {
+            sseEvent(res, 'reasoning', { delta: rawReasoning, model: chunk.model || servedModel, provider: chunk.provider || servedProvider });
+          }
+          const text = chunk.content;
+          if (text) {
+            fullReply += text;
+            sseEvent(res, 'token', { content: text, model: chunk.model || servedModel, provider: chunk.provider || servedProvider });
+          }
+          servedModel    = chunk.model    || servedModel;
+          servedProvider = chunk.provider || servedProvider;
+        }
+        attempt1ok = !!fullReply.trim();
+        safeLog('CHAT', `attempt=1 result=${attempt1ok ? 'OK contentLength=' + fullReply.length : 'EMPTY'}`);
+      } catch (e) {
+        attempt1err = e && e.message ? e.message : String(e);
+        safeLog('CHAT', `attempt=1 exception=${attempt1err}`);
+      }
+      // Hoist the attempt chain out of the try block so the telemetry receipt
+      // can read it regardless of which attempt succeeded. Assign to the
+      // handler-scope contract variable (chat-fast lane).
+      _providerAttemptsReceipt = (_streamOpts && _streamOpts.__providerAttempts)
+        || (_chatOpts && _chatOpts.__providerAttempts) || [];
+
+      // Attempt 2 — if attempt 1 returned empty OR produced word-soup garbage (AUTO only)
+      const _soup = !executionLease && fullReply.trim() && _isWordSoup(fullReply);
+      if (_soup) safeLog('CHAT', `attempt=1 WORD_SOUP_REJECTED len=${fullReply.length} — retrying`);
+      if (!fullReply.trim() || _soup) {
+        if (_soup) fullReply = '';
+        try {
+          safeLog('CHAT', `attempt=2 provider=${_chatProvider || 'auto'} model=${_chatModel || 'default'}`);
+          // MANUAL PIN LAW (2026-08-26): attempt-2 retry may re-attempt the SAME
+          // pin (not a model switch) but must NEVER expand into other pools when
+          // a pin is present. Parity with the nonstream lane (:6467).
+          const _pinPresent = !!(_chatProvider || _chatModel);
+          const _opts2 = Object.assign({}, _chatOpts, {
+            allowPartialFailover: !_pinPresent,
+            failClosedManual: _pinPresent || !!(_chatOpts && _chatOpts.failClosedManual),
+          });
+          for await (const chunk of FILTER.filterVisibleStream(LLM.streamChatAuto(chatMessages, _opts2))) {
+            if (chunk.type === 'provider-retry-reset') {
+              fullReply = '';
+              sseEvent(res, 'attempt', eventPayload(SSE_CTX, {
+                attemptActivity: 'provider_reset', from: chunk.from || null, reason: chunk.reason || null,
+              }));
+              continue;
+            }
+            if (chunk.done) {
+              servedModel    = chunk.model    || servedModel;
+              servedProvider = chunk.provider || servedProvider;
+              break;
+            }
+            // STREAM LAW: filterVisibleStream yields ONLY visible content.
+            // Reasoning deltas stream to the thinking bubble as their own event.
+            const rawReasoning = chunk.reasoning || '';
+            if (rawReasoning) {
+              sseEvent(res, 'reasoning', { delta: rawReasoning, model: chunk.model || servedModel, provider: chunk.provider || servedProvider });
+            }
+            const text = chunk.content;
+            if (text) {
+              fullReply += text;
+              sseEvent(res, 'token', { content: text, model: chunk.model || servedModel, provider: chunk.provider || servedProvider });
+            }
+            servedModel    = chunk.model    || servedModel;
+            servedProvider = chunk.provider || servedProvider;
+          }
+          attempt2ok = !!fullReply.trim();
+          safeLog('CHAT', `attempt=2 result=${attempt2ok ? 'OK contentLength=' + fullReply.length : 'EMPTY'}`);
+        } catch (e) {
+          attempt2err = e && e.message ? e.message : String(e);
+          safeLog('CHAT', `attempt=2 exception=${attempt2err}`);
+        }
+      }
+
+      // Terminal failure — both attempts empty or errored
+      if (!fullReply.trim()) {
+        safeLog('CHAT', `TERMINAL_EMPTY provider=${servedProvider || 'unknown'} model=${servedModel || 'unknown'} attempt1ok=${attempt1ok} attempt2ok=${attempt2ok}`);
+        sseEvent(res, 'error', {
+          error: 'CHAT_PROVIDER_EMPTY_OUTPUT',
+          provider: servedProvider || null,
+          model: servedModel || null,
+          attempt1: attempt1ok ? 'ok' : (attempt1err ? 'error' : 'empty'),
+          attempt2: attempt2ok ? 'ok' : (attempt2err ? 'error' : 'empty'),
+        });
+        return res.end();
+      }
+
+      fullReply = _stripToolSentinels(fullReply, sessionId);
+      // ── EXECUTION-PROMISE CONTRADICTION GATE (P0): the chat-fast lane ALWAYS
+      // runs CHAT / no lease / 0 calls, so any immediate-action language
+      // ("on it", "let me run", "I'm scanning") is a truth violation by
+      // definition. This gate was previously dead code — zero callers.
+      // Enforcement: log + SSE truth-gate + append a mandatory truthful
+      // correction so the delivered reply states execution was NOT performed.
+      const _promiseViolations = RT.checkExecutionPromises(fullReply);
+      if (_promiseViolations.length) {
+        safeLog('EXECUTION_PROMISE_CONTRADICTION', JSON.stringify({
+          sessionId, matched: _promiseViolations.map(v => v.matchedText),
+        }));
+        sseEvent(res, 'truth-gate', { code: 'EXECUTION_PROMISE_CONTRADICTION',
+          violations: _promiseViolations, enforcement: 'correction_appended' });
+        const _correction = '\n\n[CORRECTION] The above promised immediate execution, but this turn ran in CHAT mode with no execution lease and zero tool calls — nothing was executed. Hit Execute (or arm DRIVE Autonomous) and resend to run this for real.';
+        fullReply += _correction;
+        sseEvent(res, 'token', { content: _correction,
+          model: servedModel || null, provider: servedProvider || null });
+      }
+      appendChatTurn(sessionId, 'user', message, source);
+      const _chatDoneAt = Date.now();
+      // MODEL TRUTH RECEIPT — chat-fast path gets the same telemetry object.
+      const _chatTelemetry = {
+              requestedProvider: body.provider || 'auto',
+              requestedModel: body.model || 'auto',
+              provider: servedProvider || null,
+              model: servedModel || null,
+              route: 'CHAT',
+              lease: null, toolCalls: 0, agentCalls: 0, skillCalls: 0,
+              // SUCCESS RECEIPT (chat-fast lane): same attempt chain contract as
+              // the runAgent lane — every provider tried + failure class.
+              providerAttempts: (_providerAttemptsReceipt || []).map((a, i) => ({
+                attempt: i + 1, provider: a.provider || null, ok: !!a.ok,
+                failureClass: a.failureClass || (a.ok ? null : (a.reason || null)),
+                skipped: a.skipped || null, cooldownMs: a.cooldownMs || 0,
+              })),
+              fallbackCount: 0, fallbackPath: [],
+              promptTokens: null, completionTokens: null, reasoningTokens: null, totalTokens: null,
+              reasoningState: null, ttftMs: null,
+              durationMs: _chatDoneAt - _msgReceivedAt,
+              status: 'complete',
+              bindings: bindings.length ? bindings : null,
+              capsCount: _bindingCaps ? _bindingCaps.caps.length : null,
+            };
+      appendChatTurn(sessionId, 'assistant', fullReply, source, _chatTelemetry);
+      // CANONICAL ROUTE TRUTH (single receipt): built once, after the reply is
+      // final, from the real attempt chain. Surfaces consume — never reconstruct.
+      // CANONICAL ROUTE TRUTH: build the one RoutingReceipt for this turn from
+      // the same evidence the telemetry used. Surfaces consume this; they never
+      // reconstruct routing truth themselves.
+      let _receipt = null;
+      try {
+        _receipt = RR.buildReceipt({
+          sessionId,
+          requestedProvider: body.provider || null,
+          requestedModel: body.model || null,
+          providerAttempts: _providerAttemptsReceipt,
+          servedProvider, servedModel,
+          replyText: fullReply,
+          manualOverrideApplied: (_streamOpts && _streamOpts.__manualOverrideApplied) || null,
+          scoredPick: (_streamOpts && _streamOpts.__scoredRouterApplied) || null,
+          affinityApplied: (_streamOpts && _streamOpts.__affinityApplied) || null,
+          inferenceNode: 'home-core',
+          executionNode: null,
+        });
+        _chatTelemetry.routingReceipt = _receipt;
+      } catch (e) { safeLog('CHAT', `routing-receipt build failed (non-fatal): ${e && e.message}`); }
+      sseEvent(res, 'phase', { phase: 'done', state: 'DONE',
+        durationMs: _chatDoneAt - _msgReceivedAt });
+      sseEvent(res, 'telemetry', { ..._chatTelemetry, type: 'telemetry' });
+      if (_receipt) {
+        sseEvent(res, 'routing-receipt', { receipt: _receipt });
+        safeLog('ROUTING_RECEIPT', JSON.stringify(_receipt).slice(0, 1200));
+      }
+      // MODE-OFFER LAW (chat-fast): runtime detected EXECUTE intent but no lease
+      // → tell the surface with a structured field so it can offer Run-once /
+      // Switch-to-Work. Never inferred by the model; never parsed from text.
+      const _modeOffer = (!effectiveLease && chatRoute === TA.INTENT_CLASSES.EXECUTE)
+        ? { kind: 'EXECUTION_INTENT_NO_LEASE', offers: ['RUN_ONCE', 'SWITCH_TO_WORK'] }
+        : undefined;
+      if (_modeOffer) sseEvent(res, 'mode-offer', _modeOffer);
+      sseEvent(res, 'done', eventPayload(SSE_CTX, {
+        ok: true,
+        status: 'complete',
+        reply: fullReply,
+        model: servedModel,
+        provider: servedProvider || null,
+        source,
+        sessionId,
+        historyTurns: chatHistory.length,
+        capsuleId: SSE_CTX.capsuleId != null ? SSE_CTX.capsuleId : null,
+        modeOffer: _modeOffer || null,
+        telemetry: _chatTelemetry,
+      }));
+      return res.end();
+    }
+
     // Use the real agent-loop (tool-calling brain) instead of raw llm.streamChat.
     // This unifies all three surfaces: CLI ask, WebUI, TUI, and all gateways
     // (Discord, Telegram, email) hit the same agentic engine.
-    const { runAgent } = require('./lib/agent-loop');
+    // (runAgent/getAgentTools/buildChatSystemPrompt destructured at function top — TDZ fix.)
+    // Same module instance the loop consumes, so a pause aimed at this run is
+    // visible to both ends of the stream.
+    const PSTEER_SSE = (() => { try { return require('./lib/priority-steer'); } catch { return null; } })();
     let fullReply = '';
-    let modelName = '';
+    let modelName = body.model || '';
+    let _bindingCaps = null;
+    let _explicitTools = null;
+    let providerName = body.provider || '';
+    const providerFailovers = [];
+    const turnIntegrityEvents = [];
     let toolCallsUsed = 0;
+    // Claim-gate evidence: ordered trace of executed tools this turn
+    // (consumed by lib/execution-claim-gate.js evaluate() at done).
+    const _toolEvidence = [];
+    let runOk = true;
+    let runStatus = 'complete';
+    let maxTurnsHit = false;
+    let runId = null;
+    let traceStats = null;
+    // missionId is created once at mission start and carried through every SSE event.
+    // Agents that don't go through the semantic dispatch path create it here.
+    const missionId = semantic && semantic.mission && semantic.mission.missionId
+      ? String(semantic.mission.missionId)
+      : null;
+    // Token burn — captured from SSE token events and the done event's usage payload
+    let totalTokensUsed = 0;
+    let promptTokensUsed = 0;
+    let completionTokensUsed = 0;
+    // ── MODEL TRUTH TELEMETRY (requested ≠ resolved) ──────────────────────
+    const requestedProvider = body.provider || 'auto';
+    const requestedModel = body.model || 'auto';
+    const executionLeaseKind = executionLease ? (executionLease.source || executionLease.kind || 'lease') : null;
+    const _t0 = Date.now();
+    let ttftMs = null;             // first token latency
+    let reasoningTokensUsed = null; // only when provider supplies it — never fabricated
+    let reasoningState = null;
+    let agentCallsUsed = 0, skillCallsUsed = 0;
+    void agentCallsUsed; void skillCallsUsed;
 
-    for await (const ev of runAgent({
-      prompt: message,
-      history: priorHistory,                    // ← the fix: carry the conversation
-      // Mission envelope: the composer's controls are execution state, not
-      // decoration. Normalised in lib/mission-envelope.js so a surface that
-      // sends nothing still gets safe defaults.
-      opts: { maxTokens: 2048, temperature: 0.7, sessionId, envelope: body.envelope || {} },
-    })) {
+    // Operator STOP (AbortController) or browser close → clean up gracefully.
+    // When the fetch is aborted the HTTP connection drops and Express sets
+    // req.abortSignal.aborted = true. Listen for that and emit an abort receipt
+    // to the cockpit so the UI transitions to CANCELED instead of ERROR.
+    if (req.abortSignal) {
+      req.abortSignal.addEventListener('abort', () => {
+        runStatus = 'canceled';
+        runOk = false;
+        try { require('./lib/missions').cancelMission(); } catch { /* best-effort */ }
+        try {
+          sseEvent(res, 'abort', { missionId: runId, sessionId, reason: 'operator_stop' });
+          sseEvent(res, 'done', {
+            ok: false, status: 'canceled', reply: fullReply,
+            model: modelName, provider: providerName || null,
+            providerStatus: 'canceled', toolCalls: toolCallsUsed,
+            source, sessionId, historyTurns: getChatHistory(sessionId).length, runId,
+            totalTokens: totalTokensUsed, promptTokens: promptTokensUsed, completionTokens: completionTokensUsed,
+          });
+          res.end();
+        } catch { /* stream may already be closed */ }
+      }, { once: true });
+    }
+
+    // DEFENSIVE: wrap the runAgent for-await so synchronous throws from
+    // runAgent setup (before the first await) are caught and sent as SSE
+    // error events, rather than crashing the TCP stream and producing
+    // "network error" in the browser.
+    let _runAgentIter;
+    // Push closure vars into SSE_CTX so every sseEvent() call inside the loop
+    // gets sessionId / missionId without each call site having to pass them.
+    // runId starts as null — it arrives inside the done event and gets captured
+    // from there for the final done event (line ~909).
+    SET_SSE_CTX({ sessionId, missionId: missionId || null, runId: null, turnId: null });
+    try {
+      // SLASH BINDINGS (§7): compute effective caps from explicit user-bound set.
+      // Gate 2 PROVEN: tools come ONLY from the bound set when bindings exist —
+      // never defaults. caps:[] with an exec binding = zero tool schemas reach
+      // the provider, exactly as the operator bound it.
+      _bindingCaps = bindings.length ? computeEffectiveCaps(bindings) : null;
+      _explicitTools = _bindingCaps && _bindingCaps.caps.length
+        ? getAgentTools().filter(t => _bindingCaps.caps.includes((t.function && t.function.name) || t.name))
+        : null;
+
+      // BABYSITTER CAPABILITY GATE: with a lease active, narrow the authorized
+      // tool set by semantic intent class. Narrow-only: can never widen a set
+      // (no-lease turns and unrestricted classes pass through unchanged).
+      const _bsIntentClass = chatIntent ? chatIntent.route : null;
+      if (_bsIntentClass && effectiveLease && (_explicitTools === null || Array.isArray(_explicitTools))) {
+        const _bsBase = _explicitTools !== null ? _explicitTools : getAgentTools();
+        const _bsGate = BABYSITTER.capabilityGate({ intentClass: _bsIntentClass, tools: _bsBase, route: finalRoute, leaseSource: effectiveLease.source || String(effectiveLease) });
+        if (_bsGate.narrowed) {
+          _explicitTools = _bsGate.tools;
+          sseEvent('babysitter.capability_gate', { intent_class: _bsIntentClass, allowed: _bsGate.tools.map(t => (t.function && t.function.name) || t.name), denied: _bsGate.denied }, 'info');
+        }
+      }
+
+      _runAgentIter = runAgent({
+          prompt: attachmentPreamble(body.attachments) + message,
+          history: priorHistory,                    // ← the fix: carry the conversation
+          model: body.model || undefined,
+          provider: body.provider || undefined,
+          // Mission envelope: the composer's controls are execution state, not
+          // decoration. Normalised in lib/mission-envelope.js so a surface that
+          // sends nothing still gets safe defaults.
+          //
+          // EXECUTION LEASE — Gate 1 of the authorization contract.
+          // authorizeExecution() was called before this; lease is passed here.
+          // If null, the executor asserts and refuses (Gate 3 O-ring).
+          opts: { maxTokens: 4096, temperature: 0.7, sessionId, envelope: body.envelope || {}, tools: _explicitTools || getAgentTools(), executionLease: effectiveLease,
+                  // WORK LONG-HORIZON LAW: active WORK_SESSION lifts the turn cap
+                  workSessionActive: !!(effectiveLease && effectiveLease.source === 'WORK_SESSION'),
+                  // THINK LEVEL: composer slider rides through to the provider adapter
+                  thinkLevel: body.thinkLevel,
+                  // DEEP EXECUTION PARITY: mission lineage + bounds ride opts so
+                  // every tool step checkpoints under one lease/mission identity.
+                  missionId: missionId || null,
+                  budgetTokens: Number(body.budgetTokens || 0),
+                  // CONTINUATION LAW: mode/executionIntent must reach the agent
+                  // loop or the WORK-mode completion critic never arms
+                  // (agent-loop.js gates it on executionMode === 'work').
+                  mode: (_mode === 'WORK') ? 'work' : 'chat',
+                  executionIntent: !!body.executionIntent,
+                  executionLease: effectiveLease },
+        });
+    } catch (runInitErr) {
+      console.error('[handleChatStream] runAgent() synchronous throw:', runInitErr && runInitErr.message ? runInitErr.message : String(runInitErr));
+      console.error('[handleChatStream] stack:', runInitErr && runInitErr.stack ? runInitErr.stack.slice(0, 800) : 'no stack');
+      sseEvent(res, 'error', { error: 'runAgent init failed: ' + (runInitErr && runInitErr.message ? runInitErr.message : String(runInitErr)) });
+      return res.end();
+    }
+    // If the SSE client disconnects (browser closed, network drop, tab refreshed),
+    // the socket closes and res.write() starts failing. Without this handler the
+    // agent loop keeps running in the dark — wait() polls forever, the SSE stream
+    // feeds /dev/null, and the server accumulates a ghost mission. Catch it here
+    // and abort the iterator so wait() throws and the loop exits cleanly.
+    res.on('error', (err) => {
+      console.warn('[SSE] client disconnected, aborting agent loop:', err && err.message ? err.message : String(err));
+      if (_runAgentIter && typeof _runAgentIter.return === 'function') _runAgentIter.return();
+    });
+    // Approval heartbeat: SSE comment frames sent while waiting for operator resolution.
+    // Long approval waits (up to 10 min) can cause intermediaries to close a silent SSE
+    // pipe. Comment frames every 20s keep the pipe warm without adding semantic noise.
+    // Helpers declared at function scope above (visible to the catch block).
+
+    // Declare here so the assignment inside the for-await loop is accessible
+    // at the try/catch boundary below (line ~1253). Using let (not const) because
+    // the value is assigned inside the loop and read outside it.
+    let _lastCapsuleId = null;
+    // STREAM LAW: tool sentinels are stripped from the VISIBLE stream as it
+    // flows — not just from the final reply. Cockpit renders tokens live, so
+    // a per-reply strip is too late (that's how <|tool_call_start|>[bash...]
+    // reached the screen on 23:59).
+    const _scrubber = new _SentinelScrubber(sessionId);
+    // STREAM LAW parity: the agent-loop lane must apply the same stateful
+    // thinking filter as the direct lanes (:1401/:1451). Agent-loop tokens come
+    // from streamChatAuto via lib/agent-loop.js which yields provider chunks
+    // unfiltered — a <think> tag split across chunks would leak into the reply.
+    const _thinkFilter = new FILTER.ThinkingFilter();
+
+    for await (const ev of _runAgentIter) {
+      // When the operator stops a run, the abort listener sends done(status:canceled)
+      // and closes the SSE stream. The agent may still be running — do not process
+      // any further events from it. The cancellation terminal state is already sent.
+      if (req.abortSignal && req.abortSignal.aborted) break;
+      // Next event arrived — clear the approval heartbeat (resolved or still-pending
+      // but an event is proof the stream is alive and agent is responding).
+      clearApprovalHeartbeat();
+
       if (ev.type === 'token') {
-        fullReply += ev.content;
+        const _thinkClean = _thinkFilter.push(String(ev.content || ''));
+        const _cleanChunk = _scrubber.push(_thinkClean);
+        fullReply += _cleanChunk || '';
         modelName = ev.model || modelName;
-        sseEvent(res, 'token', { content: ev.content, model: ev.model });
+        providerName = ev.provider || providerName;
+        if (ttftMs === null && ev.content) ttftMs = Date.now() - _t0;
+        if (_cleanChunk) sseEvent(res, 'token', { content: _cleanChunk, model: ev.model, provider: ev.provider || providerName });
+      } else if (ev.type === 'usage') {
+        // Provider-supplied usage metadata — never fabricated.
+        if (ev.usage && typeof ev.usage === 'object') {
+          promptTokensUsed = ev.usage.prompt_tokens ?? promptTokensUsed;
+          completionTokensUsed = ev.usage.completion_tokens ?? completionTokensUsed;
+          totalTokensUsed = ev.usage.total_tokens ?? (promptTokensUsed + completionTokensUsed);
+          if (ev.usage.reasoning_tokens != null) reasoningTokensUsed = ev.usage.reasoning_tokens;
+        }
+      } else if (ev.type === 'thinking-state') {
+        reasoningState = ev.state || ev.phase || 'thinking';
+      } else if (ev.type === 'turn-integrity') {
+        // Transport evidence: the model's stream did not arrive whole. Surfaced
+        // so an incomplete answer is visible as damage rather than read as a
+        // short but finished reply.
+        turnIntegrityEvents.push({ turn: ev.turn, classification: ev.classification,
+          defects: (ev.defects || []).map(d => d.type) });
+        sseEvent(res, 'turn-integrity', { ok: false, turn: ev.turn,
+          classification: ev.classification,
+          defects: (ev.defects || []).map(d => ({ type: d.type, detail: d.detail })),
+          lastConfirmedSeq: ev.lastConfirmedSeq, expectedNextSeq: ev.expectedNextSeq,
+          terminatorPresent: ev.terminatorPresent,
+          observedBytes: ev.observedBytes, declaredBytes: ev.declaredBytes });
+      } else if (ev.type === 'provider-failover') {
+        const failover = { from: ev.from, to: ev.to, reason: ev.reason,
+          failureClass: ev.failureClass || null,
+          statusCode: ev.statusCode || null, detail: ev.detail || null,
+          cooldownMs: ev.cooldownMs || 0, cooldownUntil: ev.cooldownUntil || null };
+        providerFailovers.push(failover);
+        sseEvent(res, 'provider-failover', eventPayload(SSE_CTX, failover));
+        sseEvent(res, 'attempt', eventPayload(SSE_CTX, {
+          attemptActivity: 'failover', from: ev.from || null, to: ev.to || null,
+          failureClass: ev.failureClass || null, reason: ev.reason || null,
+        }));
+      } else if (ev.type === 'step-receipt') {
+        // DEEP EXECUTION PARITY: per-step receipt rides the stream so surfaces
+        // can show exactly which tool steps completed under the lease.
+        sseEvent(res, 'step-receipt', eventPayload(SSE_CTX, {
+          turn: ev.turn ?? null, tool: ev.tool || null, ok: ev.ok !== false,
+          stepIndex: ev.stepIndex ?? null, capsuleId: ev.capsuleId || null,
+        }));
+      } else if (ev.type === 'lease-revoked') {
+        sseEvent(res, 'lease-revoked', eventPayload(SSE_CTX, {
+          tool: ev.tool || null, executedSteps: ev.executedSteps ?? 0, capsuleId: ev.capsuleId || null,
+        }));
+      } else if (ev.type === 'budget-checkpoint') {
+        // UNRESTRICTED LAW: no refusal surface — compact-and-continue notice,
+        // not a wall. Rides the legacy SSE name so existing cockpit listeners
+        // keep working; action:'compacted' marks it telemetry-only.
+        sseEvent(res, 'budget-exceeded', eventPayload(SSE_CTX, {
+          spentEstTokens: ev.spentEstTokens ?? null, budgetTokens: ev.budgetTokens ?? null,
+          capsuleId: ev.capsuleId || null, action: 'compacted',
+        }));
+      } else if (ev.type === 'budget-exceeded') {   // legacy emitter compat
+        sseEvent(res, 'budget-exceeded', eventPayload(SSE_CTX, {
+          spentEstTokens: ev.spentEstTokens ?? null, budgetTokens: ev.budgetTokens ?? null,
+          capsuleId: ev.capsuleId || null,
+        }));
       } else if (ev.type === 'steering') {
         // Phase 3 — every governed turn announces its capsule.
-        sseEvent(res, 'steering', { capsuleId: ev.capsuleId, activeRules: ev.activeRules, unresolvedConflicts: ev.unresolvedConflicts, sources: ev.sources, error: ev.error });
+        // agent-loop yields activeRules as capsule.activeRules.length (a number).
+        // The SSE producer MUST NOT call .length on it — just use it directly.
+        // TEMP DEBUG:
+        safeLog('STEER', 'activeRules=' + JSON.stringify(ev.activeRules));
+        sseEvent(res, 'steering', eventPayload(SSE_CTX, {
+          capsuleId: ev.capsuleId,
+          status: ev.error ? 'blocked' : 'resolved',
+          appliedAt: 'safe_point',
+          activeRules: ev.activeRules || null,
+          unresolvedConflicts: ev.unresolvedConflicts || null,
+          sources: ev.sources || null,
+          error: ev.error || null,
+          ruleCount: typeof ev.activeRules === 'number' ? ev.activeRules : (ev.activeRules ? ev.activeRules.length : 0),
+        }));
       } else if (ev.type === 'steering-blocked') {
-        sseEvent(res, 'steering-blocked', { capsuleId: ev.capsuleId, conflicts: ev.conflicts });
+        sseEvent(res, 'steering-blocked', eventPayload(SSE_CTX, { capsuleId: ev.capsuleId, conflicts: ev.conflicts }));
+      } else if (ev.type === 'turn') {
+        // Mission-loop turn boundary — the execution shell's heartbeat. The UI
+        // shows one current action, not a raw transcript of every model call.
+        // typeof ev.turn === 'number' guard: only update SSE_CTX when the value is
+        // actually a number. `ev.turn != null` was loose equality — undefined != null
+        // is TRUE, so absent ev.turn was overwriting SSE_CTX.turn with undefined,
+        // which then propagated into the data object and into the SSE event.
+        if (typeof ev.turn === 'number') SSE_CTX.turn = ev.turn;
+        const turnNum = typeof ev.turn === 'number' ? ev.turn : (SSE_CTX.turn ?? 0);
+        // TEMP DEBUG: trace what the turn event producer receives and sends
+        safeLog('TURN', `ev.type=${ev.type} ev.turn=${JSON.stringify(ev.turn)} turnNum=${turnNum}`);
+        sseEvent(res, 'turn', eventPayload(SSE_CTX, {
+          turn: turnNum,
+          turnId: 'turn_' + turnNum,
+          maxTurns: ev.maxTurns ?? null,
+          // These override ctx values when the model has given us more current info
+          provider: providerName || null,
+          model: modelName || null,
+        }));
+      } else if (ev.type === 'steer') {
+        // SPEC-004 priority steer: the operator's live directive just entered
+        // THIS run at a safe point. Every surface watching the stream sees it.
+        sseEvent(res, 'steer', { directive: ev.directive, capsuleId: ev.capsuleId });
+      } else if (ev.type === 'interrupted') {
+        // SPEC-004 graceful pause — the turn was abandoned at a safe point and
+        // the partial exchange below is still committed, so mission state kept.
+        sseEvent(res, 'interrupted', { reason: ev.reason, turns: ev.turns, capsuleId: ev.capsuleId });
       } else if (ev.type === 'approval-request') {
         // Review rung — the turn is now parked waiting on a human. The UI
         // answers via POST /api/approvals.
-        sseEvent(res, 'approval-request', { requestId: ev.requestId, tool: ev.tool,
-          args: ev.args, expiresAt: ev.expiresAt });
+        sseEvent(res, 'approval-request', eventPayload(SSE_CTX, { requestId: ev.requestId, tool: ev.tool,
+          args: ev.args, expiresAt: ev.expiresAt }));
+        startApprovalHeartbeat();
+      } else if (ev.type === 'reacharound-approval-required') {
+        // Eddie's law: Reacharound STOP and REPLAN are ask-first — operator
+        // always has the final say. Forward to cockpit for the approval card.
+        // Enrich with deterministic identity so the cockpit can route and display precisely.
+        const toolName = ev.tool || 'reacharound.' + (ev.verdict || 'unknown').toLowerCase();
+        sseEvent(res, 'reacharound-approval-required', eventPayload(SSE_CTX, {
+          requestId: ev.requestId,
+          approvalId: ev.requestId,          // explicit duplicate so cockpit handlers can use either name
+          tool: toolName,
+          verdict: ev.verdict,
+          reason: ev.reason,
+          replanHint: ev.replanHint || null,
+          nextObjective: ev.nextObjective || null,
+          progressScore: ev.progressScore != null ? ev.progressScore : null,
+          stallScore: ev.stallScore != null ? ev.stallScore : null,
+          trigger: ev.trigger || null,       // TOOL_FAILURE | STALL | LOOP | PERMISSION | null
+          failedTool: ev.failedTool || null,
+          expiresAt: ev.expiresAt || null,
+          capsuleId: ev.capsuleId || null,
+        }));
+        startApprovalHeartbeat();
+      } else if (ev.type === 'tool-approval-required') {
+        // PERMISSION_DENIED requiring operator confirmation is NOT a tool failure.
+        // It is an authorization wait state. Pause here, show the card, resume
+        // only after the operator approves or denies.
+        sseEvent(res, 'tool-approval-required', eventPayload(SSE_CTX, { requestId: ev.requestId,
+          tool: ev.tool, args: ev.args, requiredPermission: ev.requiredPermission,
+          reason: ev.reason, expiresAt: ev.expiresAt }));
+        startApprovalHeartbeat();
       } else if (ev.type === 'approval-resolved') {
         sseEvent(res, 'approval-resolved', { requestId: ev.requestId, tool: ev.tool, decision: ev.decision });
       } else if (ev.type === 'dejavu') {
         // "We have been in this execution shape before." Evidence, not permission.
         sseEvent(res, 'dejavu', { confidence: ev.confidence, historicalRuns: ev.historicalRuns,
           verifiedRuns: ev.verifiedRuns, continuations: ev.continuations, closest: ev.closest });
+      } else if (ev.type === 'completion-gate') {
+        // The model drafted a completion claim that the execution trace cannot
+        // yet prove. The draft tokens are withheld in agent-loop; surface the
+        // correction state so the cockpit shows useful progress instead of a
+        // mysterious pause while the model performs the missing work.
+        sseEvent(res, 'completion-gate', {
+          ok: false,
+          attempt: ev.attempt,
+          issues: ev.issues,
+          evidence: ev.evidence,
+          capsuleId: ev.capsuleId,
+        });
+      } else if (ev.type === 'completion-held') {
+        sseEvent(res, 'completion-held', {
+          ok: false,
+          issues: ev.issues,
+          evidence: ev.evidence,
+          capsuleId: ev.capsuleId,
+        });
+      } else if (ev.type === 'completion-ready') {
+        sseEvent(res, 'completion-ready', {
+          ok: true,
+          evidence: ev.evidence,
+          capsuleId: ev.capsuleId,
+        });
       } else if (ev.type === 'tool-call') {
         toolCallsUsed++;
-        sseEvent(res, 'tool-call', { tool: ev.tool, args: ev.args, capsuleId: ev.capsuleId });
+        _toolEvidence.push(CG.evidenceEntry(_toolEvidence.length + 1, ev.tool, ev.args || {}, {}));
+        // Forward tool-call to cockpit so the execution trail renders semantic rows.
+        // Without this the counter increments but the UI gets no event — rows stay blank.
+        sseEvent(res, 'tool-call', eventPayload(SSE_CTX, { tool: ev.tool, args: ev.args, capsuleId: ev.capsuleId || null }));
+        // Track Reacharound state for cockpit display (survives cockpit reload)
+        if (sessionId && ev.type) {
+          REACHAROUND_STATES.set(sessionId, {
+            updatedAt: Date.now(),
+            latestEvent: ev.type,
+          });
+        }
+      } else if (ev.type === 'reacharound') {
+        // Capture Reacharound verdict after each tool turn — cockpit polls this endpoint.
+        REACHAROUND_STATES.set(sessionId, {
+          verdict:       ev.verdict,
+          reason:        ev.reason,
+          progressScore:  ev.progressScore,
+          stallScore:    ev.stallScore,
+          loopDetected:  ev.loopDetected,
+          stalled:       ev.stalled,
+          nextObjective: ev.nextObjective,
+          turnsRemaining: ev.turnsRemaining,
+          replanHint:    ev.replanHint,
+          updatedAt:     Date.now(),
+        });
+        // Forward with canonical identity — ev may not carry missionId from agent-loop.
+        sseEvent(res, 'reacharound', eventPayload(SSE_CTX, {
+          verdict:       ev.verdict,
+          reason:        ev.reason,
+          progressScore:  ev.progressScore != null ? ev.progressScore : null,
+          stallScore:    ev.stallScore != null ? ev.stallScore : null,
+          loopDetected:  ev.loopDetected || null,
+          stalled:       ev.stalled || null,
+          nextObjective: ev.nextObjective || null,
+          turnsRemaining: ev.turnsRemaining != null ? ev.turnsRemaining : null,
+          replanHint:    ev.replanHint || null,
+          trigger:       ev.trigger || null,
+          failedTool:    ev.failedTool || null,
+          tool:          ev.tool || null,
+          args:          ev.args || null,
+          capsuleId:     ev.capsuleId || null,
+        }));
+        // Only emit a tool-call SSE sub-event when the reacharound carries an
+        // actual tool name. Pure planning reacharounds (ev.tool absent) must NOT
+        // be forwarded as tool-call — that creates a phantom "tool" row in the
+        // cockpit with no name and no args, breaking the execution trail.
+        if (ev.tool) sseEvent(res, 'tool-call', eventPayload(SSE_CTX, { tool: ev.tool, args: ev.args || null, capsuleId: ev.capsuleId || null }));
       } else if (ev.type === 'tool-result') {
-        sseEvent(res, 'tool-result', {
+        // Upgrade the matching tool-call evidence entry with the real result.
+        const _pending = [..._toolEvidence].reverse().find(e => e.tool === ev.tool && !e._resolved);
+        if (_pending) {
+          Object.assign(_pending, CG.evidenceEntry(_pending.index, ev.tool, ev.args || {}, { ok: ev.ok !== false, content: ev.content || '', error: ev.error }));
+          _pending.ok = ev.ok !== false;
+        }
+        sseEvent(res, 'tool-result', eventPayload(SSE_CTX, {
           tool: ev.tool,
-          ok: ev.ok,
+          ok: ev.ok !== false,   // always boolean: true/false, never undefined
           code: ev.code,
           capsuleId: ev.capsuleId,
           content: (ev.content || ev.error || '').substring(0, 2000),
-        });
+        }));
       } else if (ev.type === 'done') {
+        // STREAM LAW: flush any tail the thinking filter held back (e.g. an
+        // unterminated <think> block or a split close tag at end of stream).
+        const _flushTail = _thinkFilter.flush();
+        if (_flushTail) {
+          fullReply += _flushTail;
+          sseEvent(res, 'token', { content: _flushTail, model: modelName, provider: providerName });
+        }
+        // LARP GATE + CONTRADICTION GATE: deterministic check of the assembled
+        // reply against real tool evidence. Flags ride the done event — never
+        // silently pass a turn that claims work it didn't do.
+        try {
+          const _gateVerdict = CG.evaluate({
+            prompt: String(body.message || ''),
+            reply: typeof fullReply === 'string' ? fullReply : (ev.reply || ''),
+            calls: _toolEvidence,
+          });
+          if (_gateVerdict && Array.isArray(_gateVerdict.violations) && _gateVerdict.violations.length) {
+            ev.claimGate = { flagged: true, violations: _gateVerdict.violations.map(String) };
+            safeLog('CHAT', `CLAIM_GATE FLAGGED: ${_gateVerdict.violations.join(', ')}`);
+          }
+          if (executionLease && getAgentTools().length > 0 && fullReply
+              && /\b(no tools|no tool access|can'?t (?:execute|run|access) (?:anything|tools|commands)|zero tools|read[- ]only)\b/i.test(fullReply)) {
+            ev.runtimeContradiction = { flagged: true, leaseAction: executionLease.action || 'RUN', advertisedCaps: getAgentTools().length };
+            safeLog('CHAT', 'RUNTIME_STATE_CONTRADICTION: lease ACTIVE but model claims no tools');
+          }
+          // GATE 3+4 (runtime-truth): capability-promise + unverified-file-content
+          // gates. Fires when the model PROMISES actions its envelope forbids —
+          // the exact "I can review those files line by line" with zero tools bug.
+          try {
+            const _rtViolations = RT.checkCapabilityPromises(
+              typeof fullReply === 'string' ? fullReply : (ev.reply || ''), _envelope);
+            if (_rtViolations.length) {
+              ev.runtimeContradiction = Object.assign({}, ev.runtimeContradiction || {}, {
+                flagged: true,
+                capabilityGate: _rtViolations,
+              });
+              safeLog('CHAT', 'CAPABILITY_PROMISE_CONTRADICTION: ' + _rtViolations.map(v => v.code + ':' + v.label).join(', '));
+            }
+            // EXECUTION PROMISE GATE: immediate-action language with no lease and
+            // zero tool calls this turn = the "Watch me. SCANNING:" lie class.
+            const _noAuthority = !executionLease && (_toolEvidence.length === 0);
+            if (_noAuthority) {
+              const _epViolations = RT.checkExecutionPromises(
+                typeof fullReply === 'string' ? fullReply : (ev.reply || ''));
+              if (_epViolations.length) {
+                ev.runtimeContradiction = Object.assign({}, ev.runtimeContradiction || {}, {
+                  flagged: true,
+                  executionPromiseGate: _epViolations,
+                });
+                safeLog('CHAT', 'EXECUTION_PROMISE_CONTRADICTION: ' + _epViolations.map(v => v.matchedText).join(' | '));
+              }
+            }
+          } catch (_rtErr) { safeLog('CHAT', 'runtime-truth gate failed (non-fatal): ' + _rtErr.message); }
+        } catch (_cgErr) { safeLog('CHAT', 'claim-gate evaluation failed (non-fatal): ' + _cgErr.message); }
+        modelName = ev.model || modelName;
+        providerName = ev.provider || providerName;
+        runOk = ev.ok !== false;
+        runStatus = ev.status || (runOk ? 'complete' : 'partial');
+        maxTurnsHit = ev.maxTurnsHit === true;
+        runId = ev.runId || null;
+        traceStats = ev.traceStats || null;
+        // Capture token burn from the done event's usage payload
+        if (ev.usage) {
+          totalTokensUsed = ev.usage.total_tokens || 0;
+          promptTokensUsed = ev.usage.prompt_tokens || 0;
+          completionTokensUsed = ev.usage.completion_tokens || 0;
+          if (ev.usage.reasoning_tokens != null) reasoningTokensUsed = ev.usage.reasoning_tokens;
+        }
+        // Capture capsuleId before break — SET_SSE_CTX is a full-replace (not merge)
+        // so this is the only way to carry it through to the final done event.
+        _lastCapsuleId = ev.capsuleId != null ? ev.capsuleId : null;
         break;
       } else if (ev.type === 'error') {
         throw new Error(ev.error);
@@ -468,23 +2175,170 @@ async function handleChatStream(req, res) {
     }
     // Commit the exchange so the NEXT message sees it. Without this the
     // gateway answered every turn from a blank slate.
-    appendChatTurn(sessionId, 'user', message);
-    appendChatTurn(sessionId, 'assistant', fullReply);
+    // The assistant turn carries its own telemetry receipt (Rule 3): history
+    // reload shows what ACTUALLY served each message, never current config.
+    // A pause that never reached a safe point before the run ended is stale —
+    // consume it here so it cannot assassinate the next mission's first turn.
+    if (PSTEER_SSE && PSTEER_SSE.pollInterrupt().pending) PSTEER_SSE.clearInterrupt();
 
-    sseEvent(res, 'phase', { phase: 'done' });
-    sseEvent(res, 'done', {
+    // TERMINAL LAW: if visibleContentLength === 0, do NOT emit done:complete.
+    // Backend and UI must agree: a reasoning-only or empty stream is a failure,
+    // not a successful complete. Emit CHAT_PROVIDER_EMPTY_OUTPUT so UI and
+    // backend agree on the terminal state.
+    if (runOk && !fullReply.trim()) {
+      safeLog('GATE1', `[agent-loop] EMPTY_OUTPUT: model=${modelName} provider=${providerName} toolCalls=${toolCallsUsed} msg="${String(message).slice(0, 40)}"`);
+      sseEvent(res, 'error', {
+        error: 'CHAT_PROVIDER_EMPTY_OUTPUT',
+        errorCode: 'CHAT_PROVIDER_EMPTY_OUTPUT',
+        terminal: true,
+        turnId,
+        attemptId,
+        attempt: attemptN,
+        retryable: true,
+        failureKind: 'provider_empty_output',
+        retryOf: attemptN > 1 ? (turnId + '_a' + (attemptN - 1)) : null,
+        provider: providerName || null,
+        model: modelName || null,
+        toolCalls: toolCallsUsed,
+      });
+      SET_SSE_CTX({ sessionId: null, missionId: null, runId: null, turnId: null, turn: 0, attemptId: null });
+      return res.end();
+    }
+
+    sseEvent(res, 'phase', { phase: 'done', state: 'DONE' });
+    const durationMs = Date.now() - _t0;
+    const route = effectiveLease ? 'EXECUTE' : (IS_CHAT_FAST ? 'CHAT' : 'AGENT');
+    // ── EXECUTION-PROMISE CONTRADICTION GATE (runAgent lane) — same law as the
+    // chat-fast lane, but authority-aware: promise language is only a violation
+    // when the turn had NO lease and ZERO effectful calls. An EXECUTE turn that
+    // says "on it" after running 18 real tools is truthful narration.
+    if (!effectiveLease && toolCallsUsed === 0 && fullReply) {
+      const _promiseViolations = RT.checkExecutionPromises(fullReply);
+      if (_promiseViolations.length) {
+        safeLog('EXECUTION_PROMISE_CONTRADICTION', JSON.stringify({
+          sessionId, route, toolCalls: toolCallsUsed,
+          matched: _promiseViolations.map(v => v.matchedText),
+        }));
+        sseEvent(res, 'truth-gate', { code: 'EXECUTION_PROMISE_CONTRADICTION',
+          violations: _promiseViolations, enforcement: 'correction_appended' });
+        const _correction = '\n\n[CORRECTION] The above promised immediate execution, but this turn ran with no execution lease and zero tool calls — nothing was executed. Hit Execute (or arm DRIVE Autonomous) and resend to run this for real.';
+        fullReply += _correction;
+        // Reply already streamed token-by-token above — the client never sees
+        // a history-only append. Emit the correction as a late token so the
+        // visible bubble carries the truthful statement.
+        sseEvent(res, 'token', { content: _correction,
+          model: modelName || null, provider: providerName || null });
+      }
+    }
+    // ── MODEL TRUTH RECEIPT — requested ≠ resolved, persisted per message ──
+    const telemetry = {
+      requestedProvider,
+      requestedModel,
+      provider: providerName || null,          // RESOLVED provider
+      model: modelName || null,                // RESOLVED model (served, not configured)
+      route,
+      lease: effectiveLease ? ((effectiveLease.source || 'lease') + (effectiveLease.action ? ':' + effectiveLease.action : '')) : null,
+      leaseSource: effectiveLease ? (effectiveLease.source || null) : null,
+      bindings: bindings.length ? bindings : null,           // §3 provenance
+      capsCount: _bindingCaps ? _bindingCaps.caps.length : null,  // §7 caps:N
+      toolCalls: toolCallsUsed,
+      agentCalls: agentCallsUsed,
+      skillCalls: skillCallsUsed,
+      fallbackCount: providerFailovers.length,
+      fallbackPath: providerFailovers.map(f => ({
+        provider: f.from, status: f.reason === 'rate_limited' ? 'rate_limited' : (f.reason || 'failed'),
+        failureClass: f.failureClass || null,
+        statusCode: f.statusCode ?? null,
+        next: f.to || null,
+      })),
+      // SUCCESS RECEIPT (P0 #7): the full attempt chain — every provider tried,
+      // its failure class, and where the turn finally resolved. One user turn,
+      // one assistant turn, multiple attempt receipts. streamChatAuto stamps
+      // __providerAttempts onto the opts object we passed — read BOTH the base
+      // _chatOpts and the attempt-1 _streamOpts copy.
+      providerAttempts: (_providerAttemptsReceipt || []).map((a, i) => ({
+        attempt: i + 1, provider: a.provider || null, ok: !!a.ok,
+        failureClass: a.failureClass || (a.ok ? null : (a.reason || null)),
+        skipped: a.skipped || null, cooldownMs: a.cooldownMs || 0,
+      })),
+      promptTokens: promptTokensUsed || null,
+      completionTokens: completionTokensUsed || null,
+      reasoningTokens: reasoningTokensUsed,     // null = unavailable from provider
+      totalTokens: totalTokensUsed || null,
+      reasoningState,
+      ttftMs,
+      durationMs,
+      status: runStatus,
+    };
+    sseEvent(res, 'telemetry', { ...telemetry, type: 'telemetry' });      // dedicated canonical telemetry event
+    // EXECUTION PROMISE GATE (final-lane pass): runs on EVERY completed chat
+    // turn regardless of which lane produced the reply (agent loop, direct
+    // streamChatAuto, failover). No lease + zero tool calls + immediate-action
+    // language = flagged. This closes the fast-lane bypass.
+    try {
+      const _noAuth = !executionLease && (!toolCallsUsed || toolCallsUsed.length === 0);
+      if (_noAuth && typeof fullReply === 'string' && fullReply.trim()) {
+        const _epViolations = RT.checkExecutionPromises(fullReply);
+        if (_epViolations.length) {
+          const _rc = Object.assign({}, (typeof runtimeContradiction === 'object' && runtimeContradiction) || {}, {
+            flagged: true,
+            executionPromiseGate: _epViolations,
+          });
+          telemetry.runtimeContradiction = _rc;
+          safeLog('CHAT', 'EXECUTION_PROMISE_CONTRADICTION(final): ' + _epViolations.map(v => v.matchedText).join(' | '));
+        }
+      }
+    } catch (_epErr) { safeLog('CHAT', 'execution-promise final gate failed (non-fatal): ' + _epErr.message); }
+    appendChatTurn(sessionId, 'user', message, source);
+    appendChatTurn(sessionId, 'assistant', fullReply, source, telemetry || null);
+    sseEvent(res, 'done', eventPayload(SSE_CTX, {
+      ok: runOk,
+      status: runStatus || (runOk ? 'complete' : 'failed'),   // never undefined
+      maxTurnsHit,
       reply: fullReply,
       model: modelName,
-      providerStatus: 'answered',
+      provider: providerName || null,
+      providerFailovers,
+      providerStatus: runOk ? 'answered' : 'not-verified',
       toolCalls: toolCallsUsed,
       source,
       sessionId,
       historyTurns: getChatHistory(sessionId).length,
-    });
+      runId,
+      traceStats,
+      capsuleId: _lastCapsuleId ?? null,
+      // Token burn — from done event usage payload
+      totalTokens: totalTokensUsed,
+      promptTokens: promptTokensUsed,
+      completionTokens: completionTokensUsed,
+      telemetry,   // full model-truth receipt on done as well
+    }));
+    SET_SSE_CTX({ sessionId: null, missionId: null, runId: null, turnId: null, turn: 0 });
     return res.end();
   } catch (e) {
+    clearApprovalHeartbeat();
     sseEvent(res, 'phase', { phase: 'error' });
-    sseEvent(res, 'error', { error: e.message });
+    // NETWORK_ERROR terminal taxonomy: a transport/stream failure is its own
+    // TERMINAL runtime event, distinct from "no tools" (authority absent) and
+    // from "tool registry empty". It carries: terminal=true so every consumer
+    // stops timers/token counters/renderers/pet loops; attempt lineage so a
+    // retry rejoins this turn instead of spawning a duplicate card.
+    const _isNetwork = /network|socket hang up|ECONNRESET|EPIPE|ETIMEDOUT|fetch failed|aborted/i.test(String(e && e.message));
+    sseEvent(res, 'error', {
+      error: e.message,
+      errorCode: _isNetwork ? 'NETWORK_ERROR' : 'TURN_FAILED',
+      terminal: true,
+      turnId,
+      attemptId,
+      attempt: attemptN,
+      retryable: true,
+      failureKind: 'provider_transport',
+      retryOf: attemptN > 1 ? (turnId + '_a' + (attemptN - 1)) : null,
+      hint: 'retry with same turnId, attempt+1, new attemptId to continue this turn lineage',
+    });
+    console.error('[handleChatStream] SSE loop error:', e && e.message ? e.message : String(e));
+    console.error('[handleChatStream] stack:', e && e.stack ? e.stack.slice(0, 800) : 'no stack');
+    SET_SSE_CTX({ sessionId: null, missionId: null, runId: null, turnId: null, turn: 0, attemptId: null });
     return res.end();
   }
 }
@@ -525,21 +2379,21 @@ async function handleChatSwarm(req, res) {
       id: 'planner',
       role: 'Planner',
       emoji: '🧭',
-      system: 'You are Quill Planner, a senior strategist. Given a user goal, produce a concise step-by-step plan (3-7 steps). For each step: title, what to do, what the output looks like. Be specific, not generic. Output as a numbered list. Maximum 200 words.',
+      system: 'You are the PurpClaw Planner, a senior strategist. Given a user goal, produce a concise step-by-step plan (3-7 steps). For each step: title, what to do, what the output looks like. Be specific, not generic. Output as a numbered list. Maximum 200 words.',
       model: undefined,  // use default
     },
     {
       id: 'researcher',
       role: 'Researcher',
       emoji: '🔬',
-      system: 'You are Quill Researcher, an investigative analyst. Given a user goal, identify the key questions, then surface relevant facts, prior art, and best practices. Focus on the most useful 3-5 things a builder would need to know. Be concrete, not theoretical. Maximum 200 words.',
+      system: 'You are the PurpClaw Researcher, an investigative analyst. Given a user goal, identify the key questions, then surface relevant facts, prior art, and best practices. Focus on the most useful 3-5 things a builder would need to know. Be concrete, not theoretical. Maximum 200 words.',
       model: undefined,
     },
     {
       id: 'builder',
       role: 'Builder',
       emoji: '🛠️',
-      system: 'You are Quill Builder, an implementation engineer. Given a user goal, identify the technical implementation: which files/functions to touch, which patterns to use, what the diff would look like. Be specific with file paths and function names. Maximum 200 words.',
+      system: 'You are the PurpClaw Builder, an implementation engineer. Given a user goal, identify the technical implementation: which files/functions to touch, which patterns to use, what the diff would look like. Be specific with file paths and function names. Maximum 200 words.',
       model: undefined,
     },
   ];
@@ -592,7 +2446,7 @@ async function handleChatSwarm(req, res) {
   let synthesis = '';
   let synthModel = '';
   if (succeeded.length) {
-    const synthPrompt = `You are Quill Synthesizer. You have ${succeeded.length} specialist analyses for the user's goal. Merge them into one tight 100-150 word final response that takes the best of each perspective.
+    const synthPrompt = `You are the PurpClaw Synthesizer. You have ${succeeded.length} specialist analyses for the user's goal. Merge them into one tight 100-150 word final response that takes the best of each perspective.
 
 User goal: ${message}
 
@@ -675,7 +2529,7 @@ async function handlePlanStream(req, res) {
       }
     }
 
-    const PLAN_SYSTEM = `You are Quill, the planning assistant for the PURPCLAW runtime.
+    const PLAN_SYSTEM = `You are the PurpClaw planning assistant for the PURPCLAW runtime.
 Decompose the user's goal into 3-7 concrete, ordered steps. For each step return a JSON object with:
   - "title": short imperative ("Pull recent training data", "Generate the chart")
   - "command": the actual prompt / kernel goal / tool call to execute
@@ -790,6 +2644,17 @@ ${succeeded.map((p, i) => `--- MODEL ${i + 1} (${p.model}) ---\n${p.text}`).join
   }
 }
 
+function migratePortableFile(legacyPath, portablePath) {
+  try {
+    if (!fs.existsSync(portablePath) && fs.existsSync(legacyPath)) {
+      fs.mkdirSync(path.dirname(portablePath), { recursive: true });
+      fs.copyFileSync(legacyPath, portablePath);
+    }
+  } catch { /* legacy state remains readable on disk; startup must continue */ }
+}
+migratePortableFile(path.join(PURP_DIR, 'purpclaw_settings.json'), SETTINGS_FILE);
+migratePortableFile(path.join(PURP_DIR, 'samantha_memory.json'), MEMORY_FILE);
+
 function loadSettings() {
   try { if (fs.existsSync(SETTINGS_FILE)) Object.assign(state.settings, JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'))); } catch (e) {}
 }
@@ -797,6 +2662,27 @@ function saveSettings() {
   try { fs.writeFileSync(SETTINGS_FILE, JSON.stringify(state.settings, null, 2)); } catch (e) {}
 }
 loadSettings();
+
+// Settings are server-owned. Operator surfaces may know whether a credential
+// is configured, but must never receive the credential value. This applies to
+// GET responses and the response after a write/switch as well.
+function publicBackend(backend = {}) {
+  const { apiKey, ...safe } = backend;
+  return { ...safe, hasApiKey: Boolean(apiKey) };
+}
+
+function publicSettings(settings = {}) {
+  const safe = {};
+  for (const [key, value] of Object.entries(settings)) {
+    if (key === 'aiBackends') {
+      safe.aiBackends = (Array.isArray(value) ? value : []).map(publicBackend);
+      continue;
+    }
+    if (/(?:api.?key|token|secret|password)/i.test(key)) continue;
+    safe[key] = value;
+  }
+  return safe;
+}
 
 function loadMemory() { try { return JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8')); } catch (e) { return { facts: [] }; } }
 function saveMemory(m) { try { fs.writeFileSync(MEMORY_FILE, JSON.stringify(m, null, 2)); } catch (e) {} }
@@ -826,6 +2712,17 @@ function getToolRuntime() {
   if (!_toolRuntime) {
     const { ToolRuntime } = require('./lib/tool-runtime');
     _toolRuntime = new ToolRuntime({ permissionProfile: process.env.PURPCLAW_API_TOOL_PROFILE || 'workspace-write' });
+    // Receipt bridge: ToolRuntime emits on its own EventEmitter; without this
+    // bridge nothing lands in agent_work/trace/events.jsonl, so tool executions
+    // on the API path have no canonical lineage. announce.tool() writes the
+    // local trace (and POSTs to eventbus best-effort). Never throws.
+    try {
+      const { announce } = require('./lib/events');
+      _toolRuntime.on('tool.start', (p) => announce.tool('start', p));
+      _toolRuntime.on('tool.complete', (p) => announce.tool('complete', p));
+      _toolRuntime.on('tool.guardrail.tripped', (p) => announce.tool('failed', { ...p, error: p.error || 'guardrail tripped' }));
+      _toolRuntime.on('tool.validation.failed', (p) => announce.tool('failed', { ...p, error: p.error || 'validation failed' }));
+    } catch (e) { safeLog('DEBUG', 'receipt bridge unavailable: ' + e.message); }
   }
   return _toolRuntime;
 }
@@ -835,13 +2732,87 @@ function getToolRuntime() {
 // spec §9/§K: surfaces derive counts from registries, never hard-coded arrays.
 function loadAgentRoster() {
   try {
-    const fs = require('fs'), path = require('path');
-    const profiles = JSON.parse(fs.readFileSync(path.join(__dirname, 'agent_profiles.json'), 'utf8'));
-    return Object.values(profiles).map(a => ({
-      name: a.name, emoji: a.emoji, role: a.role,
-      skills: a.skills || [], division: a.division, tier: a.tier,
-    }));
+    const AGENTS = require('./lib/agent-registry');
+    const roster = AGENTS.listAgents();
+    const stats = new Map(roster.map(agent => [agent.key, {
+      total: 0, complete: 0, partial: 0, failed: 0, unverified: 0, recent: [],
+    }]));
+
+    // A historical mission belongs to a Soul only when its durable envelope
+    // explicitly records that assignment. Old role-only rows are deliberately
+    // not reinterpreted: doing so would fabricate history using today's map.
+    const rows = require('./lib/missions').list({ limit: 5000 }).missions || [];
+    for (const mission of rows) {
+      const envelope = mission.envelope || {};
+      const assigned = new Set(
+        (Array.isArray(envelope.agentAssignments) ? envelope.agentAssignments : [])
+          .map(item => String(item && item.canonicalAgent || '').toLowerCase())
+          .filter(key => stats.has(key))
+      );
+      for (const requested of Array.isArray(envelope.agents) ? envelope.agents : []) {
+        const direct = AGENTS.getAgent(requested);
+        // Composer roles are not direct Soul references. Only count a raw
+        // value when it names the canonical key/name itself.
+        if (direct && (String(requested).toLowerCase() === direct.key ||
+            String(requested).toLowerCase() === String(direct.name).toLowerCase())) {
+          assigned.add(direct.key);
+        }
+      }
+      for (const key of assigned) {
+        const item = stats.get(key);
+        item.total += 1;
+        if (Object.hasOwn(item, mission.status)) item[mission.status] += 1;
+        if (item.recent.length < 8) item.recent.push({
+          missionId: mission.missionId,
+          status: mission.status,
+          prompt: mission.prompt,
+          completedAt: mission.completedAt,
+        });
+      }
+    }
+
+    return roster.map(agent => ({ ...agent, missionStats: stats.get(agent.key) }));
   } catch { return []; }
+}
+
+// ── SLASH BINDING REGISTRY — dynamic, generated from live registries (§2) ──
+const SLASH_BINDINGS = new Map();
+const slashRegistry = require('./lib/slash-registry').createSlashRegistry({
+  loadAgentRoster,
+  TOOLS: require('./lib/tools'),
+});
+
+// ── §4/§7 EFFECTIVE CAPABILITY SET from bindings ─────────────────────────
+// caps = agent.tools (if /agent bound) ∪ explicit /tool picks,
+// then ∩ skill.allowTools when a skill declares one. Computed server-side,
+// logged in telemetry. Gate 2 provable: tools come from an explicit set.
+function computeEffectiveCaps(bindings) {
+  const toolBindings = bindings.filter(b => b.kind === 'tool').map(b => b.id);
+  const agentBinding = [...bindings].reverse().find(b => b.kind === 'agent');
+  const skillBinding = [...bindings].reverse().find(b => b.kind === 'skill');
+
+  const caps = new Set();
+  // agent default tools (from roster entry, if declared)
+  if (agentBinding) {
+    try {
+      const roster = loadAgentRoster();
+      const soul = roster.find(a => (a.name || a.key || '').toLowerCase() === String(agentBinding.id).toLowerCase());
+      for (const t of (soul && soul.tools) || []) caps.add(t);
+    } catch {}
+  }
+  for (const t of toolBindings) caps.add(t);
+
+  // skill allowTools scopes the whole turn's capability set
+  let allowScope = null;
+  if (skillBinding) {
+    try {
+      const skills = slashRegistry.skills();
+      const s = skills.find(x => x.id === skillBinding.id || x.name === skillBinding.id);
+      if (s && Array.isArray(s.allowTools)) allowScope = new Set(s.allowTools);
+    } catch {}
+  }
+  const finalCaps = allowScope ? [...caps].filter(c => allowScope.has(c)) : [...caps];
+  return { caps: finalCaps, agent: agentBinding, skill: skillBinding };
 }
 
 async function ps(cmd, timeout = 15000) {
@@ -889,28 +2860,19 @@ function httpReq(url, method = 'GET', body) {
   });
 }
 
-let pwBrowser = null, pwContext = null, pwPage = null;
+const BROWSER_SESSION = require('./lib/browser-session');
 
 async function getBrowserContext() {
-  if (!pwBrowser || !pwBrowser.isConnected()) {
-    const { chromium } = require('playwright');
-    pwBrowser = await chromium.launch({ headless: false, args: ['--no-sandbox'] });
-    pwContext = await pwBrowser.newContext({ viewport: { width: 1920, height: 1080 } });
-    pwPage = await pwContext.newPage();
-    console.log('[BROWSER] Playwright launched');
-  }
-  return pwContext;
+  return BROWSER_SESSION.context();
 }
 
 async function getBrowserPage() {
-  const ctx = await getBrowserContext();
-  const pages = ctx.pages();
-  if (pages.length === 0) pwPage = await ctx.newPage();
-  else pwPage = pages[pages.length - 1];
-  return pwPage;
+  return BROWSER_SESSION.page();
 }
 
-const TOOLS = [
+// Compatibility schemas for the old bridge executor only. This array is not
+// published and is not a registry: canonical discovery comes from lib/tools.
+const LEGACY_BRIDGE_TOOL_SCHEMAS = [
   { name: 'screen_capture', description: 'Screenshot the screen. Returns file path.', inputSchema: { type: 'object', properties: { monitor: { type: 'number' } } } },
   { name: 'screen_ocr', description: 'Read text from screen using OCR. Supports line grouping and structured output.', inputSchema: { type: 'object', properties: { image_path: { type: 'string' } } } },
   { name: 'ocr_identify', description: 'Advanced OCR with line detection. Read text and identify line-by-line structure.', inputSchema: { type: 'object', properties: { image_path: { type: 'string' } } } },
@@ -1004,7 +2966,7 @@ function loadDynamicSkills() {
 
 async function executeTool(name, args) {
   const t0 = Date.now();
-  console.log(`[TOOL] ${name}`, JSON.stringify(args).substring(0, 120));
+  safeLog('TOOL', `${name} ${JSON.stringify(args).substring(0, 120)}`);
 
   const ebCalledPayload = JSON.stringify({ topic: 'tool.called', toolName: name, args });
   const ebCalledReq = http.request({ hostname: 'localhost', port: 7782, path: '/publish', method: 'POST', headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(ebCalledPayload) } }, () => {});
@@ -1016,13 +2978,13 @@ async function executeTool(name, args) {
   if (loadedSkills[name]) {
     try {
       const res = await loadedSkills[name](args, { ps, psScript, cmd, ok, execAsync, config: { PURP_DIR, SKILLS_DIR } });
-      console.log(`[TOOL] OK ${name} (${Date.now() - t0}ms)`);
+      safeLog('TOOL', `OK ${name} (${Date.now() - t0}ms)`);
       result = ok(res);
     } catch (e) { result = ok(`Dynamic Skill Error: ${e.message}`); }
   } else {
     try {
       result = await runTool(name, args);
-      console.log(`[TOOL] OK ${name} (${Date.now() - t0}ms)`);
+      safeLog('TOOL', `OK ${name} (${Date.now() - t0}ms)`);
     } catch (e) { result = ok(`Error: ${e.message}`); }
   }
 
@@ -2372,8 +4334,11 @@ async function handleRpc(req) {
     case 'notifications/initialized': return null;
     case 'tools/list':
       loadDynamicSkills();
-      console.log(`[BRIDGE] ${TOOLS.length} tools`);
-      return { jsonrpc: '2.0', id, result: { tools: TOOLS } };
+      {
+        const tools = require('./lib/tools').list();
+        console.log(`[BRIDGE] ${tools.length} canonical tools`);
+        return { jsonrpc: '2.0', id, result: { tools } };
+      }
     case 'tools/call': {
       const { name, arguments: a } = params || {};
       if (!name) return { jsonrpc: '2.0', id, error: { code: -32602, message: 'No tool' } };
@@ -2395,12 +4360,20 @@ function connectWS() {
   if (deadConnectionTimer) { clearTimeout(deadConnectionTimer); deadConnectionTimer = null; }
   if (ws) { try { ws.terminate(); } catch (_) {} ws = null; }
 
+  if (!xiaozhiLink.url) {
+    xiaozhiLink.status = 'idle';
+    return; // no URL configured — retry lazily when /api/xazhi/link sets one
+  }
   reconnectAttempts++;
+  xiaozhiLink.status = 'connecting';
   console.log(`[WS] Connecting to Xiaozhi cloud... (attempt ${reconnectAttempts})`);
-  ws = new WebSocket(XIAOZHI_WS_URL);
+  ws = new WebSocket(xiaozhiLink.url);
 
   ws.on('open', () => {
     reconnectAttempts = 0;
+    xiaozhiLink.status = 'connected';
+    xiaozhiLink.lastError = null;
+    xiaozhiLink.lastConnectedAt = new Date().toISOString();
     console.log('[WS] Connected to Xiaozhi cloud');
     if (hb) clearInterval(hb);
     hb = setInterval(() => { if (ws?.readyState === WebSocket.OPEN) ws.ping(); }, 25000);
@@ -2430,6 +4403,29 @@ function connectWS() {
 
           if (AgentTower && AgentTower.broadcast) {
             AgentTower.broadcast({ type: 'ball_voice_command', command, timestamp: new Date().toISOString() });
+          }
+
+          // Friend routing (Law 2026-08-25): a known friend's turn resolves to
+          // their Soul + memory namespace BEFORE any agent auto-spawn. Friend
+          // turns are conversations, not orchestration commands.
+          try {
+            const { resolveFriendTurn } = require('./lib/friend-turn');
+            const handled = await resolveFriendTurn({
+              text: command,
+              explicitName: parsed.friend || undefined,
+              source: parsed.source || 'xiaozhi-ball',
+              deviceId: parsed.deviceId || undefined,
+              sessionId: parsed.sessionId || undefined,
+              respond: (reply) => {
+                if (ws && ws.readyState === WebSocket.OPEN) {
+                  ws.send(JSON.stringify({ type: 'friend_reply', soul: reply.soul, name: reply.name, text: reply.text, timestamp: new Date().toISOString() }));
+                }
+                broadcast({ type: 'friend_reply', soul: reply.soul, name: reply.name, text: reply.text, timestamp: new Date().toISOString() });
+              },
+            });
+            if (handled) return;
+          } catch (e) {
+            console.error('[FRIEND] resolver error:', e.message);
           }
 
           // Check for explicit spawn commands first
@@ -2499,11 +4495,24 @@ function connectWS() {
   ws.on('close', c => {
     console.log(`[WS] Disconnected (${c})`);
     if (hb) clearInterval(hb);
+    if (xiaozhiLink.status !== 'unauthorized') xiaozhiLink.status = 'disconnected';
     recon();
   });
 
   ws.on('error', e => {
     console.error(`[WS] ERR: ${e.message}`);
+    const unauthorized = /401|unauthorized|invalid token/i.test(e.message || '');
+    if (unauthorized) {
+      // Dead/rotated credential — hammering at 10s max just spams the cloud.
+      // Back off hard; a fresh URL via POST /api/xiaozhi/link reconnects fast.
+      xiaozhiLink.status = 'unauthorized';
+      xiaozhiLink.lastError = e.message;
+      console.log('[WS] 401-class failure — backing off 60s until link URL is refreshed');
+      if (rc) clearTimeout(rc);
+      rc = setTimeout(connectWS, 60000);
+      return;
+    }
+    xiaozhiLink.lastError = e.message;
     recon();
   });
 }
@@ -2520,7 +4529,7 @@ function recon() {
 // Keeping function for backwards compatibility but it's a no-op
 function connectBall() {
   console.log('[BALL] Using unified WS connection (connectBall deprecated)');
-  AgentTower.connectToBall(XIAOZHI_WS_URL);
+  AgentTower.connectToBall(xiaozhiLink.url);
 }
 
 function scheduleBallReconnect() {}
@@ -2687,8 +4696,37 @@ function parseBody(req) {
   });
 }
 
-function sendJson(res, status, data) { res.writeHead(status, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }); res.end(JSON.stringify(data, null, 2)); }
-function sendText(res, status, text) { res.writeHead(status, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' }); res.end(text); }
+// Fold chat attachments into a short preamble the agent can act on. Uploaded
+// files and projects live on disk after /api/upload, so the agent is handed
+// their LOCATION and reads them with its own file tools — a 1GB project never
+// has to ride inside the prompt. Small inline text still travels directly.
+function attachmentPreamble(attachments) {
+  if (!Array.isArray(attachments) || !attachments.length) return '';
+  const lines = [];
+  for (const a of attachments) {
+    if ((a.kind === 'project' && a.dir) || a.kind === 'capsule-project') {
+      if (a.capsuleId) {
+        lines.push('- Intake capsule "' + (a.name || a.capsuleId) + '" [' + a.capsuleId + ']: manifest at ' +
+          (a.manifestPath || ('.purpclaw/uploads/' + a.capsuleId + '/manifest.json')) + ', root at ' + a.root +
+          '. Read manifest.json FIRST for the file list, parse statuses and coverage receipt, then read files under that root with your file tools.');
+      } else {
+        lines.push('- Uploaded project "' + a.name + '" is extracted at ' + a.dir +
+          ' (' + a.fileCount + ' files). Read any file under that directory with your file tools.');
+      }
+    } else if (a.kind === 'capsule-file' || (!a.content && a.path)) {
+      lines.push('- Uploaded file "' + a.name + '" is saved at ' + a.path + '. Read it with your file tools if relevant.');
+    } else if (a.content) {
+      lines.push('- Attached "' + (a.name || 'file') + '":\n' + String(a.content).slice(0, 65536));
+    } else if (a.kind === 'folder') {
+      lines.push('- Attached folder "' + a.name + '" (' + a.fileCount + ' files: ' + (a.sample || '') + ').');
+    }
+  }
+  if (!lines.length) return '';
+  return 'Attached context (available on this machine):\n' + lines.join('\n') + '\n\n';
+}
+
+function sendJson(res, status, data) { if (res.headersSent) return; res.writeHead(status, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }); res.end(JSON.stringify(data, null, 2)); }
+function sendText(res, status, text) { if (res.headersSent) return; res.writeHead(status, { 'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*' }); res.end(text); }
 
 function proxyToGuardian(req, res, path, method) {
   const options = { hostname: 'localhost', port: 7784, path, method, headers: { 'Content-Type': 'application/json', ...req.headers } };
@@ -2709,8 +4747,49 @@ const server = http.createServer(async (req, res) => {
   const parsedUrl = url.parse(req.url, true);
   const pathname = parsedUrl.pathname;
   const method = req.method;
+  // Module-scope destructure for the whole request handler — the CHAT_FAST
+  // non-stream path (line ~5052) calls buildChatSystemPrompt long before the
+  // old block-scoped re-declaration at ~5089 initialized it (TDZ crash).
+  const { runAgent: _runAgent, getAgentTools: _getAgentTools, buildChatSystemPrompt } = require('./lib/agent-loop');
 
   if (method === 'OPTIONS') { res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET,POST,DELETE', 'Access-Control-Allow-Headers': 'Content-Type,Authorization' }); res.end(); return; }
+
+  // ── Static file serving (public/) ────────────────────────────────────────
+  // Serves Lil U animation strips, cockpit.html, companion assets, etc.
+  if (method === 'GET' && !pathname.startsWith('/api/') && !pathname.startsWith('/ws') && !pathname.startsWith('/sock')) {
+    const staticRoot = path.join(__dirname, 'public');
+    // Prevent path traversal
+    let safePath = pathname;
+    while (safePath.includes('/../')) safePath = safePath.replace('/../', '/');
+    while (safePath.startsWith('..')) safePath = safePath.substring(1);
+    const filePath = path.join(staticRoot, safePath);
+    if (filePath.startsWith(staticRoot) && fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+      const ext = path.extname(filePath).toLowerCase();
+      const mimeTypes = {
+        '.html': 'text/html', '.js': 'application/javascript', '.css': 'text/css',
+        '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.webp': 'image/webp',
+        '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.woff': 'font/woff',
+        '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.eot': 'application/vnd.ms-fontobject',
+        '.mp3': 'audio/mpeg', '.wav': 'audio/wav', '.ogg': 'audio/ogg',
+        '.mp4': 'video/mp4', '.webm': 'video/webm', '.zip': 'application/zip',
+        '.txt': 'text/plain',
+      };
+      const contentType = mimeTypes[ext] || 'application/octet-stream';
+      try {
+        const content = fs.readFileSync(filePath);
+        res.writeHead(200, {
+          'Content-Type': contentType,
+          'Cache-Control': 'public, max-age=3600',
+          'Access-Control-Allow-Origin': '*',
+        });
+        res.end(content);
+        return;
+      } catch (e) {
+        // Fall through to API handlers
+      }
+    }
+  }
 
   // ── API Key auth (only for mutating endpoints when configured) ─────
   if (AUTH_REQUIRED && MUTATING_METHODS.has(method)) {
@@ -2732,6 +4811,15 @@ const server = http.createServer(async (req, res) => {
     req.on('close', () => { clearInterval(heartbeatInterval); state.sseClients = state.sseClients.filter(c => c !== clientInfo); });
     return;
   }
+
+  // ── File / project upload ──────────────────────────────────────────────
+  // Streams the raw body to disk (never JSON-parsed), so zips and whole
+  // projects up to 1GB land where PurpClaw's file tools can read them. Must
+  // sit BEFORE parseBody — that helper buffers the body into a string.
+  if (pathname === '/api/upload' && method === 'POST') {
+    return require('./lib/upload').handle(req, res);
+  }
+
   try {
     // ========== OBLITERATUS SIMULATION ENDPOINTS ==========
     if (pathname === '/api/obliteratus/status' && method === 'GET') {
@@ -2867,16 +4955,207 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
-    if (pathname === '/api/health' && method === 'GET') { let runtime = null; try { runtime = require('./lib/runtime/identity').identity(); } catch {} return sendJson(res, 200, { status: 'healthy', runtime, timestamp: new Date().toISOString(), uptime: process.uptime(), memory: process.memoryUsage(), cpu: os.loadavg(), bridgeConnected: bridgeWs && !bridgeWs.destroyed }); }
+    // ── Static brand assets (mascot sprites, logos) ───────────────────────
+    // The cockpit is otherwise self-contained; the purpangolin runtime sprites
+    // are its first external files. Served straight from public/brand/. Path is
+    // resolved and confined to that directory so a "../" cannot escape it.
+    if (pathname.startsWith('/brand/') && method === 'GET') {
+      const nodePath = require('path');
+      const nodeFs = require('fs');
+      const brandRoot = nodePath.join(__dirname, 'public', 'brand');
+      const rel = decodeURIComponent(pathname.slice('/brand/'.length));
+      const abs = nodePath.join(brandRoot, rel);
+      if (!abs.startsWith(brandRoot) || !nodeFs.existsSync(abs) || !nodeFs.statSync(abs).isFile()) {
+        return sendText(res, 404, 'not found');
+      }
+      const TYPES = { '.webp': 'image/webp', '.gif': 'image/gif', '.png': 'image/png',
+        '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml',
+        '.webm': 'video/webm', '.mp4': 'video/mp4', '.json': 'application/json' };
+      const type = TYPES[nodePath.extname(abs).toLowerCase()] || 'application/octet-stream';
+      res.writeHead(200, { 'Content-Type': type, 'Cache-Control': 'public, max-age=3600',
+        'Access-Control-Allow-Origin': '*' });
+      return nodeFs.createReadStream(abs).pipe(res);
+    }
+
+    if (pathname === '/api/health' && method === 'GET') {
+      // P0-E honest health: ONLINE only with a fresh receipt from Tower on port 7790.
+      // DEGRADED when Tower is unreachable but API is still serving.
+      // OFFLINE when API itself is down (unreachable, but then this can't respond).
+      let towerStatus = 'unreachable';
+      let towerAgents = 0;
+      let towerActive = 0;
+      let towerUptime = null;
+      try {
+        const http = require('http');
+        const hr = await new Promise((resolve, reject) => {
+          const req = http.request({ hostname: '127.0.0.1', port: 7790, path: '/tower/status', method: 'GET', timeout: 3000 }, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => resolve(data));
+          });
+          req.on('error', reject);
+          req.on('timeout', () => { req.destroy(); reject(new Error('timeout')); });
+          req.end();
+        });
+        const tower = JSON.parse(hr);
+        towerStatus = 'online';
+        towerAgents = tower.tower?.totalRegistered || 0;
+        towerActive = tower.tower?.totalActive || 0;
+        towerUptime = tower.tower?.uptime || null;
+      } catch (e) {
+        towerStatus = String(e && e.message ? e.message : e);
+      }
+      // XiaoZhi ball bridge liveness (operator law: ball must be connected
+      // whenever PurpClaw is up). Probe the bridge's own HTTP surface on 7788.
+      let xiaozhiBridge = { reachable: false, connected: false };
+      try {
+        const http = require('http');
+        const xr = await new Promise((resolve, reject) => {
+          const req2 = http.request({ hostname: '127.0.0.1', port: 7788, path: '/health', method: 'GET', timeout: 2000 }, (res2) => {
+            let data = '';
+            res2.on('data', chunk => data += chunk);
+            res2.on('end', () => resolve(data));
+          });
+          req2.on('error', reject);
+          req2.on('timeout', () => { req2.destroy(); reject(new Error('timeout')); });
+          req2.end();
+        });
+        const xb = JSON.parse(xr);
+        xiaozhiBridge = { reachable: true, connected: !!(xb.ws_connected ?? xb.wsConnected), tools: xb.tools || 0, uptime: xb.uptime || 0 };
+      } catch (e) {
+        xiaozhiBridge = { reachable: false, connected: false, error: String(e && e.message ? e.message : e) };
+      }
+      let coreStatus = towerStatus === 'online' ? 'ONLINE' : 'DEGRADED';
+      let runtime = null;
+      try { runtime = require('./lib/runtime/identity').identity(); } catch {}
+      return sendJson(res, 200, {
+        status: coreStatus,
+        tower: towerStatus,
+        agents: towerAgents,
+        activeAgents: towerActive,
+        towerUptimeMs: towerUptime,   // Tower reports ms; API uptime is seconds — keep them distinct
+        runtime,
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        cpu: os.loadavg(),
+        bridgeConnected: !!(bridgeWs && !bridgeWs.destroyed),
+        xiaozhiBridge,
+      });
+    }
     if (pathname === '/api/version' && method === 'GET') return sendJson(res, 200, { name: 'PURPCLAW', version: '7.0', codename: 'The Purple King', protocol: 'TURING v7.0', build: process.env.BUILD_HASH || 'dev' });
-    // ── Mochi state bridge (unified pet across terminal + browser) ──────
+    // ── Canonical capability manifest ────────────────────────────────────────
+    // ONE source of truth for "what can this runtime do right now". Providers
+    // are read via eligibleProviders() — the exact same eligibility function
+    // the AUTO chat failover consults — so this endpoint can never disagree
+    // with what /api/chat will actually use. Subsystem health stays granular:
+    // a down tower degrades `health` but must never flip executionTargets.
+    // Canonical plugin registry surface — single source of truth for the
+    // cockpit Plugin Manager / Widget Manager. Status is truthful by
+    // construction (see plugin-manager.listStatus).
+    if (pathname === '/api/plugins' && method === 'GET') {
+      try {
+        const pm = require('./lib/plugin-manager');
+        if (!pm.loaded) pm.load();
+        return sendJson(res, 200, { ok: true, plugins: pm.list(), count: pm.list().length });
+      } catch (e) {
+        return sendJson(res, 500, { ok: false, error: e.message });
+      }
+    }
+    // NOTE: POST /api/plugins/<action> legacy route REMOVED — shadowed the
+    // canonical surface below (/api/plugins/enable|disable|reload). One
+    // registry, one HTTP contract.
+
+    if (pathname === '/api/capabilities' && method === 'GET') {
+      try {
+        const llm = require('./lib/llm-provider');
+        const eligible = llm.eligibleProviders();
+        const providers = eligible.map((name) => {
+          let model = null;
+          try { model = llm._configForProvider(name).model || llm.PROVIDERS[name]?.defaultModel || null; } catch (_) {}
+          return { id: name, model, healthy: true };
+        });
+        sendJson(res, 200, {
+          node: {
+            runtimeId: require('os').hostname(),
+            version: '7.0',
+            uptime: Math.round(process.uptime()),
+          },
+          executionTargets: {
+            home_pc: {
+              healthy: providers.length > 0,
+              providers,
+              capabilities: ['chat', 'stream'].concat(providers.length ? [] : []),
+            },
+          },
+          health: {
+            status: (bridgeWs && !bridgeWs.destroyed) ? 'ONLINE' : 'DEGRADED',
+            subsystems: {
+              bridge: { up: !!(bridgeWs && !bridgeWs.destroyed) },
+              chatRouter: { up: providers.length > 0 },
+            },
+          },
+        });
+      } catch (e) {
+        return sendJson(res, 500, { error: e.message });
+      }
+    }
+    // ── Mochi companion state bridge ─────────────────────────────────────────
+    // Wires the canonical companion engine (lib/core/companion.js) into the
+    // browser so the cockpit gets the real pet, not a fake JSON stub.
+    // Companion singleton lives for the lifetime of this process — timers,
+    // stat decay, and animation state all persist between calls.
     if (pathname === '/api/mochi' && method === 'GET') {
       res.setHeader('Access-Control-Allow-Origin', '*');
       try {
-        const mochiPath = path.join(PURP_DIR, 'agent_work', 'mochi.json');
-        if (!fs.existsSync(mochiPath)) return sendJson(res, 200, { species: 'axolotl', name: 'Mochi', bond: 10, mood: 'idle', interactions: 0 });
-        const data = JSON.parse(fs.readFileSync(mochiPath, 'utf-8'));
-        return sendJson(res, 200, data);
+        const { getCompanion } = require('./lib/core/companion');
+        const { generateFace } = require('./lib/core/companion-animations');
+        const companion = getCompanion();
+        companion.tick();
+        const stats = companion.stats();
+
+        // Derive the face from the full 46,080-face multiverse using mood + overrides.
+        // Pending actions override mouth to reflect what's happening.
+        let mouthOverride = null;
+        if (stats.pendingAction) {
+          if (stats.pendingAction.type === 'eating')   mouthOverride = 'v';   // nom
+          if (stats.pendingAction.type === 'playing')  mouthOverride = '^';  // excited
+          if (stats.pendingAction.type === 'bathing')  mouthOverride = '~';  // wavy
+          if (stats.pendingAction.type === 'sleeping') mouthOverride = '-';  // flat
+        }
+
+        // Animation frame cycles 0→1→2 on each API call (3 calls/tick cycle).
+        // Variant 0 = preset, Variant 1 = preset+blush, Variant 2 = preset+brow.
+        // companion.tick() already advances stats.animationFrame internally.
+        const variant = (stats.animationFrame || 0) % 3;
+
+        const face = generateFace({
+          mood:   stats.mood,
+          mouth:  mouthOverride,
+          variant,
+        });
+
+        return sendJson(res, 200, {
+          species: 'axolotl',
+          name: stats.name,
+          mood: stats.mood,
+          bond: stats.affection,
+          interactions: stats.affection,
+          pet: stats.pet,
+          icon: stats.icon,
+          face,                    // 46,080-face multiverse expression
+          variant,                // animation phase 0-2 for cockpit cycling
+          thought: stats.thought || null,
+          message: stats.message || null,
+          isAsleep: stats.isAsleep,
+          isMuted: stats.isMuted,
+          pendingAction: stats.pendingAction || null,
+          hunger: stats.hunger,
+          energy: stats.energy,
+          happiness: stats.happiness,
+          cleanliness: stats.cleanliness,
+          uptime: stats.uptime,
+        });
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
     if (pathname === '/api/mochi' && method === 'POST') {
@@ -2884,11 +5163,25 @@ const server = http.createServer(async (req, res) => {
       try {
         const body = await parseBody(req);
         const data = typeof body === 'string' ? JSON.parse(body) : body;
-        const mochiPath = path.join(PURP_DIR, 'agent_work', 'mochi.json');
-        const current = fs.existsSync(mochiPath) ? JSON.parse(fs.readFileSync(mochiPath, 'utf-8')) : {};
-        const merged = { ...current, ...data, interactions: (current.interactions || 0) + 1 };
-        fs.writeFileSync(mochiPath, JSON.stringify(merged, null, 2));
-        return sendJson(res, 200, merged);
+        const { getCompanion } = require('./lib/core/companion');
+        const companion = getCompanion();
+        const action = data.action || data.do;
+        if (action === 'feed' || action === 'eat') companion.feed(data.food);
+        else if (action === 'pet') companion.pet();
+        else if (action === 'play') companion.play(data.toy);
+        else if (action === 'sleep') companion.sleep();
+        else if (action === 'wake') companion.wake();
+        else if (action === 'clean') companion.clean();
+        else if (action === 'mute') companion.mute();
+        else if (action === 'reset') companion.reset();
+        else if (data.name) companion.namePet(data.name);
+        companion.tick();
+        const stats = companion.stats();
+        return sendJson(res, 200, {
+          ok: true, action,
+          name: stats.name, mood: stats.mood, pet: stats.pet,
+          icon: stats.icon, message: stats.message || null,
+        });
       } catch (e) { return sendJson(res, 400, { error: e.message }); }
     }
     if (pathname === '/api/status' && method === 'GET') return sendJson(res, 200, { status: state.sammyStatus, currentTask: state.sammyCurrentTask, uptime: process.uptime(), memory: process.memoryUsage(), logsCount: state.logs.length, bridgeConnected: bridgeWs && !bridgeWs.destroyed });
@@ -2944,6 +5237,68 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/logs' && method === 'GET') { const limit = parseInt(parsedUrl.query.limit || '100'); return sendJson(res, 200, state.logs.slice(0, limit)); }
     if (pathname === '/api/logs' && method === 'DELETE') { state.logs = []; return sendJson(res, 200, { ok: true }); }
 
+    // ── Kernel Jobs ─────────────────────────────────────────────────────
+    if (pathname === '/api/kernel/jobs' && method === 'GET') {
+      try {
+        const { getApiHarnessKernel } = require('./lib/api-harness-kernel.js');
+        const swarmCoordinator = require('./swarm_coordinator.js');
+        const kernel = getApiHarnessKernel({ rootDir: process.cwd(), swarmCoordinator });
+        const limit = parseInt(new URL(req.url,'http://x').searchParams.get('limit')||'40');
+        return sendJson(res, 200, { ok:true, state:'answered', jobs: kernel.listJobs(limit) });
+      } catch(e) { return sendJson(res, 200, { ok:false, state:'failed', errorCode:'kernel_unavailable', error:{message:e.message} }); }
+    }
+
+    // ── Whoami: live stack self-description (CLI + UI + agent prompt) ───
+    if (pathname === '/api/whoami' && method === 'GET') {
+      try {
+        const { whoamiFull } = require('./lib/whoami');
+        const wc = state.whoamiCache;
+        if (!wc.cachedAt || (Date.now() - wc.cachedAt) > wc.TTL) {
+          const w = await whoamiFull();
+          try { w.version = require('./package.json').version; } catch {}
+          wc.data = w;
+          wc.cachedAt = Date.now();
+        }
+        return sendJson(res, 200, wc.data);
+      } catch (e) {
+        return sendJson(res, 500, { ok: false, error: e.message });
+      }
+    }
+
+    // ── Mission Data (aggregated) ───────────────────────────────────────
+    if (pathname === '/api/mission-data' && method === 'GET') {
+      const get = (url, fb) => new Promise(resolve => { require('http').get(url, { timeout:2500 }, res => { let d='';res.on('data',c=>d+=c);res.on('end',()=>{try{resolve(JSON.parse(d));}catch{resolve(fb);}});}).on('error',()=>resolve(fb)).on('timeout',()=>resolve(fb)); }).catch(()=>fb);
+      const compact = (v,max=120) => { const c=String(v||'').replace(/\s+/g,' ').trim(); return c.length>max?c.slice(0,max)+'...':c; };
+      const readKernel = (lim=20) => { try { const {getApiHarnessKernel}=require('./lib/api-harness-kernel.js'); const sc=require('./swarm_coordinator.js'); return getApiHarnessKernel({rootDir:process.cwd(),swarmCoordinator:sc}).listJobs(lim); } catch { return[]; } };
+      const readScores = () => { try { const p=path.join(PURP_DIR,'agent_score.json'); return fs.existsSync(p)?JSON.parse(fs.readFileSync(p,'utf8')):{meta:{totalTasksRecorded:0},agents:{},intents:{},history:[]}; } catch { return{meta:{totalTasksRecorded:0},agents:{},intents:{},history:[]}; } };
+      const readLlmLedger = () => { try { const p=path.join(PURP_DIR,'agent_work','llm-ledger.jsonl'); if(!fs.existsSync(p))return{totalCalls:0,totalTokens:0,totalCost:0}; const lines=fs.readFileSync(p,'utf8').trim().split('\n').filter(Boolean); return lines.reduce((s,l)=>{try{const e=JSON.parse(l);s.totalCalls++;s.totalTokens+=e.total_tokens||0;s.totalCost+=e.estimatedCost||0;}catch{}return s;},{totalCalls:0,totalTokens:0,totalCost:0}); } catch { return{totalCalls:0,totalTokens:0,totalCost:0}; } };
+      try {
+        const [apiHealth,apiControl,tower,bus,pipeline,omnicode,delegation,llmStatus,researchStatus] = await Promise.all([
+          get('http://127.0.0.1:7780/api/health',{status:'unavailable'}),
+          get('http://127.0.0.1:7780/api/status',{status:'unavailable'}),
+          get('http://127.0.0.1:7790/tower/status',{activeAgents:[],registeredAgents:[],teams:[]}),
+          get('http://127.0.0.1:7782/state',{recentEvents:[]}),
+          get('http://127.0.0.1:7784/api/pipeline',null),
+          get('http://127.0.0.1:7780/api/omnicode/status',null),
+          get('http://127.0.0.1:7780/api/delegation/status',null),
+          get('http://127.0.0.1:7780/api/llm/status',null),
+          get('http://127.0.0.1:7780/api/research/status',null),
+        ]);
+        const kernelJobs = readKernel(20);
+        const agentScores = readScores();
+        const llmLedger = readLlmLedger();
+        const compactJob = (j) => ({ id:j.id, goal:compact(j.goal,240), state:j.state, route:j.route, mode:j.mode, dryRun:j.dryRun, createdAt:j.createdAt, startedAt:j.startedAt, finishedAt:j.finishedAt, durationMs:j.durationMs, error:compact(j.error,260) });
+        return sendJson(res, 200, {
+          api:{ ...apiControl, ...apiHealth, controlStatus:apiControl?.status||'unavailable', healthStatus:apiHealth?.status||'unavailable', status:apiHealth?.status==='healthy'?'healthy':(apiControl?.status||apiHealth?.status||'unavailable'), bridgeConnected:Boolean(apiHealth?.bridgeConnected??apiControl?.bridgeConnected) },
+          tower, eventBus:{recentEvents:(bus.recentEvents||[]).slice(-25)},
+          pipeline, kernelJobs:Array.isArray(kernelJobs)?kernelJobs.map(compactJob):[],
+          omnicodeStatus:omnicode, delegationStatus:delegation, llmStatus,
+          agentScores:{meta:agentScores.meta||{totalTasksRecorded:0},agentCount:Object.keys(agentScores.agents||{}).length,intentCount:Object.keys(agentScores.intents||{}).length,recent:(agentScores.history||[]).slice(-20).reverse().map((r)=>({agent:compact(r.agent,40),intent:compact(r.intent,80),success:Boolean(r.success),duration:r.duration||0,timestamp:r.timestamp}))},
+          llmLedger,
+        });
+      } catch(e) { return sendJson(res, 500, { error:e.message }); }
+    }
+
     if (pathname === '/api/command' && method === 'POST') {
       const body = await parseBody(req);
       if (!body.text) return sendJson(res, 400, { error: 'text required' });
@@ -2954,6 +5309,79 @@ const server = http.createServer(async (req, res) => {
       if (state.logs.length > state.maxLogs) state.logs.pop();
       broadcast({ type: 'command_sent', command: body.text, timestamp: new Date().toISOString() });
       return sendJson(res, 200, { ok: true, command: state.lastCommand });
+    }
+
+    // ── Breakdown: full-stack census (tools/skills/agents/providers/memory/services) ──
+    if (pathname === '/api/breakdown' && method === 'GET') {
+      try {
+        const { whoamiFull } = require('./lib/whoami');
+        const w = await whoamiFull();
+        const llmMod = require('./lib/llm-provider.js');
+        const allProviders = llmMod.PROVIDERS ? Object.keys(llmMod.PROVIDERS) : [];
+        const configured = Array.isArray(w.systems.providers.present) ? w.systems.providers.present : [];
+        const toolsBreakdown = w.systems.tools.breakdown || {};
+        const toolsTotal = w.systems.tools.total || 0;
+        let memoryLayers = { scratch: 'unknown', episodic: 'unknown', procedural: 'unknown',
+                             vector: 'unknown', temporal: 'unknown', counterfactual: 'unknown', semantic: 'unknown' };
+        try {
+          const shim = require('./lib/spine-shim');
+          await new Promise(res => shim.getCachedStats((err, s) => {
+            if (s && s.atoms) {
+              memoryLayers.vector = s.atoms > 0 ? 'wired' : 'empty';
+              memoryLayers.semantic = s.atoms > 100 ? 'wired' : 'partial';
+            }
+            res();
+          }));
+        } catch {}
+        // Any HTTP answer (even 404) = port live; only refusal/timeout = down.
+        const probe = async (port, healthPath) => {
+          try {
+            await fetch(`http://127.0.0.1:${port}${healthPath || '/health'}`, { signal: AbortSignal.timeout(800) });
+            return true;
+          } catch { return false; }
+        };
+        const services = {};
+        const svcPorts = [['unified_api',7780,'/api/health'],['eventbus',7782,'/state'],
+                          ['orchestrator',7784,'/api/pipeline'],['agent_tower',7790,'/tower/status'],
+                          ['gatekeeper',7791,'/health'],['memory_matrix',7880,'/health'],
+                          ['cognitive_spine',7880,'/health'],['swarm_coord',7898,'/health']];
+        for (const [name, port] of svcPorts) {
+          if (!(name in services)) services[name] = { port, online: false };
+        }
+        await Promise.all(svcPorts.map(async ([name, port, healthPath]) => {
+          services[name].online = await probe(port, healthPath);
+        }));
+        return sendJson(res, 200, {
+          generatedAt: new Date().toISOString(),
+          tools: {
+            total: toolsTotal,
+            breakdown: {
+              core:        toolsBreakdown.core || 0,
+              skills:      toolsBreakdown.skills || 0,
+              mcp:         toolsBreakdown.mcp || 0,
+              bodyBridge:  toolsBreakdown.bodyBridge || 0,
+              nim:         toolsBreakdown.nim || 0,
+            },
+          },
+          skills: { count: w.systems.skills.count || 0 },
+          agents: {
+            registered: w.systems.agents.count || 0,
+            divisions:  w.surfaces.agentTower.divisions || 0,
+            active:     w.surfaces.agentTower.active || 0,
+          },
+          providers: {
+            registered:  allProviders.length,
+            configured:  configured.length,
+            list:        allProviders,
+            configuredList: configured,
+          },
+          memory: { layers: memoryLayers, status: 'see /api/spine/health for live stats' },
+          services,
+          routes: { total: w.systems.routes.total || 0 },
+          api: w.surfaces.unifiedApi,
+          tower: w.surfaces.agentTower,
+        });
+      } catch (e) { return sendJson(res, 500, { ok: false, error: e.message }); }
     }
 
     if (pathname === '/api/response' && method === 'POST') {
@@ -3058,6 +5486,62 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { ok: true, event });
     }
 
+    // ── SPEC-004 priority-steer control surface ─────────────────────────────
+    // The operator's live hold on an executing mission. Same module instance
+    // agent-loop consumes at its turn boundaries, so what these endpoints
+    // change is what the loop actually obeys — no second steering system.
+    //   steer  → inject into the CURRENT run at its next safe point
+    //   queue  → ride the next turn boundary (normal priority follow-up)
+    //   pause  → abandon the current turn gracefully; mission state is kept
+    //   remove / clear → edit and delete queued directives
+    if (pathname === '/api/steer' && method === 'GET') {
+      const PSTEER_API = (() => { try { return require('./lib/priority-steer'); } catch { return null; } })();
+      if (!PSTEER_API) return sendJson(res, 503, { ok: false, error: 'priority-steer unavailable' });
+      return sendJson(res, 200, { ok: true, status: PSTEER_API.steerStatus() });
+    }
+    if (pathname === '/api/steer' && method === 'POST') {
+      const PSTEER_API = (() => { try { return require('./lib/priority-steer'); } catch { return null; } })();
+      if (!PSTEER_API) return sendJson(res, 503, { ok: false, error: 'priority-steer unavailable' });
+      const body = await parseBody(req);
+      const directive = String(body.directive || '').trim();
+      const context = { sessionId: body.session_id || body.sessionId || null, surface: body.source || 'cockpit' };
+      try {
+        if (body.action === 'steer' && directive) {
+          // Queue the directive AND interrupt the current turn so it runs at the
+          // NEXT safe point instead of waiting for the current turn to finish.
+          const interruption = PSTEER_API.interrupt('operator steer — abandoning current turn');
+          const item = PSTEER_API.queueNext(directive, { priority: 'high', tags: ['steer'], context });
+          return sendJson(res, 200, { ok: true, action: 'steer', item, interruption, status: PSTEER_API.steerStatus() });
+        }
+        if (body.action === 'queue' && directive) {
+          const item = PSTEER_API.queueNext(directive, { priority: 'normal', tags: ['followup'], context });
+          return sendJson(res, 200, { ok: true, action: 'queue', item, status: PSTEER_API.steerStatus() });
+        }
+        if (body.action === 'pause') {
+          const interruption = PSTEER_API.interrupt(String(body.reason || 'operator pause'));
+          return sendJson(res, 200, { ok: true, action: 'pause', interruption, status: PSTEER_API.steerStatus() });
+        }
+        if (body.action === 'resume') {
+          // Release a pending pause that no run has consumed yet. Without this
+          // a pause clicked in the last second of a run sits armed and would
+          // assassinate whichever mission runs next.
+          const clearedReason = PSTEER_API.clearInterrupt();
+          return sendJson(res, 200, { ok: true, action: 'resume', clearedReason, status: PSTEER_API.steerStatus() });
+        }
+        if (body.action === 'remove' && body.id) {
+          const removed = PSTEER_API.removeFromQueue(body.id);
+          return sendJson(res, 200, { ok: true, action: 'remove', removed, status: PSTEER_API.steerStatus() });
+        }
+        if (body.action === 'clear') {
+          const cleared = PSTEER_API.clearQueue();
+          return sendJson(res, 200, { ok: true, action: 'clear', cleared, status: PSTEER_API.steerStatus() });
+        }
+        return sendJson(res, 400, { ok: false, error: 'unknown steer action (steer|queue|pause|resume|remove|clear)' });
+      } catch (e) {
+        return sendJson(res, 409, { ok: false, error: e.message, status: PSTEER_API.steerStatus() });
+      }
+    }
+
     if (pathname === '/api/memory' && method === 'GET') {
       let memory = { facts: [], notes: [] };
       try { if (fs.existsSync(MEMORY_FILE)) memory = JSON.parse(fs.readFileSync(MEMORY_FILE, 'utf8')); } catch (e) {}
@@ -3072,6 +5556,26 @@ const server = http.createServer(async (req, res) => {
       if (body.note) memory.notes.push({ content: body.note, timestamp: new Date().toISOString() });
       fs.writeFileSync(MEMORY_FILE, JSON.stringify(memory, null, 2));
       return sendJson(res, 200, { ok: true, memory });
+    }
+
+    if (pathname === '/api/roster' && method === 'GET') {
+      // Canonical roster view — the one source every surface (CLI/TUI/Web/Mobile)
+      // reads for agents + skills. Live projections, no per-surface copies.
+      try {
+        const agents = require('./lib/agent-registry').listAgents();
+        const skillDirs = fs.readdirSync(SKILLS_DIR, { withFileTypes: true })
+          .filter(e => e.isDirectory() && !e.name.startsWith('.'))
+          .filter(e => fs.existsSync(path.join(SKILLS_DIR, e.name, 'SKILL.md')));
+        return sendJson(res, 200, {
+          agents: agents.map(a => ({
+            key: a.key, name: a.name, division: a.division || null,
+            role: a.role || null, model: a.model || null,
+            emoji: a.emoji || null, tier: a.tier ?? null, skills: a.skills || []
+          })),
+          skills: skillDirs.map(e => ({ key: e.name })),
+          counts: { agents: agents.length, skills: skillDirs.length }
+        });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
 
     if (pathname === '/api/skills' && method === 'GET') {
@@ -3122,8 +5626,86 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { ok: true, received: event_type });
     }
 
-    if (pathname === '/api/settings' && method === 'GET') return sendJson(res, 200, state.settings);
-    if (pathname === '/api/settings' && method === 'POST') { const body = await parseBody(req); Object.assign(state.settings, body); saveSettings(); return sendJson(res, 200, { ok: true, settings: state.settings }); }
+    if (pathname === '/api/settings' && method === 'GET') return sendJson(res, 200, publicSettings(state.settings));
+    if (pathname === '/api/settings' && method === 'POST') { const body = await parseBody(req); Object.assign(state.settings, body); saveSettings(); return sendJson(res, 200, { ok: true, settings: publicSettings(state.settings) }); }
+
+    // Canonical Core-owned conversations. All browser brands, CLI/TUI and the
+    // desktop shell read the same repository; no surface-local chat database.
+    if (pathname === '/api/sessions' && method === 'GET') {
+      const limit = Number(new URL(req.url, 'http://127.0.0.1').searchParams.get('limit') || 50);
+      return sendJson(res, 200, { ok: true, sessions: SESSION_REPOSITORY.listSessions(limit) });
+    }
+    if (pathname === '/api/sessions' && method === 'POST') {
+      try {
+        const body = await parseBody(req);
+        const session = SESSION_REPOSITORY.createSession(body.title, body.provider, body.model, {
+          id: body.id,
+          source: body.source || 'api',
+          profile: body.profile,
+        });
+        return sendJson(res, 201, { ok: true, session });
+      } catch (e) { return sendJson(res, 400, { error: e.message }); }
+    }
+    const sessionMatch = pathname.match(/^\/api\/sessions\/([^/]+)$/);
+    if (sessionMatch && method === 'GET') {
+      const session = SESSION_REPOSITORY.loadSession(decodeURIComponent(sessionMatch[1]));
+      return session ? sendJson(res, 200, { ok: true, session }) : sendJson(res, 404, { error: 'session not found' });
+    }
+    if (sessionMatch && method === 'DELETE') {
+      const sid = decodeURIComponent(sessionMatch[1]);
+      traceClear(sid);
+      REACHAROUND_STATES.delete(sid);
+      return sendJson(res, 200, { ok: true, ...SESSION_REPOSITORY.deleteSession(sid) });
+    }
+
+    // ── Execution trace events ───────────────────────────────────────────────
+    // POST /api/traces/:sessionId/events  — append one or many events
+    // GET  /api/traces/:sessionId/events  — get all events + meta for reload reconstruct
+    // DELETE /api/traces/:sessionId      — clear trace (called on newMission)
+    const traceMatch = pathname.match(/^\/api\/traces\/([^/]+)(\/events)?$/);
+    if (traceMatch) {
+      const traceSid = decodeURIComponent(traceMatch[1]);
+      if (method === 'GET') {
+        const { events, meta } = traceGet(traceSid);
+        return sendJson(res, 200, { ok: true, events, meta, count: events.length });
+      }
+      if (method === 'POST') {
+        try {
+          const body = await parseBody(req);
+          // Accept a single event or an array
+          const list = Array.isArray(body) ? body : [body];
+          list.forEach(ev => {
+            if (ev.runId) traceSetMeta(traceSid, { runId: ev.runId });
+            if (ev.type === 'run-start') traceSetMeta(traceSid, { runId: ev.runId, startedAt: ev.timestamp || Date.now(), provider: ev.provider, model: ev.model });
+            if (ev.type === 'run-end')  traceSetMeta(traceSid, { endedAt: ev.timestamp || Date.now(), status: ev.status });
+            if (ev.provider) traceSetMeta(traceSid, { provider: ev.provider });
+            if (ev.model)   traceSetMeta(traceSid, { model: ev.model });
+            if (typeof ev.tokens === 'number') traceSetMeta(traceSid, { tokens: ev.tokens });
+            traceAppend(traceSid, ev);
+          });
+          return sendJson(res, 200, { ok: true, appended: list.length });
+        } catch (e) { return sendJson(res, 400, { error: e.message }); }
+      }
+      if (method === 'DELETE') {
+        traceClear(traceSid);
+        return sendJson(res, 200, { ok: true });
+      }
+      return sendJson(res, 405, { error: 'method not allowed' });
+    }
+
+    // ── Reacharound state — current verdict + progress scores for cockpit display ─
+    // GET /api/reacharound/:sessionId  — returns current Reacharound state (or null)
+    const raMatch = pathname.match(/^\/api\/reacharound\/([^/]+)$/);
+    if (raMatch && method === 'GET') {
+      const raSid = decodeURIComponent(raMatch[1]);
+      const state = REACHAROUND_STATES.get(raSid) || null;
+      return sendJson(res, 200, { ok: true, state });
+    }
+    // DELETE /api/reacharound/:sessionId — clear on newMission
+    if (raMatch && method === 'DELETE') {
+      REACHAROUND_STATES.delete(decodeURIComponent(raMatch[1]));
+      return sendJson(res, 200, { ok: true });
+    }
 
     // ========== CANONICAL VIEWS (read-only projections) =====================
     // Tools / Memory / Missions pages read these. They own no state — every
@@ -3132,6 +5714,80 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/tools' && method === 'GET') {
       try {
         return sendJson(res, 200, require('./lib/views').tools(require('./lib/tools')));
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname === '/api/capabilities' && method === 'GET') {
+      try { return sendJson(res, 200, await require('./lib/views').capabilities()); }
+      catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname === '/api/machine/discovery' && method === 'GET') {
+      try {
+        const current = require('./lib/machine-discovery').current();
+        return sendJson(res, current.ok ? 200 : 404, current);
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
+    // Cockpit ＋ attach surface — real machine context for the composer's
+    // attach options. Both are read-only: screen capture writes one temp PNG
+    // beside the OS temp dir; window list only reads titles.
+    if (pathname === '/api/machine/screenshot' && method === 'GET') {
+      try {
+        const shot = await psScript(`
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+$screen = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+$bmp = New-Object System.Drawing.Bitmap($screen.Width, $screen.Height)
+$gfx = [System.Drawing.Graphics]::FromImage($bmp)
+$gfx.CopyFromScreen($screen.Location, [System.Drawing.Point]::Empty, $screen.Size)
+$out = Join-Path $env:TEMP ("purpclaw_shot_" + (Get-Date -Format yyyyMMdd_HHmmss) + ".png")
+$bmp.Save($out)
+$gfx.Dispose(); $bmp.Dispose()
+[pscustomobject]@{ path = $out; width = $screen.Width; height = $screen.Height } | ConvertTo-Json -Compress
+`, 15000);
+        const data = JSON.parse(shot);
+        return sendJson(res, 200, { ok: true, path: data.path, width: data.width, height: data.height });
+      } catch (e) { return sendJson(res, 200, { ok: false, error: e.message }); }
+    }
+    if (pathname === '/api/machine/windows' && method === 'GET') {
+      try {
+        const list = await psScript(`
+Add-Type @'
+using System;using System.Runtime.InteropServices;
+public class FW{ [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow(); }
+'@
+$fg = [FW]::GetForegroundWindow()
+$rows = Get-Process | Where-Object {$_.MainWindowTitle -ne ''} | ForEach-Object {
+  [pscustomobject]@{ name = $_.Name; title = $_.MainWindowTitle; id = $_.Id; focused = ($_.MainWindowHandle -eq $fg) }
+}
+[pscustomobject]@{ windows = @($rows) } | ConvertTo-Json -Depth 3 -Compress
+`, 12000);
+        const data = JSON.parse(list);
+        const windows = Array.isArray(data.windows) ? data.windows : (data.windows ? [data.windows] : []);
+        return sendJson(res, 200, { ok: true, windows, focused: (windows.find(w => w.focused) || {}).title || null });
+      } catch (e) { return sendJson(res, 200, { ok: false, error: e.message }); }
+    }
+
+    if (pathname === '/api/machine/discovery' && method === 'POST') {
+      try {
+        const result = await require('./lib/machine-discovery').discover({
+          onEvent: (type, payload) => broadcast({ type, ...payload }),
+        });
+        return sendJson(res, 200, result);
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname === '/api/instance/state' && method === 'GET') {
+      try {
+        return sendJson(res, 200, {
+          ok: true,
+          ...INSTANCE_STATE.manifest(),
+          activeMission: INSTANCE_STATE.getActiveMission(),
+        });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    if (pathname === '/api/runtime/lifecycle' && method === 'GET') {
+      try {
+        const lifecycle = require('./lib/runtime-lifecycle').getRuntimeLifecycle();
+        return sendJson(res, 200, { ok: true, ...lifecycle.status(), parity: lifecycle.parityReport() });
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
     // Projects: registered folder roots. The composer's workspace menu must
@@ -3162,6 +5818,18 @@ const server = http.createServer(async (req, res) => {
           limit: Math.min(parseInt(q.get('limit') || '50', 10) || 50, 300) }));
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
+    if (pathname === '/api/memory/dejavu' && method === 'GET') {
+      try {
+        const q = new URL(req.url, 'http://x').searchParams;
+        const verified = q.get('verified');
+        return sendJson(res, 200, require('./lib/views').dejavuTraces({
+          query: q.get('q') || '',
+          outcome: q.get('outcome') || null,
+          verified: verified === 'true' ? true : verified === 'false' ? false : null,
+          limit: Math.min(parseInt(q.get('limit') || '50', 10) || 50, 300),
+        }));
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
     // Settings → Memory: the engine room. Every field here is read at a real
     // call site in the turn path, so changing it changes behaviour.
     if (pathname === '/api/settings/memory' && (method === 'GET' || method === 'POST')) {
@@ -3177,6 +5845,59 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/missions' && method === 'GET') {
       try { return sendJson(res, 200, require('./lib/views').missions({})); }
       catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    // ── Mission resume (goal-driven law): interrupted missions are durable.
+    // GET /api/missions/interrupted  → scan ledger for recovery_pending
+    // POST /api/missions/:id/resume  → re-feed goal + step receipts to runAgent
+    if (pathname === '/api/missions/interrupted' && method === 'GET') {
+      try {
+        const M = require('./lib/missions');
+        const fromLedger = M.scanInterrupted();
+        const inFlight = M.getRecoveryPending();
+        const seen = new Set(fromLedger.map(m => m.missionId));
+        const merged = [...fromLedger, ...(inFlight && !seen.has(inFlight.missionId) ? [inFlight] : [])];
+        return sendJson(res, 200, { ok: true, missions: merged });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+    { // POST /api/missions/:id/resume — resume an interrupted mission
+      const mResume = pathname.match(/^\/api\/missions\/([^/]+)\/resume$/);
+      if (mResume && method === 'POST') {
+        try {
+          const M = require('./lib/missions');
+          const missionId = decodeURIComponent(mResume[1]);
+          const rec = (M.list({ limit: 5000 }).missions || []).find(r => r.missionId === missionId)
+            || M.getRecoveryPending();
+          if (!rec) return sendJson(res, 404, { error: 'mission not found' });
+          const body = await parseBody(req).catch(() => ({}));
+          if (body && body.dryRun) {
+            return sendJson(res, 200, { ok: true, dryRun: true, missionId,
+              goal: rec.prompt || null, steps: (rec.toolCalls || []).map(t => ({ tool: t.tool, ok: t.ok })),
+              activeAction: rec.activeAction || null });
+          }
+          const goal = String(rec.prompt || body && body.goal || '').trim();
+          if (!goal) return sendJson(res, 400, { error: 'mission has no stored goal to resume' });
+          const completed = (rec.toolCalls || []).filter(t => t.ok !== false).map(t =>
+            `${t.tool}(${Object.keys(t.args || {}).length} args) → ok`);
+          const failed = (rec.toolCalls || []).filter(t => t.ok === false).map(t =>
+            `${t.tool} → failed${t.err ? ': ' + String(t.err).slice(0, 120) : ''}`);
+          const resumeDirective =
+            '[mission-resume] This is a RESUME of an interrupted operation.\n'
+            + 'ORIGINAL GOAL: ' + goal.slice(0, 800) + '\n'
+            + (completed.length ? 'ALREADY COMPLETED (do not redo unless verification requires it):\n- ' + completed.join('\n- ') + '\n' : '')
+            + (failed.length ? 'FAILED / INCOMPLETE:\n- ' + failed.join('\n- ') + '\n' : '')
+            + (rec.activeAction ? `WAS IN FLIGHT WHEN INTERRUPTED: ${JSON.stringify(rec.activeAction).slice(0, 300)}\n` : '')
+            + 'Continue from the first unfinished step. Do not merely describe what you would do.';
+          // Resume runs as a normal agent turn in the same session so receipts
+          // and history stay on one lineage.
+          const runOpts = { sessionId: rec.sessionId || undefined };
+          const { runAgent } = require('./lib/agent-loop');
+          const chunks = [];
+          for await (const ev of runAgent({ prompt: resumeDirective, ...runOpts })) {
+            if (ev.type === 'token' && ev.content) chunks.push(ev.content);
+          }
+          return sendJson(res, 200, { ok: true, resumed: missionId, reply: chunks.join('') });
+        } catch (e) { return sendJson(res, 500, { error: e.message }); }
+      }
     }
 
     // ========== REMOTE APPROVALS (S13 — universal approval surface) ==========
@@ -3202,6 +5923,14 @@ const server = http.createServer(async (req, res) => {
           const r = REMOTE.approve(requestId, { notes: body && body.notes });
           if (!r) return sendJson(res, 404, { error: 'approval request not found' });
           broadcast({ type: 'approval.resolved', requestId, decision: 'approved', timestamp: new Date().toISOString() });
+          // P1 supervision chain: log the operator's approve decision to
+          // the steer ledger so verified-helpful computation has lineage.
+          try {
+            require('./lib/steer-ledger').recordSteer({
+              requestId, tool: r.tool, decision: 'approved',
+              reason: body && body.notes || null, ts: new Date().toISOString(),
+            });
+          } catch (_) { /* ledger not writable — never fail the approval */ }
           return sendJson(res, 200, { ok: true, ...r });
         }
         if (requestId && parts[4] === 'deny' && method === 'POST') {
@@ -3209,6 +5938,12 @@ const server = http.createServer(async (req, res) => {
           const r = REMOTE.deny(requestId, { reason: body && body.reason });
           if (!r) return sendJson(res, 404, { error: 'approval request not found' });
           broadcast({ type: 'approval.resolved', requestId, decision: 'denied', timestamp: new Date().toISOString() });
+          try {
+            require('./lib/steer-ledger').recordSteer({
+              requestId, tool: r.tool, decision: 'denied',
+              reason: body && body.reason || null, ts: new Date().toISOString(),
+            });
+          } catch (_) { /* ledger not writable — never fail the approval */ }
           return sendJson(res, 200, { ok: true, ...r });
         }
         if (requestId && parts.length === 4 && method === 'GET') {
@@ -3258,7 +5993,7 @@ const server = http.createServer(async (req, res) => {
     if (pathname === '/api/backends' && method === 'GET') {
       const backends = state.settings.aiBackends || [];
       return sendJson(res, 200, { 
-        backends, 
+        backends: backends.map(publicBackend),
         active: state.settings.activeBackend,
         count: backends.length 
       });
@@ -3292,7 +6027,7 @@ const server = http.createServer(async (req, res) => {
         
         state.settings.aiBackends = backends;
         saveSettings();
-        return sendJson(res, 200, { ok: true, backends });
+        return sendJson(res, 200, { ok: true, backends: backends.map(publicBackend) });
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
 
@@ -3333,7 +6068,7 @@ const server = http.createServer(async (req, res) => {
           kimiClient.apiKey = backend.apiKey;
         }
         
-        return sendJson(res, 200, { ok: true, activeBackend: backendId, backend });
+        return sendJson(res, 200, { ok: true, activeBackend: backendId, backend: publicBackend(backend) });
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
 
@@ -3421,6 +6156,27 @@ const server = http.createServer(async (req, res) => {
         const body = await parseBody(req);
         const { text, mood } = body;
         if (!text) return sendJson(res, 400, { error: 'text required' });
+        // REAL-TTS-AUDIO LAW: x-voice-format:audio synthesizes via local
+        // Kokoro (services/voice/mimi_speak.py) and returns audio/wav bytes
+        // so the CLIENT plays + analyses it — the SPEAKING visualizer reacts
+        // to actual spoken output. Legacy bridge path stays for compat.
+        if ((req.headers['x-voice-format'] || '') === 'audio') {
+          const os = require('os');
+          const pathMod = require('path');
+          const outPath = pathMod.join(os.tmpdir(), `purpclaw-tts-${Date.now()}.wav`);
+          execFile('python', [pathMod.join(__dirname, 'services', 'voice', 'mimi_speak.py'),
+            String(text).slice(0, 600), outPath], { timeout: 45000 }, (err) => {
+            if (err || !fs.existsSync(outPath)) {
+              try { fs.unlinkSync(outPath); } catch {}
+              return sendJson(res, 503, { error: 'tts synthesis failed', detail: err && err.message });
+            }
+            const buf = fs.readFileSync(outPath);
+            try { fs.unlinkSync(outPath); } catch {}
+            res.writeHead(200, { 'content-type': 'audio/wav', 'content-length': buf.length, 'cache-control': 'no-store' });
+            res.end(buf);
+          });
+          return;
+        }
         sendToBridge({ type: 'tts_request', text, mood: mood || 'chill' });
         broadcast({ type: 'tts_speak', text, mood, timestamp: new Date().toISOString() });
         return sendJson(res, 200, { ok: true, text });
@@ -3445,7 +6201,74 @@ const server = http.createServer(async (req, res) => {
 
     if (pathname === '/api/agents/registry' && method === 'GET') {
       const registry = loadAgentRoster();
-      return sendJson(res, 200, { agents: registry, count: registry.length });
+      let roles = [];
+      try { roles = require('./lib/agent-role-resolver').listRoles(); } catch {}
+      return sendJson(res, 200, { agents: registry, roles, count: registry.length });
+    }
+
+    // ── DYNAMIC COUNCIL (lib/council-vote-engine.js) ──
+    if (pathname === '/api/council' && method === 'GET') {
+      try {
+        const engine = require('./lib/council-vote-engine');
+        const data = engine.loadVotes();
+        return sendJson(res, 200, {
+          votes: (data.votes || []).slice(-50).map(v => engine.describeVote(v)),
+          leaderboard: engine.leaderboard(10),
+        });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
+    // ── BUDDY (Tamagotchi) — canonical state from lib/mochi-state.js; UI renders, core owns truth ──
+    if (pathname === '/api/buddy' && method === 'GET') {
+      try {
+        const mochi = require('./lib/mochi-state');
+        const core = require('./lib/mochi');
+        const state = mochi.readMochi() || mochi.hatchMochi();
+        core.applyNeeds(state);   // DECAY-ON-READ LAW: GET always serves current needs, never stale stored ones
+        return sendJson(res, 200, { ok: true, buddy: state });
+      } catch (e) { return sendJson(res, 500, { ok: false, error: e.message }); }
+    }
+    if (pathname === '/api/buddy' && method === 'POST') {
+      try {
+        const body = await parseBody(req);
+        const mochi = require('./lib/mochi-state');
+        // SINGLE-WRITER LAW: care effects live ONLY in lib/mochi.js
+        // careAction/applyNeeds — this handler delegates, never reimplements.
+        const core = require('./lib/mochi');
+        const CARE_MAP = { feed: 'feed', play: 'play', sleep: 'rest', clean: 'rest', pet: null };
+        if (!Object.prototype.hasOwnProperty.call(CARE_MAP, body.action)) {
+          return sendJson(res, 400, { ok: false, error: 'unknown action', allowed: Object.keys(CARE_MAP) });
+        }
+        const state = mochi.readMochi() || mochi.hatchMochi();
+        state.interactions = (state.interactions || 0) + 1;
+        state['last' + body.action[0].toUpperCase() + body.action.slice(1) + 'At'] = new Date().toISOString();
+        core.applyNeeds(state);                       // decay before the action lands
+        const mapped = CARE_MAP[body.action];
+        if (mapped && !core.careAction(state, mapped)) {
+          return sendJson(res, 400, { ok: false, error: 'unknown action', allowed: Object.keys(CARE_MAP) });
+        }
+        if (body.action === 'pet') state.bond = Math.min(100, (state.bond ?? 50) + 2);
+        state.mood = core.deriveMood(state);           // mood always derived, never fabricated
+        mochi.saveMochi(state);
+        return sendJson(res, 200, { ok: true, buddy: state });
+      } catch (e) { return sendJson(res, 500, { ok: false, error: e.message }); }
+    }
+
+    // ── SLASH BINDING REGISTRY (single source of truth for the composer) ──
+    if (pathname === '/api/registry/commands' && method === 'GET') {
+      return sendJson(res, 200, slashRegistry.commands());
+    }
+    if (pathname === '/api/registry/agents' && method === 'GET') {
+      return sendJson(res, 200, { agents: slashRegistry.agents(), count: 0 });
+    }
+    if (pathname === '/api/registry/skills' && method === 'GET') {
+      return sendJson(res, 200, { skills: slashRegistry.skills() });
+    }
+    if (pathname === '/api/registry/tools' && method === 'GET') {
+      return sendJson(res, 200, slashRegistry.tools());
+    }
+    if (pathname === '/api/registry/instructions' && method === 'GET') {
+      return sendJson(res, 200, { instructions: slashRegistry.instructions() });
     }
 
     if (pathname === '/api/stats' && method === 'GET') {
@@ -3554,9 +6377,9 @@ const server = http.createServer(async (req, res) => {
         if (!message) return sendJson(res, 400, { ok: false, error: 'message required' });
         const llm = require('./lib/llm-provider');
         const defaultAgents = [
-          { id: "planner", role: "Planner", system: "You are Quill Planner. Produce a concise 3-7 step plan for the user's goal. Be specific, not generic. Max 200 words." },
-          { id: "researcher", role: "Researcher", system: "You are Quill Researcher. Surface 3-5 key facts, prior art, and best practices for the user's goal. Be concrete, not theoretical. Max 200 words." },
-          { id: "builder", role: "Builder", system: "You are Quill Builder. Identify which files/functions to touch and what the diff would look like. Be specific with file paths. Max 200 words." },
+          { id: "planner", role: "Planner", system: "You are the PurpClaw Planner. Produce a concise 3-7 step plan for the user's goal. Be specific, not generic. Max 200 words." },
+          { id: "researcher", role: "Researcher", system: "You are the PurpClaw Researcher. Surface 3-5 key facts, prior art, and best practices for the user's goal. Be concrete, not theoretical. Max 200 words." },
+          { id: "builder", role: "Builder", system: "You are the PurpClaw Builder. Identify which files/functions to touch and what the diff would look like. Be specific with file paths. Max 200 words." },
         ];
         const agentList = Array.isArray(agents) && agents.length ? agents : defaultAgents;
         const results = await Promise.allSettled(agentList.map(async (a) => {
@@ -3571,6 +6394,66 @@ const server = http.createServer(async (req, res) => {
       } catch (e) { return sendJson(res, 500, { ok: false, error: e.message }); }
     }
 
+    // ── ORCHESTRATOR API (spec §14) ─────────────────────────────────────
+    // Every POST requires an explicit user-gesture execution lease with a
+    // matching orchestrator action. Plain chat mentioning workflows/goals
+    // stays CHAT — intent classification is telemetry only.
+    const ORCH_ACTIONS = new Set(['RUN_WORKFLOW', 'RESUME_WORKFLOW', 'START_GOAL', 'RESUME_GOAL', 'CANCEL_GOAL']);
+    if (pathname.startsWith('/api/orchestrator/')) {
+      const runtime = require('./lib/orchestrator/runtime');
+      const orch = runtime.getOrchestrator();
+      try {
+        if (method === 'GET' && pathname === '/api/orchestrator/runs') {
+          return sendJson(res, 200, { ok: true, runs: orch.listWorkflowRuns(50) });
+        }
+        if (method === 'GET' && pathname === '/api/orchestrator/goals') {
+          return sendJson(res, 200, { ok: true, goals: orch.listGoals(50) });
+        }
+        if (method !== 'POST') return sendJson(res, 405, { error: 'method not allowed' });
+
+        const body = await parseBody(req);
+        // Lease arrives in the body, minted by the cockpit/slash gesture layer
+        // (authorizeExecution). Never auto-created here.
+        const lease = body.effectiveLease || null;
+        const action = body.action || null;
+        if (!lease || !ORCH_ACTIONS.has(action)) {
+          return sendJson(res, 403, { ok: false, code: 'EXECUTION_NOT_USER_INITIATED',
+            error: 'orchestrator actions require an explicit SLASH_COMMAND/UI_ACTION lease with an orchestrator action' });
+        }
+        runtime.registerLease(lease);
+        const gatedLease = Object.assign({}, lease, { id: lease.executionId || null, action });
+
+        if (pathname === '/api/orchestrator/workflow/run') {
+          const wf = (typeof body.workflow === 'object' && body.workflow) || null;
+          if (!wf) return sendJson(res, 400, { error: 'workflow definition required' });
+          const result = await orch.runWorkflow(wf, gatedLease);
+          return sendJson(res, 200, { ok: true, ...result });
+        }
+        if (pathname === '/api/orchestrator/workflow/resume') {
+          const wf = (typeof body.workflow === 'object' && body.workflow) || null;
+          if (!wf || !body.runId) return sendJson(res, 400, { error: 'workflow + runId required' });
+          const result = await orch.resumeWorkflow(wf, body.runId, body.humanInput || {}, gatedLease);
+          return sendJson(res, 200, { ok: true, ...result });
+        }
+        if (pathname === '/api/orchestrator/goal/start') {
+          if (!body.goal) return sendJson(res, 400, { error: 'goal text required' });
+          const result = await orch.startGoal(body.goal, gatedLease, {
+            constraints: body.constraints || [], budget: body.budget || undefined,
+          });
+          return sendJson(res, 200, { ok: true, ...result });
+        }
+        if (pathname === '/api/orchestrator/goal/cancel') {
+          if (!body.goalId) return sendJson(res, 400, { error: 'goalId required' });
+          const rec = await orch.cancelGoal(body.goalId, gatedLease);
+          return sendJson(res, 200, { ok: true, status: rec.status });
+        }
+        return sendJson(res, 404, { error: 'unknown orchestrator route' });
+      } catch (e) {
+        const code = e.code || 'ORCH_ERROR';
+        return sendJson(res, code.startsWith('EXECUTION_') ? 403 : 500, { ok: false, code, error: e.message });
+      }
+    }
+
     if (pathname === '/api/chat' && method === 'POST') {
       // SSE streaming mode — when client requests text/event-stream, stream
       // tokens as they arrive. Otherwise fall through to the JSON path.
@@ -3581,31 +6464,379 @@ const server = http.createServer(async (req, res) => {
         const body = await parseBody(req);
         const { message, spawnAgents = true } = body;
         if (!message) return sendJson(res, 400, { error: 'message required' });
+
+        // SLASH-ONLY EXECUTION LAW (HTTP surface) — a message starting with '/'
+        // dispatches through the same SLASH_COMMANDS table the CLI uses. No slash
+        // means no command execution: plain CHAT never reaches this branch.
+        if (typeof message === 'string' && message.startsWith('/')) {
+          const ASK_CMDS = require('./lib/commands/ask.js');
+          const table = ASK_CMDS.SLASH_COMMANDS || ASK_CMDS.default?.SLASH_COMMANDS || ASK_CMDS;
+          const spaceIdx = message.indexOf(' ');
+          const rawName2 = spaceIdx === -1 ? message : message.slice(0, spaceIdx);
+          // SLASH LAW: case-insensitive command lookup (see SSE path).
+          const lookupName2 = rawName2.toLowerCase();
+          const cmd = table[lookupName2] || table[rawName2];
+          const cmdName = cmd ? (table[rawName2] ? rawName2 : lookupName2) : rawName2;
+          const cmdArgs = spaceIdx === -1 ? '' : message.slice(spaceIdx + 1);
+          if (cmd && typeof cmd.run === 'function') {
+            // async slash handlers (orchestrator) must be awaited — never String(Promise)
+            try {
+              const out = await cmd.run(cmdArgs, {
+                model: process.env.LLM_MODEL || null,
+                provider: process.env.LLM_PROVIDER || null,
+              });
+              return sendJson(res, 200, { ok: true, slash: cmdName, reply: String(out) });
+            } catch (err) {
+              return sendJson(res, 200, { ok: false, slash: cmdName, reply: `slash failed: ${err.message}`, code: err.code || null });
+            }
+          }
+          // Unknown slash — refuse execution, list what exists.
+          return sendJson(res, 200, { ok: false, slash: cmdName, reply: `unknown command: ${cmdName}`, available: Object.keys(table) });
+        }
         // Same conversation memory as the SSE path — both are /api/chat, so a
         // surface must not lose context by choosing the non-streaming variant.
         const chatSessionId = body.session_id || body.sessionId || `surface:${body.source || 'chat'}`;
         const chatHistory = getChatHistory(chatSessionId);
 
+        // EXECUTION LEASE — Gate 1: authorize before any routing.
+        // WORK MODE LAW (mirror of SSE gate): selector flip to WORK is the
+        // operator gesture — mint/refresh the persistent session, upgrade the
+        // envelope access rung unless the client sent an explicit one.
+        const _nsOpMode = body.operatorMode === 'WORK' ? 'WORK'
+          : body.operatorMode === 'CHAT' ? 'CHAT' : null;
+        if (_nsOpMode === 'WORK') {
+          EXEC.mintWorkSession({ sessionId: chatSessionId, source: 'UI_ACTION' });
+          if (!body.envelope || !body.envelope.access) {
+            body.envelope = Object.assign({}, body.envelope || {}, { access: 'agent-actions' });
+          }
+        } else if (_nsOpMode === 'CHAT') {
+          EXEC.revokeWorkSession();
+        }
+        const chatExecutionLease = EXEC.authorizeExecution({
+          message,
+          executionIntent: body.executionIntent,
+          executionAction: body.executionAction,
+          sessionId: chatSessionId,
+          operatorMode: _nsOpMode || undefined,
+        });
+        // WORK_SESSION persistence (mirror of SSE turnAuthority): when no
+        // per-turn lease won but the session is minted, it carries authority.
+        // LEASE-CONTAINMENT LAW: a cross-session grant (authorized=false) does
+        // NOT confer authority here — that was the audit's "lease=null yet
+        // tool ran" leak surface.
+        const _wsRec = EXEC.getWorkSession(chatSessionId);
+        const nsEffectiveLease = chatExecutionLease || ((_wsRec && _wsRec.authorized) ? {
+          executionId: 'work_' + chatSessionId,
+          sessionId: chatSessionId,
+          initiatedBy: 'user',
+          source: 'WORK_SESSION',
+          action: body.executionAction || 'RUN',
+          authorized: true,
+          revoked: false,
+        } : null);
+
+        const semantic = await SEMANTIC_CHAT.execute({
+          message,
+          envelope: body.envelope || {},
+          sessionId: chatSessionId,
+          source: body.source || 'chat',
+          operatorConfirmed: body.operatorConfirmed === true,
+          context: { cwd: body.cwd || process.cwd(), workspaceRoot: PURP_DIR },
+        });
+        if (semantic.handled) {
+          // GATE LAW (nonstream mirror of SSE :1192): deterministic execution
+          // is real capability execution. No lease → refuse, stay CHAT, offer
+          // modes. Without this, lease=null intent=EXECUTE tools run here.
+          if (!nsEffectiveLease) {
+            const _cap = semantic.resolution && semantic.resolution.matched && semantic.resolution.matched.capability || null;
+            const refused = 'That request needs execution, but no execution lease was created (plain chat mode). Use a slash command or an explicit Execute gesture.';
+            safeLog('GATE1', `[nonstream-deterministic-refused] capability=${_cap} msg="${String(message).slice(0, 40)}"`);
+            appendChatTurn(chatSessionId, 'user', message, body.source || 'chat');
+            appendChatTurn(chatSessionId, 'assistant', refused, body.source || 'chat');
+            return sendJson(res, 200, {
+              ok: true,
+              reply: refused,
+              model: null,
+              provider: null,
+              providerStatus: 'execution-not-user-initiated',
+              tool_calls: [],
+              sessionId: chatSessionId,
+              modeOffer: { kind: 'EXECUTION_INTENT_NO_LEASE', capability: _cap, offers: ['RUN_ONCE', 'SWITCH_TO_WORK'] },
+              historyTurns: getChatHistory(chatSessionId).length,
+            });
+          }
+          appendChatTurn(chatSessionId, 'user', message, body.source || 'chat');
+          appendChatTurn(chatSessionId, 'assistant', semantic.reply, body.source || 'chat');
+          return sendJson(res, semantic.ok ? 200 : 409, {
+            ok: semantic.ok,
+            reply: semantic.reply,
+            model: semantic.model,
+            provider: semantic.provider,
+            sessionId: chatSessionId,
+            historyTurns: getChatHistory(chatSessionId).length,
+            missionId: semantic.mission && semantic.mission.missionId,
+            tool_calls: [{
+              tool: semantic.resolution.matched.capability,
+              args: semantic.resolution.matched.args,
+              ok: semantic.ok,
+              driver: semantic.dispatch.driver || null,
+              verification: semantic.dispatch.verification || null,
+            }],
+            turns: 'deterministic-intent',
+          });
+        }
+
         // Use the real agent-loop (same tool-calling brain as CLI ask and SSE chat).
+            // ══════════════════════════════════════════════════════════════
+            // GATE 1 — IS_CHAT_FAST: no lease → chat-fast, not runAgent.
+            // Mirrors handleChatStream gate at line ~864.
+            // No lease = conversational reply only, regardless of semantic intent.
+            const _nsChatIntent = TA.classifyIntentEx(message);
+            // WORK SESSION LAW: lease = operator armed WORK = agent loop, always.
+            const IS_CHAT_FAST_NONSTREAM = !nsEffectiveLease;
+            safeLog('GATE1', `[nonstream] lease=${nsEffectiveLease ? 'YES' : 'null'} intent=${_nsChatIntent.route} IS_CHAT_FAST=${IS_CHAT_FAST_NONSTREAM} msg="${String(message).slice(0, 40)}"`);
+            if (IS_CHAT_FAST_NONSTREAM) {
+              // AUTO POOL ISOLATION LAW: an explicit provider/model:'auto' in
+              // the request body means scored-pool routing and must NOT adopt
+              // the server-side manual pin. Pin fallback only applies when the
+              // body is silent on that field.
+              const _nsPin = RR.getRouterState().manual_pin;
+              const _bodyAuto = (body.provider === 'auto' || body.model === 'auto');
+              const _pin = _bodyAuto ? null : _nsPin;
+              const _nsModel = (body.model && body.model !== 'auto') ? body.model : (_pin && _pin.model ? _pin.model : undefined);
+              const _nsProvider = (body.provider && body.provider !== 'auto' && body.provider !== 'default') ? body.provider : (_pin && _pin.provider ? _pin.provider : undefined);
+              // MANUAL PIN FAIL-CLOSED LAW (nonstream boundary, mirrors :1327):
+              // unknown provider names 400 instead of silently re-pooling.
+              if (_nsProvider && !LLM.PROVIDERS[_nsProvider]) {
+                res.writeHead(400, { 'Content-Type': 'application/json' });
+                return res.end(JSON.stringify({ ok: false, error: 'UNKNOWN_PROVIDER_PIN', detail: `provider '${_nsProvider}' is not registered; manual pins must fail closed`, knownProviders: Object.keys(LLM.PROVIDERS) }));
+              }
+              // GATE 2 LAW (non-stream mirror of :1218): lease → advertise agent tools.
+              // BABYSITTER CAPABILITY GATE (mirror of SSE site :1732): narrow
+              // leased tool set by semantic intent class.
+              let _nsTools = nsEffectiveLease ? getAgentTools() : [];
+              if (nsEffectiveLease && Array.isArray(_nsTools)) {
+                const _nsGate = BABYSITTER.capabilityGate({ intentClass: _nsChatIntent.route, tools: _nsTools, route: _nsChatIntent.route, leaseSource: nsEffectiveLease.source || String(nsEffectiveLease) });
+                if (_nsGate.narrowed) {
+                  _nsTools = _nsGate.tools;
+                  safeLog('GATE2', `[nonstream] intent=${_nsChatIntent.route} allowed=${_nsGate.tools.length} denied=${JSON.stringify(_nsGate.denied)}`);
+                }
+              }
+              const _nsChatOpts = { model: _nsModel, provider: _nsProvider, tools: _nsTools,
+                // KEEP-WORKING LAW (2026-08-25): the nonstream HTTP lane is a
+                // buffered consumer — it assembles the full reply before
+                // responding, so a mid-stream provider death with zero tokens
+                // served can safely advance to the next AUTO candidate instead
+                // of surfacing a 500 to the user while healthy models wait.
+                // MANUAL PIN FAIL-CLOSED LAW (2026-08-26) supersedes this for
+                // pins: an explicit provider/model pin never fails over — the
+                // pin's error surfaces verbatim.
+                failClosedManual: !!(_nsProvider || _nsModel),
+                allowPartialFailover: !(_nsProvider || _nsModel) };
+              const _nsChatSystemPrompt = buildChatSystemPrompt({
+                cwd: body.cwd || process.cwd(),
+                workspace: body.workspaceRoot || process.cwd(),
+                historyLength: chatHistory.length,
+                turnNumber: chatHistory.length + 1,
+                model: _nsModel || undefined,
+              });
+              const _nsHistory = [
+                { role: 'system', content: _nsChatSystemPrompt },
+                ...chatHistory,
+                { role: 'user', content: message },
+              ];
+              let _nsFullReply = '';
+              let _nsModel2 = '';
+              let _nsProvider2 = '';
+              try {
+                for await (const _nsChunk of LLM.streamChatAuto(_nsHistory, _nsChatOpts)) {
+                  if (_nsChunk.content) _nsFullReply += _nsChunk.content;
+                  _nsModel2 = _nsChunk.model || _nsModel2;
+                  _nsProvider2 = _nsChunk.provider || _nsProvider2;
+                }
+              } catch (_nsCfStreamErr) {
+                // KEEP-WORKING TERMINAL LAW (2026-08-25): every AUTO attempt
+                // chain ends in an honest receipt — including total failure.
+                // A naked 500 with no receipt hides which candidates were
+                // tried and why each died. Harvest attempts, emit the
+                // terminal receipt, and return a structured failure so the
+                // UI can say 'all N candidates failed' instead of blank.
+                const _nsCfFailAttempts = Array.isArray(_nsChatOpts.__providerAttempts) ? _nsChatOpts.__providerAttempts : [];
+                safeLog('ROUTING_RECEIPT', '[ns-chatfast-terminal] ' + JSON.stringify({
+                  sessionId: chatSessionId,
+                  requestedProvider: _nsProvider || null,
+                  requestedModel: _nsModel || null,
+                  attempted: _nsCfFailAttempts.map(a => ({ provider: a.provider, model: a.model || null, ok: false, reason: a.reason || a.failureClass || 'unknown' })),
+                  served: null,
+                  terminalFailure: String(_nsCfStreamErr && _nsCfStreamErr.message || _nsCfStreamErr).slice(0, 300),
+                  at: Date.now(),
+                }).slice(0, 1200));
+                return sendJson(res, 502, {
+                  ok: false,
+                  error: 'ALL_CANDIDATES_FAILED',
+                  message: 'Every eligible AUTO candidate failed; no reply served.',
+                  terminalFailure: String(_nsCfStreamErr && _nsCfStreamErr.message || _nsCfStreamErr).slice(0, 300),
+                  providerAttempts: _nsCfFailAttempts,
+                  sessionId: chatSessionId,
+                });
+              }
+              // PROVIDER ATTEMPTS HARVEST (chat-fast lane): streamChatAuto stamps
+              // the attempt chain onto _nsChatOpts at generator completion — same
+              // contract as the agent lane harvest in agent-loop.js.
+              const _nsCfAttempts = Array.isArray(_nsChatOpts.__providerAttempts) ? _nsChatOpts.__providerAttempts : [];
+              // EXECUTION PROMISE GATE (nonstream CHAT_FAST mirror of :6070):
+              // chat lane has zero authority, so immediate-action language here
+              // is always a lie class — annotate before persisting.
+              try {
+                if (_nsFullReply) {
+                  const _nsCfViolations = RT.checkExecutionPromises(_nsFullReply);
+                  if (_nsCfViolations.length) {
+                    safeLog('CHAT', 'EXECUTION_PROMISE_CONTRADICTION(nonstream-chatfast): ' + _nsCfViolations.map(v => v.matchedText).join(' | '));
+                    _nsFullReply += '\n\n[system note: this reply contained immediate-action promises but no execution authority was granted and no tools ran this turn. The described actions were NOT performed.]';
+                  }
+                }
+              } catch (_nsCfGateErr) { console.error('[nonstream-chat] chatfast promise gate failed (non-fatal): ' + _nsCfGateErr.message); }
+              appendChatTurn(chatSessionId, 'user', message, body.source || 'chat');
+              // MODE-OFFER LAW (nonstream CHAT_FAST): runtime saw execution
+              // intent but zero authority — tell the surface so it can offer
+              // [Run once] / [Switch to Work]. Structured field, never model text.
+              const _nsModeOffer = (_nsChatIntent && _nsChatIntent.route === 'EXECUTE')
+                ? { kind: 'EXECUTION_INTENT_NO_LEASE', capability: null, offers: ['RUN_ONCE', 'SWITCH_TO_WORK'] }
+                : null;
+              // Think-leak law (mirror of agent-lane :6511): reasoning must not
+              // reach the visible chat-fast reply OR the persisted history.
+              const _nsCfVisibleReply = _nsFullReply.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+              const _nsTelemetry = {
+                requestedProvider: _nsProvider || 'auto',
+                requestedModel: _nsModel || 'auto',
+                provider: _nsProvider2 || null,
+                model: _nsModel2 || null,
+                route: 'CHAT', lease: null,
+                toolCalls: 0, agentCalls: 0, skillCalls: 0,
+                fallbackCount: 0, fallbackPath: [],
+                providerAttempts: _nsCfAttempts,
+                promptTokens: null, completionTokens: null, reasoningTokens: null, totalTokens: null,
+                reasoningState: null, ttftMs: null, durationMs: null,
+                status: 'complete',
+              };
+              appendChatTurn(chatSessionId, 'assistant', _nsCfVisibleReply, body.source || 'chat', _nsTelemetry);
+              // CANONICAL ROUTE TRUTH (nonstream chat-fast): same schema, third
+              // transport. One router, one truth — surfaces never reconstruct.
+              try {
+                const RR = require('./lib/routing-receipt.js');
+                _nsTelemetry.routingReceipt = RR.buildReceipt({
+                  sessionId: chatSessionId,
+                  requestedProvider: _nsProvider || null,
+                  requestedModel: _nsModel || null,
+                  providerAttempts: _nsCfAttempts,
+                  servedProvider: _nsProvider2 || null,
+                  servedModel: _nsModel2 || null,
+                  replyText: _nsFullReply,
+                  manualOverrideApplied: (_nsChatOpts && _nsChatOpts.__manualOverrideApplied) || null,
+                  scoredPick: (_nsChatOpts && _nsChatOpts.__scoredRouterApplied) || null,
+                  affinityApplied: (_nsChatOpts && _nsChatOpts.__affinityApplied) || null,
+                  inferenceNode: 'home-core',
+                  executionNode: null,
+                });
+              } catch (_nsCfRrErr) { safeLog('CHAT', `routing-receipt build failed (ns-cf): ${_nsCfRrErr && _nsCfRrErr.message}`); }
+              if (_nsTelemetry.routingReceipt) safeLog('ROUTING_RECEIPT', '[ns-chatfast] ' + JSON.stringify(_nsTelemetry.routingReceipt).slice(0, 1200));
+              return sendJson(res, 200, {
+                ok: true,
+                reply: _nsCfVisibleReply,
+                model: _nsModel2,
+                provider: _nsProvider2 || null,
+                routingReceipt: _nsTelemetry.routingReceipt || undefined,
+                telemetry: _nsTelemetry,
+                providerAttempts: _nsCfAttempts,
+                modeOffer: _nsModeOffer,
+                sessionId: chatSessionId,
+                historyTurns: getChatHistory(chatSessionId).length,
+              });
+            }
+            // ══════════════════════════════════════════════════════════════
+            // EXECUTION PATH: lease exists and intent is EXECUTE/COMMAND/etc.
+
         // This kills the keyword if-ladder that was routing to one-shot tower calls.
-        const { runAgent } = require('./lib/agent-loop');
+        // runAgent/getAgentTools come from the handler-top destructure (line ~3715).
         let fullReply = '';
         let modelName = '';
+        let providerName = '';
+        const providerFailovers = [];
+    const turnIntegrityEvents = [];
         let toolCalls = [];
+        // TOOL RECEIPTS (nonstream): agent-loop emits step-receipt per executed
+        // tool; SSE lane surfaces them (:1794) but this lane dropped them.
+        const toolReceipts = [];
         let steeringCapsuleId = null;
+        let _agentAttemptsReceipt = []; // harvested from runAgent opts after the loop
+        // Declared before use: runAgent mutates this object in place —
+        // __providerAttempts is stamped onto it by agentTurn's harvest.
+        const _nsAgentOpts = { maxTokens: 4096, temperature: 0.7, sessionId: chatSessionId, envelope: body.envelope || {}, tools: nsEffectiveLease ? getAgentTools() : [], effectiveLease: nsEffectiveLease,
+          // ZERO-GATES-IN-WORK LAW (2026-08-26): a granted WORK session lifts
+          // the default 10-turn cap (agent-loop raises to 100) on BOTH lanes.
+          // The SSE lane already passes this; the nonstream lane dropped it,
+          // so long-horizon builds died at turn 10 here only.
+          workSessionActive: !!(nsEffectiveLease && nsEffectiveLease.source === 'WORK_SESSION'),
+          thinkLevel: body.thinkLevel, // composer slider → adapter (parity with SSE lane)
+          // CONTINUATION LAW: mode/executionIntent must reach the agent loop or the
+          // WORK-mode completion critic never arms here either
+          // (agent-loop.js gates it on executionMode === 'work').
+          mode: (String(body.interactionMode || body.mode || 'CHAT').toUpperCase() === 'WORK') ? 'work' : 'chat',
+          executionIntent: !!body.executionIntent };
+        // AUTO-PLAN GATE (Eddie law 2026-08-26): long-horizon WORK jobs get a
+        // plan-first directive; the plan must pass verifyPlan() before EXECUTE.
+        let _planDirective = '';
+        if (_nsAgentOpts.workSessionActive && !_planApproved.has(chatSessionId)) {
+          const _pc = AUTO_PLAN.classifyPlanNeed({ message, workSessionActive: true, planApproved: false });
+          if (_pc.planRequired) {
+            _planDirective = '\n\n[AUTO-PLAN MODE] This is a long-horizon job. FIRST reply with a numbered build plan (each step: action + target). Do NOT execute anything until your plan passes verification. End the plan with a line exactly: PLAN_COMPLETE';
+            try { safeLog('AUTO_PLAN', JSON.stringify({ engaged: true, sessionId: chatSessionId, reason: _pc.reason })); } catch (_) {}
+          }
+        }
         const errors = [];
-
-        for await (const ev of runAgent({
-          prompt: message,
+        // DEFENSIVE: catch synchronous throws before the for-await starts
+        let _runGen;
+        try {
+          _runGen = runAgent({
+          prompt: attachmentPreamble(body.attachments) + message + _planDirective,
           history: chatHistory,                 // ← carry the conversation here too
+          model: body.model || undefined,
+          provider: body.provider || undefined,
           // Envelope travels on BOTH /api/chat variants. It rode only the SSE
           // path at first, so a non-streaming client silently ran ungoverned —
           // the access dial has to hold whichever transport the caller picks.
-          opts: { maxTokens: 2048, temperature: 0.7, sessionId: chatSessionId, envelope: body.envelope || {} },
-        })) {
+          // EXECUTION LEASE — threaded through to runAgent for Gate 3 assertion.
+          opts: _nsAgentOpts,
+        });        } catch (_runInitErr) {
+          // Sync throw from runAgent({...}) construction — caught before the
+          // for-await even starts. Respond with a clean error rather than a crash.
+          console.error('[nonstream-chat] runAgent() synchronous throw:', _runInitErr && _runInitErr.message ? _runInitErr.message : String(_runInitErr));
+          console.error('[nonstream-chat] stack:', _runInitErr && _runInitErr.stack ? _runInitErr.stack.slice(0, 800) : 'no stack');
+          return sendJson(res, 500, { error: 'runAgent init failed: ' + (_runInitErr && _runInitErr.message ? _runInitErr.message : String(_runInitErr)) });
+        }
+        // DEFENSIVE: wrap the for-await to catch async throws from inside the generator
+        try {
+        for await (const ev of _runGen) {
           if (ev.type === 'token') {
             fullReply += ev.content;
             modelName = ev.model || modelName;
+            providerName = ev.provider || providerName;
+          } else if (ev.type === 'turn-integrity') {
+        // Transport evidence: the model's stream did not arrive whole. Surfaced
+        // so an incomplete answer is visible as damage rather than read as a
+        // short but finished reply.
+        turnIntegrityEvents.push({ turn: ev.turn, classification: ev.classification,
+          defects: (ev.defects || []).map(d => d.type) });
+        sseEvent(res, 'turn-integrity', { ok: false, turn: ev.turn,
+          classification: ev.classification,
+          defects: (ev.defects || []).map(d => ({ type: d.type, detail: d.detail })),
+          lastConfirmedSeq: ev.lastConfirmedSeq, expectedNextSeq: ev.expectedNextSeq,
+          terminatorPresent: ev.terminatorPresent,
+          observedBytes: ev.observedBytes, declaredBytes: ev.declaredBytes });
+      } else if (ev.type === 'provider-failover') {
+            providerFailovers.push({ from: ev.from, to: ev.to, reason: ev.reason,
+              statusCode: ev.statusCode || null, detail: ev.detail || null,
+              cooldownMs: ev.cooldownMs || 0, cooldownUntil: ev.cooldownUntil || null });
           } else if (ev.type === 'steering') {
             steeringCapsuleId = ev.capsuleId || null;
           } else if (ev.type === 'steering-blocked') {
@@ -3613,25 +6844,148 @@ const server = http.createServer(async (req, res) => {
           } else if (ev.type === 'tool-call') {
             toolCalls.push({ tool: ev.tool, args: ev.args, capsuleId: ev.capsuleId });
           } else if (ev.type === 'tool-result') {
-            // collected implicitly
+            // RECEIPT LAW (nonstream): tool executions surface as receipts, not
+            // just SSE. Mirrors the step-receipt event the SSE lane emits.
+            toolReceipts.push({ turn: ev.turn || null, tool: ev.tool, ok: ev.ok !== false,
+              resultPreview: typeof ev.result === 'string' ? String(ev.result).slice(0, 300)
+                : (ev.result == null ? null : String(JSON.stringify(ev.result)).slice(0, 300)) });
+          } else if (ev.type === 'step-receipt') {
+            toolReceipts.push({ turn: ev.turn, tool: ev.tool, ok: ev.ok !== false,
+              stepIndex: ev.stepIndex, capsuleId: ev.capsuleId || null });
           } else if (ev.type === 'error') {
             errors.push(ev.error);
           } else if (ev.type === 'done') {
+            modelName = ev.model || modelName;
+            providerName = ev.provider || providerName;
+            // EXECUTION PROMISE GATE (nonstream mirror of SSE :1944): immediate-action
+            // language with no lease and zero tool calls = "Watch me. SCANNING:" lie class.
+            try {
+              const _nsNoAuthority = !nsEffectiveLease && toolCalls.length === 0;
+              if (_nsNoAuthority && fullReply) {
+                const _nsEpViolations = RT.checkExecutionPromises(fullReply);
+                if (_nsEpViolations.length) {
+                  safeLog('CHAT', 'EXECUTION_PROMISE_CONTRADICTION(nonstream): ' + _nsEpViolations.map(v => v.matchedText).join(' | '));
+                  fullReply += '\n\n[system note: this reply contained immediate-action promises but no execution authority was granted and no tools ran this turn. The described actions were NOT performed.]';
+                }
+              }
+            } catch (_nsGateErr) { console.error('[nonstream-chat] promise gate failed (non-fatal): ' + _nsGateErr.message); }
+            // AUTO-PLAN completion: if this turn was a plan proposal and it ends
+            // with PLAN_COMPLETE, run the triple verification. PASS → session
+            // approved (EXECUTE resumes); FAIL → directive re-arms next turn.
+            try {
+              if (_planDirective && /PLAN_COMPLETE\s*$/.test(fullReply.trim())) {
+                const plan = AUTO_PLAN.parsePlanText ? AUTO_PLAN.parsePlanText(fullReply)
+                  : { steps: fullReply.split('\n').filter(l => /^\s*\d+[.)]/.test(l)).map((l, i) => ({ order: i + 1, action: l.trim() })) };
+                const v = AUTO_PLAN.verifyPlan(plan);
+                if (v.verdict === 'PASS') {
+                  _planApproved.add(chatSessionId);
+                  safeLog('AUTO_PLAN', JSON.stringify({ sessionId: chatSessionId, verdict: 'PASS', checks: v.checks.length }));
+                } else {
+                  safeLog('AUTO_PLAN', JSON.stringify({ sessionId: chatSessionId, verdict: 'FAIL', failed: v.checks.filter(c => !c.ok).map(c => c.name) }));
+                  fullReply += '\n\n[system: plan FAILED verification (' + v.checks.filter(c => !c.ok).map(c => c.name).join(', ') + '). Revise the plan; do not execute.]';
+                }
+              }
+            } catch (_apErr) { console.error('[nonstream-chat] auto-plan check failed (non-fatal): ' + _apErr.message); }
             break;
           }
         }
+        } catch (_runErr) {
+          // Catches sync throws from runAgent(...) and async throws from the generator
+          console.error('[nonstream-chat] runAgent error:', _runErr && _runErr.message ? _runErr.message : String(_runErr));
+          console.error('[nonstream-chat] stack:', _runErr && _runErr.stack ? _runErr.stack.slice(0, 800) : 'no stack');
+          // KEEP-WORKING TERMINAL LAW (2026-08-25): agent-lane mirror of the
+          // chat-fast terminal receipt (:6358). Total failure must still emit
+          // an honest attempt chain — never a naked 500 with zero evidence.
+          const _nsAgentFailAttempts = Array.isArray(_nsAgentOpts.__providerAttempts) ? _nsAgentOpts.__providerAttempts : [];
+          try {
+            safeLog('ROUTING_RECEIPT', '[nonstream-agent-terminal] ' + JSON.stringify({
+              sessionId: chatSessionId,
+              requestedProvider: body.provider || null,
+              requestedModel: body.model || null,
+              attempted: _nsAgentFailAttempts.map(a => ({ provider: a.provider, model: a.model || null, ok: false, reason: a.reason || a.failureClass || 'unknown' })),
+              served: null,
+              terminalFailure: String(_runErr && _runErr.message || _runErr).slice(0, 300),
+              at: Date.now(),
+            }).slice(0, 1200));
+          } catch (_) {}
+          return sendJson(res, 502, {
+            ok: false,
+            error: 'ALL_CANDIDATES_FAILED',
+            message: 'Every eligible candidate failed in the execution lane; no reply served.',
+            terminalFailure: String(_runErr && _runErr.message ? _runErr.message : String(_runErr)).slice(0, 300),
+            providerAttempts: _nsAgentFailAttempts,
+            sessionId: chatSessionId,
+          });
+        }
 
-        appendChatTurn(chatSessionId, 'user', message);
-        appendChatTurn(chatSessionId, 'assistant', fullReply);
+        // PROVIDER ATTEMPTS HARVEST (nonstream agent lane): agentTurn stamps the
+        // attempt chain onto the opts object we passed — surface it in the response.
+        _agentAttemptsReceipt = Array.isArray(_nsAgentOpts.__providerAttempts) ? _nsAgentOpts.__providerAttempts : [];
+
+        appendChatTurn(chatSessionId, 'user', message, body.source || 'chat');
+        // Think-leak law (same as child-jobs): reasoning must not persist into
+        // the visible nonstream reply.
+        const _nsVisibleReply = fullReply.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+        appendChatTurn(chatSessionId, 'assistant', _nsVisibleReply, body.source || 'chat');
+
+        // AUTO-PLAN verification: if this turn carried a plan (PLAN_COMPLETE),
+        // parse it and verify. PASS → session approved for EXECUTE; FAIL →
+        // reply gets a verdict footer and the gate re-arms next turn.
+        if (_planDirective && /PLAN_COMPLETE/.test(_nsVisibleReply)) {
+          try {
+            const steps = _nsVisibleReply.split(/\n/).filter((l) => /^\s*\d+[.)]/.test(l)).map((l) => {
+              const m = l.replace(/^\s*\d+[.)]\s*/, '');
+              return { action: m.slice(0, 200) };
+            });
+            const v = AUTO_PLAN.verifyPlan({ steps });
+            if (v.verdict === 'PASS') {
+              _planApproved.add(chatSessionId);
+              try { safeLog('AUTO_PLAN', JSON.stringify({ sessionId: chatSessionId, verdict: 'PASS', steps: steps.length })); } catch (_) {}
+            } else {
+              fullReply += '\n\n[AUTO-PLAN VERDICT: FAIL — plan did not pass structural verification (' + v.checks.filter((c) => !c.ok).map((c) => c.name).join(', ') + '). Revise the plan; execution stays gated.]';
+              try { safeLog('AUTO_PLAN', JSON.stringify({ sessionId: chatSessionId, verdict: 'FAIL', checks: v.checks.filter((c) => !c.ok).map((c) => c.name) })); } catch (_) {}
+            }
+          } catch (_pvErr) { try { safeLog('AUTO_PLAN', JSON.stringify({ error: String(_pvErr).slice(0, 120) })); } catch (_) {} }
+        }
+
+        // CANONICAL ROUTE TRUTH (nonstream lane): same receipt schema as SSE —
+        // both transports share one truth. Served identity = chunk echoes.
+        let _nsReceipt = null;
+        try {
+          _nsReceipt = RR.buildReceipt({
+            sessionId: chatSessionId,
+            requestedProvider: body.provider || null,
+            requestedModel: body.model || null,
+            providerAttempts: _agentAttemptsReceipt,
+            // KEEP-WORKING TRUTH LAW (2026-08-25): forward the fallback marker
+            // so routing_mode reports AUTO when a dead preference was
+            // re-served by streamChatAuto.
+            keepWorkingFallback: (_agentAttemptsReceipt || []).some(a => a.failureClass === 'requested-model-failed'),
+            servedProvider: providerName || null,
+            servedModel: modelName || null,
+            replyText: _nsVisibleReply,
+            manualOverrideApplied: (_nsAgentOpts && _nsAgentOpts.__manualOverrideApplied) || null,
+            scoredPick: (_nsAgentOpts && _nsAgentOpts.__scoredRouterApplied) || null,
+            affinityApplied: (_nsAgentOpts && _nsAgentOpts.__affinityApplied) || null,
+            inferenceNode: 'home-core',
+            executionNode: toolCalls.length > 0 ? 'home-pc' : null,
+          });
+        } catch (_nsRrErr) { safeLog('CHAT', `routing-receipt build failed (nonstream): ${_nsRrErr && _nsRrErr.message}`); }
+        if (_nsReceipt) safeLog('ROUTING_RECEIPT', '[nonstream] ' + JSON.stringify(_nsReceipt).slice(0, 1200));
 
         return sendJson(res, 200, {
           ok: true,
-          reply: fullReply,
+          reply: _nsVisibleReply,
           model: modelName,
+          provider: providerName || null,
+          providerFailovers,
+          routingReceipt: _nsReceipt || undefined,
+          providerAttempts: _agentAttemptsReceipt,
           sessionId: chatSessionId,
           historyTurns: getChatHistory(chatSessionId).length,
           capsuleId: steeringCapsuleId || undefined,
           tool_calls: toolCalls,
+          toolReceipts: toolReceipts.length > 0 ? toolReceipts : undefined,
           errors: errors.length > 0 ? errors : undefined,
           turns: toolCalls.length > 0 ? 'multi-turn' : 'single',
         });
@@ -3686,11 +7040,71 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { ok: true, result });
     }
 
+    if (pathname === '/api/xiaozhi/link' && method === 'GET') {
+      // Status for UI/chat. URL echoed WITHOUT query/token — safe to render.
+      let urlSafe = null;
+      try { const u = new URL(xiaozhiLink.url); u.search = ''; urlSafe = u.toString(); }
+      catch (_) { urlSafe = xiaozhiLink.url ? '(configured)' : null; }
+      return sendJson(res, 200, { ...xiaozhiLink, url: urlSafe });
+    }
+
+    if (pathname === '/api/xiaozhi/link' && method === 'POST') {
+      // Fail-closed link refresh: probe-verify the new MCP endpoint BEFORE
+      // swapping it in or persisting it. The token never appears in logs.
+      try {
+        const body = await parseBody(req);
+        const url = String(body.url || '').trim();
+        if (!url) return sendJson(res, 400, { error: 'url required (full wss://...mcp/?token=... endpoint)' });
+        if (!/^wss?:\/\//i.test(url)) return sendJson(res, 400, { error: 'url must start with wss:// or ws://' });
+
+        const probeOk = await new Promise((resolve) => {
+          let settled = false;
+          const done = (ok) => { if (!settled) { settled = true; try { probe.terminate(); } catch (_) {} resolve(ok); } };
+          const probe = new WebSocket(url);
+          const t = setTimeout(() => done(false), 10000);
+          probe.on('open', () => {
+            probe.send(JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2024-11-05', capabilities: {}, clientInfo: { name: 'purpclaw-probe', version: '1.0' } } }));
+          });
+          probe.on('message', (d) => {
+            try {
+              const m = JSON.parse(d.toString());
+              if (m.id === 1 && !m.error) { clearTimeout(t); done(true); }
+              else if (m.id === 1) { clearTimeout(t); done(false); }
+            } catch (_) {}
+          });
+          probe.on('error', () => { clearTimeout(t); done(false); });
+          probe.on('close', () => { clearTimeout(t); done(false); });
+        });
+        if (!probeOk) {
+          return sendJson(res, 400, { ok: false, error: 'probe failed — endpoint did not answer MCP initialize within 10s; NOT swapping link' });
+        }
+
+        const prevUrl = xiaozhiLink.url;
+        xiaozhiLink.url = url;
+        // Persist to .env so restarts survive (token stays out of logs).
+        try {
+          const envPath = path.join(__dirname, '.env');
+          let envText = fs.readFileSync(envPath, 'utf8');
+          const lineRe = /^XIAOZHI_(WS_URL|MCP_URL)=.*$/gm;
+          const newLine = `XIAOZHI_WS_URL=${url}`;
+          if (/^XIAOZHI_WS_URL=/m.test(envText)) envText = envText.replace(/^XIAOZHI_WS_URL=.*$/m, newLine);
+          else if (/^XIAOZHI_MCP_URL=/m.test(envText)) envText = envText.replace(/^XIAOZHI_MCP_URL=.*$/m, newLine);
+          else envText = envText.replace(/\n?$/, '\n') + newLine + '\n';
+          fs.writeFileSync(envPath, envText, 'utf8');
+        } catch (e) { console.log('[XIAOZHI] .env persist failed:', e.message); }
+
+        reconnectAttempts = 0;                       // fresh credential, fresh backoff
+        connectWS();                                 // swap is live immediately
+        console.log(`[XIAOZHI] Link refreshed via API (probe PASS). Prev url ended ...${(prevUrl || '').slice(-6)}`);
+        return sendJson(res, 200, { ok: true, status: xiaozhiLink.status, probedAt: new Date().toISOString() });
+      } catch (e) { return sendJson(res, 500, { error: e.message }); }
+    }
+
     if (pathname === '/api/tower/connect' && method === 'POST') {
       try {
         const body = await parseBody(req);
-        const url = body.url || XIAOZHI_WS_URL;
-        if (!url) return sendJson(res, 400, { error: 'No XIAOZHI_WS_URL configured and no url provided' });
+        const url = body.url || xiaozhiLink.url;
+        if (!url) return sendJson(res, 400, { error: 'No XiaoZhi WS URL configured and no url provided' });
         const result = AgentTower.connectToBall(url);
         return sendJson(res, 200, { ok: result.success, status: result.status, url });
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
@@ -3762,6 +7176,109 @@ const server = http.createServer(async (req, res) => {
       } catch (e) { return sendJson(res, 500, { error: e.message }); }
     }
 
+    // POST /api/vision/detect — proxy to the real YOLO service (services/vision/
+    // yolo.py on :7779). Body: {image: base64, confidence?: number}. Real
+    // detections only — the service returns actual model output or an error.
+    if (pathname === '/api/vision/detect' && method === 'POST') {
+      (async () => {
+        try {
+          const body = await parseBody(req);
+          const { image, confidence } = body || {};
+          if (!image) return sendJson(res, 400, { ok: false, error: 'image (base64) required' });
+          const upstream = await fetch('http://127.0.0.1:7779/detect', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ image, confidence: confidence || 0.25 }),
+            signal: AbortSignal.timeout(30000),
+          });
+          const result = await upstream.json();
+          return sendJson(res, upstream.ok ? 200 : 502, { ok: upstream.ok, detector: 'yolov8n@7779', ...result });
+        } catch (e) {
+          return sendJson(res, 502, { ok: false, error: 'yolo service unreachable: ' + e.message });
+        }
+      })();
+      return;
+    }
+
+    // GET /api/vision/status — detector lane health for cockpit + agent tools.
+    if (pathname === '/api/vision/status' && method === 'GET') {
+      fetch('http://127.0.0.1:7779/health', { signal: AbortSignal.timeout(3000) })
+        .then(r => r.json()).then(h => sendJson(res, 200, { ok: true, detector: 'ONLINE', ...h }))
+        .catch(() => sendJson(res, 200, { ok: true, detector: 'UNAVAILABLE', hint: 'python services/vision/yolo.py' }));
+      return;
+    }
+
+    // ========== VOICE LANES (built-in by default) ==========
+    // TTS → lib/tts/gateway.js (:7799, Kokoro). STT → services/voice/stt.py
+    // (:7896, faster-whisper). Same proxy pattern as /api/vision/detect.
+
+    // GET /api/voice/status — combined TTS+STT health for cockpit/agent.
+    if (pathname === '/api/voice/status' && method === 'GET') {
+      const probe = (url) => fetch(url, { signal: AbortSignal.timeout(3000) })
+        .then(r => r.json()).then(() => 'ONLINE').catch(() => 'UNAVAILABLE');
+      Promise.all([probe('http://127.0.0.1:7799/health'), probe('http://127.0.0.1:7896/health')])
+        .then(([tts, stt]) => sendJson(res, 200, { ok: true, tts, stt }));
+      return;
+    }
+
+    // POST /api/tts/speak {text, voice?, blocking?} → Kokoro speaks aloud.
+    // POST /api/tts/synthesize {text, voice?} → {audio_b64, mime:'audio/wav'}.
+    if ((pathname === '/api/tts/speak' || pathname === '/api/tts/synthesize') && method === 'POST') {
+      (async () => {
+        try {
+          const body = await parseBody(req);
+          const text = String((body && body.text) || '').slice(0, 4000);
+          if (!text) return sendJson(res, 400, { ok: false, error: 'text required' });
+          const upstream = await fetch(`http://127.0.0.1:7799${pathname.replace('/api/tts', '')}`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ text, voice: body.voice }),
+            signal: AbortSignal.timeout(120000),
+          });
+          const result = await upstream.json();
+          return sendJson(res, upstream.ok ? 200 : 502, { ok: upstream.ok, tts: 'kokoro@7799', ...result });
+        } catch (e) {
+          return sendJson(res, 502, { ok: false, error: 'tts gateway unreachable: ' + e.message });
+        }
+      })();
+      return;
+    }
+
+    // POST /api/stt/transcribe — body: JSON {audio_b64, mime?} or raw audio/* bytes.
+    // Returns {text, language, elapsed_sec}.
+    if (pathname === '/api/stt/transcribe' && method === 'POST') {
+      (async () => {
+        try {
+          const ct = String(req.headers['content-type'] || '');
+          let upstreamBody, upstreamCt;
+          if (!ct.includes('json')) {
+            upstreamBody = await new Promise((resolve) => {
+              const chunks = []; req.on('data', c => chunks.push(c));
+              req.on('end', () => resolve(Buffer.concat(chunks)));
+            });
+            upstreamCt = ct;
+          } else {
+            const body = await parseBody(req);
+            if (!body || !body.audio_b64) return sendJson(res, 400, { ok: false, error: 'audio_b64 required (or raw audio/* body)' });
+            upstreamBody = Buffer.from(String(body.audio_b64), 'base64');
+            upstreamCt = String(body.mime || 'audio/wav');
+          }
+          if (!upstreamBody.length) return sendJson(res, 400, { ok: false, error: 'empty audio payload' });
+          const upstream = await fetch('http://127.0.0.1:7896/transcribe', {
+            method: 'POST',
+            headers: { 'content-type': upstreamCt },
+            body: upstreamBody,
+            signal: AbortSignal.timeout(120000),
+          });
+          const result = await upstream.json();
+          return sendJson(res, upstream.ok ? 200 : 502, { ok: upstream.ok, stt: 'faster-whisper@7896', ...result });
+        } catch (e) {
+          return sendJson(res, 502, { ok: false, error: 'stt service unreachable: ' + e.message });
+        }
+      })();
+      return;
+    }
+
     if (pathname === '/api/kimi/memory' && method === 'GET') {
       if (!kimiClient) return sendJson(res, 503, { error: 'KimiClient not initialized' });
       return sendJson(res, 200, kimiClient.getSwarmMemory());
@@ -3788,6 +7305,260 @@ const server = http.createServer(async (req, res) => {
     //
     // context = true   — inject top-5 semantically-relevant code chunks
     //                    into the planner prompt (real codebase grounding).
+    // GET /api/llm/models — live model catalog for cockpit/chat selector
+    // ?free=1 filters to free-tier only; ?refresh=1 bypasses the 10-min cache.
+    if (pathname === '/api/llm/models' && method === 'GET') {
+      const llm = require('./lib/llm-provider');
+      const url = new URL(req.url, 'http://localhost');
+      const refresh = url.searchParams.get('refresh') === '1';
+      llm.fetchOpenRouterModels({ force: refresh })
+        .then(r => {
+          const models = url.searchParams.get('free') === '1' ? llm.freeModels(r.models) : r.models;
+          sendJson(res, 200, { ok: true, cached: r.cached, degraded: false, count: models.length, models });
+        })
+        .catch(e => {
+          // CATALOGUE DEGRADE LAW: live fetch failed → serve last-known-good cache
+          // marked degraded. Catalogue failure must never 503 the selector or crash chat.
+          const stale = llm.lastKnownGoodModels();
+          if (stale && stale.length) {
+            const models = url.searchParams.get('free') === '1' ? llm.freeModels(stale) : stale;
+            safeLog('LLM', `catalogue degraded: ${e.message} — serving ${models.length} cached models`);
+            return sendJson(res, 200, { ok: true, cached: true, degraded: true,
+              degradedReason: e.message, count: models.length, models });
+          }
+          sendJson(res, 503, { ok: false, degraded: true, error: e.message });
+        });
+      return;
+    }
+
+    // GET /api/llm/registry — CANONICAL model registry (task 1 of router work
+    // order): one schema for every provider, wrapped over the existing catalogs.
+    // ?task=VISION|CODE|... applies the hard compatibility gate; ?provider=
+    // scopes to one provider.
+    if (pathname === '/api/llm/registry' && method === 'GET') {
+      const registry = require('./lib/model-registry');
+      const url = new URL(req.url, 'http://localhost');
+      const task = url.searchParams.get('task');
+      const provider = url.searchParams.get('provider');
+      // Sampling capability map rides along so the UI builds honest
+      // per-route controls (Settings law: only show what a provider accepts).
+      const { PROVIDER_CAPABILITIES } = require('./lib/llm-provider.js');
+      const p = registry.modelsForTask(task || 'CHAT', provider)
+        .then(models => sendJson(res, 200, {
+          ok: true,
+          count: models.length,
+          task: task || 'CHAT',
+          taskClasses: registry.TASK_CLASSES,
+          capabilities: PROVIDER_CAPABILITIES,
+          models,
+        }))
+        .catch(e => sendJson(res, 500, { ok: false, error: e.message }));
+      return;
+    }
+
+    if (pathname === '/api/llm/auto-route' && method === 'GET') {
+      // Scored router probe endpoint: what WOULD AUTO pick and why?
+      const registry = require('./lib/model-registry');
+      const router = require('./lib/smart-router');
+      const health = require('./lib/provider-health');
+      const url = new URL(req.url, 'http://localhost');
+      const q = url.searchParams;
+      const minCtx = Number(q.get('minContext') || 0) || undefined;
+      // Task-class alias law: registry classes are CHAT/CODE/VISION/TOOL_CALL/
+      // LONG_CONTEXT/IMAGE_GENERATION/VIDEO_GENERATION/AUDIO — normalize common
+      // shorthand (IMGGEN, lowercase) so callers can't silently get an empty pool.
+      const _TASK_ALIASES = { IMGGEN: 'IMAGE_GENERATION', IMG: 'IMAGE_GENERATION', VIDEOGEN: 'VIDEO_GENERATION', TOOL: 'TOOL_CALL' };
+      const _rawTask = q.get('task') || 'CHAT';
+      const _taskClass = _TASK_ALIASES[_rawTask.toUpperCase()] || String(_rawTask).toUpperCase();
+      router.selectModel({
+        taskClass: _taskClass,
+        minContext: minCtx,
+        thinkLevel: q.get('think') || 'normal',
+        preferFree: q.get('preferFree') !== '0',
+        provider: q.get('provider') || undefined,
+      }, health.snapshot())
+        .then((r) => sendJson(res, 200, { ok: true, ...r }))
+        .catch((e) => sendJson(res, 500, { ok: false, error: e.message }));
+      return;
+    }
+
+    if (pathname === '/api/llm/health' && method === 'GET') {
+      return sendJson(res, 200, require('./lib/provider-health').snapshot());
+    }
+
+    // CANONICAL PLUGIN REGISTRY HTTP SURFACE — one registry, served truthfully.
+    // GET  /api/plugins            → full list with truthful statuses
+    // GET  /api/plugins/ui         → only ENABLED plugins' ui.contributions (Widget Manager feed)
+    // POST /api/plugins/enable     {id}  — enable + load now
+    // POST /api/plugins/disable    {id}
+    // POST /api/plugins/reload     — rescan plugin dirs (auto-discovery)
+    if (pathname.startsWith('/api/plugins')) {
+      const pm = require('./lib/plugin-manager');
+      try {
+        if (pathname === '/api/plugins' && method === 'GET') {
+          const list = pm.list();
+          return sendJson(res, 200, { ok: true, count: list.length, plugins: list });
+        }
+        if (pathname === '/api/plugins/ui' && method === 'GET') {
+          const contribs = [];
+          for (const p of pm.list()) {
+            if (p.status !== 'ENABLED') continue; // never serve UI from unproven plugins
+            for (const c of (p.ui && p.ui.contributions) || []) {
+              contribs.push({ ...c, plugin: p.id });
+            }
+          }
+          return sendJson(res, 200, { ok: true, contributions: contribs });
+        }
+        if (method === 'POST' && (pathname === '/api/plugins/enable' || pathname === '/api/plugins/disable')) {
+          const body = await parseBody(req);
+          const id = body && body.id;
+          if (!id) return sendJson(res, 400, { ok: false, error: 'missing id' });
+          const result = pathname.endsWith('/enable') ? pm.enable(id) : pm.disable(id);
+          return sendJson(res, result && result.ok === false ? 404 : 200, { ok: !!(result && result.ok !== false), id, result: result || null });
+        }
+        if (pathname === '/api/plugins/reload' && method === 'POST') {
+          pm.unloadAll();
+          pm.load();
+          const list = pm.list();
+          return sendJson(res, 200, { ok: true, count: list.length, plugins: list });
+        }
+        return sendJson(res, 404, { ok: false, error: 'unknown plugins route' });
+      } catch (e) {
+        return sendJson(res, 500, { ok: false, error: e.message });
+      }
+    }
+
+    // CANONICAL ROUTER STATE — the ONE pin endpoint. GET = current router
+    // state; POST {model, provider?} = set MANUAL pin; POST {clear:true} or
+    // {mode:'AUTO'} = back to AUTO. Writes the SAME model-override.json that
+    // streamChatAuto honors — one router, one store.
+    if (pathname === '/api/llm/pin' && method === 'GET') {
+      return sendJson(res, 200, { ok: true, router: RR.getRouterState() });
+    }
+    if (pathname === '/api/llm/pin' && method === 'POST') {
+      parseBody(req).then((body) => {
+        try {
+          if (body.clear || body.mode === 'AUTO') {
+            const router = RR.clearPin();
+            safeLog('CHAT', `ROUTER_PIN cleared → AUTO`);
+            return sendJson(res, 200, { ok: true, router });
+          }
+          if (!body.model && !body.pool) {
+            return sendJson(res, 400, { ok: false, error: 'model required (or {pool}, or {clear:true})' });
+          }
+          if (body.pool && !body.model) {
+            // Explicit AUTO pool selection: global | openrouter_free | nim
+            // PIN-API HARDENING (2026-08-26): reject unknown pools at WRITE time —
+            // previously they were accepted then failed closed only at routing time.
+            const SR = require('./lib/smart-router');
+            if (!Object.prototype.hasOwnProperty.call(SR.POOLS, String(body.pool))) {
+              return sendJson(res, 400, { ok: false, error: `unknown pool '${body.pool}' — valid: ${Object.keys(SR.POOLS).join(', ')}` });
+            }
+            const router = RR.setPin(null, null, String(body.pool));
+            safeLog('CHAT', `ROUTER_POOL AUTO pool=${router.pool_id}`);
+            return sendJson(res, 200, { ok: true, router });
+          }
+          const router = RR.setPin(body.provider || null, body.model);
+          safeLog('CHAT', `ROUTER_PIN MANUAL provider=${router.manual_pin.provider || 'any'} model=${router.manual_pin.model}`);
+          return sendJson(res, 200, { ok: true, router });
+        } catch (e) {
+          return sendJson(res, 500, { ok: false, error: e.message });
+        }
+      });
+      return;
+    }
+    // PIN-API HARDENING (2026-08-26): explicit clear endpoint — DELETE = back to
+    // AUTO/global. Previously clearing required {clear:true} POST or manual file removal.
+    if (pathname === '/api/llm/pin' && method === 'DELETE') {
+      const router = RR.clearPin();
+      safeLog('CHAT', 'ROUTER_PIN cleared via DELETE → AUTO');
+      return sendJson(res, 200, { ok: true, router });
+    }
+
+    if (pathname === '/api/children' && method === 'GET') {
+      // Live child-job board for the cockpit ACTIVE AGENTS view.
+      const CJ = require('./lib/child-jobs');
+      return sendJson(res, 200, { ok: true, active: CJ.listActive(), limits: CJ.LIMITS });
+    }
+    if (pathname === '/api/children/create' && method === 'POST') {
+      const CJ = require('./lib/child-jobs');
+      parseBody(req).then((body) => {
+        CJ.create({
+          task: body.task, taskClass: body.taskClass || 'CHAT',
+          soul: body.soul, thinkLevel: body.thinkLevel,
+          providerPin: body.providerPin || undefined, modelPin: body.modelPin || undefined,
+          minContext: Number(body.minContext || 0) || 0,
+          tools: Array.isArray(body.tools) ? body.tools : [],
+          workspace: body.workspace || null, mutating: Boolean(body.mutating),
+          parentSessionId: body.sessionId || null,
+        }).then((job) => { if (body.autostart !== false) CJ.start(job.job_id);
+                           sendJson(res, 200, { ok: true, job }); })
+          .catch((e) => sendJson(res, 409, { ok: false, error: e.message }));
+      });
+      return;
+    }
+    if (pathname === '/api/children/control' && method === 'POST') {
+      const CJ = require('./lib/child-jobs');
+      parseBody(req).then((body) => {
+        const { jobId, op } = body;
+        let r = null;
+        try {
+          if (op === 'pause') r = CJ.pause(jobId);
+          else if (op === 'resume') r = CJ.resume(jobId);
+          else if (op === 'cancel') r = CJ.cancel(jobId);
+          else if (op === 'cancelAll') r = CJ.cancelAll();
+          else if (op === 'reroute') r = CJ.reroute(jobId, { provider: body.provider, model: body.model, thinkLevel: body.thinkLevel });
+        } catch (e) { return sendJson(res, 500, { ok: false, error: e.message }); }
+        sendJson(res, 200, { ok: Boolean(r), result: r });
+      });
+      return;
+    }
+
+    if (pathname === '/api/children/events' && method === 'GET') {
+      // Supervisor chat feed: SSE stream of child-job lifecycle events.
+      // lib/events.js has no in-process emitter — it appends to
+      // agent_work/trace/events.jsonl (and POSTs to eventbus :7782 which may be
+      // down). We tail the trace file: bus-outage-proof, zero new deps.
+      const fsMod = require('fs');
+      const pathMod = require('path');
+      const TRACE = pathMod.join(__dirname, 'agent_work', 'trace', 'events.jsonl');
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
+        'X-Accel-Buffering': 'no',
+      });
+      res.write(`data: ${JSON.stringify({ type: 'children.feed.hello', timestamp: new Date().toISOString() })}\n\n`);
+      let pos = 0;
+      try { pos = fsMod.existsSync(TRACE) ? fsMod.statSync(TRACE).size : 0; } catch { pos = 0; }
+      let closed = false;
+      const pump = () => {
+        if (closed) return;
+        fsMod.stat(TRACE, (err, st) => {
+          if (closed) return;
+          if (!err && st.size > pos) {
+            const stream = fsMod.createReadStream(TRACE, { start: pos, encoding: 'utf8' });
+            let buf = '';
+            stream.on('data', (c) => { buf += c; });
+            stream.on('end', () => {
+              pos += Buffer.byteLength(buf);
+              for (const line of buf.split('\n')) {
+                if (!line.trim()) continue;
+                try {
+                  const ev = JSON.parse(line);
+                  if (ev.namespace === 'children') res.write(`data: ${JSON.stringify(ev)}\n\n`);
+                } catch { /* partial line — skip */ }
+              }
+            });
+          }
+        });
+      };
+      const poll = setInterval(pump, 1000);
+      const hb = setInterval(() => { try { if (!closed) res.write(': hb\n\n'); } catch { /* ignore */ } }, 15000);
+      req.on('close', () => { closed = true; clearInterval(poll); clearInterval(hb); });
+      return;
+    }
+
     if (pathname === '/api/llm/plan' && method === 'POST') {
       // Stream mode: SSE so the UI can show steps as they're generated
       if ((req.headers['accept'] || '').includes('text/event-stream')) {
@@ -3829,7 +7600,7 @@ const server = http.createServer(async (req, res) => {
           }
         }
 
-        const PLAN_SYSTEM = `You are Quill, the planning assistant for the PURPCLAW runtime.
+        const PLAN_SYSTEM = `You are the PurpClaw planning assistant for the PURPCLAW runtime.
 Decompose the user's goal into 3-7 concrete, ordered steps. For each step return a JSON object with:
   - "title": short imperative ("Pull recent training data", "Generate the chart")
   - "command": the actual prompt / kernel goal / tool call to execute
@@ -3878,7 +7649,7 @@ Example:
         // Fanout: 3 independent plans, merged by a "judge" model. The
         // judge sees all three proposals + the goal and picks the best
         // steps in optimal order. This is the multi-model quality lift
-        // that gets Quill planning close to Claude Code's plan quality.
+        // that gets PurpClaw planning close to Claude Code's plan quality.
         if (mode === 'fanout') {
           const candidates = Array.isArray(fanoutModels) && fanoutModels.length
             ? fanoutModels.slice(0, 5)
@@ -4126,25 +7897,68 @@ Respond ONLY with a JSON array, no prose.`;
     // ========== END SHAMAN LAYER ENDPOINTS ==========
 
     sendJson(res, 404, { error: 'Not found', path: pathname });
-  } catch (err) { sendJson(res, 500, { error: err.message }); }
+  } catch (err) {
+    // DEFENSIVE: if headers already sent (SSE stream in progress), log and
+    // let the SSE handler's own error handling take over rather than crashing.
+    if (res.headersSent) {
+      console.error('[request-handler] post-SSE error (headers already sent):', err && err.message ? err.message : String(err));
+      return;
+    }
+    sendJson(res, 500, { error: err.message });
+  }
 });
+
+// ── CRASH CAPTURE — delegated to lib/child-registry.js installCleanup() ───────
+// child-registry registers uncaughtException + unhandledRejection FIRST (before
+// unified_api.js adds anything else). Those handlers write crash evidence to
+// var/crashes/ with PID, type, timestamp, message, and stack — then kill
+// children and exit. This ensures crash evidence is ALWAYS persisted even for
+// early-boot failures that occur before server.listen() is called.
+// ─────────────────────────────────────────────────────────────────────────────
+
+global.__startTime = Date.now();
+
+// Disable HTTP server timeout. The SSE stream is long-lived (up to 10 min for
+// approval waits). Node's default serverTimeout closes idle connections after
+// ~60-120s of inactivity, which would kill an SSE stream during an approval
+// wait even though the cockpit sends periodic header heartbeats. Set to 0 to
+// remove the timeout entirely — rely on TCP keepalive and the socket's own
+// lifecycle instead.
+server.timeout = 0;
+// Node's default keepAliveTimeout (5s) closes idle keep-alive connections.
+// A long tool-execution phase emits no bytes on the socket while tools run,
+// so the connection gets reaped mid-run and the client sees an abrupt
+// ConnectionReset. Raise it beyond any plausible quiet window.
+server.keepAliveTimeout = 120000;   // 2 min of socket idleness tolerated
+server.headersTimeout = 125000;     // must exceed keepAliveTimeout
 
 server.listen(PORT, () => {
   console.log(`[UNIFIED API] Listening on http://localhost:${PORT}`);
   console.log(`[UNIFIED API] SSE stream: http://localhost:${PORT}/api/stream`);
-  console.log(`[UNIFIED API] WebSocket: ${XIAOZHI_WS_URL ? 'configured' : 'NOT SET (set XIAOZHI_WS_URL)'}`);
-  console.log(`[UNIFIED API] Tools: ${TOOLS.length}`);
+  console.log(`[UNIFIED API] WebSocket: ${xiaozhiLink.url ? 'configured' : 'NOT SET (set XIAOZHI_WS_URL or POST /api/xiaozhi/link)'}`);
+  console.log(`[UNIFIED API] Tools: ${require('./lib/tools').list().length} canonical`);
   connectToBridge();
-  if (XIAOZHI_WS_URL) connectWS();
+  if (xiaozhiLink.url) connectWS();
   startLocalTcpServer();
   AgentTower.connectToUnifiedApi(PORT);
-  setTimeout(() => { spawnDivisionAgent('Engineering', 'Initialize system'); spawnDivisionAgent('Security', 'Monitor system'); spawnDivisionAgent('AI Research', 'Analyze patterns'); console.log('[UNIFIED API] Swarm initialized'); }, 1000);
+  // Purge expired approvals on startup and every 5 minutes thereafter so the pile
+  // of 207 expired approvals doesn't accumulate indefinitely. Without this, every
+  // expired approval stays in pending/ dir forever and pollutes audit views.
+  const REMOTE_APPROVALS = (() => { try { return require('./lib/remote-approvals'); } catch { return null; } })();
+  if (REMOTE_APPROVALS && REMOTE_APPROVALS.purgeExpired) {
+    const purged = REMOTE_APPROVALS.purgeExpired();
+    safeLog('API', `purgeExpired: removed ${purged} expired approvals`);
+    // Re-purge every 5 minutes
+    setInterval(() => {
+      try {
+        const n = REMOTE_APPROVALS.purgeExpired();
+        if (n > 0) safeLog('API', `purgeExpired: removed ${n} expired approvals`);
+      } catch (e) { console.warn('[UNIFIED API] purgeExpired error:', e && e.message ? e.message : String(e)); }
+    }, 5 * 60 * 1000);
+  }
+  setTimeout(() => { spawnDivisionAgent('Engineering', 'Initialize system'); spawnDivisionAgent('Security', 'Monitor system'); spawnDivisionAgent('AI Research', 'Analyze patterns'); safeLog('API', 'Swarm initialized'); }, 1000);
 });
 
 server.on('error', (err) => { console.error('[UNIFIED API] Server error:', err.message); });
 
 process.on('SIGINT', () => { if (hb) clearInterval(hb); if (rc) clearTimeout(rc); ws?.close(); if (purpProc) purpProc.kill(); if (pwBrowser) pwBrowser.close().catch(() => {}); process.exit(0); });
-process.on('uncaughtException', e => { console.error('[UNIFIED API] CRASH:', e.message); if (ws) recon(); });
-process.on('unhandledRejection', (reason, promise) => {
-  console.error('[UNIFIED API] UNHANDLED REJECTION:', reason);
-});
