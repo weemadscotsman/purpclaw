@@ -32,16 +32,24 @@ function normalizeAgent(a) {
     tier: typeof a.tier === 'number' ? a.tier : (a.tier != null ? parseInt(a.tier, 10) : null),
     file: a.file || null,
     sources: a.sources || (a.file ? [a.file] : []),
+    skills: Array.isArray(a.skills) ? a.skills.map(String) : [],
   };
 }
 
+let registryCache = null;
+
 function readRegistry() {
+  if (registryCache) return registryCache;
   for (const candidate of REGISTRY_CANDIDATES) {
-    try { return JSON.parse(fs.readFileSync(candidate, 'utf8')); } catch { /* try next */ }
+    try {
+      registryCache = JSON.parse(fs.readFileSync(candidate, 'utf8'));
+      return registryCache;
+    } catch { /* try next */ }
   }
   {
     try {
-      return eval('require')(path.join(process.cwd(), 'scripts', 'sync-agents.js')).build();
+      registryCache = eval('require')(path.join(process.cwd(), 'tools', 'scripts', 'sync-agents.js')).build();
+      return registryCache;
     } catch {
       return {
         schema: 'purpclaw.agent-registry.v1',
