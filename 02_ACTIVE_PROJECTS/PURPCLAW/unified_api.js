@@ -1431,7 +1431,7 @@ async function handleChatStream(req, res) {
       for (const k of ['temperature','topP','topK','maxTokens','frequencyPenalty','presencePenalty','seed']) {
         if (body[k] !== undefined && body[k] !== null) _sampling[k] = body[k];
       }
-      _chatOpts = Object.assign({ model: _chatModel, provider: _chatProvider, tools: effectiveLease ? (_explicitChatTools !== null ? _explicitChatTools : getAgentTools()) : [], sessionId: sessionId || undefined }, _sampling);
+      _chatOpts = Object.assign({ model: _chatModel, provider: _chatProvider, tools: effectiveLease ? (_explicitChatTools !== null ? _explicitChatTools : getAgentTools()) : [], sessionId: sessionId || undefined, __explicitAuto: _explicitAuto /* TVG S6: suppress pin-file re-adoption in streamChatAuto */ }, _sampling);
       // Attempt receipts live on _chatOpts so BOTH stream attempts and the
       // final telemetry see the same chain (streamChatAuto writes
       // opts.__providerAttempts onto the object we pass in).
@@ -4978,6 +4978,89 @@ const server = http.createServer(async (req, res) => {
       return nodeFs.createReadStream(abs).pipe(res);
     }
 
+    // ── OpenPurp execution-mode surface (spec §23/§8) ─────────────────────
+    // Truthful endpoints over lib/openpurp/runner.js. OpenPurp is a UI mode
+    // name only; the runner is the real installed openclaude CLI.
+    if (pathname === '/api/openpurp/discover' && method === 'GET') {
+      const R = require('./lib/openpurp/runner');
+      const d = await new Promise((resolve) => R.discover(resolve));
+      return sendJson(res, 200, d);
+    }
+    if (pathname === '/api/openpurp/runs' && method === 'GET') {
+      return sendJson(res, 200, { runs: (global.__OPENPURP_RUNS__ || []).map((r) => r.receipt) });
+    }
+    if (pathname === '/api/openpurp/run' && method === 'POST') {
+      const R = require('./lib/openpurp/runner');
+      const body = await parseBody(req);
+      if (!body.goal || !body.workspace) return sendJson(res, 400, { error: 'goal and workspace required', failureCode: 'WORKSPACE_INVALID' });
+      const j = R.start({
+        goal: String(body.goal),
+        workspace: String(body.workspace),
+        model: body.model || undefined,
+        provider: body.provider || undefined,
+        outputFormat: 'stream-json',
+        inputFormat: body.steerable ? 'stream-json' : undefined,
+        permissionMode: body.permissionMode || 'acceptEdits',
+        maxTurns: body.maxTurns || undefined,
+        allowedTools: Array.isArray(body.allowedTools) ? body.allowedTools : undefined,
+      });
+      if (!j.ok) return sendJson(res, 400, { error: 'start failed', failureCode: j.failure });
+      global.__OPENPURP_RUNS__ = global.__OPENPURP_RUNS__ || [];
+      global.__OPENPURP_RUNS__.push(j.run);
+      if (global.__OPENPURP_RUNS__.length > 50) global.__OPENPURP_RUNS__.shift(); // bounded registry
+      return sendJson(res, 201, { runId: j.run.runId, sessionId: j.run.sessionId, pid: j.run.pid, steerSupported: j.run.steerSupported, receipt: R.receipt(j.run) });
+    }
+    if (pathname === '/api/openpurp/run/' && method === 'GET') return sendJson(res, 400, { error: 'runId required' });
+    if (pathname && pathname.startsWith('/api/openpurp/run/') && method === 'GET') {
+      const rid = pathname.slice('/api/openpurp/run/'.length);
+      const run = (global.__OPENPURP_RUNS__ || []).find((r) => r.runId === rid);
+      if (!run) return sendJson(res, 404, { error: 'unknown runId' });
+      const R = require('./lib/openpurp/runner');
+      return sendJson(res, 200, {
+        status: run.status,
+        events: run.events,
+        steerSupported: !!run.steerSupported,
+        receipt: R.receipt(run),
+        traceDir: require('path').join(process.cwd(), 'var', 'openpurp', run.runId),
+      });
+    }
+    if (pathname && pathname.startsWith('/api/openpurp/steer/') && method === 'POST') {
+      const rid = pathname.slice('/api/openpurp/steer/'.length);
+      const run = (global.__OPENPURP_RUNS__ || []).find((r) => r.runId === rid);
+      if (!run) return sendJson(res, 404, { error: 'unknown runId' });
+      if (!run.steerSupported) return sendJson(res, 409, { error: 'STEER_UNSUPPORTED_INPUT_FORMAT' }); // §16 truth rule
+      const body = await parseBody(req);
+      const out = run.steer(String(body.text || ''));
+      return sendJson(res, out.ok ? 202 : 409, out);
+    }
+    if (pathname && pathname.startsWith('/api/openpurp/stop/') && method === 'POST') {
+      const rid = pathname.slice('/api/openpurp/stop/'.length);
+      const run = (global.__OPENPURP_RUNS__ || []).find((r) => r.runId === rid);
+      if (!run) return sendJson(res, 404, { error: 'unknown runId' });
+      await run.cancel(8000);
+      const R = require('./lib/openpurp/runner');
+      return sendJson(res, 200, { stopped: true, receipt: R.receipt(run) });
+    }
+
+    if (pathname === '/api/repo-judge' && method === 'POST') {
+      // Repo Judge — READ_ONLY evidence-based completion verdict (canonical surface).
+      let body = {};
+      try { body = await parseBody(req); } catch {}
+      const root = typeof body.root === 'string' && body.root.trim() ? body.root.trim() : process.cwd();
+      try {
+        const J = require('./lib/repo-judge');
+        const certificate = J.judge({ root, prompt: String(body.prompt || '') });
+        return sendJson(res, 200, { success: true, verdict: certificate.verdict, certificate });
+      } catch (e) {
+        return sendJson(res, 500, { success: false, error: String((e && e.message) || e) });
+      }
+    }
+    if (pathname === '/api/repo-judge' && method === 'GET') {
+      const J = (() => { try { return require('./lib/repo-judge'); } catch { return null; } })();
+      return sendJson(res, 200, { service: 'repo-judge', available: !!J, mode: J ? J.MODE || 'READ_ONLY' : null,
+        usage: 'POST { root?: string, prompt?: string } — returns judge() certificate.' });
+    }
+
     if (pathname === '/api/health' && method === 'GET') {
       // P0-E honest health: ONLINE only with a fresh receipt from Tower on port 7790.
       // DEGRADED when Tower is unreachable but API is still serving.
@@ -6645,6 +6728,7 @@ $rows = Get-Process | Where-Object {$_.MainWindowTitle -ne ''} | ForEach-Object 
                 }
               }
               const _nsChatOpts = { model: _nsModel, provider: _nsProvider, tools: _nsTools,
+                __explicitAuto: _bodyAuto, // TVG S6: suppress pin-file re-adoption in streamChatAuto
                 // KEEP-WORKING LAW (2026-08-25): the nonstream HTTP lane is a
                 // buffered consumer — it assembles the full reply before
                 // responding, so a mid-stream provider death with zero tokens
@@ -6748,8 +6832,12 @@ $rows = Get-Process | Where-Object {$_.MainWindowTitle -ne ''} | ForEach-Object 
                 const RR = require('./lib/routing-receipt.js');
                 _nsTelemetry.routingReceipt = RR.buildReceipt({
                   sessionId: chatSessionId,
-                  requestedProvider: _nsProvider || null,
-                  requestedModel: _nsModel || null,
+                  // TVG S5/S6 LAW: this lane pre-resolves 'auto' into the pin
+                  // (:6692). Forward the RAW body values so buildReceipt can
+                  // still see an explicit AUTO request and refuse to classify
+                  // it as MANUAL via the persisted pin.
+                  requestedProvider: (_bodyAuto && body.provider) ? body.provider : (_nsProvider || null),
+                  requestedModel: (_bodyAuto && body.model) ? body.model : (_nsModel || null),
                   providerAttempts: _nsCfAttempts,
                   servedProvider: _nsProvider2 || null,
                   servedModel: _nsModel2 || null,
@@ -7336,7 +7424,8 @@ $rows = Get-Process | Where-Object {$_.MainWindowTitle -ne ''} | ForEach-Object 
       llm.fetchOpenRouterModels({ force: refresh })
         .then(r => {
           const models = url.searchParams.get('free') === '1' ? llm.freeModels(r.models) : r.models;
-          sendJson(res, 200, { ok: true, cached: r.cached, degraded: false, count: models.length, models });
+          sendJson(res, 200, { ok: true, cached: r.cached, stale: Boolean(r.stale), degraded: false,
+            fetchedAt: r.fetchedAt || null, count: models.length, models });
         })
         .catch(e => {
           // CATALOGUE DEGRADE LAW: live fetch failed → serve last-known-good cache
@@ -7398,6 +7487,7 @@ $rows = Get-Process | Where-Object {$_.MainWindowTitle -ne ''} | ForEach-Object 
         thinkLevel: q.get('think') || 'normal',
         preferFree: q.get('preferFree') !== '0',
         provider: q.get('provider') || undefined,
+        pool: q.get('pool') || RR.getRouterState().pool_id || 'global',
       }, health.snapshot())
         .then((r) => sendJson(res, 200, { ok: true, ...r }))
         .catch((e) => sendJson(res, 500, { ok: false, error: e.message }));
@@ -7413,6 +7503,8 @@ $rows = Get-Process | Where-Object {$_.MainWindowTitle -ne ''} | ForEach-Object 
     // GET  /api/plugins/ui         → only ENABLED plugins' ui.contributions (Widget Manager feed)
     // POST /api/plugins/enable     {id}  — enable + load now
     // POST /api/plugins/disable    {id}
+    // POST /api/plugins/grant      {id, permissions:[...]} — operator grant only
+    // POST /api/plugins/revoke     {id, permissions:[...]}
     // POST /api/plugins/reload     — rescan plugin dirs (auto-discovery)
     if (pathname.startsWith('/api/plugins')) {
       const pm = require('./lib/plugin-manager');
@@ -7430,6 +7522,20 @@ $rows = Get-Process | Where-Object {$_.MainWindowTitle -ne ''} | ForEach-Object 
             }
           }
           return sendJson(res, 200, { ok: true, contributions: contribs });
+        }
+        if (pathname === '/api/plugins/permissions' && method === 'GET') {
+          return sendJson(res, 200, { ok: true, permissions: pm.PERMISSIONS || [] });
+        }
+        if (method === 'POST' && (pathname === '/api/plugins/grant' || pathname === '/api/plugins/revoke')) {
+          const body = await parseBody(req);
+          const id = body && body.id;
+          const permissions = body && body.permissions;
+          if (!id) return sendJson(res, 400, { ok: false, error: 'missing id' });
+          if (!Array.isArray(permissions) || !permissions.length) {
+            return sendJson(res, 400, { ok: false, error: 'permissions must be a non-empty array' });
+          }
+          const result = pathname.endsWith('/grant') ? pm.grant(id, permissions) : pm.revoke(id, permissions);
+          return sendJson(res, result && result.ok === false ? 400 : 200, { ok: !!(result && result.ok !== false), id, result });
         }
         if (method === 'POST' && (pathname === '/api/plugins/enable' || pathname === '/api/plugins/disable')) {
           const body = await parseBody(req);
