@@ -629,7 +629,7 @@ async function loadORCatalog(force){
   try{
     const r=await fetch('/api/llm/models'+(force?'?refresh=1':''));
     const j=await r.json();
-    if(j.ok){OR_CATALOG={count:j.count,all:j.models,free:j.models.filter(m=>m.free),fetchedAt:Date.now()};}
+    if(j.ok){OR_CATALOG={count:j.count,all:j.models,free:j.models.filter(m=>m.free===true),fetchedAt:j.fetchedAt||Date.now(),stale:!!(j.stale||j.degraded)};}
   }catch(e){/* keep last-known-good */}
   return OR_CATALOG;
 }
@@ -1092,19 +1092,19 @@ function paintCtl(){
     },true);
     if(autoCur&&S.routeInfo)aBtn.title='route: '+S.routeInfo;
     m.appendChild(aBtn);
-    // NVIDIA NIM — canonical registry feed, FREE-only, newest first.
-    // KEEP-WORKING LAW 2026-08-25: free filter + lifted cap + freshness footer.
-    m.appendChild(el('mh','NVIDIA NIM'));
+    // NVIDIA NIM — canonical authenticated account catalogue. NVIDIA exposes
+    // availability but no per-model zero-cost flag, so never label UNKNOWN as free.
+    m.appendChild(el('mh','NVIDIA NIM · DEVELOPER CREDITS'));
     const nimSec=el('div');
     m.appendChild(nimSec);
     nimSec.innerHTML='<div style="opacity:.6;font-size:11px;padding:4px 8px">loading…</div>';
     fetch(API+'/api/llm/registry?task=CHAT&provider=nvidia').then(r=>r.json()).then(j=>{
-      const list=(j.models||[]).filter(x=>x.context_length>0&&(x.free!==false)).slice(0,24);
+      const list=(j.models||[]).filter(x=>x.source==='nim_catalogue'&&x.available_to_key===true).slice(0,24);
       nimSec.innerHTML='';
-      if(!list.length)nimSec.innerHTML='<div style="opacity:.6;font-size:11px;padding:4px 8px">no free NIM models</div>';
+      if(!list.length)nimSec.innerHTML='<div style="opacity:.6;font-size:11px;padding:4px 8px">no models available to this NVIDIA key</div>';
       list.forEach(nm=>
         nimSec.appendChild(opt('· '+nm.display_name,S.model===nm.id,()=>{S.provider='nvidia';S.model=nm.id;},true)));
-      const nf=el('div','refreshed just now');
+      const nf=el('div',(j.models||[]).some(x=>x.stale)?'last-known-good · refresh degraded':'live account catalogue · credit-backed');
       nf.style.cssText='opacity:.5;font-size:10px;padding:2px 8px;cursor:pointer';
       nf.onclick=()=>paintCtl();
       nimSec.appendChild(nf);
@@ -1137,7 +1137,7 @@ function paintCtl(){
       orSec.appendChild(opt('🆓 Free Auto ('+cat.free.length+' free)',S.model==='openrouter/free',()=>{S.provider='openrouter';S.model='openrouter/free';},true));
       cat.free.filter(f=>f.id!=='openrouter/free').slice(0,12).forEach(fm=>
         orSec.appendChild(opt('· :free '+orLabel(fm.id)+(fm.context_length?' ('+Math.round(fm.context_length/1024)+'k)':''),S.model===fm.id,()=>{S.provider='openrouter';S.model=fm.id;},true)));
-      const more=el('mh','ALL MODELS · '+cat.count+' · refreshed '+ageS+'s ago');
+      const more=el('mh','ALL MODELS · '+cat.count+' · '+(cat.stale?'LAST-KNOWN-GOOD':'refreshed '+ageS+'s ago'));
       orSec.appendChild(more);
       cat.all.slice(0,20).forEach(am=>
         orSec.appendChild(opt('· '+am.id,S.model===am.id,()=>{S.provider='openrouter';S.model=am.id;},true)));
