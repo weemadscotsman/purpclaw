@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkOperator } from '../_lib/operator-auth';
 import fs from 'fs';
 import path from 'path';
 
@@ -27,6 +28,9 @@ function stampPrefix() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = checkOperator(req);
+  if (!auth.ok) return ('response' in auth ? auth.response : new Response('Unauthorized', { status: 401 }));
+
   try {
     const form = await req.formData();
     const files = form.getAll('files').filter((f): f is File => f instanceof File);
