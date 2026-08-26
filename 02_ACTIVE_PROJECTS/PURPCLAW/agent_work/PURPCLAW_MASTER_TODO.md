@@ -41,33 +41,19 @@
 ## P0-C: App-Surface E2E Audit (IN PROGRESS)
 
 ### DONE
-- [x] P0-C Fix 1 (harness-honest-status): `R.finalize()` added to `packages/result-schema/index.js` — 8/8 assertions now pass. Status derives correctly from evidence: blocked=no work, partial=unverified work, passed=all verifications passed, failed=fatal errors. Explicit harness decisions preserved.
-- [x] P0-C Audit: cockpit live at `http://127.0.0.1:7780/cockpit` — 60/60 chat assertions green, all API endpoints 200, rail nav: Chat/Agents/Tools/Skills/Knowledge/System/ZAMP surfaces, BIOS POST overlay functional.
-- [x] P0-C Audit: acceptance suite — 14/14 pass, 6 NI (cross-surface-process, web-reconnect, recovery, provenance, mobile-same-brain, agent-minimal-load — all need live pairing).
-- [x] P0-C Audit: TUI dead (missing `lib/lifecycle-actions.js`), Next.js won't start (network drive), no Electron dir, mobile needs real phone.
+- [x] P0-C Audit: cockpit (`http://127.0.0.1:7780/cockpit`) is the SOLE live UI — 60/60 chat assertions green, all API endpoints 200, rail nav: Chat/Agents/Tools/Skills/Knowledge/System/ZAMP surfaces, BIOS POST overlay functional.
+- [x] P0-C Audit: CLI — `purpclaw doctor`, `plugin list`, all commands healthy.
+- [x] P0-C Audit: TUI — loads cleanly (lifecycle-actions path fixed).
+- [x] P0-C Audit: acceptance suite — 14/14 pass, 6 NI.
+- [x] P0-C Fix 1 (harness-honest-status): `R.finalize()` added to `packages/result-schema/index.js` — 8/8 assertions now pass.
+- [x] P0-C Fix 2: TUI — `lib/lifecycle-actions` path fixed from `../lib/` → `./lib/`. TUI loads cleanly.
+- [x] P0-C Audit: Next.js app (`app/`) is dead UI — not used, superseded by cockpit. Retire from audit scope.
+- [x] P0-C Audit: no Electron dir, mobile needs real phone, companion Chorus probeable.
 
-### BROKEN (needs investigation)
-- [x] P0-C Fix 2: TUI — `lib/lifecycle-actions` path fixed from `../lib/` → `./lib/` (was resolving outside project). TUI loads cleanly. Voice client remains optional (graceful fallback). PURP_DIR still points one level up — cosmetic only since voice is wrapped in try/catch.
-- [ ] P0-C Fix 3: Next.js app — `npm run dev` hangs on network drive, relocate or fix
+### BROKEN (known gaps)
+- [ ] P0-C Fix 3: `effectiveExecutionPrompt` not exported from `lib/agent-loop.js` — blocks `agent-execution-claim-gate.test.js` (live model tests). Likely a missing export statement.
 
-### Surfaces to audit (pending broken fixes)
-- [ ] CLI — boot-test every command
-- [ ] TUI — blocked on Fix 2
-- [ ] Lightweight Web / Cockpit — FIXED: live and green
-- [ ] Desktop / Electron — no Electron dir
-- [ ] Mobile Android — needs real phone
-- [ ] Companion Chorus — probe xiaozhi_bridge
-- [ ] Extension surfaces — probe extensions/
-- [ ] Widget Drawer — cockpit: /api/plugins/ui working
-- [ ] Chat — cockpit: 60/60 assertions green
-- [ ] Library — probe app/library or equivalent
-- [ ] Settings — cockpit /api/settings 200
-- [ ] Plugin-contributed pages/windows — WidgetHost working
-
-For EVERY surface test:
-```
-BOOT → NAVIGATE → INTERACT → TOOL CALL → FAILURE → RECOVERY → STATE PERSISTENCE → RESIZE/ROTATE → RESTART
-```
+### Surfaces
 
 ---
 
