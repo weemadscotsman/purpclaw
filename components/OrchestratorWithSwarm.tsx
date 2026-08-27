@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Terminal, Send, Bot, CheckCircle2, CircleDashed, AlertCircle, Server, LayoutTemplate, MessageSquare, Network, Database, Activity, ShieldAlert, ShieldCheck, Zap, GitMerge, ListChecks, RefreshCw, Users, ArrowRightLeft, Target, Radio } from 'lucide-react';
 import { ReactFlow, Controls, Background, MarkerType, Position } from '@xyflow/react';
@@ -514,7 +514,7 @@ export function OrchestratorDashboardWithSwarm() {
   };
 
   // Render logs with swarm type support
-  const renderLogs = () => {
+  const renderedLogs = useMemo(() => {
     return logs.map(log => (
       <div key={log.id} className="flex items-start gap-2 py-1.5 border-b border-gray-800/50">
         <span className="text-gray-500 text-xs w-16 shrink-0">
@@ -541,7 +541,7 @@ export function OrchestratorDashboardWithSwarm() {
         </span>
       </div>
     ));
-  };
+  }, [logs]);
 
   return (
     <div className="min-h-screen bg-black text-white font-mono">
@@ -655,7 +655,7 @@ export function OrchestratorDashboardWithSwarm() {
                   </div>
                 </div>
                 <div className="bg-[#0a0a0a] border border-gray-800 rounded-lg p-4 h-64 overflow-y-auto">
-                  {renderLogs()}
+                  {renderedLogs}
                   <div ref={logsEndRef} />
                 </div>
               </div>
