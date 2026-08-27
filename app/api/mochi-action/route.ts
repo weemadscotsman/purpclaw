@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkOperator } from '../_lib/operator-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -38,6 +39,8 @@ const PLAY_QUERIES = [
 ];
 
 export async function POST(request: NextRequest) {
+  const auth = checkOperator(request);
+  if (!auth.ok) return auth.response;
   let body: { action?: string };
   try { body = await request.json(); }
   catch { return NextResponse.json({ ok: false, error: 'invalid json' }, { status: 400 }); }

@@ -1,0 +1,4 @@
+## 2026-06-29 - [Missing Next.js Route Authentication]
+**Vulnerability:** Several mutating Next.js API routes were missing the `checkOperator()` authentication check, including `/api/api-mega-list`, `/api/pipeline`, `/api/mochi-action`, `/api/bridge`, and `/api/thringlets/[id]/interact`.
+**Learning:** These routes bypassed the required Next.js operator authentication, potentially allowing unauthorized access to sensitive actions in a network environment where `PURPCLAW_OPERATOR_TOKEN` is expected to secure them. The `STRESS_PACK_ACCOUNTING` document flagged "23 routes full-body passthrough + zero auth" as "Partially resolved", and indeed some were still missing the check.
+**Prevention:** Ensure that all new and existing mutating routes (`POST`, `PUT`, `PATCH`, `DELETE`) in `app/api/**/route.ts` include `const auth = checkOperator(req); if (!auth.ok) ...` at the very beginning of the handler.
