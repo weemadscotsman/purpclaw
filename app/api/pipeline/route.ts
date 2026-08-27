@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkOperator } from '../_lib/operator-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -28,6 +29,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = checkOperator(req);
+  if (!auth.ok) return auth.response;
   // Stop control passthrough: { action:'stop'|'start', ... } → :7780/api/pipeline/*
   try {
     const body = await req.json().catch(() => ({}));

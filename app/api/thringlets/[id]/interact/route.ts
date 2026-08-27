@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkOperator } from '../../../_lib/operator-auth';
 import { bridgeFetch, offlineResponse } from '../../_shared';
 
 export const dynamic = 'force-dynamic';
@@ -17,6 +18,8 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const auth = checkOperator(request);
+  if (!auth.ok) return auth.response;
   const { id } = await params;
   if (!id) return NextResponse.json({ error: 'id-required' }, { status: 400 });
 

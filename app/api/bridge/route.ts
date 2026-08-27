@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkOperator } from '../_lib/operator-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -132,6 +133,8 @@ function newSessionId() {
 
 // ── Main POST handler ──────────────────────────────────────────
 export async function POST(req: NextRequest) {
+  const auth = checkOperator(req);
+  if (!auth.ok) return auth.response;
   let body: any;
   try { body = await req.json(); } catch { return NextResponse.json({ error: 'bad json' }, { status: 400 }); }
 
