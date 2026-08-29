@@ -8,6 +8,7 @@ import { chromium } from 'playwright';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
+import { checkOperator } from '../_lib/operator-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -34,6 +35,9 @@ async function capture(): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = checkOperator(req);
+  if (!auth.ok) return auth.response;
+
   const body = await req.json().catch(() => ({}));
   const { action } = body;
 
