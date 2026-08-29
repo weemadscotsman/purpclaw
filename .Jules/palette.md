@@ -1,0 +1,1 @@
+## 2024-05-24 - Accessibility standards\n**Learning:** Icon-only buttons frequently lack ARIA labels and focus states in this codebase.\n**Action:** Always add aria-label and focus-visible classes to icon-only buttons like Share, Play, etc.
