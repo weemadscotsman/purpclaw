@@ -244,7 +244,7 @@ export function ComposerInput(props: ComposerInputProps) {
               {attachments.map((a, i) => (
                 <span key={a.path} className="flex items-center gap-1 rounded-lg border border-cyan-300/20 bg-cyan-300/6 px-2 py-0.5 text-[9px] font-mono text-cyan-100/80" title={a.path}>
                   📎 {a.name} <span className="text-white/25">{a.kind}</span>
-                  <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} className="ml-0.5 text-rose-300/60 hover:text-rose-200">×</button>
+                  <button aria-label="Remove attachment" onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))} className="ml-0.5 text-rose-300/60 hover:text-rose-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400/50 rounded"><span aria-hidden="true">×</span></button>
                 </span>
               ))}
               {uploading && <span className="text-[9px] font-mono text-white/35 animate-pulse">uploading…</span>}
@@ -302,14 +302,15 @@ export function ComposerInput(props: ComposerInputProps) {
           {/* (+) Launcher */}
           <div className="relative">
             <button
+              aria-label="Launcher menu"
               onClick={() => toggle('launcher')}
-              className={`h-7 w-7 rounded-lg border text-sm font-black transition-all plus-rotate ${
+              className={`h-7 w-7 rounded-lg border text-sm font-black transition-all plus-rotate focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/50 ${
                 openMenu === 'launcher'
                   ? 'border-cyan-400/30 bg-cyan-400/12 text-cyan-100'
                   : 'border-white/10 bg-white/[0.03] text-white/40 hover:text-white/70 hover:bg-white/[0.06]'
               }`}
               title="Attach / Context / Actions"
-            >+</button>
+            ><span aria-hidden="true">+</span></button>
             <Flyout open={openMenu === 'launcher'} wide>
               {LAUNCHER_SECTIONS.map(section => (
                 <div key={section.title} className="mb-2.5 last:mb-0">
