@@ -118,6 +118,12 @@ export function LiveSystemMap({ data }: { data: MissionData }) {
   const graphRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // ⚡ Bolt Optimization:
+  // Centralize the O(N) uniqueAgents filter into a single memoized calculation.
+  // Previously, this expensive operation was called multiple times on every render/update
+  // across downstream useMemo blocks. Memoizing the intermediate list avoids redundant passes.
+  const uniqueAgentsList = useMemo(() => uniqueAgents(data.agents), [data.agents]);
+
   // Build graph data from MissionData
   const { nodes, links } = useMemo(() => {
     const nodes: GraphNode[] = [];
@@ -172,18 +178,17 @@ export function LiveSystemMap({ data }: { data: MissionData }) {
     }
 
     // 5. Divisions
-    const agents = uniqueAgents(data.agents);
-    const divisions = [...new Set(agents.map(a => a.division || 'UNASSIGNED'))];
+    const divisions = [...new Set(uniqueAgentsList.map(a => a.division || 'UNASSIGNED'))];
     for (const d of divisions) {
       const id = `div:${d}`;
-      const list = agents.filter(a => (a.division || 'UNASSIGNED') === d);
+      const list = uniqueAgentsList.filter(a => (a.division || 'UNASSIGNED') === d);
       const working = list.filter(a => a.status === 'working').length;
       addNode({ id, label: d, kind: 'division', color: KIND_CONFIG.division.color, active: working > 0, size: KIND_CONFIG.division.size });
       addLink(id, 'core', '#34d399', working > 0 ? 0.7 : 0.2);
     }
 
     // 6. Agents
-    for (const a of agents) {
+    for (const a of uniqueAgentsList) {
       const id = `agt:${a.name}`;
       const working = a.status === 'working';
       const cfg = KIND_CONFIG.agent;
@@ -205,16 +210,16 @@ export function LiveSystemMap({ data }: { data: MissionData }) {
     }
 
     return { nodes, links };
-  }, [data]);
+  }, [data, uniqueAgentsList]);
 
   // Counts for legend
   const counts = useMemo(() => ({
-    agents: uniqueAgents(data.agents).length,
-    divisions: new Set(uniqueAgents(data.agents).map(a => a.division || 'UNASSIGNED')).size,
+    agents: uniqueAgentsList.length,
+    divisions: new Set(uniqueAgentsList.map(a => a.division || 'UNASSIGNED')).size,
     services: data.services.filter(s => isLiveStatus(s.status)).length,
     totalServices: data.services.length,
     flows: data.pipeline?.active?.length ?? 0,
-  }), [data]);
+  }), [data, uniqueAgentsList]);
 
   // Zoom to fit on mount and data change
   useEffect(() => {
