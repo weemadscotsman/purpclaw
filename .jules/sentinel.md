@@ -2,3 +2,8 @@
 **Vulnerability:** The `/api/playwright` POST endpoint lacked authentication, allowing any unauthenticated user to remotely execute arbitrary code, navigate to arbitrary URLs (SSRF), and extract DOM data via the headless Chromium browser.
 **Learning:** Next.js API route proxies that execute system-level or high-privilege operations (like browser remote control) must explicitly include authentication checks (`checkOperator`), as they don't inherit it automatically and can expose local network boundaries and system resources.
 **Prevention:** Always verify that state-mutating or operation-triggering Next.js API endpoints (`app/api/**/route.ts`), particularly those acting as gateways or proxies to services, explicitly invoke `checkOperator(req)`.
+
+## 2024-05-20 - Unauthenticated File Upload
+**Vulnerability:** The `/api/upload` POST endpoint lacked authentication, allowing any unauthenticated user to upload files to the `agent_work/uploads` directory.
+**Learning:** Next.js API route endpoints that write to the filesystem must explicitly include authentication checks (`checkOperator`), as they don't inherit it automatically and can expose local file systems and system resources.
+**Prevention:** Always verify that state-mutating or operation-triggering Next.js API endpoints (`app/api/**/route.ts`), particularly those writing files or acting as gateways or proxies to services, explicitly invoke `checkOperator(req)`.
