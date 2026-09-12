@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 
 interface LogEntry {
   id: string;
@@ -75,7 +75,12 @@ export default function LogFeed() {
   const [filter, setFilter] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  const filteredLogs = filter ? logs.filter((log) => log.type === filter) : logs;
+  // ⚡ Bolt: Memoize log filtering to prevent O(N) array iteration on every render
+  // (e.g. when 'paused' state changes via scrolling, which triggers frequent re-renders)
+  const filteredLogs = useMemo(
+    () => (filter ? logs.filter((log) => log.type === filter) : logs),
+    [logs, filter]
+  );
 
   useEffect(() => {
     if (!paused && scrollRef.current) {
