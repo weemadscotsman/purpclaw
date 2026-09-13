@@ -95,7 +95,8 @@ export function TraceTerminal({ compact = false }: { compact?: boolean }) {
         type="button"
         onClick={() => setOpen(true)}
         title="Open trace terminal"
-        className="fixed bottom-3 right-3 z-40 flex items-center gap-2 rounded-full border border-cyan-300/30 bg-black/85 px-3 py-1.5 text-[11px] font-mono text-cyan-200 shadow-2xl backdrop-blur hover:border-cyan-300/60"
+        aria-label="Open trace terminal"
+        className="fixed bottom-3 right-3 z-40 flex items-center gap-2 rounded-full border border-cyan-300/30 bg-black/85 px-3 py-1.5 text-[11px] font-mono text-cyan-200 shadow-2xl backdrop-blur hover:border-cyan-300/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500/50"
       >
         <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 animate-pulse" />
         TRACE{events.length > 0 && <span className="text-white/40">{events.length}</span>}
@@ -128,12 +129,12 @@ export function TraceTerminal({ compact = false }: { compact?: boolean }) {
           <option value="all">all</option>
           {sources.map(source => <option key={source} value={source}>{source}</option>)}
         </select>
-        <button onClick={() => setPaused(v => !v)} title={paused ? 'resume' : 'pause'} className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/65">{paused ? '▶' : '❙❙'}</button>
-        <button onClick={() => setAutoScroll(v => !v)} title={autoScroll ? 'auto-scroll on' : 'auto-scroll off'} className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/65">{autoScroll ? '⤓' : '⇅'}</button>
-        <button onClick={copyAll} title="copy all visible" className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/65">⧉</button>
-        <button onClick={() => setEvents([])} title="clear" className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/45">✕</button>
-        <button onClick={() => setExpanded(v => !v)} title={expanded ? 'shrink' : 'fullscreen'} className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/45">{expanded ? '⊟' : '⛶'}</button>
-        <button onClick={() => setOpen(false)} title="minimize to pill" className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/45">—</button>
+        <button onClick={() => setPaused(v => !v)} title={paused ? 'resume' : 'pause'} aria-label={paused ? 'resume' : 'pause'} className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/65 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500/50">{paused ? '▶' : '❙❙'}</button>
+        <button onClick={() => setAutoScroll(v => !v)} title={autoScroll ? 'auto-scroll on' : 'auto-scroll off'} aria-label={autoScroll ? 'auto-scroll on' : 'auto-scroll off'} className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/65 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500/50">{autoScroll ? '⤓' : '⇅'}</button>
+        <button onClick={copyAll} title="copy all visible" aria-label="copy all visible" className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/65 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500/50">⧉</button>
+        <button onClick={() => setEvents([])} title="clear" aria-label="clear" className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/45 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500/50">✕</button>
+        <button onClick={() => setExpanded(v => !v)} title={expanded ? 'shrink' : 'fullscreen'} aria-label={expanded ? 'shrink' : 'fullscreen'} className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/45 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500/50">{expanded ? '⊟' : '⛶'}</button>
+        <button onClick={() => setOpen(false)} title="minimize to pill" aria-label="minimize to pill" className="rounded border border-white/10 px-1.5 py-0.5 text-[10px] font-mono text-white/45 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-500/50">—</button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-2.5 py-1.5 font-mono text-[11px] leading-5">
         {visible.length === 0 && <div className="text-white/25">No trace events yet. Actions appear here as they route. Click any line to copy.</div>}
