@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { checkOperator } from '../_lib/operator-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -27,6 +28,9 @@ function stampPrefix() {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = checkOperator(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const form = await req.formData();
     const files = form.getAll('files').filter((f): f is File => f instanceof File);
@@ -65,7 +69,10 @@ export async function POST(req: NextRequest) {
 }
 
 // List recent uploads so the UI / agents can discover what was shared.
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const auth = checkOperator(req);
+  if (!auth.ok) return auth.response;
+
   try {
     const dir = uploadsDir();
     const entries = fs.readdirSync(dir)
