@@ -1,0 +1,3 @@
+## 2025-01-24 - Memoizing Deduplication with WeakMap
+**Learning:** In complex Dashboards/React UIs where multiple disjoint components independently process or deduplicate the same large array from a shared context/hook (like `data.agents`), doing `O(N)` mapping or deduplication multiple times per render cycle becomes a performance bottleneck.
+**Action:** Use a `WeakMap` cached at the module level (outside the component or inside the helper function) to memoize the array processing by object reference. This guarantees that `O(N)` deduplication is only performed once per new array reference, efficiently sharing the result across all components without requiring complex prop drilling or context rewrites.
