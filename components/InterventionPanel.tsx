@@ -344,6 +344,7 @@ export default function InterventionPanel() {
                             <button
                               onClick={() => handleInterrupt(agent.id, 'kill')}
                               className="text-xs text-rose-500 hover:text-rose-400 ml-1"
+                              aria-label="Kill agent"
                             >✕</button>
                           </div>
                         </div>
@@ -366,7 +367,8 @@ export default function InterventionPanel() {
               <select
                 value={reallocateFrom}
                 onChange={e => setReallocateFrom(e.target.value)}
-                className="bg-[#09090b] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-cyan-500/50"
+                className="bg-[#09090b] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-zinc-300 focus:border-cyan-500/50"
+                aria-label="Source division"
               >
                 <option value="">FROM</option>
                 {divisions.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}
@@ -374,7 +376,8 @@ export default function InterventionPanel() {
               <select
                 value={reallocateTo}
                 onChange={e => setReallocateTo(e.target.value)}
-                className="bg-[#09090b] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-cyan-500/50"
+                className="bg-[#09090b] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-zinc-300 focus:border-cyan-500/50"
+                aria-label="Target division"
               >
                 <option value="">TO</option>
                 {divisions.map(d => <option key={d.name} value={d.name}>{d.name}</option>)}
@@ -384,7 +387,8 @@ export default function InterventionPanel() {
                 min="1"
                 value={reallocateCount}
                 onChange={e => setReallocateCount(parseInt(e.target.value) || 1)}
-                className="bg-[#09090b] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-zinc-300 focus:outline-none focus:border-cyan-500/50"
+                className="bg-[#09090b] border border-white/[0.08] rounded-lg px-2 py-1.5 text-xs text-zinc-300 focus:border-cyan-500/50"
+                aria-label="Number of agents to move"
               />
             </div>
             <button
