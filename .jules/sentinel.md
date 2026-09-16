@@ -1,8 +1,4 @@
-## 2024-05-18 - Unauthenticated Headless Browser Proxy
-**Vulnerability:** The `/api/playwright` POST endpoint lacked authentication, allowing any unauthenticated user to remotely execute arbitrary code, navigate to arbitrary URLs (SSRF), and extract DOM data via the headless Chromium browser.
-**Learning:** Next.js API route proxies that execute system-level or high-privilege operations (like browser remote control) must explicitly include authentication checks (`checkOperator`), as they don't inherit it automatically and can expose local network boundaries and system resources.
-**Prevention:** Always verify that state-mutating or operation-triggering Next.js API endpoints (`app/api/**/route.ts`), particularly those acting as gateways or proxies to services, explicitly invoke `checkOperator(req)`.
-## 2024-05-24 - Missing Authentication on File Upload Endpoint
-**Vulnerability:** The `app/api/upload/route.ts` endpoint allowed unauthenticated users to upload files (up to 50MB) and list recently uploaded files, leading to potential abuse and data leakage.
-**Learning:** Some API routes, particularly utility or non-core endpoints like file uploads, may have been missed during the initial implementation of the `checkOperator` authentication guard.
-**Prevention:** Ensure all Next.js API endpoints handling state changes, sensitive data, or resource allocation are secured using `checkOperator(req)` by default, unless explicitly intended for public access.
+## 2026-06-25 - Shell Command Injection in raw exec
+**Vulnerability:** Raw `exec('taskkill /F /PID ' + pid)` in `lib/mallory/index.js` allowed potential command injection, bypassing governance guardrails.
+**Learning:** This repository has a dedicated standard for process execution (`lib/child-registry.js`) that safely handles timeouts, tracks processes, avoids leaking cmd windows, and mitigates shell injection. Raw `exec` usage violates this pattern.
+**Prevention:** Always use `execSafe` or `trackedSpawn` from `lib/child-registry.js` instead of raw `child_process.exec`.
