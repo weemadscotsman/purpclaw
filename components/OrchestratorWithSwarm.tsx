@@ -485,7 +485,8 @@ export function OrchestratorDashboardWithSwarm() {
                 <input
                   type="text"
                   placeholder="Type voice command (e.g., 'Shift 3 agents from Research to Engineering')"
-                  className="flex-1 bg-[#111] border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
+                  className="flex-1 bg-[#111] border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:border-blue-500"
+                  aria-label="Voice command"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.currentTarget.value.trim()) {
                       handleVoiceCommandInput(e.currentTarget.value);
@@ -617,7 +618,8 @@ export function OrchestratorDashboardWithSwarm() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Enter command for the swarm..."
-                    className="flex-1 bg-[#111] border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500"
+                    className="flex-1 bg-[#111] border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-blue-500"
+                    aria-label="Command input"
                     disabled={isProcessing}
                   />
                   <button
