@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { harnessFetch, toMission, type HarnessJob } from '../_shared';
+import { checkOperator } from '../../_lib/operator-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,6 +11,9 @@ export const dynamic = 'force-dynamic';
  * → Returns the mission shape the UI expects, with missionId === jobId.
  */
 export async function POST(request: NextRequest) {
+  const auth = checkOperator(request);
+  if (!auth.ok) return auth.response;
+
   let body: any = {};
   try { body = await request.json(); } catch {}
 
