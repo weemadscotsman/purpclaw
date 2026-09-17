@@ -6,3 +6,7 @@
 **Vulnerability:** The `app/api/upload/route.ts` endpoint allowed unauthenticated users to upload files (up to 50MB) and list recently uploaded files, leading to potential abuse and data leakage.
 **Learning:** Some API routes, particularly utility or non-core endpoints like file uploads, may have been missed during the initial implementation of the `checkOperator` authentication guard.
 **Prevention:** Ensure all Next.js API endpoints handling state changes, sensitive data, or resource allocation are secured using `checkOperator(req)` by default, unless explicitly intended for public access.
+## 2026-09-17 - Unauthenticated Operational and Config Endpoints
+**Vulnerability:** Several state-mutating and task-triggering endpoints (`/api/awaken/start`, `/api/awaken/stop`, `/api/harness/start`, and `/api/setup`) were exposed without authentication, allowing unauthenticated local/network execution of AWAKEN processes, arbitrary task initiation via harness, and modification of local `.env` configurations.
+**Learning:** Just like browser proxies or file uploads, orchestration triggers and configuration endpoints are critical boundaries that must be individually guarded by `checkOperator` to enforce operator access and CSRF protection.
+**Prevention:** Apply a consistent security boundary across all Next.js API endpoints by making `checkOperator(req)` the default first statement in any POST/PUT/DELETE handler.
