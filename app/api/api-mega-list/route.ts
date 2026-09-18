@@ -1,3 +1,4 @@
+import { checkOperator } from "../_lib/operator-auth";
 import { NextRequest, NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
@@ -69,6 +70,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = checkOperator(request);
+  if (!auth.ok) return auth.response;
   let api;
   try {
     api = require('../../../lib/api-mega-list');
