@@ -6,3 +6,7 @@
 **Vulnerability:** The `app/api/upload/route.ts` endpoint allowed unauthenticated users to upload files (up to 50MB) and list recently uploaded files, leading to potential abuse and data leakage.
 **Learning:** Some API routes, particularly utility or non-core endpoints like file uploads, may have been missed during the initial implementation of the `checkOperator` authentication guard.
 **Prevention:** Ensure all Next.js API endpoints handling state changes, sensitive data, or resource allocation are secured using `checkOperator(req)` by default, unless explicitly intended for public access.
+## 2024-05-25 - Unauthenticated OS Command Execution
+**Vulnerability:** The `app/api/awaken/start/route.ts` POST endpoint spawned a Node.js process using `child_process.spawn` without authentication, allowing any unauthenticated user to execute arbitrary OS commands and trigger background processes.
+**Learning:** Next.js API route that trigger OS-level process execution must include authentication checks (`checkOperator`) to prevent unauthorized access and potential Remote Code Execution (RCE).
+**Prevention:** Always verify that API endpoints capable of executing OS commands or spawning processes, particularly in the Next.js framework, explicitly invoke `checkOperator(req)`.
