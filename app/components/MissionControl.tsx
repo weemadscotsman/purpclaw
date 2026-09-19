@@ -969,17 +969,26 @@ function PanelContent({ tab, data, iframeRef }: { tab: TabId; data: MissionData;
   );
 }
 
-// â”€â”€ Sub-panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Sub-panels ──────────────────────────────────────────────────────────────
 
+const uniqueAgentsCache = new WeakMap<MissionData['agents'], MissionData['agents'][number][]>();
+
+// ⚡ Bolt: Using a WeakMap to cache the O(N) deduplication operation.
+// This prevents redundant passes across multiple hooks/components on the same render
+// and ensures referential equality of the result, reducing unnecessary React re-renders.
 function getUniqueAgents(agents: MissionData['agents']) {
+  if (uniqueAgentsCache.has(agents)) return uniqueAgentsCache.get(agents)!;
   const map = new Map<string, MissionData['agents'][number]>();
   for (const agent of agents) {
     const key = agent.name.toLowerCase();
     const existing = map.get(key);
     if (!existing || agent.status === 'working') map.set(key, agent);
   }
-  return Array.from(map.values());
+  const result = Array.from(map.values());
+  uniqueAgentsCache.set(agents, result);
+  return result;
 }
+
 
 function TabVisualizer({ tab, data }: { tab: TabId; data: MissionData }) {
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
