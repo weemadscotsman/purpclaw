@@ -17,8 +17,11 @@ export function TranscriptViewer({ data }: { data: TranscriptSegment[] }) {
             </p>
           </div>
         </div>
-        <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
-          <Share2 size={18} />
+        <button
+          aria-label="Share transcript"
+          className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        >
+          <Share2 size={18} aria-hidden="true" />
         </button>
       </div>
       
@@ -26,9 +29,12 @@ export function TranscriptViewer({ data }: { data: TranscriptSegment[] }) {
         {data.map((segment, index) => (
           <div key={index} className="flex gap-4 group">
             <div className="flex-shrink-0 pt-1">
-              <button className="flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded transition-colors opacity-70 group-hover:opacity-100">
-                <Play size={12} />
-                {segment.time}
+              <button
+                aria-label={`Play segment at ${segment.time}`}
+                className="flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded transition-colors opacity-70 group-hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
+                <Play size={12} aria-hidden="true" />
+                <span aria-hidden="true">{segment.time}</span>
               </button>
             </div>
             <div className="flex-grow">
