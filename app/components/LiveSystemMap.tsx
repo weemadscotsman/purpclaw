@@ -70,14 +70,21 @@ function isLiveStatus(status?: string) {
   return s === 'online' || s === 'healthy' || s === 'ok' || s === 'degraded';
 }
 
+const uniqueAgentsCacheMap = new WeakMap<MissionData['agents'], MissionData['agents'][number][]>();
+
+// ⚡ Bolt: Caching this expensive deduplication via WeakMap using the array reference as the key.
+// Ensures referential equality for the result, avoiding extra React re-renders.
 function uniqueAgents(agents: MissionData['agents']) {
+  if (uniqueAgentsCacheMap.has(agents)) return uniqueAgentsCacheMap.get(agents)!;
   const m = new Map<string, MissionData['agents'][number]>();
   for (const a of agents) {
     const k = a.name.toLowerCase();
     const ex = m.get(k);
     if (!ex || a.status === 'working') m.set(k, a);
   }
-  return Array.from(m.values());
+  const result = Array.from(m.values());
+  uniqueAgentsCacheMap.set(agents, result);
+  return result;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
