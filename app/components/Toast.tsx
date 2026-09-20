@@ -35,15 +35,22 @@ function Toast({ toast, onDismiss }: ToastProps) {
     info: '◆',
   };
 
+  const role = toast.type === 'error' ? 'alert' : 'status';
+
   return (
-    <div className={`flex items-center gap-3 px-4 py-3 rounded-lg border ${colors[toast.type]} animate-toast-in`}>
-      <span className="text-sm font-bold">{icons[toast.type]}</span>
+    <div
+      role={role}
+      aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+      className={`flex items-center gap-3 px-4 py-3 rounded-lg border ${colors[toast.type]} animate-toast-in`}
+    >
+      <span className="text-sm font-bold" aria-hidden="true">{icons[toast.type]}</span>
       <span className="text-xs font-mono">{toast.message}</span>
       <button
         onClick={() => onDismiss(toast.id)}
-        className="ml-2 text-white/30 hover:text-white/60 transition-colors"
+        aria-label="Dismiss notification"
+        className="ml-2 p-1 rounded text-white/30 hover:text-white/60 hover:bg-white/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 transition-colors"
       >
-        ✕
+        <span aria-hidden="true">✕</span>
       </button>
     </div>
   );
