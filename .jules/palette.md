@@ -1,0 +1,3 @@
+## 2024-06-25 - Proper Icon-Only Button Accessibility in Interactive Components
+**Learning:** Decorative icons inside interactive components like buttons (e.g. `TranscriptViewer.tsx`) must be explicitly hidden from screen readers using `aria-hidden="true"` to prevent redundant announcements. The interactive element itself needs an `aria-label` describing its action, and explicitly defined `focus-visible` ring utilities (`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500`) to guarantee clear keyboard navigation paths.
+**Action:** Always verify that every icon-only button contains both `aria-label` and visual focus states, and that its inner decorative icon has `aria-hidden="true"`.
