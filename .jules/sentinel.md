@@ -6,3 +6,7 @@
 **Vulnerability:** The `app/api/upload/route.ts` endpoint allowed unauthenticated users to upload files (up to 50MB) and list recently uploaded files, leading to potential abuse and data leakage.
 **Learning:** Some API routes, particularly utility or non-core endpoints like file uploads, may have been missed during the initial implementation of the `checkOperator` authentication guard.
 **Prevention:** Ensure all Next.js API endpoints handling state changes, sensitive data, or resource allocation are secured using `checkOperator(req)` by default, unless explicitly intended for public access.
+## 2026-09-23 - Unauthenticated Internal Proxy (SSRF)
+**Vulnerability:** The `app/api/service-proxy/route.ts` endpoint acts as a gateway to internal services on specific ports but lacked any authentication check, allowing external actors to bypass perimeter security and issue arbitrary requests to internal backend services.
+**Learning:** Even if an endpoint only forwards to an "allowed ports" list or the local loopback (127.0.0.1), if it is accessible externally, it exposes the internal network surface area. Next.js API routes that proxy requests must still implement boundary authentication like `checkOperator`.
+**Prevention:** Apply `checkOperator(req)` globally to all custom proxy routes in Next.js, and ideally, move internal orchestration routing strictly to server-side code rather than exposing proxy utilities to the client.
