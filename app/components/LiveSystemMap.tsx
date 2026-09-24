@@ -70,14 +70,20 @@ function isLiveStatus(status?: string) {
   return s === 'online' || s === 'healthy' || s === 'ok' || s === 'degraded';
 }
 
+// ⚡ Bolt: Cache unique agents calculation to avoid redundant O(N) passes.
+const uniqueAgentsCache = new WeakMap<MissionData['agents'], MissionData['agents']>();
+
 function uniqueAgents(agents: MissionData['agents']) {
+  if (uniqueAgentsCache.has(agents)) return uniqueAgentsCache.get(agents)!;
   const m = new Map<string, MissionData['agents'][number]>();
   for (const a of agents) {
     const k = a.name.toLowerCase();
     const ex = m.get(k);
     if (!ex || a.status === 'working') m.set(k, a);
   }
-  return Array.from(m.values());
+  const res = Array.from(m.values());
+  uniqueAgentsCache.set(agents, res);
+  return res;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
