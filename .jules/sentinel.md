@@ -6,3 +6,7 @@
 **Vulnerability:** The `app/api/upload/route.ts` endpoint allowed unauthenticated users to upload files (up to 50MB) and list recently uploaded files, leading to potential abuse and data leakage.
 **Learning:** Some API routes, particularly utility or non-core endpoints like file uploads, may have been missed during the initial implementation of the `checkOperator` authentication guard.
 **Prevention:** Ensure all Next.js API endpoints handling state changes, sensitive data, or resource allocation are secured using `checkOperator(req)` by default, unless explicitly intended for public access.
+## 2024-05-24 - Missing Authentication on API Proxy Endpoint
+**Vulnerability:** The `/api/service-proxy` endpoint acts as a gateway forwarding requests to internal services on the local loopback interface. Because it lacked authentication, it exposed internal APIs and operations (SSRF vulnerability) to any unauthenticated caller.
+**Learning:** Even if a proxy endpoint explicitly restricts forwarding targets to a hardcoded whitelist of internal ports and localhost (`127.0.0.1`), this does not provide sufficient security against external unauthenticated callers accessing the proxy itself.
+**Prevention:** Gateway or proxy endpoints in Next.js (`app/api/**/route.ts`) that forward requests to internal networks or services must always explicitly invoke `checkOperator(req)` to authenticate the incoming request before performing any forwarding logic.
