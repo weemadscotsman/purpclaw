@@ -1,0 +1,3 @@
+## 2026-06-30 - Focus-visible and aria-hidden usage with lucide-react icons
+**Learning:** Decorative icons imported from `lucide-react` (like `Play`, `Share2`) do not naturally have `aria-hidden="true"`, leading to redundant or confusing screen reader announcements when placed inside buttons with `aria-label`s. In addition, when adding accessible focus rings, the utility `focus-visible:outline-none` is required alongside `focus-visible:ring-2` to prevent the browser's default outline from clashing with the Tailwind ring.
+**Action:** Always manually add `aria-hidden="true"` to `lucide-react` icons inside interactive elements, and pair `focus-visible:ring-2` with `focus-visible:outline-none`.
