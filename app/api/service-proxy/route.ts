@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkOperator } from '../_lib/operator-auth';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -32,6 +33,9 @@ function getTarget(request: NextRequest): Target {
 }
 
 async function proxy(request: NextRequest) {
+  const auth = checkOperator(request);
+  if (!auth.ok) return auth.response;
+
   const target = getTarget(request);
   const soft = request.nextUrl.searchParams.get('soft') === '1';
   if (!('url' in target)) {
