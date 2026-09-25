@@ -725,6 +725,26 @@ function cleanDivisionName(value?: string) {
   return String(value || 'UNASSIGNED').trim().toUpperCase() || 'UNASSIGNED';
 }
 
+// ⚡ Bolt: Cache division grouping across disjoint components using WeakMap.
+// Impact: Reduces redundant O(N) array grouping from 2+ per render to 1.
+// Note: We use a module-level WeakMap keyed by the array reference to avoid
+// prop-drilling or Context rewrites while still caching the calculation.
+const agentsDivisionCache = new WeakMap<any[], Record<string, any[]>>();
+
+function getCachedDivisions(agents: any[]): Record<string, any[]> {
+  if (agentsDivisionCache.has(agents)) {
+    return agentsDivisionCache.get(agents)!;
+  }
+  const grouped = agents.reduce<Record<string, any[]>>((map, agent) => {
+    const key = cleanDivisionName(agent.division);
+    map[key] = map[key] || [];
+    map[key].push(agent);
+    return map;
+  }, {});
+  agentsDivisionCache.set(agents, grouped);
+  return grouped;
+}
+
 function compact(value: unknown, max = 64) {
   const text = String(value || '').replace(/\s+/g, ' ').trim();
   return text.length > max ? `${text.slice(0, max)}...` : text;
@@ -735,14 +755,7 @@ function MissionStackGlance({ data }: { data: MissionData }) {
   const activeJobs = liveJobs.filter(job => ['queued', 'delegated', 'running', 'started', 'synthesizing'].includes(String(job.state || '').toLowerCase()));
   const latestJob = liveJobs[0] || null;
   const visibleAgents = data.agents || [];
-  const divisions = Object.entries(
-    visibleAgents.reduce<Record<string, typeof visibleAgents>>((map, agent) => {
-      const key = cleanDivisionName(agent.division);
-      map[key] = map[key] || [];
-      map[key].push(agent);
-      return map;
-    }, {})
-  )
+  const divisions = Object.entries(getCachedDivisions(visibleAgents))
     .map(([division, list]) => ({
       division,
       agents: list,
@@ -883,14 +896,7 @@ function ActiveWorkBoard({ data }: { data: MissionData }) {
       return text.includes('agent.spawned') || text.includes('agent spawned') || text.includes('spawned');
     })
     .slice(0, 5);
-  const divisionRows = Object.entries(
-    allAgents.reduce<Record<string, typeof allAgents>>((map, agent) => {
-      const key = cleanDivisionName(agent.division);
-      map[key] = map[key] || [];
-      map[key].push(agent);
-      return map;
-    }, {})
-  )
+  const divisionRows = Object.entries(getCachedDivisions(allAgents))
     .map(([division, list]) => ({
       division,
       list,
