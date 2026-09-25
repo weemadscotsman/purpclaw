@@ -1,0 +1,3 @@
+## 2025-03-05 - Enhance TranscriptViewer.tsx Accessibility
+**Learning:** Added `aria-hidden="true"` to decorative Lucide icons to avoid redundant screen reader announcements, and gave `aria-label` to the share button and transcript play segment button. Keyboard focus was fixed using the standard Tailwind classes. I learned that `tsconfig.tsbuildinfo` often gets generated when compiling code and should be removed before committing since it isn't part of version control.
+**Action:** Always delete `tsconfig.tsbuildinfo` if it accidentally gets built during type checks or other operations, and always prefer providing contextually-aware `aria-label`s for jump-to-time elements over ambiguous labels like "Play".
