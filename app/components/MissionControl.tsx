@@ -971,14 +971,25 @@ function PanelContent({ tab, data, iframeRef }: { tab: TabId; data: MissionData;
 
 // â”€â”€ Sub-panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+const uniqueAgentsCache = new WeakMap<MissionData['agents'], MissionData['agents']>();
+
+/**
+ * Dedupes agents by name, preferring "working" status.
+ * Memoized via WeakMap to avoid redundant O(N) passes during a single render cycle.
+ */
 function getUniqueAgents(agents: MissionData['agents']) {
+  const cached = uniqueAgentsCache.get(agents);
+  if (cached) return cached;
+
   const map = new Map<string, MissionData['agents'][number]>();
   for (const agent of agents) {
     const key = agent.name.toLowerCase();
     const existing = map.get(key);
     if (!existing || agent.status === 'working') map.set(key, agent);
   }
-  return Array.from(map.values());
+  const result = Array.from(map.values());
+  uniqueAgentsCache.set(agents, result);
+  return result;
 }
 
 function TabVisualizer({ tab, data }: { tab: TabId; data: MissionData }) {

@@ -70,14 +70,25 @@ function isLiveStatus(status?: string) {
   return s === 'online' || s === 'healthy' || s === 'ok' || s === 'degraded';
 }
 
+const liveMapUniqueAgentsCache = new WeakMap<MissionData['agents'], MissionData['agents']>();
+
+/**
+ * Dedupes agents by name, preferring "working" status.
+ * Memoized via WeakMap to avoid redundant O(N) passes during a single render cycle.
+ */
 function uniqueAgents(agents: MissionData['agents']) {
+  const cached = liveMapUniqueAgentsCache.get(agents);
+  if (cached) return cached;
+
   const m = new Map<string, MissionData['agents'][number]>();
   for (const a of agents) {
     const k = a.name.toLowerCase();
     const ex = m.get(k);
     if (!ex || a.status === 'working') m.set(k, a);
   }
-  return Array.from(m.values());
+  const result = Array.from(m.values());
+  liveMapUniqueAgentsCache.set(agents, result);
+  return result;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
