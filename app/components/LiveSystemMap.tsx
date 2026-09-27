@@ -118,6 +118,8 @@ export function LiveSystemMap({ data }: { data: MissionData }) {
   const graphRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const memoizedUniqueAgents = useMemo(() => uniqueAgents(data.agents), [data.agents]);
+
   // Build graph data from MissionData
   const { nodes, links } = useMemo(() => {
     const nodes: GraphNode[] = [];
@@ -172,7 +174,7 @@ export function LiveSystemMap({ data }: { data: MissionData }) {
     }
 
     // 5. Divisions
-    const agents = uniqueAgents(data.agents);
+    const agents = memoizedUniqueAgents;
     const divisions = [...new Set(agents.map(a => a.division || 'UNASSIGNED'))];
     for (const d of divisions) {
       const id = `div:${d}`;
@@ -205,16 +207,16 @@ export function LiveSystemMap({ data }: { data: MissionData }) {
     }
 
     return { nodes, links };
-  }, [data]);
+  }, [data, memoizedUniqueAgents]);
 
   // Counts for legend
   const counts = useMemo(() => ({
-    agents: uniqueAgents(data.agents).length,
-    divisions: new Set(uniqueAgents(data.agents).map(a => a.division || 'UNASSIGNED')).size,
+    agents: memoizedUniqueAgents.length,
+    divisions: new Set(memoizedUniqueAgents.map(a => a.division || 'UNASSIGNED')).size,
     services: data.services.filter(s => isLiveStatus(s.status)).length,
     totalServices: data.services.length,
     flows: data.pipeline?.active?.length ?? 0,
-  }), [data]);
+  }), [data, memoizedUniqueAgents]);
 
   // Zoom to fit on mount and data change
   useEffect(() => {
