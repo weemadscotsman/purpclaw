@@ -725,6 +725,22 @@ function cleanDivisionName(value?: string) {
   return String(value || 'UNASSIGNED').trim().toUpperCase() || 'UNASSIGNED';
 }
 
+const divisionGroupCache = new WeakMap<NonNullable<MissionData['agents']>, Record<string, NonNullable<MissionData['agents']>>>();
+
+function getGroupedDivisions(agents: NonNullable<MissionData['agents']>) {
+  if (divisionGroupCache.has(agents)) {
+    return divisionGroupCache.get(agents)!;
+  }
+  const grouped = agents.reduce<Record<string, any[]>>((map, agent) => {
+    const key = cleanDivisionName(agent.division);
+    map[key] = map[key] || [];
+    map[key].push(agent);
+    return map;
+  }, {});
+  divisionGroupCache.set(agents, grouped);
+  return grouped;
+}
+
 function compact(value: unknown, max = 64) {
   const text = String(value || '').replace(/\s+/g, ' ').trim();
   return text.length > max ? `${text.slice(0, max)}...` : text;
@@ -735,14 +751,7 @@ function MissionStackGlance({ data }: { data: MissionData }) {
   const activeJobs = liveJobs.filter(job => ['queued', 'delegated', 'running', 'started', 'synthesizing'].includes(String(job.state || '').toLowerCase()));
   const latestJob = liveJobs[0] || null;
   const visibleAgents = data.agents || [];
-  const divisions = Object.entries(
-    visibleAgents.reduce<Record<string, typeof visibleAgents>>((map, agent) => {
-      const key = cleanDivisionName(agent.division);
-      map[key] = map[key] || [];
-      map[key].push(agent);
-      return map;
-    }, {})
-  )
+  const divisions = Object.entries(getGroupedDivisions(visibleAgents))
     .map(([division, list]) => ({
       division,
       agents: list,
@@ -883,14 +892,7 @@ function ActiveWorkBoard({ data }: { data: MissionData }) {
       return text.includes('agent.spawned') || text.includes('agent spawned') || text.includes('spawned');
     })
     .slice(0, 5);
-  const divisionRows = Object.entries(
-    allAgents.reduce<Record<string, typeof allAgents>>((map, agent) => {
-      const key = cleanDivisionName(agent.division);
-      map[key] = map[key] || [];
-      map[key].push(agent);
-      return map;
-    }, {})
-  )
+  const divisionRows = Object.entries(getGroupedDivisions(allAgents))
     .map(([division, list]) => ({
       division,
       list,
