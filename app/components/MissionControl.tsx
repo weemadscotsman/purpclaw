@@ -971,14 +971,24 @@ function PanelContent({ tab, data, iframeRef }: { tab: TabId; data: MissionData;
 
 // â”€â”€ Sub-panels â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+// Cache expensive O(N) array deduplication across disjoint components
+// using a module-level WeakMap keyed by the agents array reference
+const uniqueAgentsCache = new WeakMap<MissionData['agents'], MissionData['agents']>();
+
 function getUniqueAgents(agents: MissionData['agents']) {
+  if (uniqueAgentsCache.has(agents)) {
+    return uniqueAgentsCache.get(agents)!;
+  }
+
   const map = new Map<string, MissionData['agents'][number]>();
   for (const agent of agents) {
     const key = agent.name.toLowerCase();
     const existing = map.get(key);
     if (!existing || agent.status === 'working') map.set(key, agent);
   }
-  return Array.from(map.values());
+  const result = Array.from(map.values());
+  uniqueAgentsCache.set(agents, result);
+  return result;
 }
 
 function TabVisualizer({ tab, data }: { tab: TabId; data: MissionData }) {
