@@ -208,13 +208,17 @@ export function LiveSystemMap({ data }: { data: MissionData }) {
   }, [data]);
 
   // Counts for legend
-  const counts = useMemo(() => ({
-    agents: uniqueAgents(data.agents).length,
-    divisions: new Set(uniqueAgents(data.agents).map(a => a.division || 'UNASSIGNED')).size,
-    services: data.services.filter(s => isLiveStatus(s.status)).length,
-    totalServices: data.services.length,
-    flows: data.pipeline?.active?.length ?? 0,
-  }), [data]);
+  const counts = useMemo(() => {
+    // ⚡ Bolt optimization: cache uniqueAgents result to prevent calling it twice
+    const uniqueAgentList = uniqueAgents(data.agents);
+    return {
+      agents: uniqueAgentList.length,
+      divisions: new Set(uniqueAgentList.map(a => a.division || 'UNASSIGNED')).size,
+      services: data.services.filter(s => isLiveStatus(s.status)).length,
+      totalServices: data.services.length,
+      flows: data.pipeline?.active?.length ?? 0,
+    };
+  }, [data]);
 
   // Zoom to fit on mount and data change
   useEffect(() => {
