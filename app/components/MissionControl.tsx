@@ -162,6 +162,7 @@ function HeaderMochi({ onToggle, isOpen, compact = false }: { onToggle: () => vo
       onClick={onToggle}
       aria-expanded={isOpen}
       title={`${name} — click to ${isOpen ? 'close' : 'open'} narrator`}
+      aria-label={`Toggle narrator ${name}`}
       className={`flex items-center justify-center gap-1.5 rounded-lg border transition-all ${compact ? 'h-10 w-10 overflow-hidden px-0 py-0' : 'px-2 py-1'} ${
         isOpen
           ? 'border-fuchsia-400/50 bg-fuchsia-500/15 shadow-[0_0_12px_rgba(217,70,239,0.35)]'
@@ -229,8 +230,8 @@ function OperatorSessionSelector() {
           className="w-20 bg-black/80 border border-cyan-500/50 rounded px-1 py-0.5 text-[9px] font-mono text-cyan-200 outline-none"
           autoFocus
         />
-        <button onClick={saveOperator} className="text-[9px] font-mono text-emerald-400 hover:text-emerald-300">✓</button>
-        <button onClick={() => setEditing(false)} className="text-[9px] font-mono text-rose-400 hover:text-rose-300">×</button>
+        <button onClick={saveOperator} className="text-[9px] font-mono text-emerald-400 hover:text-emerald-300" aria-label="Save operator">✓</button>
+        <button onClick={() => setEditing(false)} className="text-[9px] font-mono text-rose-400 hover:text-rose-300" aria-label="Cancel operator editing">×</button>
       </div>
     );
   }
@@ -407,6 +408,7 @@ export function MissionControl({ data }: { data: MissionData }) {
             onClick={() => setShowOnboarding(true)}
             className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 text-white/30 hover:text-cyan-400 hover:border-cyan-500/30 flex items-center justify-center text-[11px] transition-all"
             title="Onboarding / how it works"
+            aria-label="Open onboarding guide"
           >
             ?
           </button>
@@ -414,12 +416,14 @@ export function MissionControl({ data }: { data: MissionData }) {
             onClick={() => window.open(`${window.location.origin}/mission?chrome=minimal`, '_blank', 'width=1400,height=900,menubar=no,toolbar=no')}
             className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 text-white/30 hover:text-cyan-400 hover:border-cyan-500/30 flex items-center justify-center text-[10px] transition-all"
             title="Pop out"
+            aria-label="Open minimal view in new window"
           >
           </button>
           <button
             onClick={() => window.open('/skyscraper/', '_blank', 'width=1400,height=900,menubar=no,toolbar=no')}
             className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 text-white/30 hover:text-fuchsia-400 hover:border-fuchsia-500/30 flex items-center justify-center text-[10px] transition-all font-bold"
             title="Skyscraper UI — alternate command surface"
+            aria-label="Open Skyscraper UI"
           >
             ◈
           </button>
@@ -532,11 +536,13 @@ function MochiFloat({ data, open, onClose, onExpand }: {
             onClick={onExpand}
             className="w-6 h-6 flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-white/30 hover:text-fuchsia-300 hover:border-fuchsia-400/30 transition-all text-[9px] font-mono"
             title="Open full Asher view"
+            aria-label="Open full Asher view"
           >↗</button>
           <button
             onClick={onClose}
             className="w-6 h-6 flex items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-white/30 hover:text-rose-300 hover:border-rose-400/30 transition-all text-sm font-mono leading-none"
             title="Close"
+            aria-label="Close"
           >×</button>
         </div>
       </div>
@@ -656,6 +662,7 @@ function FloatingTabRail({ openDrawer, onToggle, data, onMochiToggle, mochiOpen 
                           : 'border-white/8 bg-white/[0.03] text-white/35 hover:text-white/70 hover:border-white/20 hover:bg-white/[0.06]'
                       }`}
                       title={tab.label}
+                      aria-label={`Open ${tab.label} tab`}
                     >
                       {TAB_CODES[tab.id] || tab.icon}
                     </button>
@@ -726,6 +733,7 @@ function DrawerOverlay({ tab, data, onClose, iframeRef }: { tab: TabId; data: Mi
           <button
             onClick={onClose}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-white/40 hover:text-cyan-300 hover:border-cyan-300/30 transition-all text-sm font-mono"
+            aria-label="Close panel"
           >
             ×
           </button>
@@ -1323,6 +1331,7 @@ function ProjectKnowledgeGraph({ data }: { data: MissionData }) {
               onMouseEnter={() => setSelected({ label: node.label, kind: node.kind, detail: node.detail, color: node.color })}
               onClick={() => setSelected({ label: node.label, kind: node.kind, detail: node.detail, color: node.color })}
               className="absolute left-0 top-0 rounded-full border border-white/15 bg-black/80 text-[9px] font-mono text-white/75 transition-transform hover:scale-125"
+              aria-label={`Select node ${node.label}`}
               style={{
                 width: node.size,
                 height: node.size,
@@ -2115,6 +2124,7 @@ function AgentConstellation({ data }: { data: MissionData }) {
                       onClick={() => setSelected(agent)}
                       className="absolute group h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border bg-black/90 flex items-center justify-center text-xs transition-transform hover:scale-125"
                       style={{ left: `${x}%`, top: `${y}%`, borderColor: `${agentColor}77`, boxShadow: `0 0 16px ${agentColor}33` }}
+                      aria-label={`Select agent ${agent.name}`}
                     >
                       <span className="pointer-events-none">{agent.emoji}</span>
                       <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border border-black" style={{ backgroundColor: agentColor }} />
