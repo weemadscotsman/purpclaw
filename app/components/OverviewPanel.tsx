@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
 import type { MissionData } from '../hooks/useMissionData';
 import { ServiceHealthGrid } from './ServiceHealthGrid';
@@ -17,18 +17,24 @@ export function OverviewPanel({ data }: { data: MissionData }) {
   const [researchModels, setResearchModels] = useState(8);
   const [researchBusy, setResearchBusy] = useState(false);
   const [researchMessage, setResearchMessage] = useState('');
-  const healthyCount = data.services.filter(s => serviceReachable(s.status)).length;
-  const workingAgents = data.agents.filter(a => a.status === 'working').length;
-  const errorAgents = data.agents.filter(a => a.status === 'error').length;
-  const completedAgents = data.agents.filter(a => a.status === 'completed').length;
-  const visionService = data.services.find(s => s.key === 'vision');
+
+  // ⚡ Bolt Optimization: Memoize expensive array filters to prevent redundant calculations on every render
+  const healthyCount = useMemo(() => data.services.filter(s => serviceReachable(s.status)).length, [data.services]);
+  const workingAgents = useMemo(() => data.agents.filter(a => a.status === 'working').length, [data.agents]);
+  const errorAgents = useMemo(() => data.agents.filter(a => a.status === 'error').length, [data.agents]);
+  const completedAgents = useMemo(() => data.agents.filter(a => a.status === 'completed').length, [data.agents]);
+
+  const visionService = useMemo(() => data.services.find(s => s.key === 'vision'), [data.services]);
   const visionOnline = serviceReachable(visionService?.status);
 
-  const recentLogs = data.logs.slice(0, 20);
+  const recentLogs = useMemo(() => data.logs.slice(0, 20), [data.logs]);
   const latestKernelJob = data.kernelJobs[0];
-  const researchJobs = data.kernelJobs.filter(job => job.route === 'deep-research-group');
+
+  // ⚡ Bolt Optimization: Memoize expensive job filters
+  const researchJobs = useMemo(() => data.kernelJobs.filter(job => job.route === 'deep-research-group'), [data.kernelJobs]);
   const latestResearchJob = researchJobs[0];
-  const activeKernelJobs = data.kernelJobs.filter(job => ['queued', 'running', 'delegated', 'planning', 'executing', 'reviewing', 'synthesizing'].includes(job.state)).length;
+  const activeKernelJobs = useMemo(() => data.kernelJobs.filter(job => ['queued', 'running', 'delegated', 'planning', 'executing', 'reviewing', 'synthesizing'].includes(job.state)).length, [data.kernelJobs]);
+
   const rival = data.rivalBenchmark;
   const omnicode = data.omnicodeStatus;
   const delegation = data.delegationStatus;
@@ -36,7 +42,9 @@ export function OverviewPanel({ data }: { data: MissionData }) {
   const researchStatus = data.researchStatus;
   const omniProof = omnicode?.proof;
   const rivalTotals = rival?.summary?.totals || {};
-  const criticalLanes = (rival?.lanes || []).filter(lane => lane.priority === 1).slice(0, 5);
+
+  // ⚡ Bolt Optimization: Memoize rival lane filters
+  const criticalLanes = useMemo(() => (rival?.lanes || []).filter(lane => lane.priority === 1).slice(0, 5), [rival?.lanes]);
   const epsHistory = useEPSHistory(60);
   const chartData = epsHistory.map((p, i) => ({ i, eps: p.eps }));
   const openRouterReady = Boolean(researchStatus?.hasKey);
