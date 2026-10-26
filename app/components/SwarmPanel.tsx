@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { MissionData } from '../hooks/useMissionData';
 
 /**
@@ -35,9 +35,9 @@ export function SwarmPanel({ data }: { data: MissionData }) {
   }, []);
   const session = swarm?.session;
 
-  const activeAgents = agents.filter(a => { const s = a.status as string; return s === 'active' || s === 'working'; });
-  const idleAgents = agents.filter(a => { const s = a.status as string; return s === 'idle' || s === 'ready'; });
-  const errorAgents = agents.filter(a => { const s = a.status as string; return s === 'error' || s === 'failed'; });
+  const activeAgents = useMemo(() => agents.filter(a => { const s = a.status as string; return s === 'active' || s === 'working'; }), [agents]);
+  const idleAgents = useMemo(() => agents.filter(a => { const s = a.status as string; return s === 'idle' || s === 'ready'; }), [agents]);
+  const errorAgents = useMemo(() => agents.filter(a => { const s = a.status as string; return s === 'error' || s === 'failed'; }), [agents]);
 
   return (
     <div className="p-4 space-y-4">
