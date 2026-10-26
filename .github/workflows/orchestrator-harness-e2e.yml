@@ -1,0 +1,49 @@
+name: Orchestrator Harness E2E Certificate
+
+on:
+  pull_request:
+    paths:
+      - "lib/harness/**"
+      - "lib/job-contract.js"
+      - "lib/llm-provider.js"
+      - "scripts/certify-orchestrator-harness-e2e.js"
+      - ".github/workflows/orchestrator-harness-e2e.yml"
+  workflow_dispatch:
+
+jobs:
+  certify-orchestrator-harness:
+    name: Tesco Express harness certificate (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install repository dependencies
+        run: npm install --ignore-scripts
+
+      - name: Syntax check certificate runner
+        run: node --check scripts/certify-orchestrator-harness-e2e.js
+
+      - name: Run certificate-backed orchestrator harness E2E
+        run: node scripts/certify-orchestrator-harness-e2e.js
+
+      - name: Assert certificate verdict
+        shell: bash
+        run: node -e "const c=require('./artifacts/orchestrator-harness-e2e-cert.json'); if(c.verdict!=='CERTIFIED') process.exit(1); console.log('certificate sha256='+c.certificateSha256)"
+
+      - name: Upload certificate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: orchestrator-harness-e2e-${{ matrix.os }}
+          path: artifacts/orchestrator-harness-e2e-cert.json
+          if-no-files-found: error
