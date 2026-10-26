@@ -1,0 +1,3 @@
+## 2025-01-08 - Trace Terminal Accessibility Insights
+**Learning:** Found that custom "floating/pill" UI panels (like the Trace Terminal) often use icon-only action buttons relying on `title` attributes, but entirely lack `aria-label`s, rendering them ambiguous to screen readers. Additionally, they sometimes rely on `outline-none` on inputs without replacing it with custom focus styles, breaking keyboard navigation visibility.
+**Action:** Always ensure that icon-only `button`s in custom HUD components have explicit `aria-label`s, even if `title` is present. Never remove focus styling (`outline-none`) without providing an accessible alternative, or else rely on the global `:focus-visible` token.
