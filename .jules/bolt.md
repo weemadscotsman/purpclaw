@@ -1,0 +1,3 @@
+## 2024-08-29 - [Memoizing Intermediate Processed Data Collections]
+**Learning:** In complex React components rendering large data-viz (like 3D graphs), multiple `useMemo` hooks often rely on the same expensive initial filtering/deduplication steps (e.g., mapping raw `data.agents` to unique agents). Calling the same `O(N)` transformation repeatedly within downstream hooks causes redundant work on every tick/render.
+**Action:** When a computed array (or map/set) is consumed by multiple derived calculations, memoize that intermediate processed list into its own `useMemo` block first, and pass it directly into the dependencies of the downstream visual/metric computations.
